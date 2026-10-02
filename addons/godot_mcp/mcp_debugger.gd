@@ -1,0 +1,429 @@
+@tool
+class_name MCPDebugger
+extends EditorDebuggerPlugin
+## Captures the ``godot_mcp:`` debugger channel from a running game (issue #66).
+##
+## A custom EditorDebuggerPlugin only receives messages with its own prefix, so the
+## running game must include the godot-mcp runtime probe autoload
+## (``mcp_runtime_probe.gd``), which registers an ``EngineDebugger`` capture and answers
+## our queries. Replies are **cached** here so the synchronous WS command handlers can
+## read live runtime state without making the bridge async (poll-and-cache).
+
+const CAPTURE_PREFIX := "godot_mcp"
+
+var _session_id: int = -1
+var _session_active: bool = false
+var _probe_ready: bool = false
+# #454: the engine keeps every debugger tab ever created and caps *active*
+# sessions (4 — EditorDebuggerNode), printing "Max client limits reached" only
+# from its DAP/LSP servers when those caps hit. A session leak is otherwise
+# invisible, so the plugin enforces a one-active-session contract itself: a new
+# session drops the previous session's signal wiring (no accumulating lambdas
+# across play/stop cycles) and a diagnostic names multiple live sessions.
+var _previous_session_id: int = -1
+# The specific callables THIS plugin connected on the current session (round-2
+# review: disconnect only ours — the editor's own debugger infrastructure also
+# listens on these signals, and a blanket disconnect breaks its tab bookkeeping).
+var _owned_connections: Array = []
+var _scene_tree: Variant = null  # last godot_mcp:scene_tree payload (Dictionary) or null
+var _input_acks: int = 0  # count of synthesized inputs the game has acknowledged (#36)
+var _property_samples: Variant = null  # last godot_mcp:property_samples payload (#35)
+var _read_property: Variant = null  # last godot_mcp:read_property one-shot reply (#571)
+var _read_property_pending := "__none__"  # request_id of the in-flight one-shot read (#571)
+var _ui_elements: Variant = null  # last godot_mcp:ui_elements payload (#35)
+var _ui_pending := "__none__"  # request_id of the in-flight find_ui request (#35)
+var _recorded_input: Variant = null  # last godot_mcp:recorded_input payload (#68)
+var _performance: Variant = null  # last godot_mcp:performance payload (#38)
+var _game_frame: Variant = null  # last godot_mcp:game_frame payload (#446)
+var _frame_request_id := "__none__"  # request_id of the in-flight game frame capture (#446)
+var _game_output: Variant = null  # last godot_mcp:game_output payload (#534)
+var _breakpoints: Array = []  # tracked breakpoints for issue #110
+var _stack_frames: Variant = null  # last stack_dump payload (Tier 2)
+var _evaluation_result: Variant = null  # last evaluation_return payload (Tier 2)
+var _frame_vars: Variant = null  # last accumulated frame vars (Tier 2)
+var _frame_vars_expected: int = 0  # count from stack_frame_vars (Tier 2)
+var _frame_vars_locals: Array = []
+var _frame_vars_members: Array = []
+var _frame_vars_globals: Array = []
+
+
+## Debugger protocol capture names we claim so _capture receives raw messages.
+const _DEBUGGER_CAPTURES := ["stack_dump", "evaluation_return", "stack_frame_vars", "stack_frame_var"]
+
+
+func _has_capture(capture: String) -> bool:
+	return capture == CAPTURE_PREFIX or capture in _DEBUGGER_CAPTURES
+
+
+func _capture(message: String, data: Array, session_id: int) -> bool:
+	match message:
+		"godot_mcp:ready":
+			_probe_ready = true
+			_session_id = session_id
+			request_scene_tree()  # warm the cache as soon as the probe announces itself
+			return true
+		"godot_mcp:pong":
+			return true
+		"godot_mcp:scene_tree":
+			_scene_tree = data[0] if not data.is_empty() else null
+			return true
+		"godot_mcp:input_ack":
+			_input_acks += 1
+			return true
+		"godot_mcp:property_samples":
+			_property_samples = data[0] if not data.is_empty() else null
+			return true
+		"godot_mcp:read_property":
+			# Qodo review (#575): only store the reply when it matches the pending
+			# request — a delayed reply to an older request must not serve as the
+			# current one's result (the one-shot value is returned directly).
+			var reply: Variant = data[0] if not data.is_empty() else null
+			if reply is Dictionary:
+				var pending := _read_property_pending
+				if pending != "__none__" and str((reply as Dictionary).get("request_id", "")) == pending:
+					_read_property = reply
+			return true
+		"godot_mcp:ui_elements":
+			# #577 (Qodo review of #575): same stale-reply gate as read_property —
+			# store the scan reply only when its request_id matches the pending
+			# scan, so a delayed reply to an older request can't be served to a
+			# new poll (wrong rects to click).
+			var scan: Variant = data[0] if not data.is_empty() else null
+			if scan is Dictionary:
+				var pending_scan := _ui_pending
+				if pending_scan != "__none__" and str((scan as Dictionary).get("request_id", "")) == pending_scan:
+					_ui_elements = scan
+			return true
+		"godot_mcp:recorded_input":
+			_recorded_input = data[0] if not data.is_empty() else null
+			return true
+		"godot_mcp:performance":
+			_performance = data[0] if not data.is_empty() else null
+			return true
+		"godot_mcp:game_frame":
+			_game_frame = data[0] if not data.is_empty() else null
+			return true
+		"godot_mcp:game_output":
+			_game_output = data[0] if not data.is_empty() else null
+			return true
+		# Tier 2 debugger: raw Godot debugger protocol replies (issue #110)
+		"stack_dump":
+			_stack_frames = data[0] if not data.is_empty() else null
+			return true
+		"evaluation_return":
+			_evaluation_result = data[0] if not data.is_empty() else null
+			return true
+		"stack_frame_vars":
+			# The count message tells us how many variables to expect; reset accumulators.
+			_frame_vars_expected = data[0] if not data.is_empty() else 0
+			_frame_vars_locals = []
+			_frame_vars_members = []
+			_frame_vars_globals = []
+			_frame_vars = null
+			return true
+		"stack_frame_var":
+			# Accumulate a single variable: [type(0=local,1=member,2=global), name, value]
+			if data.size() >= 3:
+				var vtype: int = int(data[0])
+				var entry := {"name": str(data[1]), "value": data[2]}
+				match vtype:
+					0:
+						_frame_vars_locals.append(entry)
+					1:
+						_frame_vars_members.append(entry)
+					2:
+						_frame_vars_globals.append(entry)
+				# When the expected count is reached, build the final dict.
+				var total := _frame_vars_locals.size() + _frame_vars_members.size() + _frame_vars_globals.size()
+				if total >= _frame_vars_expected:
+					_frame_vars = {
+						"locals": _frame_vars_locals.duplicate(),
+						"members": _frame_vars_members.duplicate(),
+						"globals": _frame_vars_globals.duplicate(),
+					}
+			return true
+	return false
+
+
+func _setup_session(session_id: int) -> void:
+	# #454: one-active-session contract. When the editor hands us a new session,
+	# detach the previous session's signal wiring (each play/stop cycle otherwise
+	# leaves a connected lambda pair behind) and adopt the new one immediately —
+	# its ``started`` signal may never fire (orphaned-session recovery), so the
+	# new session is also reset+adopted right here, not just on _on_started.
+	if _session_id >= 0 and _session_id != session_id:
+		_previous_session_id = _session_id
+		_detach_previous_session(session_id)
+	_session_id = session_id
+	var session := get_session(session_id)
+	if session == null:
+		return
+	var on_start := func() -> void: _on_started(session_id)
+	session.started.connect(on_start)
+	session.stopped.connect(_on_stopped)
+	# Track exactly what this plugin connected (round-2 review: the detach must
+	# only remove ours — the editor's own consumers share these signals).
+	_owned_connections = [
+		{"signal": session.started, "callable": on_start},
+		{"signal": session.stopped, "callable": _on_stopped},
+	]
+	# A session arriving while another is still live is the pre-condition for
+	# the engine's session cap — surface it instead of staying silent (#454).
+	var live: Array = []
+	for s in get_sessions():
+		if s.is_active():
+			live.append(s.id)
+	if live.size() > 1:
+		print(("[MCPDebugger] multiple live debugger sessions: %s — "
+			+ "engine caps concurrent sessions; if the new game connects but the probe never "
+			+ "announces, check the editor log for \"max client limits reached\" "
+			+ "(DAP/LSP client caps) and restart the editor if sessions are exhausted.")
+			% str(live))
+
+
+func _on_started(session_id: int) -> void:
+	_session_active = true
+	_session_id = session_id
+
+
+## Drop the previous session's signal wiring (#454). The engine keeps every
+## debugger tab; without this, each play/stop cycle leaves one more connected
+## lambda pair — invisible until a cap bites. Only the plugin's OWN callables are
+## disconnected (tracked in _owned_connections): the editor's internal debugger
+## consumers also listen on these signals, and a blanket disconnect would break
+## their tab bookkeeping (Qodo #455 review).
+func _detach_previous_session(_new_session_id: int) -> void:
+	var previous := get_session(_previous_session_id)
+	if previous == null:
+		return
+	for owned in _owned_connections:
+		var signal_ref: Signal = owned["signal"]
+		var callable: Callable = owned["callable"]
+		if signal_ref.is_connected(callable):
+			signal_ref.disconnect(callable)
+	_owned_connections.clear()
+
+
+func _on_stopped() -> void:
+	_session_active = false
+	_probe_ready = false
+	_scene_tree = null
+	_input_acks = 0
+	_property_samples = null
+	_read_property = null
+	_read_property_pending = "__none__"
+	_ui_elements = null
+	_ui_pending = "__none__"
+	_recorded_input = null
+	_performance = null
+	_game_frame = null
+	_frame_request_id = "__none__"
+	_stack_frames = null
+	_evaluation_result = null
+	_frame_vars = null
+	_frame_vars_expected = 0
+	_frame_vars_locals = []
+	_frame_vars_members = []
+	_frame_vars_globals = []
+
+
+## Release the plugin's own references so it can be freed when the editor exits.
+##
+## _setup_session() stores Callables bound to ``self`` and connects them to the
+## session, so the plugin keeps a reference to itself — and the session keeps one
+## too — until both sides let go; remove_debugger_plugin() only unregisters the
+## plugin and does not drop them. RefCounted cycles are never freed automatically
+## (see the RefCounted class reference), which left this plugin and
+## mcp_debugger.gd alive as leaked instances at editor exit. Called from the
+## plugin's _exit_tree() before remove_debugger_plugin().
+func dispose() -> void:
+	for owned in _owned_connections:
+		var signal_ref: Signal = owned["signal"]
+		var callable: Callable = owned["callable"]
+		if is_instance_valid(signal_ref.get_object()) and signal_ref.is_connected(callable):
+			signal_ref.disconnect(callable)
+	_owned_connections.clear()
+	_previous_session_id = -1
+	_session_id = -1
+	_session_active = false
+	_probe_ready = false
+
+
+## Ask the running game's probe to (re)send the scene tree. The reply lands in the cache
+## on a later frame via _capture; callers read get_cached_scene_tree().
+func request_scene_tree() -> void:
+	if not _session_active or _session_id < 0:
+		return
+	var session := get_session(_session_id)
+	if session != null and session.is_active():
+		session.send_message("godot_mcp:get_scene_tree", [])
+
+
+## True once a play session is live AND its probe has announced itself.
+func is_connected_to_probe() -> bool:
+	return _session_active and _probe_ready
+
+
+func get_cached_scene_tree() -> Variant:
+	return _scene_tree
+
+
+## Send a godot_mcp:* message to the running game's probe (fire-and-forget).
+func send_to_probe(message: String, data: Array = []) -> void:
+	if not _session_active or _session_id < 0:
+		return
+	var session := get_session(_session_id)
+	if session != null and session.is_active():
+		session.send_message(message, data)
+
+
+func get_input_acks() -> int:
+	return _input_acks
+
+
+func get_property_samples() -> Variant:
+	return _property_samples
+
+
+## Drop the cached samples so a fresh monitor_property doesn't read the prior capture
+## (the next get_property_samples reports ready=false until the new series arrives).
+func clear_property_samples() -> void:
+	_property_samples = null
+
+
+# #571 one-shot read cache (mirrors the find_ui request_id pattern).
+func get_read_property() -> Variant:
+	return _read_property
+
+
+## request_id of the in-flight one-shot read (so repeated polls don't re-dispatch
+## and a completed read isn't confused with a prior request's stale reply).
+func get_pending_read_request() -> String:
+	return _read_property_pending
+
+
+## Mark a new one-shot read as in-flight and drop any prior (stale) reply.
+func begin_read_request(request_id: String) -> void:
+	_read_property_pending = request_id
+	_read_property = null
+
+
+func get_ui_elements() -> Variant:
+	return _ui_elements
+
+
+## request_id of the in-flight find_ui request (so the router dispatches a scan only once
+## per invocation rather than re-scanning on every poll).
+func get_pending_ui_request() -> String:
+	return _ui_pending
+
+
+## Mark a new find_ui request as in-flight and drop any prior (stale) result.
+func begin_ui_request(request_id: String) -> void:
+	_ui_pending = request_id
+	_ui_elements = null
+
+
+func get_recorded_input() -> Variant:
+	return _recorded_input
+
+
+## Drop the cached recording so stop_recording reads the new capture, not a prior one.
+func clear_recorded_input() -> void:
+	_recorded_input = null
+
+
+func get_performance() -> Variant:
+	return _performance
+
+
+## request_id of the in-flight game frame capture (so the router dispatches a
+## grab only once per invocation, mirroring the find_ui request pattern).
+func get_pending_frame_request() -> String:
+	return _frame_request_id
+
+
+## Mark a new game-frame capture as in-flight and drop any prior (stale) frame.
+func begin_frame_request(request_id: String) -> void:
+	_frame_request_id = request_id
+	_game_frame = null
+
+
+func get_game_frame() -> Variant:
+	return _game_frame
+
+
+## Issue #534: the probe's game-output ring (poll-and-cache — the editor pulls
+## on demand via the godot_mcp:get_output query; nothing pushes unsolicited).
+func get_game_output() -> Variant:
+	return _game_output
+
+
+## Cache accessors for Tier 2 debugger tools (step, stack, eval).
+
+func get_cached_stack_frames() -> Variant:
+	return _stack_frames
+
+
+func get_cached_evaluation() -> Variant:
+	return _evaluation_result
+
+
+func get_cached_frame_vars() -> Variant:
+	return _frame_vars
+
+
+## Ask the editor debugger for the current call stack. Reply lands in
+## _stack_frames via _capture("stack_dump", data).
+func request_stack_frames() -> void:
+	if not _session_active or _session_id < 0:
+		return
+	var session := get_session(_session_id)
+	if session != null and session.is_active():
+		session.send_message("get_stack_dump", [])
+
+
+## Ask the editor debugger to evaluate ``expression`` at ``frame`` (0 is top).
+## Reply lands in _evaluation_result via _capture("evaluation_return", data).
+func request_evaluation(expression: String, frame: int = 0) -> void:
+	if not _session_active or _session_id < 0:
+		return
+	var session := get_session(_session_id)
+	if session != null and session.is_active():
+		session.send_message("evaluate", [expression, frame])
+
+
+## Ask the editor debugger for locals / members / globals at ``frame`` (0 is top).
+## Reply lands in _frame_vars via _capture("stack_frame_vars", data).
+func request_frame_variables(frame: int = 0) -> void:
+	if not _session_active or _session_id < 0:
+		return
+	var session := get_session(_session_id)
+	if session != null and session.is_active():
+		session.send_message("get_stack_frame_vars", [frame])
+
+
+## Return the current session ID so handlers can call get_session().
+func get_session_id() -> int:
+	return _session_id
+
+
+## Track a breakpoint in our local list (issue #110).
+func track_breakpoint(path: String, line: int, enabled: bool) -> void:
+	# Remove any existing entry for this exact path+line.
+	for i in range(_breakpoints.size() - 1, -1, -1):
+		var bp: Dictionary = _breakpoints[i]
+		if str(bp.get("path", "")) == path and int(bp.get("line", 0)) == line:
+			_breakpoints.remove_at(i)
+	if enabled:
+		_breakpoints.append({"path": path, "line": line})
+
+
+## Return all currently tracked breakpoints.
+func get_tracked_breakpoints() -> Array:
+	return _breakpoints.duplicate()
+
+
+## Clear the tracked breakpoint list.
+func clear_tracked_breakpoints() -> void:
+	_breakpoints.clear()
