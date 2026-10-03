@@ -1,0 +1,7985 @@
+{
+ "souls": [
+  {
+   "name": "先锋狼的灵魂",
+   "desc": "狼死后的魂焰，仍带着群猎的呼吸。"
+  },
+  {
+   "name": "影狼的灵魂",
+   "desc": "狼死后的魂焰，仍带着群猎的呼吸。"
+  },
+  {
+   "name": "血猎犬的灵魂",
+   "desc": "狼死后的魂焰，仍带着群猎的呼吸。"
+  },
+  {
+   "name": "嚎叫者的灵魂",
+   "desc": "狼死后的魂焰，仍带着群猎的呼吸。"
+  },
+  {
+   "name": "猎杀头狼的灵魂",
+   "desc": "狼死后的魂焰，仍带着群猎的呼吸。"
+  },
+  {
+   "name": "铁颚狼的灵魂",
+   "desc": "狼死后的魂焰，仍带着群猎的呼吸。"
+  },
+  {
+   "name": "狼王的灵魂",
+   "desc": "狼死后的魂焰，仍带着群猎的呼吸。"
+  },
+  {
+   "name": "强盗弓箭手的灵魂",
+   "desc": "人死后的魂焰，比野兽的更沉、更暗。"
+  },
+  {
+   "name": "强盗刀手的灵魂",
+   "desc": "人死后的魂焰，比野兽的更沉、更暗。"
+  },
+  {
+   "name": "强盗斥候的灵魂",
+   "desc": "人死后的魂焰，比野兽的更沉、更暗。"
+  },
+  {
+   "name": "强盗盾卫的灵魂",
+   "desc": "人死后的魂焰，比野兽的更沉、更暗。"
+  },
+  {
+   "name": "强弩手的灵魂",
+   "desc": "人死后的魂焰，比野兽的更沉、更暗。"
+  },
+  {
+   "name": "悍匪的灵魂",
+   "desc": "人死后的魂焰，比野兽的更沉、更暗。"
+  },
+  {
+   "name": "巨蛛的灵魂",
+   "desc": "蛛死后的魂焰，缠着一缕未散的丝。"
+  },
+  {
+   "name": "遁蛛的灵魂",
+   "desc": "蛛死后的魂焰，缠着一缕未散的丝。"
+  },
+  {
+   "name": "毒蛛的灵魂",
+   "desc": "蛛死后的魂焰，缠着一缕未散的丝。"
+  },
+  {
+   "name": "跳蛛的灵魂",
+   "desc": "蛛死后的魂焰，缠着一缕未散的丝。"
+  },
+  {
+   "name": "黑寡妇的灵魂",
+   "desc": "蛛死后的魂焰，缠着一缕未散的丝。"
+  },
+  {
+   "name": "捕鸟蛛的灵魂",
+   "desc": "蛛死后的魂焰，缠着一缕未散的丝。"
+  },
+  {
+   "name": "骨兵的灵魂",
+   "desc": "骸骨复又倒下时，才终于熄火的魂焰。"
+  },
+  {
+   "name": "骷髅弓手的灵魂",
+   "desc": "骸骨复又倒下时，才终于熄火的魂焰。"
+  },
+  {
+   "name": "僵尸的灵魂",
+   "desc": "骸骨复又倒下时，才终于熄火的魂焰。"
+  },
+  {
+   "name": "寺僧的灵魂",
+   "desc": "骸骨复又倒下时，才终于熄火的魂焰。"
+  },
+  {
+   "name": "幽魂的灵魂",
+   "desc": "骸骨复又倒下时，才终于熄火的魂焰。"
+  },
+  {
+   "name": "血骑士的灵魂",
+   "desc": "骸骨复又倒下时，才终于熄火的魂焰。"
+  },
+  {
+   "name": "树精的灵魂",
+   "desc": "古树枯萎时落下的魂焰，带着木质的香味。"
+  },
+  {
+   "name": "藤蔓怪的灵魂",
+   "desc": "古树枯萎时落下的魂焰，带着木质的香味。"
+  },
+  {
+   "name": "孢囊菇的灵魂",
+   "desc": "古树枯萎时落下的魂焰，带着木质的香味。"
+  },
+  {
+   "name": "食人花的灵魂",
+   "desc": "古树枯萎时落下的魂焰，带着木质的香味。"
+  },
+  {
+   "name": "荆棘古木的灵魂",
+   "desc": "古树枯萎时落下的魂焰，带着木质的香味。"
+  },
+  {
+   "name": "孢母的灵魂",
+   "desc": "古树枯萎时落下的魂焰，带着木质的香味。"
+  },
+  {
+   "name": "蜥蜴人的灵魂",
+   "desc": "水底爬族的魂焰，凉而湿。"
+  },
+  {
+   "name": "砂鳄的灵魂",
+   "desc": "水底爬族的魂焰，凉而湿。"
+  },
+  {
+   "name": "毒蟾的灵魂",
+   "desc": "水底爬族的魂焰，凉而湿。"
+  },
+  {
+   "name": "水蛭群的灵魂",
+   "desc": "水底爬族的魂焰，凉而湿。"
+  },
+  {
+   "name": "沼蟒的灵魂",
+   "desc": "水底爬族的魂焰，凉而湿。"
+  },
+  {
+   "name": "瘴蟾王的灵魂",
+   "desc": "水底爬族的魂焰，凉而湿。"
+  },
+  {
+   "name": "食人魔的灵魂",
+   "desc": "巨怪死后的魂焰，大得像一小团火。"
+  },
+  {
+   "name": "掷石巨魔的灵魂",
+   "desc": "巨怪死后的魂焰，大得像一小团火。"
+  },
+  {
+   "name": "半食人魔的灵魂",
+   "desc": "巨怪死后的魂焰，大得像一小团火。"
+  },
+  {
+   "name": "持锤巨魔的灵魂",
+   "desc": "巨怪死后的魂焰，大得像一小团火。"
+  },
+  {
+   "name": "独眼暴徒的灵魂",
+   "desc": "巨怪死后的魂焰，大得像一小团火。"
+  },
+  {
+   "name": "巨魔督军的灵魂",
+   "desc": "巨怪死后的魂焰，大得像一小团火。"
+  }
+ ],
+ "materials": [
+  {
+   "name": "兽骨",
+   "desc": "狼窝里啃剩的骨头，能做骰子坯料。"
+  },
+  {
+   "name": "兽皮",
+   "desc": "带毛的厚皮，狼群身上最结实的一块。"
+  },
+  {
+   "name": "狼牙",
+   "desc": "狼群咬杀猎物用的尖牙。"
+  },
+  {
+   "name": "铁屑",
+   "desc": "从刀口箭头上崩下来的金属碎屑。"
+  },
+  {
+   "name": "皮甲片",
+   "desc": "抢来的皮甲上割下来的一片，还带着钉扣。"
+  },
+  {
+   "name": "绳索",
+   "desc": "结实的粗麻绳，强盗用来绊索、捆人。"
+  },
+  {
+   "name": "蛛丝",
+   "desc": "又韧又黏的蛛丝，能搓成绳。"
+  },
+  {
+   "name": "毒囊",
+   "desc": "鼓胀的毒囊，隔着皮都渗得慌。"
+  },
+  {
+   "name": "甲壳",
+   "desc": "蛛族褪下的硬壳，腿节一掰就断。"
+  },
+  {
+   "name": "骨片",
+   "desc": "骸骨上崩下来的碎片，还带着死气。"
+  },
+  {
+   "name": "锈铁",
+   "desc": "坟里刨出来的锈铁，一敲就掉渣。"
+  },
+  {
+   "name": "陪葬品",
+   "desc": "陪葬的小物件，早没人记得是谁的。"
+  },
+  {
+   "name": "树脂",
+   "desc": "古木渗出的琥珀色树脂，黏稠不干。"
+  },
+  {
+   "name": "孢子",
+   "desc": "菇伞里抖出来的孢子，吸一口嗓子发痒。"
+  },
+  {
+   "name": "琥珀",
+   "desc": "包着一只远古小虫的琥珀。"
+  },
+  {
+   "name": "鳞片",
+   "desc": "爬族褪下的鳞片，薄而硬。"
+  },
+  {
+   "name": "毒腺",
+   "desc": "鼓胀的毒腺，挤一下能滋出毒液。"
+  },
+  {
+   "name": "蚌珠",
+   "desc": "河蚌里剥出来的珠子，凉得刺手。"
+  },
+  {
+   "name": "铁块",
+   "desc": "从巨怪护甲上砸下来的铁块，沉得压手。"
+  },
+  {
+   "name": "石块",
+   "desc": "巨怪手边随手就能抡起来的石头。"
+  },
+  {
+   "name": "旧木料",
+   "desc": "拆下来的房梁木料，还带着旧钉子。"
+  },
+  {
+   "name": "头狼的獠牙",
+   "desc": "猎杀头狼的獠牙，牙根还带着旧伤。"
+  },
+  {
+   "name": "铁颚狼的颚片",
+   "desc": "铁颚狼的下颚，硬得像块铁。"
+  },
+  {
+   "name": "狼王的毛皮",
+   "desc": "狼王的毛皮，颈毛立起来时像一圈铁刺。"
+  },
+  {
+   "name": "强弩手的机括",
+   "desc": "强弩的机括，扣下去就再没松过。"
+  },
+  {
+   "name": "悍匪的砍刀",
+   "desc": "悍匪的砍刀，刃口全是豁。"
+  },
+  {
+   "name": "黑寡妇的卵囊",
+   "desc": "黑寡妇的卵囊，摸上去还是温的。"
+  },
+  {
+   "name": "捕鸟蛛的巨螯",
+   "desc": "捕鸟蛛的螯肢，能夹断一根手指。"
+  },
+  {
+   "name": "幽魂的残念",
+   "desc": "幽魂散尽后留在原地的最后一点执念。"
+  },
+  {
+   "name": "血骑士的骨盾",
+   "desc": "血骑士背上的骨盾，缝里全是旧血。"
+  },
+  {
+   "name": "荆棘古木的木芯",
+   "desc": "荆棘古木的木芯，硬得能磨刀。"
+  },
+  {
+   "name": "孢母的菌盖",
+   "desc": "孢母的菌盖，孢子就藏在背面。"
+  },
+  {
+   "name": "沼蟒的蜕皮",
+   "desc": "沼蟒褪下的整条皮，还带着花纹。"
+  },
+  {
+   "name": "瘴蟾王的瘴囊",
+   "desc": "瘴蟾王的瘴囊，晃一晃都是瘴气。"
+  },
+  {
+   "name": "独眼暴徒的拳甲",
+   "desc": "独眼暴徒的拳甲，指节处磨得发亮。"
+  },
+  {
+   "name": "巨魔督军的号角",
+   "desc": "督办号令用的牛角号，一吹全族都听得见。"
+  }
+ ],
+ "passives": [
+  {
+   "name": "猎足",
+   "desc": "移动力 +1",
+   "moveDelta": 1,
+   "visionDelta": 0,
+   "hasMove": true,
+   "hasVision": false,
+   "rarity": 0,
+   "value": 1
+  },
+  {
+   "name": "穷追",
+   "desc": "攻击带猎物标记目标时伤害 +1；若目标生命低于 50%，改为 +2，且自身移动力 +1",
+   "moveDelta": 1,
+   "visionDelta": 0,
+   "hasMove": true,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "潜影",
+   "desc": "若本回合未被攻击，回合结束获得 闪避 1，最多叠到 3 层；在森林中移动力 +1、视野不受影响",
+   "moveDelta": 1,
+   "visionDelta": 0,
+   "hasMove": true,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "影袭",
+   "desc": "对目标施加负面效果时，额外施加 1 层猎物标记",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "嗅猎",
+   "desc": "攻击处于流血的目标时伤害 +1；若目标处于流血，自身移动力 +1",
+   "moveDelta": 1,
+   "visionDelta": 0,
+   "hasMove": true,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "厚毛",
+   "desc": "最大生命 +2",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 0,
+   "value": 1
+  },
+  {
+   "name": "群嚎",
+   "desc": "猎物标记衰减冻结；周围 2 格友军消耗猎物标记时，自身获得 护甲 1",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 3,
+   "value": 4
+  },
+  {
+   "name": "精装",
+   "desc": "最大生命 +4",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 0,
+   "value": 2
+  },
+  {
+   "name": "悬赏",
+   "desc": "攻击带猎物标记目标时伤害 +1；若目标带 ≥3 层标记，改为 +2；消耗猎物标记时，自身回血 1",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "厚皮",
+   "desc": "最大生命 +3",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 0,
+   "value": 1
+  },
+  {
+   "name": "绞缠",
+   "desc": "施加流血时额外施加 1 层猎物标记；消耗标记时施加 流血 1",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "王躯",
+   "desc": "最大生命 +8",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 3,
+   "value": 4
+  },
+  {
+   "name": "猎场",
+   "desc": "目标每有 1 层猎物标记，自身伤害 +1；其他狼消耗猎物标记时，自身回血 1",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 3,
+   "value": 4
+  },
+  {
+   "name": "手快",
+   "desc": "攻击暴击时额外扣目标 1 AP",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "厚盾",
+   "desc": "自身 护甲 [2]",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 0,
+   "value": 2
+  },
+  {
+   "name": "狠准",
+   "desc": "攻击距离 ≥3 的目标 伤害 +1",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 1,
+   "value": 2
+  },
+  {
+   "name": "结网",
+   "desc": "与它相邻的目标 移动点 −1",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "出其不意",
+   "desc": "本回合未交战时首次攻击伤害 +2",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 1,
+   "value": 2
+  },
+  {
+   "name": "缠丝",
+   "desc": "断腿：它的攻击命中时 扣目标 移动点 1",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "毒发",
+   "desc": "目标中毒 ≥4 层时引爆：中毒结算翻倍为 [层数 × 2] 伤害，层数照常 −1、不清空；跌回 ≤3 层即解除",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 3,
+   "value": 4
+  },
+  {
+   "name": "缚咬",
+   "desc": "卸力：它的攻击命中时给目标 虚弱 1 层",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "据险",
+   "desc": "视野 +2",
+   "moveDelta": 0,
+   "visionDelta": 2,
+   "hasMove": false,
+   "hasVision": true,
+   "rarity": 0,
+   "value": 1
+  },
+  {
+   "name": "咒术",
+   "desc": "它施加的诅咒 +1 层",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "吞骨",
+   "desc": "任意骸骨单位被击倒时，自身 回血 [1]，含自己人",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "骨盾",
+   "desc": "自身 护甲 [2]",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 0,
+   "value": 2
+  },
+  {
+   "name": "深根",
+   "desc": "移 0，但无法被击退 / 拉拽",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 1,
+   "value": 2
+  },
+  {
+   "name": "蔓延",
+   "desc": "移动力 +1",
+   "moveDelta": 1,
+   "visionDelta": 0,
+   "hasMove": true,
+   "hasVision": false,
+   "rarity": 0,
+   "value": 1
+  },
+  {
+   "name": "湿伞",
+   "desc": "最大生命 +2",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 0,
+   "value": 1
+  },
+  {
+   "name": "尖刺萼",
+   "desc": "使用「张嘴」后，获得 反伤 [1]，持续 1 回合",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "花蜜",
+   "desc": "本回合未受到伤害则回合结束 回血 [2]",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "孢雾",
+   "desc": "周围 2 格内的目标 每回合结束 中毒 +1",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "两栖",
+   "desc": "水域不减速、移动力 +1；水域中 攻击伤害 +1",
+   "moveDelta": 1,
+   "visionDelta": 0,
+   "hasMove": true,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "断尾",
+   "desc": "首次受到伤害后 移动力 +2",
+   "moveDelta": 2,
+   "visionDelta": 0,
+   "hasMove": true,
+   "hasVision": false,
+   "rarity": 1,
+   "value": 2
+  },
+  {
+   "name": "伏杀",
+   "desc": "本回合未移动过则首次攻击伤害 +2",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 1,
+   "value": 2
+  },
+  {
+   "name": "膨胀",
+   "desc": "最大生命 +3",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 0,
+   "value": 1
+  },
+  {
+   "name": "毒腺",
+   "desc": "它施加的中毒 +1 层",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "群聚",
+   "desc": "最大生命 +4",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 0,
+   "value": 2
+  },
+  {
+   "name": "吸血",
+   "desc": "它的攻击回复等于伤害一半的生命，向下取整",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 3,
+   "value": 4
+  },
+  {
+   "name": "沼行",
+   "desc": "水域不减速、移动力 +1；水域中 攻击伤害 +1",
+   "moveDelta": 1,
+   "visionDelta": 0,
+   "hasMove": true,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "瘴气",
+   "desc": "周围 2 格内的目标 每回合结束 中毒 +1；自身在水域中时 光环半径 +1",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "巨腹",
+   "desc": "最大生命 +5",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 1,
+   "value": 2
+  },
+  {
+   "name": "皮糙",
+   "desc": "最大生命 +6",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 1,
+   "value": 3
+  },
+  {
+   "name": "蛮力",
+   "desc": "它的攻击将目标 击退 1 格",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 1,
+   "value": 2
+  },
+  {
+   "name": "掩体直觉",
+   "desc": "视野 +2",
+   "moveDelta": 0,
+   "visionDelta": 2,
+   "hasMove": false,
+   "hasVision": true,
+   "rarity": 0,
+   "value": 1
+  },
+  {
+   "name": "巨石",
+   "desc": "它的远程攻击将目标 击退 1 格",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 1,
+   "value": 2
+  },
+  {
+   "name": "瘦长",
+   "desc": "移动力 +1",
+   "moveDelta": 1,
+   "visionDelta": 0,
+   "hasMove": true,
+   "hasVision": false,
+   "rarity": 0,
+   "value": 1
+  },
+  {
+   "name": "群胆",
+   "desc": "相邻每有 1 名同族，自身伤害 +1，上限 +2",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "重锤",
+   "desc": "最大生命 +6",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 1,
+   "value": 3
+  },
+  {
+   "name": "蓄势",
+   "desc": "本回合未受到伤害则回合结束 获得 蓄力 1 层",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "壮骨",
+   "desc": "最大生命 +4",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 0,
+   "value": 2
+  },
+  {
+   "name": "狂蛮",
+   "desc": "自身伤害 +1",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 3,
+   "value": 4
+  },
+  {
+   "name": "巨躯",
+   "desc": "最大生命 +8",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 3,
+   "value": 4
+  },
+  {
+   "name": "督战",
+   "desc": "它行动时，周围 2 格同族 伤害 +1，持续 1 回合",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "远射",
+   "desc": "攻击距离 ≥3 的目标 伤害 +1",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 1,
+   "value": 2
+  },
+  {
+   "name": "游斗",
+   "desc": "自身闪避 ≥1 时 攻击伤害 +1",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "拼命",
+   "desc": "生命 <50% 时 暴击 +3",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "散骨",
+   "desc": "阵亡时 死气 +2",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 2
+  },
+  {
+   "name": "尸墙",
+   "desc": "每次受到的伤害 −1，每回合最多 −2",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 3,
+   "value": 4
+  },
+  {
+   "name": "汲养",
+   "desc": "攻击命中时 自身回血 [1]，每完成循环 +1，封顶 3",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  },
+  {
+   "name": "缠绞",
+   "desc": "攻击命中时 拉近目标 1 格",
+   "moveDelta": 0,
+   "visionDelta": 0,
+   "hasMove": false,
+   "hasVision": false,
+   "rarity": 2,
+   "value": 3
+  }
+ ],
+ "cards": [
+  {
+   "name": "磨牙",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 骰子上限 +1，持续 2 回合",
+   "rawDesc": "自身 骰子上限 +1，持续 2 回合",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "骰面上限",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "低吼",
+   "energy": 0,
+   "cooldown": 2,
+   "range": 3,
+   "suit": 3,
+   "dice": 0,
+   "desc": "施加 猎物标记 1",
+   "rawDesc": "施加 猎物标记 1（家族共享；在位 W1/W2/W5）",
+   "rarity": 1,
+   "effects": []
+  },
+  {
+   "name": "猎杀撕咬",
+   "energy": 2,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 2,
+   "desc": "t1 [2+战斗骰子1] 伤害；t2 [1+战斗骰子2] 护甲；猎杀 1：消耗 1 层，获得 1 层猎杀加成",
+   "rawDesc": "t1 [2+t1] 伤害；t2 [1+t2] 护甲；猎杀 1：消耗 1 层，获得 1 层猎杀加成",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 1,
+     "target": 0,
+     "base": 1,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "猛扑",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 3,
+   "suit": 1,
+   "dice": 1,
+   "desc": "冲锋 2，[战斗骰子1] 伤害",
+   "rawDesc": "冲锋 2，[t1] 伤害",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "撕扯",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[战斗骰子1] 伤害，施加 流血 1",
+   "rawDesc": "[t1] 伤害，施加 流血 1（家族共享；在位 W1/W3）",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "追猎",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 1,
+   "dice": 1,
+   "desc": "冲锋 2，[战斗骰子1] 伤害；若目标生命低于 50%，伤害 +1",
+   "rawDesc": "冲锋 2，[t1] 伤害；若目标生命低于 50%，伤害 +1（全族统一；在位 W1/W3/W5）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "遁影",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 2,
+   "dice": 0,
+   "desc": "自身 闪避 1；施加的负面效果 +1，含猎物标记",
+   "rawDesc": "自身 闪避 1；施加的负面效果 +1（含猎物标记）",
+   "rarity": 1,
+   "effects": []
+  },
+  {
+   "name": "阴影突袭",
+   "energy": 0,
+   "cooldown": 5,
+   "range": 4,
+   "suit": 2,
+   "dice": 0,
+   "desc": "传送至目标相邻格，施加 虚弱 1",
+   "rawDesc": "传送至目标相邻格，施加 虚弱 1（标记由「影袭」带出）",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "虚弱",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "影刃",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害；猎杀 1：消耗 1 层，获得 1 层猎杀加成，并施加 虚弱 1",
+   "rawDesc": "[2+t1] 伤害；猎杀 1：消耗 1 层，获得 1 层猎杀加成，并施加 虚弱 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "虚弱",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "影步",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 2,
+   "dice": 0,
+   "desc": "移动至目标相邻格，获得 闪避 1",
+   "rawDesc": "移动至目标相邻格，获得 闪避 1",
+   "rarity": 0,
+   "effects": []
+  },
+  {
+   "name": "嗅迹",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "施加 猎物标记 1；自身 力量 +1，持续 2 回合",
+   "rawDesc": "施加 猎物标记 1；自身 力量 +1，持续 2 回合（★力量轴唯一保留）",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "status": "力量",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "狂吠",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 3,
+   "dice": 0,
+   "desc": "施加 猎物标记 1；若目标处于流血，额外施加 1 层",
+   "rawDesc": "施加 猎物标记 1；若目标处于流血，额外施加 1 层",
+   "rarity": 1,
+   "effects": []
+  },
+  {
+   "name": "撕喉",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害；猎杀 2：每消耗 1 层，获得 1 层猎杀加成，并施加 流血 1",
+   "rawDesc": "[2+t1] 伤害；猎杀 2：每消耗 1 层，获得 1 层猎杀加成，并施加 流血 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "血嗅",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 2,
+   "dice": 0,
+   "desc": "若目标处于流血，自身移动力 +2，持续 3 回合",
+   "rawDesc": "若目标处于流血，自身移动力 +2，持续 3 回合（强化版：被动 +1 → 卡 +2，不叠加）",
+   "rarity": 0,
+   "effects": []
+  },
+  {
+   "name": "狼嚎",
+   "energy": 2,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 4,
+   "dice": 0,
+   "desc": "周围 2 格友军 骰子上限 +1，持续 1 回合",
+   "rawDesc": "周围 2 格友军 骰子上限 +1，持续 1 回合（掠取版：自身 骰子上限 +1，费 0/冷 3 待定价）",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "骰面上限",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "尖啸",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 3,
+   "suit": 3,
+   "dice": 1,
+   "desc": "[战斗骰子1] 伤害，施加 猎物标记 1",
+   "rawDesc": "[t1] 伤害，施加 猎物标记 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "续猎",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[战斗骰子1] 护甲；猎杀 1：消耗 1 层，获得 1 层猎杀加成，并让周围 2 格友军获得 自身本次护甲值的一半，向下取整",
+   "rawDesc": "[t1] 护甲；猎杀 1：消耗 1 层，获得 1 层猎杀加成，并让周围 2 格友军获得 自身本次护甲值的一半（向下取整）",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "回声",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 2,
+   "dice": 0,
+   "desc": "周围 2 格友军消耗标记时，自身获得 护甲 2，持续 1 回合",
+   "rawDesc": "周围 2 格友军消耗标记时，自身获得 护甲 2，持续 1 回合（＝被动 +1）",
+   "rarity": 0,
+   "effects": []
+  },
+  {
+   "name": "威吓",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 2,
+   "suit": 3,
+   "dice": 0,
+   "desc": "施加 猎物标记 2",
+   "rawDesc": "施加 猎物标记 2",
+   "rarity": 1,
+   "effects": []
+  },
+  {
+   "name": "头狼撕咬",
+   "energy": 2,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 1,
+   "dice": null,
+   "desc": "t1 [3+战斗骰子1] 伤害；t2 [1+战斗骰子2] 护甲；猎杀 3：每消耗 1 层，获得 1 层猎杀加成；若消耗 ≥2 层，追加 1 颗 [战斗骰子3] 伤害骰",
+   "rawDesc": "t1 [3+t1] 伤害；t2 [1+t2] 护甲；猎杀 3：每消耗 1 层，获得 1 层猎杀加成；若消耗 ≥2 层，追加 1 颗 [t3] 伤害骰",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 3,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 1,
+     "target": 0,
+     "base": 1,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "头狼扑杀",
+   "energy": 2,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害；若有标记，伤害 +1",
+   "rawDesc": "[2+t1] 伤害；若有标记，伤害 +1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "重整毛皮",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 2,
+   "dice": 1,
+   "desc": "回血 [战斗骰子1]",
+   "rawDesc": "回血 [t1]",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "status": "生命回复",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "盘绕",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 1,
+   "desc": "自身 护甲 [2+战斗骰子1]；下一次施加的猎物标记 +1",
+   "rawDesc": "自身 护甲 [2+t1]；下一次施加的猎物标记 +1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "缠绕",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 2,
+   "dice": 0,
+   "desc": "扣目标 1 AP；猎杀 1：消耗 1 层，额外扣目标 2 AP",
+   "rawDesc": "扣目标 1 AP；猎杀 1：消耗 1 层，额外扣目标 2 AP",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 1
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 2
+    }
+   ]
+  },
+  {
+   "name": "毒牙",
+   "energy": 1,
+   "cooldown": 5,
+   "range": 1,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害，施加 流血 1；猎杀 1：消耗 1 层，改为 流血 2",
+   "rawDesc": "[2+t1] 伤害，施加 流血 1；猎杀 1：消耗 1 层，改为 流血 2",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "铁颚咬",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害；猎杀 1：消耗 1 层，额外施加 流血 1",
+   "rawDesc": "[2+t1] 伤害；猎杀 1：消耗 1 层，额外施加 流血 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "王嚎",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 4,
+   "dice": 0,
+   "desc": "全体友军 疾跑 1；全体友军 护甲 2",
+   "rawDesc": "全体友军 疾跑 1；全体友军 护甲 2（掠取版：自身 疾跑 2 ＋ 自身 护甲 4）",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 4,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "王威",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 3,
+   "dice": 0,
+   "desc": "施加 猎物标记 2，虚弱 1；若目标已有 ≥2 层标记，额外施加 1 层",
+   "rawDesc": "施加 猎物标记 2，虚弱 1；若目标已有 ≥2 层标记，额外施加 1 层",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "虚弱",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "猎杀扑杀",
+   "energy": 2,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 1,
+   "dice": 2,
+   "desc": "t1 [3+战斗骰子1] 伤害；t2 [2+战斗骰子2] 护甲；猎杀 3：每消耗 1 层，获得 1 层猎杀加成；若消耗 3 层，伤害取最大值",
+   "rawDesc": "t1 [3+t1] 伤害；t2 [2+t2] 护甲；猎杀 3：每消耗 1 层，获得 1 层猎杀加成；若消耗 3 层，伤害取最大值（按骰面最大值计）",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 1,
+     "target": 0,
+     "base": 2,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "终结撕咬",
+   "energy": 2,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[3+战斗骰子1] 伤害；若有标记则击退 1",
+   "rawDesc": "[3+t1] 伤害；若有标记则击退 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "重整",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 4,
+   "dice": 1,
+   "desc": "自身 护甲 [3+战斗骰子1]；召唤 1 只先锋狼或影狼，每场最多 2 次，召唤体无掉落、无尸体",
+   "rawDesc": "自身 护甲 [3+t1]；召唤 1 只先锋狼或影狼（每场最多 2 次；召唤体无掉落、无尸体）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "狼群统御",
+   "energy": 2,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 3,
+   "dice": 0,
+   "desc": "其他狼消耗标记时，自身 回血 2，持续 1 回合，不叠加",
+   "rawDesc": "其他狼消耗标记时，自身 回血 2，持续 1 回合（不叠加）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "status": "生命回复",
+     "stacks": 2
+    }
+   ]
+  },
+  {
+   "name": "冷箭",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 3,
+   "suit": 3,
+   "dice": 1,
+   "desc": "[1+战斗骰子1] 伤害；暴击 +2",
+   "rawDesc": "[1+t1] 伤害；暴击 +2",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "瞄准",
+   "energy": 0,
+   "cooldown": 2,
+   "range": 3,
+   "suit": 3,
+   "dice": 0,
+   "desc": "自身 骰子上限 +1，整场累积",
+   "rawDesc": "自身 骰子上限 +1（整场累积）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "骰面上限",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "绊索陷阱",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 2,
+   "dice": 0,
+   "desc": "扣目标 AP 2",
+   "rawDesc": "扣玩家 AP 2",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 2
+    }
+   ]
+  },
+  {
+   "name": "猛冲",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[1+战斗骰子1] 伤害 ＋ 冲锋 2；暴击 +2",
+   "rawDesc": "[1+t1] 伤害 ＋ 冲锋 2；暴击 +2",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "劈砍",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害",
+   "rawDesc": "[2+t1] 伤害",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "绊腿",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[战斗骰子1] 伤害 ＋ 扣目标 移动点 1",
+   "rawDesc": "[t1] 伤害 ＋ 扣玩家移动点 1（与斥候共享）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "磨刀",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 骰子下限 +1，整场累积",
+   "rawDesc": "自身 骰子下限 +1（整场累积）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "骰面下限",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "匕首",
+   "energy": 0,
+   "cooldown": 5,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[1+战斗骰子1] 伤害；暴击 +3",
+   "rawDesc": "[1+t1] 伤害；暴击 +3",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "撒沙",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[战斗骰子1] 伤害 ＋ 扣目标 AP 1",
+   "rawDesc": "[t1] 伤害 ＋ 扣玩家 AP 1",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "踩点",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 骰子上限 +1，整场累积",
+   "rawDesc": "自身 骰子上限 +1（整场累积）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "骰面上限",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "盾撞",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[战斗骰子1] 伤害 ＋ 扣目标 AP 1",
+   "rawDesc": "[t1] 伤害 ＋ 扣玩家 AP 1",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "举盾",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 1,
+   "desc": "自身 护甲 [1+战斗骰子1]；暴击 → 额外护甲 +3",
+   "rawDesc": "自身 护甲 [1+t1]；暴击 → 额外护甲 +3",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "短刀",
+   "energy": 0,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[战斗骰子1] 伤害；暴击 +2",
+   "rawDesc": "[t1] 伤害；暴击 +2",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "磨盾",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 骰子下限 +1，整场累积",
+   "rawDesc": "自身 骰子下限 +1（整场累积）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "骰面下限",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "重矢",
+   "energy": 2,
+   "cooldown": 3,
+   "range": 4,
+   "suit": 0,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害；暴击 +2",
+   "rawDesc": "[2+t1] 伤害；暴击 +2",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "平射",
+   "energy": 1,
+   "cooldown": 5,
+   "range": 3,
+   "suit": 3,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害；暴击 +2",
+   "rawDesc": "[2+t1] 伤害；暴击 +2",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "架弩",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 骰子下限 +3·姿态 ＋ 自身 护甲 4",
+   "rawDesc": "自身 骰子下限 +3·姿态 ＋ 自身 护甲 4（必暴档）",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 4,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "骰面下限·姿态",
+     "stacks": 3,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "重劈",
+   "energy": 2,
+   "cooldown": 4,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[4+战斗骰子1] 伤害；暴击 +3",
+   "rawDesc": "[4+t1] 伤害；暴击 +3",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 4,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "碎骨",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害 ＋ 扣目标 AP 1；暴击 +2",
+   "rawDesc": "[2+t1] 伤害 ＋ 扣玩家 AP 1；暴击 +2",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "吐网",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 0,
+   "dice": 1,
+   "desc": "扣目标 移动点 [战斗骰子1]",
+   "rawDesc": "扣目标 移动点 [t1]",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 0,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "织网",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 3,
+   "dice": 0,
+   "desc": "自身 护甲 [2]",
+   "rawDesc": "自身 护甲 [2]",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 2,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "噬咬",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害 ＋ 中毒 1",
+   "rawDesc": "[2+t1] 伤害 ＋ 中毒 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "淬毒螯",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[战斗骰子1] 伤害 ＋ 中毒 1",
+   "rawDesc": "[t1] 伤害 ＋ 中毒 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "突窜咬",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 3,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[1+战斗骰子1] 伤害 ＋ 冲锋 2",
+   "rawDesc": "[1+t1] 伤害 ＋ 冲锋 2",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "蓄螯",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 骰子上限 +1",
+   "rawDesc": "自身 骰子上限 +1",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "骰面上限",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "毒喷",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[1+战斗骰子1] 伤害 ＋ 中毒 1",
+   "rawDesc": "[1+t1] 伤害 ＋ 中毒 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "蚀雾",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 2,
+   "dice": 0,
+   "desc": "目标 中毒 2 ＋ 虚弱 1",
+   "rawDesc": "目标 中毒 2 ＋ 虚弱 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "虚弱",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "吐酸",
+   "energy": 1,
+   "cooldown": 4,
+   "range": 2,
+   "suit": 0,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害 · 无视护甲",
+   "rawDesc": "[2+t1] 伤害 · 无视护甲",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "跃袭",
+   "energy": 1,
+   "cooldown": 5,
+   "range": 2,
+   "suit": 2,
+   "dice": 1,
+   "desc": "跳跃 2 格 ＋ [2+战斗骰子1] 伤害",
+   "rawDesc": "跳跃 2 格 ＋ [2+t1] 伤害",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "缠足",
+   "energy": 0,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[战斗骰子1] 伤害 ＋ 扣目标 移动点 1",
+   "rawDesc": "[t1] 伤害 ＋ 扣玩家 移动点 1",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "扑咬",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[1+战斗骰子1] 伤害 ＋ 中毒 1",
+   "rawDesc": "[1+t1] 伤害 ＋ 中毒 1",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "毒针",
+   "energy": 0,
+   "cooldown": 2,
+   "range": 3,
+   "suit": 2,
+   "dice": 1,
+   "desc": "目标 中毒 [战斗骰子1]；若目标中毒 ≥4 层，追加 [3] 伤害",
+   "rawDesc": "目标 中毒 [t1]；若目标中毒 ≥4 层，追加 [3] 伤害",
+   "rarity": 1,
+   "effects": []
+  },
+  {
+   "name": "蓄毒",
+   "energy": 0,
+   "cooldown": 4,
+   "range": 3,
+   "suit": 3,
+   "dice": 0,
+   "desc": "目标 中毒 2",
+   "rawDesc": "目标 中毒 2",
+   "rarity": 1,
+   "effects": []
+  },
+  {
+   "name": "缚丝",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 0,
+   "dice": 1,
+   "desc": "[战斗骰子1] 伤害 ＋ 扣目标 AP 1",
+   "rawDesc": "[t1] 伤害 ＋ 扣玩家 AP 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "巨螯",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 0,
+   "dice": 1,
+   "desc": "[4+战斗骰子1] 伤害",
+   "rawDesc": "[4+t1] 伤害（家族最大单体咬击）",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 4,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "张网",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 3,
+   "dice": 0,
+   "desc": "目标 移动点 −3",
+   "rawDesc": "目标 移动点 −3（钉住）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 3,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "锈刀",
+   "energy": 0,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 0,
+   "desc": "[2] 伤害",
+   "rawDesc": "[2] 伤害",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "乱刀",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 0,
+   "desc": "[3] 伤害",
+   "rawDesc": "[3] 伤害",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "拢骨",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 护甲 [1]",
+   "rawDesc": "自身 护甲 [1]",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 1,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "弩矢",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 3,
+   "dice": 0,
+   "desc": "[3] 伤害",
+   "rawDesc": "[3] 伤害",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "透骨矢",
+   "energy": 2,
+   "cooldown": 3,
+   "range": 4,
+   "suit": 0,
+   "dice": 0,
+   "desc": "[3] 伤害；目标有护甲则 +2",
+   "rawDesc": "[3] 伤害；目标有护甲则 +2",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "钉足矢",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 2,
+   "dice": 0,
+   "desc": "[2] 伤害 ＋ 扣目标 移动点 1",
+   "rawDesc": "[2] 伤害 ＋ 扣目标 移动点 1",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "念咒",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 3,
+   "dice": 0,
+   "desc": "目标 诅咒 +1",
+   "rawDesc": "玩家 诅咒 +1",
+   "rarity": 1,
+   "effects": []
+  },
+  {
+   "name": "根须抽击",
+   "energy": 1,
+   "cooldown": 4,
+   "range": 3,
+   "suit": 0,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害",
+   "rawDesc": "[2+t1] 伤害",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "枝鞭",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[2] 伤害 ×[战斗骰子1] 次",
+   "rawDesc": "[2] 伤害 ×[t1] 次",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 0,
+     "count": 1,
+     "countDice": 1,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "扎根",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 护甲 [3] ＋ 获得 反伤 [1]，持续 1 回合；每完成循环 +1，封顶 3",
+   "rawDesc": "自身 护甲 [3] ＋ 获得 反伤 [1]（1 回合；每完成循环 +1，封顶 3）（程 3＝站位锚）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 3,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "藤鞭",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害",
+   "rawDesc": "[2+t1] 伤害",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "收拢绞杀",
+   "energy": 2,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 0,
+   "dice": 2,
+   "desc": "t1 [3+战斗骰子1] 伤害；t2 [2+战斗骰子2] 伤害",
+   "rawDesc": "t1 [3+t1] 伤害；t2 [2+t2] 伤害",
+   "rarity": 2,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "长藤",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 2,
+   "dice": 0,
+   "desc": "[1+战斗骰子1] 伤害 ＋ 虚弱 1",
+   "rawDesc": "[1+t1] 伤害 ＋ 虚弱 1",
+   "rarity": 2,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "虚弱",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "卷叶",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 护甲 [2] ＋ 获得 反伤 [1]，持续 1 回合",
+   "rawDesc": "自身 护甲 [2] ＋ 获得 反伤 [1]（1 回合）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 2,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "菌刺",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[1+战斗骰子1] 伤害 ＋ 中毒 1",
+   "rawDesc": "[1+t1] 伤害 ＋ 中毒 1",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "喷孢",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 2,
+   "dice": 1,
+   "desc": "目标 中毒 [战斗骰子1]",
+   "rawDesc": "目标 中毒 [t1]",
+   "rarity": 1,
+   "effects": []
+  },
+  {
+   "name": "腐雾",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 2,
+   "dice": 0,
+   "desc": "目标 虚弱 2",
+   "rawDesc": "目标 虚弱 2（掠取版：目标周围 1 格所有敌人 虚弱 2）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "虚弱",
+     "stacks": 2
+    }
+   ]
+  },
+  {
+   "name": "孢囊膨胀",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 骰子上限 +1",
+   "rawDesc": "自身 骰子上限 +1（程 3＝站位锚）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "骰面上限",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "咬合",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[3+战斗骰子1] 伤害",
+   "rawDesc": "[3+t1] 伤害",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "酸液",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 2,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[战斗骰子1] 伤害 ＋ 中毒 1",
+   "rawDesc": "[t1] 伤害 ＋ 中毒 1（掠取版：无视护甲）",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "张嘴",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 护甲 [2] ＋ 获得 反伤 [1]，持续 1 回合；每完成循环 +1，封顶 3",
+   "rawDesc": "自身 护甲 [2] ＋ 获得 反伤 [1]（1 回合；每完成循环 +1，封顶 3）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 2,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "荆条横扫",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害",
+   "rawDesc": "[2+t1] 伤害",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "荆棘弹",
+   "energy": 2,
+   "cooldown": 4,
+   "range": 4,
+   "suit": 2,
+   "dice": 3,
+   "desc": "t1 [1+战斗骰子1] 伤害；t2 [1+战斗骰子2] 伤害；t3 [1+战斗骰子3] 伤害",
+   "rawDesc": "t1 [1+t1] 伤害；t2 [1+t2] 伤害；t3 [1+t3] 伤害",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 3,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "扎根汲取",
+   "energy": 0,
+   "cooldown": 4,
+   "range": 3,
+   "suit": 4,
+   "dice": 1,
+   "desc": "自身 回血 [1+战斗骰子1]，每完成循环 +1，封顶 4",
+   "rawDesc": "自身 回血 [1+t1]（每完成循环 +1，封顶 4）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "生命回复",
+     "stacks": 0,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "棘刺丛生",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 4,
+   "dice": 1,
+   "desc": "自身 护甲 [2+战斗骰子1] ＋ 获得 反伤 [3]，持续 1 回合",
+   "rawDesc": "自身 护甲 [2+t1] ＋ 获得 反伤 [3]（1 回合）（程 3＝站位锚）",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "孢爆",
+   "energy": 2,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害 ＋ 中毒 1",
+   "rawDesc": "[2+t1] 伤害 ＋ 中毒 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "化雾",
+   "energy": 0,
+   "cooldown": 4,
+   "range": 3,
+   "suit": 3,
+   "dice": 0,
+   "desc": "自身 闪避 1",
+   "rawDesc": "自身 闪避 1（程 3＝站位锚）",
+   "rarity": 0,
+   "effects": []
+  },
+  {
+   "name": "尾扫",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害 ＋ 击退 1",
+   "rawDesc": "[2+t1] 伤害 ＋ 击退 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "毒涎",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[战斗骰子1] 伤害 ＋ 中毒 1",
+   "rawDesc": "[t1] 伤害 ＋ 中毒 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "浸水",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 3,
+   "dice": 0,
+   "desc": "自身所在格 变附魔水",
+   "rawDesc": "自身所在格 变附魔水",
+   "rarity": 2,
+   "effects": []
+  },
+  {
+   "name": "突袭咬",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[3+战斗骰子1] 伤害",
+   "rawDesc": "[3+t1] 伤害",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "拖曳",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[1+战斗骰子1] 伤害 ＋ 拉拽 2 格",
+   "rawDesc": "[1+t1] 伤害 ＋ 拉拽 2 格",
+   "rarity": 2,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "掘泥",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 3,
+   "dice": 0,
+   "desc": "射程内 1 格 变附魔水",
+   "rawDesc": "射程内 1 格 变附魔水",
+   "rarity": 2,
+   "effects": []
+  },
+  {
+   "name": "毒液喷吐",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 2,
+   "dice": 2,
+   "desc": "[1+战斗骰子1] 伤害 ＋ 中毒 [战斗骰子2] 层",
+   "rawDesc": "[1+t1] 伤害 ＋ 中毒 [t2] 层",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "长舌",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 2,
+   "dice": 2,
+   "desc": "射程 [战斗骰子1] ＋ [1+战斗骰子2] 伤害 ＋ 拉拽 1 格",
+   "rawDesc": "射程 [t1] ＋ [1+t2] 伤害 ＋ 拉拽 1 格（掠取版：程固定 3）",
+   "rarity": 2,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "蛰伏",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 护甲 [2]",
+   "rawDesc": "自身 护甲 [2]",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 2,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "吮血",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害 · 吸血",
+   "rawDesc": "[2+t1] 伤害 · 吸血",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "缠附",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 2,
+   "dice": 2,
+   "desc": "[1+战斗骰子1] 伤害 ＋ 虚弱 [战斗骰子2] 层",
+   "rawDesc": "[1+t1] 伤害 ＋ 虚弱 [t2] 层",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "虚弱",
+     "stacks": 0,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "缩团",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 护甲 [2]",
+   "rawDesc": "自身 护甲 [2]",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 2,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "绞杀",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 0,
+   "dice": 1,
+   "desc": "[3+战斗骰子1] 伤害",
+   "rawDesc": "[3+t1] 伤害",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "吞噬",
+   "energy": 1,
+   "cooldown": 5,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[4+战斗骰子1] 伤害",
+   "rawDesc": "[4+t1] 伤害",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 4,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "拖拽",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 2,
+   "dice": 1,
+   "desc": "拉拽距离 ＝ 本次骰值 [战斗骰子1]",
+   "rawDesc": "拉拽距离 ＝ 本次骰值 [t1]",
+   "rarity": 2,
+   "effects": []
+  },
+  {
+   "name": "盘身",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 护甲 [3]",
+   "rawDesc": "自身 护甲 [3]",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 3,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "瘴喷",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 2,
+   "dice": 1,
+   "desc": "目标 中毒 [战斗骰子1] 层 ＋ 虚弱 1",
+   "rawDesc": "目标 中毒 [t1] 层 ＋ 虚弱 1（掠取版：目标周围 1 格所有敌人）",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "虚弱",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "吞吸",
+   "energy": 1,
+   "cooldown": 5,
+   "range": 2,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[3+战斗骰子1] 伤害",
+   "rawDesc": "[3+t1] 伤害",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "涨水",
+   "energy": 0,
+   "cooldown": 4,
+   "range": 2,
+   "suit": 3,
+   "dice": 1,
+   "desc": "射程内 [战斗骰子1+1] 格 变附魔水",
+   "rawDesc": "射程内 [t1+1] 格 变附魔水（掠取版：退潮——清除周围 2 格附魔水）",
+   "rarity": 2,
+   "effects": []
+  },
+  {
+   "name": "棒击",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[3+战斗骰子1] 伤害",
+   "rawDesc": "[3+t1] 伤害",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "抓掷",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 0,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害 ＋ 击退 2",
+   "rawDesc": "[2+t1] 伤害 ＋ 击退 2",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "抡棒",
+   "energy": 0,
+   "cooldown": 4,
+   "range": 0,
+   "suit": 4,
+   "dice": 1,
+   "desc": "自身 力量 +[战斗骰子1]",
+   "rawDesc": "自身 力量 +[t1]",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "力量",
+     "stacks": 0,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "投石",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 3,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害",
+   "rawDesc": "[2+t1] 伤害",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "巨石投掷",
+   "energy": 2,
+   "cooldown": 3,
+   "range": 4,
+   "suit": 0,
+   "dice": 2,
+   "desc": "t1 [3+战斗骰子1] 伤害；t2 [2+战斗骰子2] 伤害",
+   "rawDesc": "t1 [3+t1] 伤害；t2 [2+t2] 伤害",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "捡石",
+   "energy": 0,
+   "cooldown": 2,
+   "range": 3,
+   "suit": 3,
+   "dice": 0,
+   "desc": "自身 力量 +1",
+   "rawDesc": "自身 力量 +1",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "status": "力量",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "巨力挥砸",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[3+战斗骰子1] 伤害 ＋ 击退 1",
+   "rawDesc": "[3+t1] 伤害 ＋ 击退 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "扑抱",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 2,
+   "dice": 1,
+   "desc": "[战斗骰子1] 伤害 ＋ 扣目标 AP 1",
+   "rawDesc": "[t1] 伤害 ＋ 扣玩家 AP 1",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "移动点减少",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "怪叫",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 力量 +1",
+   "rawDesc": "自身 力量 +1",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "status": "力量",
+     "stacks": 1
+    }
+   ]
+  },
+  {
+   "name": "举锤",
+   "energy": 0,
+   "cooldown": 4,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "获得 蓄力 2 层，上限 3 层",
+   "rawDesc": "获得 蓄力 2 层（明牌；上限 3 层）",
+   "rarity": 2,
+   "effects": []
+  },
+  {
+   "name": "锤击",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[3+战斗骰子1] 伤害 ＋ 击退 1",
+   "rawDesc": "[3+t1] 伤害 ＋ 击退 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "地裂",
+   "energy": 2,
+   "cooldown": 4,
+   "range": 1,
+   "suit": 1,
+   "dice": 2,
+   "desc": "t1 [4+战斗骰子1] 伤害；t2 [2+战斗骰子2] 伤害",
+   "rawDesc": "t1 [4+t1] 伤害；t2 [2+t2] 伤害",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 4,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "劈砸",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[3+战斗骰子1] 伤害",
+   "rawDesc": "[3+t1] 伤害",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "抓投",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 0,
+   "dice": 1,
+   "desc": "[2+战斗骰子1] 伤害 ＋ 击退 2",
+   "rawDesc": "[2+t1] 伤害 ＋ 击退 2",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "践踏",
+   "energy": 1,
+   "cooldown": 5,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[4+战斗骰子1] 伤害",
+   "rawDesc": "[4+t1] 伤害",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 4,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "抡臂",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "desc": "自身 力量 +2",
+   "rawDesc": "自身 力量 +2",
+   "rarity": 0,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "status": "力量",
+     "stacks": 2
+    }
+   ]
+  },
+  {
+   "name": "嚎令",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 4,
+   "dice": 1,
+   "desc": "周围 2 格同族 力量 +[战斗骰子1]",
+   "rawDesc": "周围 2 格同族 力量 +[t1]（掠取版：自身 力量 +2）",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "力量",
+     "stacks": 0,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "重锤",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[3+战斗骰子1] 伤害 ＋ 击退 1",
+   "rawDesc": "[3+t1] 伤害 ＋ 击退 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "掩体撞",
+   "energy": 1,
+   "cooldown": 4,
+   "range": 2,
+   "suit": 1,
+   "dice": 1,
+   "desc": "[3+战斗骰子1] 伤害 ＋ 击退 1",
+   "rawDesc": "[3+t1] 伤害 ＋ 击退 1",
+   "rarity": 1,
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "连射",
+   "energy": 2,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 3,
+   "dice": 2,
+   "rarity": 1,
+   "desc": "t1 [1+战斗骰子1] 伤害；t2 [1+战斗骰子2] 伤害；每颗独立暴击 +2",
+   "rawDesc": "t1 [1+t1] 伤害；t2 [1+t2] 伤害；每颗独立暴击 +2",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "闪砍",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 1,
+   "rarity": 0,
+   "desc": "[2+战斗骰子1] 伤害 ＋ 自身 闪避 1",
+   "rawDesc": "[2+t1] 伤害 ＋ 自身 闪避 1",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "连劈",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 1,
+   "dice": 2,
+   "rarity": 1,
+   "desc": "t1 [1+战斗骰子1] 伤害；t2 [1+战斗骰子2] 伤害；每颗独立暴击 +2",
+   "rawDesc": "t1 [1+t1] 伤害；t2 [1+t2] 伤害；每颗独立暴击 +2",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "骸突",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 3,
+   "suit": 1,
+   "dice": 0,
+   "rarity": 1,
+   "desc": "[3] 伤害 ＋ 冲锋 2",
+   "rawDesc": "[3] 伤害 ＋ 冲锋 2",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "裹尸",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 0,
+   "rarity": 0,
+   "desc": "自身 护甲 [2]",
+   "rawDesc": "自身 护甲 [2]",
+   "effects": [
+    {
+     "type": 1,
+     "target": 0,
+     "base": 2,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "腐臭",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 2,
+   "dice": 0,
+   "rarity": 0,
+   "desc": "目标 虚弱 2",
+   "rawDesc": "目标 虚弱 2",
+   "effects": [
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "虚弱",
+     "stacks": 2,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "撕咬",
+   "energy": 1,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 0,
+   "rarity": 0,
+   "desc": "[3] 伤害",
+   "rawDesc": "[3] 伤害",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 3,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "骨矛",
+   "energy": 1,
+   "cooldown": 4,
+   "range": 3,
+   "suit": 3,
+   "dice": 1,
+   "rarity": 1,
+   "desc": "[战斗骰子1] 伤害；池中有尸体时追加一颗 [战斗骰子2]",
+   "rawDesc": "[t1] 伤害（蘸池：池中有尸体 → 追加一颗 [t2]）",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "超度",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 2,
+   "dice": 1,
+   "rarity": 1,
+   "desc": "消耗 1 具尸体：[2+战斗骰子1] 伤害 ＋ 虚弱 1",
+   "rawDesc": "[2+t1] 伤害 ＋ 虚弱 1（花 1 具尸体）",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 1,
+     "base": 0,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "虚弱",
+     "stacks": 1,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "阴风",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 2,
+   "dice": 1,
+   "rarity": 1,
+   "desc": "[1+战斗骰子1] 伤害 ＋ 目标 诅咒 +1",
+   "rawDesc": "[1+t1] 伤害 ＋ 目标 诅咒 +1",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "噬魂",
+   "energy": 2,
+   "cooldown": 3,
+   "range": 1,
+   "suit": 1,
+   "dice": 3,
+   "rarity": 1,
+   "desc": "t1 [2+战斗骰子1] 伤害；t2 [2+战斗骰子2] 伤害；t3 吸髓：自身 回血 [战斗骰子3]",
+   "rawDesc": "t1 [2+t1] 伤害；t2 [2+t2] 伤害；t3 吸髓：自身 回血 [t3]",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 3,
+     "count": 1,
+     "countDice": 0,
+     "status": "生命回复",
+     "stacks": 0,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "招魂",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 3,
+   "dice": 0,
+   "rarity": 1,
+   "desc": "消耗 1 具尸体：召唤 1 只骨兵，血量 [4+战斗骰子1]−1",
+   "rawDesc": "召唤 1 只骨兵（血量 [4+t1]−1；花 1 具尸体）",
+   "effects": []
+  },
+  {
+   "name": "骨雨",
+   "energy": 1,
+   "cooldown": 4,
+   "range": 3,
+   "suit": 2,
+   "dice": 1,
+   "rarity": 1,
+   "desc": "消耗 1 具尸体：[2] 伤害 ×[战斗骰子1] 次",
+   "rawDesc": "[2] 伤害 ×[t1] 次（花 1 具尸体）",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 0,
+     "count": 1,
+     "countDice": 1,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "重斩",
+   "energy": 2,
+   "cooldown": 2,
+   "range": 1,
+   "suit": 1,
+   "dice": 2,
+   "rarity": 1,
+   "desc": "t1 [战斗骰子1] 伤害；t2 [战斗骰子2] 伤害；每 1 层力量追加 1 颗，上限 4 颗",
+   "rawDesc": "t1 [t1] 伤害；t2 [t2] 伤害（每 1 层力量追加 1 颗，上限 4 颗）",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    },
+    {
+     "type": 0,
+     "target": 1,
+     "base": 0,
+     "dice": 2,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "唤尸",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 3,
+   "dice": 0,
+   "rarity": 1,
+   "desc": "消耗 1 具尸体：召唤 1 只僵尸",
+   "rawDesc": "召唤 1 只僵尸（花 1 具尸体）",
+   "effects": []
+  },
+  {
+   "name": "掷骨",
+   "energy": 1,
+   "cooldown": 4,
+   "range": 4,
+   "suit": 1,
+   "dice": 1,
+   "rarity": 1,
+   "desc": "消耗 1 具尸体：[2+战斗骰子1] 伤害",
+   "rawDesc": "[2+t1] 伤害（花 1 具尸体）",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "血食",
+   "energy": 1,
+   "cooldown": 3,
+   "range": 0,
+   "suit": 4,
+   "dice": 1,
+   "rarity": 1,
+   "desc": "消耗 [战斗骰子1] 具尸体：自身 力量 +[战斗骰子1]，本轮战斗内累积",
+   "rawDesc": "消耗 [t1] 具尸体：自身 力量 +[t1]（本轮战斗内累积）",
+   "effects": [
+    {
+     "type": 2,
+     "target": 0,
+     "base": 0,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "力量",
+     "stacks": 0,
+     "duration": 0
+    }
+   ]
+  },
+  {
+   "name": "甩尾",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 1,
+   "dice": 1,
+   "rarity": 1,
+   "desc": "[1+战斗骰子1] 伤害 ＋ 拉拽 1 格",
+   "rawDesc": "[1+t1] 伤害 ＋ 拉拽 1 格",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "弹附",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 2,
+   "suit": 1,
+   "dice": 1,
+   "rarity": 1,
+   "desc": "[1+战斗骰子1] 伤害 ＋ 拉拽 1 格",
+   "rawDesc": "[1+t1] 伤害 ＋ 拉拽 1 格",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 1,
+     "dice": 1,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  },
+  {
+   "name": "掷物",
+   "energy": 0,
+   "cooldown": 3,
+   "range": 3,
+   "suit": 4,
+   "dice": 0,
+   "rarity": 0,
+   "desc": "[2] 伤害",
+   "rawDesc": "[2] 伤害（够不到就扔）",
+   "effects": [
+    {
+     "type": 0,
+     "target": 1,
+     "base": 2,
+     "dice": 0,
+     "count": 1,
+     "countDice": 0,
+     "status": "",
+     "stacks": 0
+    }
+   ]
+  }
+ ],
+ "enemies": [
+  {
+   "name": "先锋狼",
+   "unitId": "W1",
+   "family": "密林",
+   "hpMin": 12,
+   "hpMax": 15,
+   "move": 3,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "先锋",
+   "preset": "本能",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "先锋狼的灵魂",
+   "passives": [
+    "猎足",
+    "穷追"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "猛扑",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "猎杀撕咬",
+       "advance": true
+      },
+      {
+       "card": "追猎",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "磨牙",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "撕扯",
+       "advance": true
+      },
+      {
+       "card": "低吼",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "低吼",
+    "猎杀撕咬",
+    "猛扑"
+   ],
+   "material": "兽骨",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "影狼",
+   "unitId": "W2",
+   "family": "密林",
+   "hpMin": 10,
+   "hpMax": 13,
+   "move": 4,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "先锋",
+   "preset": "包抄",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "影狼的灵魂",
+   "passives": [
+    "潜影",
+    "影袭"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "阴影突袭",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "影刃",
+       "advance": true
+      },
+      {
+       "card": "阴影突袭",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "遁影",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "影步",
+       "advance": true
+      },
+      {
+       "card": "低吼",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "阴影突袭",
+    "影刃",
+    "影步"
+   ],
+   "material": "兽皮",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "血猎犬",
+   "unitId": "W3",
+   "family": "密林",
+   "hpMin": 10,
+   "hpMax": 13,
+   "move": 3,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "先锋",
+   "preset": "本能",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "血猎犬的灵魂",
+   "passives": [
+    "猎足",
+    "嗅猎"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "追猎",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "嗅迹",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "撕喉",
+       "advance": true
+      },
+      {
+       "card": "追猎",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "撕扯",
+       "advance": true
+      },
+      {
+       "card": "狂吠",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "血嗅",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "狂吠",
+    "撕喉",
+    "追猎"
+   ],
+   "material": "兽骨",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "嚎叫者",
+   "unitId": "W4",
+   "family": "密林",
+   "hpMin": 11,
+   "hpMax": 14,
+   "move": 2,
+   "vision": 6,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "嚎叫者的灵魂",
+   "passives": [
+    "厚毛",
+    "群嚎"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "狼嚎",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "尖啸",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "续猎",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "回声",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "尖啸",
+    "续猎"
+   ],
+   "material": "兽皮",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "猎杀头狼",
+   "unitId": "W5",
+   "family": "密林",
+   "hpMin": 20,
+   "hpMax": 24,
+   "move": 3,
+   "vision": 6,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "猎杀头狼的灵魂",
+   "passives": [
+    "精装",
+    "悬赏"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "追猎",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "威吓",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "头狼撕咬",
+       "advance": true
+      },
+      {
+       "card": "头狼扑杀",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "重整毛皮",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "低吼",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "低吼",
+    "追猎",
+    "头狼撕咬"
+   ],
+   "material": "兽骨",
+   "uniqueDrop": "头狼的獠牙"
+  },
+  {
+   "name": "铁颚狼",
+   "unitId": "W6",
+   "family": "密林",
+   "hpMin": 18,
+   "hpMax": 22,
+   "move": 2,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "铁颚狼的灵魂",
+   "passives": [
+    "厚皮",
+    "绞缠"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "盘绕",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "缠绕",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "毒牙",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "铁颚咬",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "缠绕",
+    "毒牙",
+    "铁颚咬"
+   ],
+   "material": "兽皮",
+   "uniqueDrop": "铁颚狼的颚片"
+  },
+  {
+   "name": "狼王",
+   "unitId": "W7",
+   "family": "密林",
+   "hpMin": 32,
+   "hpMax": 38,
+   "move": 3,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": false,
+   "isBoss": true,
+   "isElite": false,
+   "soul": "狼王的灵魂",
+   "passives": [
+    "王躯",
+    "猎场"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "王嚎",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "王威",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "终结撕咬",
+       "advance": true
+      },
+      {
+       "card": "猎杀扑杀",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "重整",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "狼群统御",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "王威",
+    "猎杀扑杀",
+    "王嚎"
+   ],
+   "material": "兽骨",
+   "uniqueDrop": "狼王的毛皮"
+  },
+  {
+   "name": "强盗弓箭手",
+   "unitId": "G1",
+   "family": "草坡",
+   "hpMin": 8,
+   "hpMax": 12,
+   "move": 3,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "狙击",
+   "preset": "风筝",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "强盗弓箭手的灵魂",
+   "passives": [
+    "远射"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "冷箭",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "连射",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "瞄准",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "冷箭",
+    "连射",
+    "瞄准"
+   ],
+   "material": "皮甲片",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "强盗刀手",
+   "unitId": "G2",
+   "family": "草坡",
+   "hpMin": 12,
+   "hpMax": 16,
+   "move": 3,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "先锋",
+   "preset": "本能",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "强盗刀手的灵魂",
+   "passives": [
+    "游斗"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "闪砍",
+       "advance": true
+      },
+      {
+       "card": "猛冲",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "劈砍",
+       "advance": true
+      },
+      {
+       "card": "猛冲",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "磨刀",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "闪砍",
+    "劈砍",
+    "磨刀",
+    "猛冲"
+   ],
+   "material": "铁屑",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "强盗斥候",
+   "unitId": "G3",
+   "family": "草坡",
+   "hpMin": 6,
+   "hpMax": 9,
+   "move": 5,
+   "vision": 6,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "强盗斥候的灵魂",
+   "passives": [
+    "手快"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "撒沙",
+       "advance": true
+      },
+      {
+       "card": "猛冲",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "匕首",
+       "advance": true
+      },
+      {
+       "card": "猛冲",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "绊腿",
+       "advance": true
+      },
+      {
+       "card": "绊索陷阱",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "踩点",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "撒沙",
+    "匕首",
+    "绊腿",
+    "绊索陷阱",
+    "踩点",
+    "猛冲"
+   ],
+   "material": "皮甲片",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "强盗盾卫",
+   "unitId": "G4",
+   "family": "草坡",
+   "hpMin": 14,
+   "hpMax": 18,
+   "move": 3,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "强盗盾卫的灵魂",
+   "passives": [
+    "厚盾"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "盾撞",
+       "advance": true
+      },
+      {
+       "card": "猛冲",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "短刀",
+       "advance": true
+      },
+      {
+       "card": "猛冲",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "举盾",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "磨盾",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "盾撞",
+    "短刀",
+    "举盾",
+    "磨盾",
+    "猛冲"
+   ],
+   "material": "铁屑",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "强弩手",
+   "unitId": "G5",
+   "family": "草坡",
+   "hpMin": 12,
+   "hpMax": 16,
+   "move": 2,
+   "vision": 6,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "狙击",
+   "preset": "风筝",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "强弩手的灵魂",
+   "passives": [
+    "狠准"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "重矢",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "平射",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "架弩",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "重矢",
+    "平射",
+    "架弩"
+   ],
+   "material": "皮甲片",
+   "uniqueDrop": "强弩手的机括"
+  },
+  {
+   "name": "悍匪",
+   "unitId": "G6",
+   "family": "草坡",
+   "hpMin": 16,
+   "hpMax": 20,
+   "move": 3,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "先锋",
+   "preset": "本能",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "悍匪的灵魂",
+   "passives": [
+    "拼命"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "碎骨",
+       "advance": true
+      },
+      {
+       "card": "猛冲",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "连劈",
+       "advance": true
+      },
+      {
+       "card": "猛冲",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "重劈",
+       "advance": true
+      },
+      {
+       "card": "猛冲",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "碎骨",
+    "连劈",
+    "重劈",
+    "猛冲"
+   ],
+   "material": "铁屑",
+   "uniqueDrop": "悍匪的砍刀"
+  },
+  {
+   "name": "巨蛛",
+   "unitId": "D1",
+   "family": "洞穴",
+   "hpMin": 14,
+   "hpMax": 18,
+   "move": 2,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "巨蛛的灵魂",
+   "passives": [
+    "结网"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "吐网",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "噬咬",
+       "advance": true
+      },
+      {
+       "card": "突窜咬",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "织网",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "吐网",
+    "噬咬",
+    "织网"
+   ],
+   "material": "蛛丝",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "遁蛛",
+   "unitId": "D2",
+   "family": "洞穴",
+   "hpMin": 10,
+   "hpMax": 14,
+   "move": 4,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "先锋",
+   "preset": "包抄",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "遁蛛的灵魂",
+   "passives": [
+    "出其不意"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "淬毒螯",
+       "advance": true
+      },
+      {
+       "card": "突窜咬",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "突窜咬",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "蓄螯",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "淬毒螯",
+    "突窜咬",
+    "蓄螯"
+   ],
+   "material": "蛛丝",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "毒蛛",
+   "unitId": "D3",
+   "family": "洞穴",
+   "hpMin": 9,
+   "hpMax": 13,
+   "move": 3,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "狙击",
+   "preset": "风筝",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "毒蛛的灵魂",
+   "passives": [
+    "毒腺"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "毒喷",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "蚀雾",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "吐酸",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "毒喷",
+    "蚀雾",
+    "吐酸"
+   ],
+   "material": "蛛丝",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "跳蛛",
+   "unitId": "D4",
+   "family": "洞穴",
+   "hpMin": 7,
+   "hpMax": 10,
+   "move": 5,
+   "vision": 6,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "先锋",
+   "preset": "包抄",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "跳蛛的灵魂",
+   "passives": [
+    "缠丝"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "跃袭",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "扑咬",
+       "advance": true
+      },
+      {
+       "card": "跃袭",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "缠足",
+       "advance": true
+      },
+      {
+       "card": "跃袭",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "跃袭",
+    "缠足",
+    "扑咬"
+   ],
+   "material": "毒囊",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "黑寡妇",
+   "unitId": "D5",
+   "family": "洞穴",
+   "hpMin": 16,
+   "hpMax": 20,
+   "move": 3,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "黑寡妇的灵魂",
+   "passives": [
+    "毒发"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "蓄毒",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "毒针",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "缚丝",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "蓄毒",
+    "毒针",
+    "缚丝"
+   ],
+   "material": "毒囊",
+   "uniqueDrop": "黑寡妇的卵囊"
+  },
+  {
+   "name": "捕鸟蛛",
+   "unitId": "D6",
+   "family": "洞穴",
+   "hpMin": 18,
+   "hpMax": 22,
+   "move": 3,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "捕鸟蛛的灵魂",
+   "passives": [
+    "缚咬"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "张网",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "缚丝",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "巨螯",
+       "advance": true
+      },
+      {
+       "card": "突窜咬",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "张网",
+    "巨螯",
+    "缚丝"
+   ],
+   "material": "毒囊",
+   "uniqueDrop": "捕鸟蛛的巨螯"
+  },
+  {
+   "name": "骨兵",
+   "unitId": "F1",
+   "family": "废墟",
+   "hpMin": 4,
+   "hpMax": 7,
+   "move": 3,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "先锋",
+   "preset": "本能",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "骨兵的灵魂",
+   "passives": [
+    "散骨"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "锈刀",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "乱刀",
+       "advance": true
+      },
+      {
+       "card": "骸突",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "拢骨",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "锈刀",
+    "乱刀",
+    "骸突"
+   ],
+   "material": "骨片",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "骷髅弓手",
+   "unitId": "F2",
+   "family": "废墟",
+   "hpMin": 3,
+   "hpMax": 6,
+   "move": 3,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "狙击",
+   "preset": "风筝",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "骷髅弓手的灵魂",
+   "passives": [
+    "据险"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "钉足矢",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "弩矢",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "透骨矢",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "钉足矢",
+    "弩矢",
+    "透骨矢"
+   ],
+   "material": "锈铁",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "僵尸",
+   "unitId": "F3",
+   "family": "废墟",
+   "hpMin": 9,
+   "hpMax": 12,
+   "move": 2,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "僵尸的灵魂",
+   "passives": [
+    "尸墙"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "裹尸",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "腐臭",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "撕咬",
+       "advance": true
+      },
+      {
+       "card": "骸突",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "裹尸",
+    "腐臭",
+    "撕咬",
+    "骸突"
+   ],
+   "material": "骨片",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "寺僧",
+   "unitId": "F4",
+   "family": "废墟",
+   "hpMin": 8,
+   "hpMax": 12,
+   "move": 2,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "术士",
+   "preset": "风筝",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "寺僧的灵魂",
+   "passives": [
+    "咒术"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "骨矛",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "念咒",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "超度",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "骨矛",
+    "念咒",
+    "超度"
+   ],
+   "material": "锈铁",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "幽魂",
+   "unitId": "F5",
+   "family": "废墟",
+   "hpMin": 20,
+   "hpMax": 26,
+   "move": 3,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "辅助",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "幽魂的灵魂",
+   "passives": [
+    "吞骨"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "阴风",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "噬魂",
+       "advance": true
+      },
+      {
+       "card": "阴风",
+       "advance": true
+      },
+      {
+       "card": "骨雨",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "招魂",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "阴风",
+    "噬魂",
+    "招魂",
+    "骨雨"
+   ],
+   "material": "锈铁",
+   "uniqueDrop": "幽魂的残念"
+  },
+  {
+   "name": "血骑士",
+   "unitId": "F6",
+   "family": "废墟",
+   "hpMin": 14,
+   "hpMax": 18,
+   "move": 2,
+   "vision": 6,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "术士",
+   "preset": "风筝",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "血骑士的灵魂",
+   "passives": [
+    "骨盾"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "重斩",
+       "advance": true
+      },
+      {
+       "card": "骸突",
+       "advance": true
+      },
+      {
+       "card": "掷骨",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "唤尸",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "血食",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "重斩",
+    "唤尸",
+    "血食",
+    "掷骨"
+   ],
+   "material": "锈铁",
+   "uniqueDrop": "血骑士的骨盾"
+  },
+  {
+   "name": "树精",
+   "unitId": "L1",
+   "family": "古林",
+   "hpMin": 18,
+   "hpMax": 24,
+   "move": 0,
+   "vision": 5,
+   "patrolAP": 0,
+   "patrolRadius": 0,
+   "leash": 6,
+   "role": "狙击",
+   "preset": "炮台",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "树精的灵魂",
+   "passives": [
+    "深根",
+    "花蜜"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "根须抽击",
+       "advance": true
+      },
+      {
+       "card": "扎根",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "枝鞭",
+       "advance": true
+      },
+      {
+       "card": "扎根",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "扎根",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "根须抽击",
+    "枝鞭",
+    "扎根"
+   ],
+   "material": "树脂",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "藤蔓怪",
+   "unitId": "L2",
+   "family": "古林",
+   "hpMin": 14,
+   "hpMax": 18,
+   "move": 2,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "藤蔓怪的灵魂",
+   "passives": [
+    "蔓延",
+    "汲养"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "藤鞭",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "收拢绞杀",
+       "advance": true
+      },
+      {
+       "card": "长藤",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "卷叶",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "藤鞭",
+    "收拢绞杀",
+    "长藤",
+    "卷叶"
+   ],
+   "material": "树脂",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "孢囊菇",
+   "unitId": "L3",
+   "family": "古林",
+   "hpMin": 10,
+   "hpMax": 14,
+   "move": 1,
+   "vision": 4,
+   "patrolAP": 1,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "术士",
+   "preset": "风筝",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "孢囊菇的灵魂",
+   "passives": [
+    "湿伞",
+    "孢雾"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "菌刺",
+       "advance": true
+      },
+      {
+       "card": "孢囊膨胀",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "喷孢",
+       "advance": true
+      },
+      {
+       "card": "孢囊膨胀",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "孢囊膨胀",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "菌刺",
+    "喷孢",
+    "孢囊膨胀"
+   ],
+   "material": "孢子",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "食人花",
+   "unitId": "L4",
+   "family": "古林",
+   "hpMin": 14,
+   "hpMax": 18,
+   "move": 1,
+   "vision": 3,
+   "patrolAP": 1,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "食人花的灵魂",
+   "passives": [
+    "尖刺萼",
+    "花蜜"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "咬合",
+       "advance": true
+      },
+      {
+       "card": "酸液",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "酸液",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "张嘴",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "咬合",
+    "酸液",
+    "张嘴"
+   ],
+   "material": "树脂",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "荆棘古木",
+   "unitId": "L5",
+   "family": "古林",
+   "hpMin": 24,
+   "hpMax": 30,
+   "move": 0,
+   "vision": 5,
+   "patrolAP": 0,
+   "patrolRadius": 0,
+   "leash": 6,
+   "role": "狙击",
+   "preset": "炮台",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "荆棘古木的灵魂",
+   "passives": [
+    "深根",
+    "花蜜"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "荆条横扫",
+       "advance": true
+      },
+      {
+       "card": "扎根汲取",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "荆棘弹",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "棘刺丛生",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "荆条横扫",
+    "荆棘弹",
+    "棘刺丛生",
+    "扎根汲取"
+   ],
+   "material": "树脂",
+   "uniqueDrop": "荆棘古木的木芯"
+  },
+  {
+   "name": "孢母",
+   "unitId": "L6",
+   "family": "古林",
+   "hpMin": 20,
+   "hpMax": 26,
+   "move": 0,
+   "vision": 6,
+   "patrolAP": 0,
+   "patrolRadius": 0,
+   "leash": 6,
+   "role": "术士",
+   "preset": "炮台",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "孢母的灵魂",
+   "passives": [
+    "湿伞",
+    "孢雾"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "孢爆",
+       "advance": true
+      },
+      {
+       "card": "腐雾",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "喷孢",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "孢囊膨胀",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "孢爆",
+    "喷孢",
+    "孢囊膨胀",
+    "腐雾"
+   ],
+   "material": "孢子",
+   "uniqueDrop": "孢母的菌盖"
+  },
+  {
+   "name": "蜥蜴人",
+   "unitId": "H1",
+   "family": "河湾",
+   "hpMin": 12,
+   "hpMax": 16,
+   "move": 4,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "先锋",
+   "preset": "本能",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "蜥蜴人的灵魂",
+   "passives": [
+    "两栖",
+    "断尾"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "浸水",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "毒涎",
+       "advance": true
+      },
+      {
+       "card": "甩尾",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "尾扫",
+       "advance": true
+      },
+      {
+       "card": "甩尾",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "尾扫",
+    "毒涎",
+    "甩尾"
+   ],
+   "material": "鳞片",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "砂鳄",
+   "unitId": "H2",
+   "family": "河湾",
+   "hpMin": 16,
+   "hpMax": 22,
+   "move": 3,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "砂鳄的灵魂",
+   "passives": [
+    "伏杀"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "掘泥",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "突袭咬",
+       "advance": true
+      },
+      {
+       "card": "甩尾",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "拖曳",
+       "advance": true
+      },
+      {
+       "card": "甩尾",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "突袭咬",
+    "拖曳",
+    "甩尾"
+   ],
+   "material": "鳞片",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "毒蟾",
+   "unitId": "H3",
+   "family": "河湾",
+   "hpMin": 11,
+   "hpMax": 15,
+   "move": 2,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "狙击",
+   "preset": "风筝",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "毒蟾的灵魂",
+   "passives": [
+    "膨胀",
+    "毒腺"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "毒液喷吐",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "长舌",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "蛰伏",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "毒液喷吐",
+    "长舌"
+   ],
+   "material": "毒腺",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "水蛭群",
+   "unitId": "H4",
+   "family": "河湾",
+   "hpMin": 8,
+   "hpMax": 12,
+   "move": 3,
+   "vision": 3,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "先锋",
+   "preset": "包抄",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "水蛭群的灵魂",
+   "passives": [
+    "群聚",
+    "吸血"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "缠附",
+       "advance": true
+      },
+      {
+       "card": "弹附",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "吮血",
+       "advance": true
+      },
+      {
+       "card": "弹附",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "缩团",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "吮血",
+    "缠附",
+    "弹附"
+   ],
+   "material": "毒腺",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "沼蟒",
+   "unitId": "H5",
+   "family": "河湾",
+   "hpMin": 22,
+   "hpMax": 28,
+   "move": 3,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "沼蟒的灵魂",
+   "passives": [
+    "沼行",
+    "缠绞"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "盘身",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "绞杀",
+       "advance": true
+      },
+      {
+       "card": "拖拽",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "吞噬",
+       "advance": true
+      },
+      {
+       "card": "拖拽",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "绞杀",
+    "吞噬"
+   ],
+   "material": "鳞片",
+   "uniqueDrop": "沼蟒的蜕皮"
+  },
+  {
+   "name": "瘴蟾王",
+   "unitId": "H6",
+   "family": "河湾",
+   "hpMin": 18,
+   "hpMax": 24,
+   "move": 1,
+   "vision": 5,
+   "patrolAP": 1,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "术士",
+   "preset": "炮台",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "瘴蟾王的灵魂",
+   "passives": [
+    "瘴气",
+    "巨腹"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "涨水",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "瘴喷",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "吞吸",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "瘴喷",
+    "涨水"
+   ],
+   "material": "毒腺",
+   "uniqueDrop": "瘴蟾王的瘴囊"
+  },
+  {
+   "name": "食人魔",
+   "unitId": "V1",
+   "family": "荒村",
+   "hpMin": 14,
+   "hpMax": 18,
+   "move": 3,
+   "vision": 3,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "食人魔的灵魂",
+   "passives": [
+    "皮糙",
+    "蛮力"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "抓掷",
+       "advance": true
+      },
+      {
+       "card": "掷物",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "棒击",
+       "advance": true
+      },
+      {
+       "card": "掷物",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "抡棒",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "棒击",
+    "抓掷"
+   ],
+   "material": "铁块",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "掷石巨魔",
+   "unitId": "V2",
+   "family": "荒村",
+   "hpMin": 10,
+   "hpMax": 14,
+   "move": 3,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "狙击",
+   "preset": "风筝",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "掷石巨魔的灵魂",
+   "passives": [
+    "掩体直觉",
+    "巨石"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "投石",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "巨石投掷",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "捡石",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "投石",
+    "巨石投掷"
+   ],
+   "material": "石块",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "半食人魔",
+   "unitId": "V3",
+   "family": "荒村",
+   "hpMin": 6,
+   "hpMax": 9,
+   "move": 5,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "先锋",
+   "preset": "本能",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "半食人魔的灵魂",
+   "passives": [
+    "瘦长",
+    "群胆"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "扑抱",
+       "advance": true
+      },
+      {
+       "card": "掷物",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "巨力挥砸",
+       "advance": true
+      },
+      {
+       "card": "掷物",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "怪叫",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "巨力挥砸",
+    "扑抱"
+   ],
+   "material": "石块",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "持锤巨魔",
+   "unitId": "V4",
+   "family": "荒村",
+   "hpMin": 18,
+   "hpMax": 24,
+   "move": 2,
+   "vision": 3,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "近卫",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": false,
+   "soul": "持锤巨魔的灵魂",
+   "passives": [
+    "重锤",
+    "蓄势"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "锤击",
+       "advance": true
+      },
+      {
+       "card": "掷物",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "地裂",
+       "advance": true
+      },
+      {
+       "card": "掷物",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "举锤",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "锤击",
+    "地裂"
+   ],
+   "material": "铁块",
+   "uniqueDrop": ""
+  },
+  {
+   "name": "独眼暴徒",
+   "unitId": "V5",
+   "family": "荒村",
+   "hpMin": 20,
+   "hpMax": 26,
+   "move": 3,
+   "vision": 4,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "先锋",
+   "preset": "本能",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "独眼暴徒的灵魂",
+   "passives": [
+    "壮骨",
+    "狂蛮"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "劈砸",
+       "advance": true
+      },
+      {
+       "card": "掷物",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "抓投",
+       "advance": true
+      },
+      {
+       "card": "掷物",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "践踏",
+       "advance": true
+      },
+      {
+       "card": "掷物",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "抡臂",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "劈砸",
+    "践踏"
+   ],
+   "material": "铁块",
+   "uniqueDrop": "独眼暴徒的拳甲"
+  },
+  {
+   "name": "巨魔督军",
+   "unitId": "V6",
+   "family": "荒村",
+   "hpMin": 22,
+   "hpMax": 28,
+   "move": 3,
+   "vision": 5,
+   "patrolAP": 2,
+   "patrolRadius": 2,
+   "leash": 6,
+   "role": "辅助",
+   "preset": "拦截",
+   "canSprint": true,
+   "isBoss": false,
+   "isElite": true,
+   "soul": "巨魔督军的灵魂",
+   "passives": [
+    "巨躯",
+    "督战"
+   ],
+   "loop": [
+    {
+     "options": [
+      {
+       "card": "重锤",
+       "advance": true
+      },
+      {
+       "card": "掷物",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "掩体撞",
+       "advance": true
+      }
+     ]
+    },
+    {
+     "options": [
+      {
+       "card": "嚎令",
+       "advance": true
+      }
+     ]
+    }
+   ],
+   "loot": [
+    "重锤",
+    "掩体撞"
+   ],
+   "material": "铁块",
+   "uniqueDrop": "巨魔督军的号角"
+  }
+ ],
+ "squads": [
+  {
+   "name": "小队_狼群_巡道",
+   "family": "密林",
+   "formation": 1,
+   "members": [
+    {
+     "preset": "先锋狼"
+    },
+    {
+     "preset": "血猎犬"
+    }
+   ]
+  },
+  {
+   "name": "小队_狼群_合围",
+   "family": "密林",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "影狼"
+    },
+    {
+     "preset": "血猎犬"
+    },
+    {
+     "preset": "嚎叫者"
+    }
+   ]
+  },
+  {
+   "name": "小队_狼群_巢卫",
+   "family": "密林",
+   "formation": 0,
+   "members": [
+    {
+     "preset": "猎杀头狼"
+    },
+    {
+     "preset": "铁颚狼"
+    },
+    {
+     "preset": "先锋狼"
+    }
+   ]
+  },
+  {
+   "name": "小队_强盗_巡道",
+   "family": "草坡",
+   "formation": 1,
+   "members": [
+    {
+     "preset": "强盗斥候"
+    },
+    {
+     "preset": "强盗刀手"
+    }
+   ]
+  },
+  {
+   "name": "小队_强盗_合围",
+   "family": "草坡",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "强盗弓箭手"
+    },
+    {
+     "preset": "强盗刀手"
+    },
+    {
+     "preset": "强盗盾卫"
+    }
+   ]
+  },
+  {
+   "name": "小队_强盗_巢卫",
+   "family": "草坡",
+   "formation": 0,
+   "members": [
+    {
+     "preset": "强弩手"
+    },
+    {
+     "preset": "悍匪"
+    },
+    {
+     "preset": "强盗弓箭手"
+    }
+   ]
+  },
+  {
+   "name": "小队_蛛群_巡道",
+   "family": "洞穴",
+   "formation": 1,
+   "members": [
+    {
+     "preset": "遁蛛"
+    },
+    {
+     "preset": "跳蛛"
+    }
+   ]
+  },
+  {
+   "name": "小队_蛛群_合围",
+   "family": "洞穴",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "巨蛛"
+    },
+    {
+     "preset": "毒蛛"
+    },
+    {
+     "preset": "跳蛛"
+    }
+   ]
+  },
+  {
+   "name": "小队_蛛群_巢卫",
+   "family": "洞穴",
+   "formation": 0,
+   "members": [
+    {
+     "preset": "黑寡妇"
+    },
+    {
+     "preset": "捕鸟蛛"
+    },
+    {
+     "preset": "巨蛛"
+    }
+   ]
+  },
+  {
+   "name": "小队_骸骨_巡道",
+   "family": "废墟",
+   "formation": 1,
+   "members": [
+    {
+     "preset": "骨兵"
+    },
+    {
+     "preset": "僵尸"
+    }
+   ]
+  },
+  {
+   "name": "小队_骸骨_合围",
+   "family": "废墟",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "骷髅弓手"
+    },
+    {
+     "preset": "寺僧"
+    },
+    {
+     "preset": "僵尸"
+    }
+   ]
+  },
+  {
+   "name": "小队_骸骨_巢卫",
+   "family": "废墟",
+   "formation": 0,
+   "members": [
+    {
+     "preset": "幽魂"
+    },
+    {
+     "preset": "血骑士"
+    },
+    {
+     "preset": "骨兵"
+    }
+   ]
+  },
+  {
+   "name": "小队_树群_巡道",
+   "family": "古林",
+   "formation": 1,
+   "members": [
+    {
+     "preset": "藤蔓怪"
+    },
+    {
+     "preset": "食人花"
+    }
+   ]
+  },
+  {
+   "name": "小队_树群_合围",
+   "family": "古林",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "孢囊菇"
+    },
+    {
+     "preset": "食人花"
+    },
+    {
+     "preset": "藤蔓怪"
+    }
+   ]
+  },
+  {
+   "name": "小队_树群_巢卫",
+   "family": "古林",
+   "formation": 0,
+   "members": [
+    {
+     "preset": "荆棘古木"
+    },
+    {
+     "preset": "孢母"
+    },
+    {
+     "preset": "藤蔓怪"
+    }
+   ]
+  },
+  {
+   "name": "小队_沼泽爬族_巡道",
+   "family": "河湾",
+   "formation": 1,
+   "members": [
+    {
+     "preset": "蜥蜴人"
+    },
+    {
+     "preset": "水蛭群"
+    }
+   ]
+  },
+  {
+   "name": "小队_沼泽爬族_合围",
+   "family": "河湾",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "毒蟾"
+    },
+    {
+     "preset": "水蛭群"
+    },
+    {
+     "preset": "砂鳄"
+    }
+   ]
+  },
+  {
+   "name": "小队_沼泽爬族_巢卫",
+   "family": "河湾",
+   "formation": 0,
+   "members": [
+    {
+     "preset": "沼蟒"
+    },
+    {
+     "preset": "瘴蟾王"
+    },
+    {
+     "preset": "蜥蜴人"
+    }
+   ]
+  },
+  {
+   "name": "小队_巨怪族_巡道",
+   "family": "荒村",
+   "formation": 1,
+   "members": [
+    {
+     "preset": "半食人魔"
+    },
+    {
+     "preset": "食人魔"
+    }
+   ]
+  },
+  {
+   "name": "小队_巨怪族_合围",
+   "family": "荒村",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "掷石巨魔"
+    },
+    {
+     "preset": "半食人魔"
+    },
+    {
+     "preset": "食人魔"
+    }
+   ]
+  },
+  {
+   "name": "小队_巨怪族_巢卫",
+   "family": "荒村",
+   "formation": 0,
+   "members": [
+    {
+     "preset": "独眼暴徒"
+    },
+    {
+     "preset": "巨魔督军"
+    },
+    {
+     "preset": "持锤巨魔"
+    }
+   ]
+  },
+  {
+   "name": "小队_混编_网弩阵",
+   "family": "洞穴",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "巨蛛"
+    },
+    {
+     "preset": "捕鸟蛛"
+    },
+    {
+     "preset": "强盗弓箭手"
+    },
+    {
+     "preset": "强弩手"
+    }
+   ]
+  },
+  {
+   "name": "小队_混编_双重税",
+   "family": "密林",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "血猎犬"
+    },
+    {
+     "preset": "铁颚狼"
+    },
+    {
+     "preset": "巨蛛"
+    },
+    {
+     "preset": "毒蛛"
+    }
+   ]
+  },
+  {
+   "name": "小队_混编_墙锤巷",
+   "family": "废墟",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "僵尸"
+    },
+    {
+     "preset": "幽魂"
+    },
+    {
+     "preset": "食人魔"
+    },
+    {
+     "preset": "巨魔督军"
+    }
+   ]
+  },
+  {
+   "name": "小队_混编_拉进荆棘",
+   "family": "古林",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "荆棘古木"
+    },
+    {
+     "preset": "藤蔓怪"
+    },
+    {
+     "preset": "沼蟒"
+    },
+    {
+     "preset": "瘴蟾王"
+    }
+   ]
+  },
+  {
+   "name": "小队_混编_诅咒对赌",
+   "family": "废墟",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "血骑士"
+    },
+    {
+     "preset": "寺僧"
+    },
+    {
+     "preset": "强弩手"
+    },
+    {
+     "preset": "悍匪"
+    }
+   ]
+  },
+  {
+   "name": "小队_混编_追与拽",
+   "family": "密林",
+   "formation": 4,
+   "members": [
+    {
+     "preset": "先锋狼"
+    },
+    {
+     "preset": "血猎犬"
+    },
+    {
+     "preset": "砂鳄"
+    },
+    {
+     "preset": "沼蟒"
+    }
+   ]
+  }
+ ],
+ "tables": [
+  {
+   "name": "遭遇表_荒野_密林",
+   "mapId": "wasteland",
+   "biome": "J",
+   "minSquads": 1,
+   "maxSquads": 2,
+   "minWaypoints": 2,
+   "maxWaypoints": 3,
+   "patrolAPMin": 1,
+   "patrolAPMax": 2,
+   "minDistanceFromStart": 8,
+   "minSquadSeparation": 4,
+   "entries": [
+    {
+     "squad": "小队_狼群_巡道",
+     "weight": 6
+    },
+    {
+     "squad": "小队_狼群_合围",
+     "weight": 3
+    },
+    {
+     "squad": "小队_狼群_巢卫",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只史莱姆",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只哥布林",
+     "weight": 1
+    },
+    {
+     "squad": "小队_混编_双重税",
+     "weight": 1
+    },
+    {
+     "squad": "小队_混编_追与拽",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "name": "遭遇表_荒野_草坡",
+   "mapId": "wasteland",
+   "biome": "G",
+   "minSquads": 1,
+   "maxSquads": 2,
+   "minWaypoints": 2,
+   "maxWaypoints": 3,
+   "patrolAPMin": 1,
+   "patrolAPMax": 2,
+   "minDistanceFromStart": 8,
+   "minSquadSeparation": 4,
+   "entries": [
+    {
+     "squad": "小队_强盗_巡道",
+     "weight": 6
+    },
+    {
+     "squad": "小队_强盗_合围",
+     "weight": 3
+    },
+    {
+     "squad": "小队_强盗_巢卫",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只史莱姆",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只哥布林",
+     "weight": 1
+    },
+    {
+     "squad": "小队_混编_网弩阵",
+     "weight": 1
+    },
+    {
+     "squad": "小队_混编_诅咒对赌",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "name": "遭遇表_荒野_洞穴",
+   "mapId": "wasteland",
+   "biome": "C",
+   "minSquads": 1,
+   "maxSquads": 2,
+   "minWaypoints": 2,
+   "maxWaypoints": 3,
+   "patrolAPMin": 1,
+   "patrolAPMax": 2,
+   "minDistanceFromStart": 8,
+   "minSquadSeparation": 4,
+   "entries": [
+    {
+     "squad": "小队_蛛群_巡道",
+     "weight": 6
+    },
+    {
+     "squad": "小队_蛛群_合围",
+     "weight": 3
+    },
+    {
+     "squad": "小队_蛛群_巢卫",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只史莱姆",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只哥布林",
+     "weight": 1
+    },
+    {
+     "squad": "小队_混编_网弩阵",
+     "weight": 1
+    },
+    {
+     "squad": "小队_混编_双重税",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "name": "遭遇表_荒野_废墟",
+   "mapId": "wasteland",
+   "biome": "R",
+   "minSquads": 1,
+   "maxSquads": 2,
+   "minWaypoints": 2,
+   "maxWaypoints": 3,
+   "patrolAPMin": 1,
+   "patrolAPMax": 2,
+   "minDistanceFromStart": 8,
+   "minSquadSeparation": 4,
+   "entries": [
+    {
+     "squad": "小队_骸骨_巡道",
+     "weight": 6
+    },
+    {
+     "squad": "小队_骸骨_合围",
+     "weight": 3
+    },
+    {
+     "squad": "小队_骸骨_巢卫",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只史莱姆",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只哥布林",
+     "weight": 1
+    },
+    {
+     "squad": "小队_混编_墙锤巷",
+     "weight": 1
+    },
+    {
+     "squad": "小队_混编_诅咒对赌",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "name": "遭遇表_荒野_古林",
+   "mapId": "wasteland",
+   "biome": "A",
+   "minSquads": 1,
+   "maxSquads": 2,
+   "minWaypoints": 2,
+   "maxWaypoints": 3,
+   "patrolAPMin": 1,
+   "patrolAPMax": 2,
+   "minDistanceFromStart": 8,
+   "minSquadSeparation": 4,
+   "entries": [
+    {
+     "squad": "小队_树群_巡道",
+     "weight": 6
+    },
+    {
+     "squad": "小队_树群_合围",
+     "weight": 3
+    },
+    {
+     "squad": "小队_树群_巢卫",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只史莱姆",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只哥布林",
+     "weight": 1
+    },
+    {
+     "squad": "小队_混编_拉进荆棘",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "name": "遭遇表_荒野_沼泽",
+   "mapId": "wasteland",
+   "biome": "B",
+   "minSquads": 1,
+   "maxSquads": 2,
+   "minWaypoints": 2,
+   "maxWaypoints": 3,
+   "patrolAPMin": 1,
+   "patrolAPMax": 2,
+   "minDistanceFromStart": 8,
+   "minSquadSeparation": 4,
+   "entries": [
+    {
+     "squad": "小队_沼泽爬族_巡道",
+     "weight": 6
+    },
+    {
+     "squad": "小队_沼泽爬族_合围",
+     "weight": 3
+    },
+    {
+     "squad": "小队_沼泽爬族_巢卫",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只史莱姆",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只哥布林",
+     "weight": 1
+    },
+    {
+     "squad": "小队_混编_拉进荆棘",
+     "weight": 1
+    },
+    {
+     "squad": "小队_混编_追与拽",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "name": "遭遇表_荒野_荒村",
+   "mapId": "wasteland",
+   "biome": "W",
+   "minSquads": 1,
+   "maxSquads": 2,
+   "minWaypoints": 2,
+   "maxWaypoints": 3,
+   "patrolAPMin": 1,
+   "patrolAPMax": 2,
+   "minDistanceFromStart": 8,
+   "minSquadSeparation": 4,
+   "entries": [
+    {
+     "squad": "小队_巨怪族_巡道",
+     "weight": 6
+    },
+    {
+     "squad": "小队_巨怪族_合围",
+     "weight": 3
+    },
+    {
+     "squad": "小队_巨怪族_巢卫",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只史莱姆",
+     "weight": 1
+    },
+    {
+     "squad": "小队_单只哥布林",
+     "weight": 1
+    },
+    {
+     "squad": "小队_混编_墙锤巷",
+     "weight": 1
+    }
+   ]
+  }
+ ],
+ "chestLoot": [
+  {
+   "biome": 1,
+   "family": "密林",
+   "item": "狼牙",
+   "min": 2,
+   "max": 4
+  },
+  {
+   "biome": 0,
+   "family": "草坡",
+   "item": "绳索",
+   "min": 2,
+   "max": 4
+  },
+  {
+   "biome": 2,
+   "family": "洞穴",
+   "item": "甲壳",
+   "min": 2,
+   "max": 4
+  },
+  {
+   "biome": 3,
+   "family": "废墟",
+   "item": "陪葬品",
+   "min": 2,
+   "max": 4
+  },
+  {
+   "biome": 4,
+   "family": "古林",
+   "item": "琥珀",
+   "min": 2,
+   "max": 4
+  },
+  {
+   "biome": 5,
+   "family": "河湾",
+   "item": "蚌珠",
+   "min": 2,
+   "max": 4
+  },
+  {
+   "biome": 6,
+   "family": "荒村",
+   "item": "旧木料",
+   "min": 2,
+   "max": 4
+  }
+ ]
+}

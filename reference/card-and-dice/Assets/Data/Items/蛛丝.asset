@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c71815fab5f7914090667cda9ffc104, type: 3}
+  m_Name: "\u86DB\u4E1D"
+  m_EditorClassIdentifier: 
+  itemID: ITEM_WILD_225101_5
+  itemName: "\u86DB\u4E1D"
+  description: "\u53C8\u97E7\u53C8\u9ECF\u7684\u86DB\u4E1D\uFF0C\u80FD\u6413\u6210\u7EF3\u3002"
+  icon: {fileID: 0}
+  type: 0
+  stackLimit: 20
+  useEffect: 0
+  cardRef: {fileID: 0}
+  diceRef: {fileID: 0}

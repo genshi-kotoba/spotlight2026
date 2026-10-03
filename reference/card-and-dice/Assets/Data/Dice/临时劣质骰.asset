@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 376925b7a3c529441a60692450467491, type: 3}
+  m_Name: "\u4E34\u65F6\u52A3\u8D28\u9AB0"
+  m_EditorClassIdentifier: 
+  diceID: DICE_164122
+  diceName: "\u4E34\u65F6\u52A3\u8D28\u9AB0"
+  description: "\u6218\u6597\u9AB0\u5B50\u8017\u5C3D\u65F6\u7684\u4FDD\u5E95\u9AB0\uFF1A\u6027\u80FD\u660E\u663E\u8F83\u5DEE\uFF0C\u4E0D\u53EF\u641C\u522E\u3001\u4E0D\u53EF\u5E26\u56DE\u3001\u4E0D\u53EF\u6210\u957F\u3002"
+  quality: 0
+  diceValues: 0100000002000000
+  valueEffectBindings: []
+  diceImage: {fileID: 0}

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c71815fab5f7914090667cda9ffc104, type: 3}
+  m_Name: "\u9ED1\u5BE1\u5987\u7684\u5375\u56CA"
+  m_EditorClassIdentifier: 
+  itemID: ITEM_WILD_225103_25
+  itemName: "\u9ED1\u5BE1\u5987\u7684\u5375\u56CA"
+  description: "\u9ED1\u5BE1\u5987\u7684\u5375\u56CA\uFF0C\u6478\u4E0A\u53BB\u8FD8\u662F\u6E29\u7684\u3002"
+  icon: {fileID: 0}
+  type: 0
+  stackLimit: 20
+  useEffect: 0
+  cardRef: {fileID: 0}
+  diceRef: {fileID: 0}

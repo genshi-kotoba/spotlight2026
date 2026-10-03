@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6740322da9afad746aec6cbab91bc72d, type: 3}
+  m_Name: "\u6F5C\u5F71"
+  m_EditorClassIdentifier: 
+  passiveID: "PASSIVE_WILD_\u6F5C\u5F71"
+  passiveName: "\u6F5C\u5F71"
+  description: "\u82E5\u672C\u56DE\u5408\u672A\u88AB\u653B\u51FB\uFF0C\u56DE\u5408\u7ED3\u675F\u83B7\u5F97
+    \u95EA\u907F 1\uFF0C\u6700\u591A\u53E0\u5230 3 \u5C42\uFF1B\u5728\u68EE\u6797\u4E2D\u79FB\u52A8\u529B
+    +1\u3001\u89C6\u91CE\u4E0D\u53D7\u5F71\u54CD"
+  icon: {fileID: 0}
+  grants:
+  - type: 1
+    statusEffectName: 
+    stacks: 0
+    attribute:
+      attribute: 0
+      delta: 1
+  rarity: 2
+  value: 3

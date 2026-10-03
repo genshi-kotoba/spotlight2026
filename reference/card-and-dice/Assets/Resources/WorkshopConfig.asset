@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5431dfff3f3e9448b286ed8f974b858, type: 3}
+  m_Name: WorkshopConfig
+  m_EditorClassIdentifier: 
+  shardCostByRarity: 0200000004000000080000000c000000
+  familyMaterialCostByRarity: 01000000020000000400000006000000
+  passiveCostPerValue: 2
+  scrapReturnPercent: 75
+  familyMaterialToSalvage: 1
+  uniqueMaterialToSalvage: 3
+  diceRecipes:
+  - dice: {fileID: 11400000, guid: b49bef84ca0186b48b4231f41fd68b1c, type: 2}
+    salvageCost: 3
