@@ -11,4 +11,13 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/TutorialScene.unity
     guid: 317d8a78327a50f418f1e024095917b4
+  - enabled: 1
+    path: Assets/Scenes/FogTownScene.unity
+    guid: 437ea69c23e94f86b096b21333ac2598
+  - enabled: 1
+    path: Assets/Scenes/MainScene.unity
+    guid: b2b00797b3e35db42b8a68e442e0f755
+  - enabled: 0
+    path: Assets/Scenes/MainScene_Test.unity
+    guid: 00000000000000000000000000000000
   m_configObjects: {}

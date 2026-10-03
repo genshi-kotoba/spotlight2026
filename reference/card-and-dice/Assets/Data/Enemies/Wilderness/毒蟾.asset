@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd7d8251f829d754ba4ee9e36e29aea1, type: 3}
+  m_Name: "\u6BD2\u87FE"
+  m_EditorClassIdentifier: 
+  enemyID: ENEMY_WILD_H3
+  enemyName: "\u6BD2\u87FE"
+  hpMin: 11
+  hpMax: 15
+  moveRange: 2
+  visionRange: 4
+  patrolAP: 2
+  patrolRadius: 2
+  searchLeashRadius: 6
+  combatRole: 2
+  canSprint: 1
+  sprintValue: 1
+  sprintMax: 3
+  soulItem: {fileID: 11400000, guid: 5cb7b60364c46084c9bbb8a64858df16, type: 2}
+  icon: {fileID: 21300000, guid: 8b5ef60eccd6a884d978cdbb3338bf95, type: 3}
+  prefab: {fileID: 1860692569687079460, guid: b875982800ca77249b1ab9314dda2bed, type: 3}
+  intentLoop:
+  - options:
+    - card: {fileID: 11400000, guid: a9f875b1d3a9e5d4ca4dccf229350a73, type: 2}
+      diceSlot1: {fileID: 0}
+      diceSlot2: {fileID: 0}
+      diceSlot3: {fileID: 0}
+      diceSlot4: {fileID: 0}
+      advanceOnSuccess: 1
+  - options:
+    - card: {fileID: 11400000, guid: 42318ad817061b340aeecc46566cc09c, type: 2}
+      diceSlot1: {fileID: 0}
+      diceSlot2: {fileID: 0}
+      diceSlot3: {fileID: 0}
+      diceSlot4: {fileID: 0}
+      advanceOnSuccess: 1
+  - options:
+    - card: {fileID: 11400000, guid: 09eae3a46b8b2c944af77c656472c512, type: 2}
+      diceSlot1: {fileID: 0}
+      diceSlot2: {fileID: 0}
+      diceSlot3: {fileID: 0}
+      diceSlot4: {fileID: 0}
+      advanceOnSuccess: 1
+  movePreset: 3
+  moveParams:
+    kiteDistance: 1
+    keepAwayMinDist: 0
+    interceptVision: 0
+  passives:
+  - {fileID: 11400000, guid: b0e0660f16ed53541ab26006ec62994a, type: 2}
+  - {fileID: 11400000, guid: 9fccf966f647c32469117f8b4b412d7e, type: 2}
+  lootCards:
+  - {fileID: 11400000, guid: a9f875b1d3a9e5d4ca4dccf229350a73, type: 2}
+  - {fileID: 11400000, guid: 42318ad817061b340aeecc46566cc09c, type: 2}

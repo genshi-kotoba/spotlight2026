@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4aaf76e63b4db4458cee4e39b02b6ee, type: 3}
+  m_Name: "\u5FF5\u5492"
+  m_EditorClassIdentifier: 
+  cardID: "CARD_WILD_\u5FF5\u5492"
+  cardName: "\u5FF5\u5492"
+  energyCost: 0
+  cooldown: 3
+  rangeConfig:
+    baseValue: 3
+    diceSelect: 0
+  diceSlot1: {fileID: 0}
+  diceSlot2: {fileID: 0}
+  diceSlot3: {fileID: 0}
+  diceSlot4: {fileID: 0}
+  description: "\u76EE\u6807 \u8BC5\u5492 +1"
+  rarity: 1
+  effects: []
+  exploreEffects: []
+  suit1: 3
+  suit2: 0
+  suit3: 0
+  suit4: 0
+  cardImage: {fileID: 0}
+  isUpgraded: 0
+  upgradeEffect: "\u65E0"

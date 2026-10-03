@@ -1,0 +1,138 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40860f9311289d242bc3a3476a3a0211, type: 3}
+  m_Name: "\u5C0F\u961F_\u5F3A\u76D7_\u5DE1\u9053"
+  m_EditorClassIdentifier: 
+  squadID: "SQUAD_WILD_\u5C0F\u961F_\u5F3A\u76D7_\u5DE1\u9053"
+  squadName: "\u5C0F\u961F_\u5F3A\u76D7_\u5DE1\u9053"
+  formation: 1
+  units:
+  - preset: {fileID: 11400000, guid: 89054a4cf09a98944b5dd94c0e867b56, type: 2}
+    hpMinOverride:
+      on: 0
+      value: 0
+    hpMaxOverride:
+      on: 0
+      value: 0
+    moveRangeOverride:
+      on: 0
+      value: 0
+    visionRangeOverride:
+      on: 0
+      value: 0
+    overrideCombatRole: 0
+    combatRole: 0
+    overrideIntentLoop: 0
+    intentLoop: []
+    overrideMovePreset: 0
+    movePreset: 0
+    overrideMoveParams: 0
+    moveParams:
+      kiteDistance: 0
+      keepAwayMinDist: 0
+      interceptVision: 0
+    overridePassives: 0
+    passives: []
+    hexOffset: {x: -1, y: 0}
+  - preset: {fileID: 11400000, guid: 8dcaa07c9b630634c8f240f8495f7d86, type: 2}
+    hpMinOverride:
+      on: 0
+      value: 0
+    hpMaxOverride:
+      on: 0
+      value: 0
+    moveRangeOverride:
+      on: 0
+      value: 0
+    visionRangeOverride:
+      on: 0
+      value: 0
+    overrideCombatRole: 0
+    combatRole: 0
+    overrideIntentLoop: 0
+    intentLoop: []
+    overrideMovePreset: 0
+    movePreset: 0
+    overrideMoveParams: 0
+    moveParams:
+      kiteDistance: 0
+      keepAwayMinDist: 0
+      interceptVision: 0
+    overridePassives: 0
+    passives: []
+    hexOffset: {x: 0, y: 0}
+  dropConfig:
+    commonWeight: 60
+    uncommonWeight: 25
+    rareWeight: 12
+    legendaryWeight: 3
+    members:
+    - presetRef: {fileID: 11400000, guid: 89054a4cf09a98944b5dd94c0e867b56, type: 2}
+      soulMode: 0
+      soulOverride: {fileID: 0}
+      materials:
+      - item: {fileID: 11400000, guid: a6645cd03da2728419dbf53262c44e04, type: 2}
+        min: 3
+        max: 5
+      rewardCards:
+      - card: {fileID: 11400000, guid: 1cf0dee8bd7af71418710d2cac4c389e, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 8fd1144fd51d9654e8488e7cd7e83a11, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: febb467eeae86644289c6b0d2c91f560, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 49a8004674cd7a44bb1f56a3d8d95e44, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: db2d789deb1b11540be51ea16c0e4a66, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 20c124e50be266f4194b5966f973f05f, type: 2}
+        weight: 1
+      bagCardChance: 0.3
+      bagCards:
+      - card: {fileID: 11400000, guid: 1cf0dee8bd7af71418710d2cac4c389e, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 8fd1144fd51d9654e8488e7cd7e83a11, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: febb467eeae86644289c6b0d2c91f560, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 49a8004674cd7a44bb1f56a3d8d95e44, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: db2d789deb1b11540be51ea16c0e4a66, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 20c124e50be266f4194b5966f973f05f, type: 2}
+        weight: 1
+    - presetRef: {fileID: 11400000, guid: 8dcaa07c9b630634c8f240f8495f7d86, type: 2}
+      soulMode: 0
+      soulOverride: {fileID: 0}
+      materials:
+      - item: {fileID: 11400000, guid: ad47ba0eb96bd434b87f4962c9175918, type: 2}
+        min: 3
+        max: 5
+      rewardCards:
+      - card: {fileID: 11400000, guid: 69641e1566233ac4e8b3f785f58a25ad, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 91c06050ff7b46944830179b3d74d333, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 126f7a88cc316944abd3ca7ec9b3814c, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 20c124e50be266f4194b5966f973f05f, type: 2}
+        weight: 1
+      bagCardChance: 0.3
+      bagCards:
+      - card: {fileID: 11400000, guid: 69641e1566233ac4e8b3f785f58a25ad, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 91c06050ff7b46944830179b3d74d333, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 126f7a88cc316944abd3ca7ec9b3814c, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 20c124e50be266f4194b5966f973f05f, type: 2}
+        weight: 1

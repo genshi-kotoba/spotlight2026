@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73b6943c363abc440a30cb45a41de524, type: 3}
+  m_Name: "\u835204_\u534A\u526F\u94C1\u7532"
+  m_EditorClassIdentifier: 
+  eventId: "\u835204_\u534A\u526F\u94C1\u7532"
+  title: "\u534A\u526F\u94C1\u7532"
+  description: "\u4E00\u5177\u9AB8\u9AA8\u88AB\u94C1\u9489\u9489\u5728\u95E8\u677F\u4E0A\uFF0C\u8FD8\u7A7F\u7740\u534A\u526F\u80F8\u7532\u3002\u9489\u5B50\u662F\u4ECE\u7532\u7247\u95F4\u7A7F\u8FC7\u53BB\u7684\u3002"
+  once: 0
+  biomeTag: 6
+  options:
+  - optionText: "\u62C6\u4E0B\u80F8\u7532\uFF08\u529B\u91CF D5\uFF09"
+    checkType: 1
+    difficulty: 5
+    costs: []
+    success:
+      flavorText: "\u7532\u7247\u4E00\u5757\u5757\u5378\u4E0B\u6765\uFF0C\u8FD8\u80FD\u62A4\u4F4F\u8981\u5BB3\u3002"
+      endEvent: 1
+      hpChange: 0
+      energyChange: 0
+      diceChange: 0
+      addCards: []
+      addItems: []
+      salvageChange: 0
+      triggerCombat: 0
+      combatEnemyCount: 1
+      removeCards: 0
+      duplicateCards: 0
+      grantBuff: {fileID: 11400000, guid: 330451d7c74ec0e48b7b9ced82677cfd, type: 2}
+    failure:
+      flavorText: "\u7532\u7247\u7FFB\u843D\uFF0C\u7838\u5728\u624B\u4E0A\u3002"
+      endEvent: 0
+      hpChange: -2
+      energyChange: 0
+      diceChange: 0
+      addCards: []
+      addItems: []
+      salvageChange: 0
+      triggerCombat: 0
+      combatEnemyCount: 1
+      removeCards: 0
+      duplicateCards: 0
+      grantBuff: {fileID: 0}
+  - optionText: "\u7FFB\u4ED6\u7684\u8170\u888B\uFF08\u654F\u6377 D5\uFF09"
+    checkType: 2
+    difficulty: 5
+    costs: []
+    success:
+      flavorText: "\u8170\u888B\u91CC\u8FD8\u5269\u51E0\u679A\u94DC\u94B1\uFF0C\u88AB\u6C57\u6D78\u6210\u4E86\u9ED1\u8272\u3002"
+      endEvent: 1
+      hpChange: 0
+      energyChange: 0
+      diceChange: 0
+      addCards: []
+      addItems: []
+      salvageChange: 1
+      triggerCombat: 0
+      combatEnemyCount: 1
+      removeCards: 0
+      duplicateCards: 0
+      grantBuff: {fileID: 0}
+    failure:
+      flavorText: "\u9489\u5934\u5250\u8FC7\u624B\u8155\uFF0C\u5212\u51FA\u4E00\u9053\u7EC6\u957F\u7684\u53E3\u5B50\u3002"
+      endEvent: 0
+      hpChange: -2
+      energyChange: 0
+      diceChange: 0
+      addCards: []
+      addItems: []
+      salvageChange: 0
+      triggerCombat: 0
+      combatEnemyCount: 1
+      removeCards: 0
+      duplicateCards: 0
+      grantBuff: {fileID: 0}
+  - optionText: "\u628A\u4ED6\u653E\u4E0B\u6765\u5B89\u846C\uFF08\u4F53\u8D28 D5\uFF09"
+    checkType: 4
+    difficulty: 5
+    costs: []
+    success:
+      flavorText: "\u4F60\u628A\u4ED6\u57CB\u5728\u6751\u5916\u7684\u5761\u4E0A\u3002\u6316\u571F\u7684\u65F6\u5019\uFF0C\u5929\u4E00\u76F4\u9634\u7740\u3002"
+      endEvent: 1
+      hpChange: 5
+      energyChange: 0
+      diceChange: 0
+      addCards: []
+      addItems: []
+      salvageChange: 0
+      triggerCombat: 0
+      combatEnemyCount: 1
+      removeCards: 0
+      duplicateCards: 0
+      grantBuff: {fileID: 0}
+    failure:
+      flavorText: "\u95E8\u677F\u6BD4\u60F3\u8C61\u4E2D\u91CD\u3002\u4F60\u53EA\u5378\u4E0B\u4E00\u534A\uFF0C\u5C31\u518D\u4E5F\u4F7F\u4E0D\u4E0A\u52B2\u3002"
+      endEvent: 0
+      hpChange: 0
+      energyChange: 0
+      diceChange: 0
+      addCards: []
+      addItems: []
+      salvageChange: 0
+      triggerCombat: 0
+      combatEnemyCount: 1
+      removeCards: 0
+      duplicateCards: 0
+      grantBuff: {fileID: 0}

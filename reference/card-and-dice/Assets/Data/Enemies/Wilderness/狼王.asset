@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd7d8251f829d754ba4ee9e36e29aea1, type: 3}
+  m_Name: "\u72FC\u738B"
+  m_EditorClassIdentifier: 
+  enemyID: ENEMY_WILD_W7
+  enemyName: "\u72FC\u738B"
+  hpMin: 32
+  hpMax: 38
+  moveRange: 3
+  visionRange: 5
+  patrolAP: 2
+  patrolRadius: 2
+  searchLeashRadius: 6
+  combatRole: 1
+  canSprint: 0
+  sprintValue: 1
+  sprintMax: 3
+  soulItem: {fileID: 11400000, guid: bffc69134a89fa64eb2945e28eaae626, type: 2}
+  icon: {fileID: 21300000, guid: 2919c8d1735abee468735b009a2e372e, type: 3}
+  prefab: {fileID: 1860692569687079460, guid: b875982800ca77249b1ab9314dda2bed, type: 3}
+  intentLoop:
+  - options:
+    - card: {fileID: 11400000, guid: df4853ef95eeb5c4d8a1c9aa8135629b, type: 2}
+      diceSlot1: {fileID: 0}
+      diceSlot2: {fileID: 0}
+      diceSlot3: {fileID: 0}
+      diceSlot4: {fileID: 0}
+      advanceOnSuccess: 1
+  - options:
+    - card: {fileID: 11400000, guid: e965e09a2c4c5a84697e4f708836f3b9, type: 2}
+      diceSlot1: {fileID: 0}
+      diceSlot2: {fileID: 0}
+      diceSlot3: {fileID: 0}
+      diceSlot4: {fileID: 0}
+      advanceOnSuccess: 1
+  - options:
+    - card: {fileID: 11400000, guid: 0e444d98a868245408ec5a718fd384b5, type: 2}
+      diceSlot1: {fileID: 0}
+      diceSlot2: {fileID: 0}
+      diceSlot3: {fileID: 0}
+      diceSlot4: {fileID: 0}
+      advanceOnSuccess: 1
+    - card: {fileID: 11400000, guid: 8e1a841de189e5543a750a01eac73bf0, type: 2}
+      diceSlot1: {fileID: 0}
+      diceSlot2: {fileID: 0}
+      diceSlot3: {fileID: 0}
+      diceSlot4: {fileID: 0}
+      advanceOnSuccess: 1
+  - options:
+    - card: {fileID: 11400000, guid: dc232f48f4773a44db697d379327bd6b, type: 2}
+      diceSlot1: {fileID: 0}
+      diceSlot2: {fileID: 0}
+      diceSlot3: {fileID: 0}
+      diceSlot4: {fileID: 0}
+      advanceOnSuccess: 1
+  - options:
+    - card: {fileID: 11400000, guid: 95643485a0ee75d4f9e9c96dfe494f54, type: 2}
+      diceSlot1: {fileID: 0}
+      diceSlot2: {fileID: 0}
+      diceSlot3: {fileID: 0}
+      diceSlot4: {fileID: 0}
+      advanceOnSuccess: 1
+  movePreset: 2
+  moveParams:
+    kiteDistance: 0
+    keepAwayMinDist: 0
+    interceptVision: 5
+  passives:
+  - {fileID: 11400000, guid: 4493d3fbbc7937340ba30204f6fd69bc, type: 2}
+  - {fileID: 11400000, guid: 76cc020fdb3a5874d9fa2c2531889658, type: 2}
+  lootCards:
+  - {fileID: 11400000, guid: e965e09a2c4c5a84697e4f708836f3b9, type: 2}
+  - {fileID: 11400000, guid: 8e1a841de189e5543a750a01eac73bf0, type: 2}
+  - {fileID: 11400000, guid: df4853ef95eeb5c4d8a1c9aa8135629b, type: 2}

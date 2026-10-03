@@ -1,0 +1,219 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40860f9311289d242bc3a3476a3a0211, type: 3}
+  m_Name: "\u5C0F\u961F_\u6DF7\u7F16_\u8FFD\u4E0E\u62FD"
+  m_EditorClassIdentifier: 
+  squadID: "SQUAD_WILD_\u5C0F\u961F_\u6DF7\u7F16_\u8FFD\u4E0E\u62FD"
+  squadName: "\u5C0F\u961F_\u6DF7\u7F16_\u8FFD\u4E0E\u62FD"
+  formation: 4
+  units:
+  - preset: {fileID: 11400000, guid: aa56949499c9dd743b586d6a81638a2b, type: 2}
+    hpMinOverride:
+      on: 0
+      value: 0
+    hpMaxOverride:
+      on: 0
+      value: 0
+    moveRangeOverride:
+      on: 0
+      value: 0
+    visionRangeOverride:
+      on: 0
+      value: 0
+    overrideCombatRole: 0
+    combatRole: 0
+    overrideIntentLoop: 0
+    intentLoop: []
+    overrideMovePreset: 0
+    movePreset: 0
+    overrideMoveParams: 0
+    moveParams:
+      kiteDistance: 0
+      keepAwayMinDist: 0
+      interceptVision: 0
+    overridePassives: 0
+    passives: []
+    hexOffset: {x: 1, y: -1}
+  - preset: {fileID: 11400000, guid: faa931a1fb8268146b8d8641c41aca5f, type: 2}
+    hpMinOverride:
+      on: 0
+      value: 0
+    hpMaxOverride:
+      on: 0
+      value: 0
+    moveRangeOverride:
+      on: 0
+      value: 0
+    visionRangeOverride:
+      on: 0
+      value: 0
+    overrideCombatRole: 0
+    combatRole: 0
+    overrideIntentLoop: 0
+    intentLoop: []
+    overrideMovePreset: 0
+    movePreset: 0
+    overrideMoveParams: 0
+    moveParams:
+      kiteDistance: 0
+      keepAwayMinDist: 0
+      interceptVision: 0
+    overridePassives: 0
+    passives: []
+    hexOffset: {x: 0, y: 1}
+  - preset: {fileID: 11400000, guid: e7da520cf2e751845b2bd5375631a475, type: 2}
+    hpMinOverride:
+      on: 0
+      value: 0
+    hpMaxOverride:
+      on: 0
+      value: 0
+    moveRangeOverride:
+      on: 0
+      value: 0
+    visionRangeOverride:
+      on: 0
+      value: 0
+    overrideCombatRole: 0
+    combatRole: 0
+    overrideIntentLoop: 0
+    intentLoop: []
+    overrideMovePreset: 0
+    movePreset: 0
+    overrideMoveParams: 0
+    moveParams:
+      kiteDistance: 0
+      keepAwayMinDist: 0
+      interceptVision: 0
+    overridePassives: 0
+    passives: []
+    hexOffset: {x: -1, y: -1}
+  - preset: {fileID: 11400000, guid: d0704493ca765704fbdd691ccc2461bf, type: 2}
+    hpMinOverride:
+      on: 0
+      value: 0
+    hpMaxOverride:
+      on: 0
+      value: 0
+    moveRangeOverride:
+      on: 0
+      value: 0
+    visionRangeOverride:
+      on: 0
+      value: 0
+    overrideCombatRole: 0
+    combatRole: 0
+    overrideIntentLoop: 0
+    intentLoop: []
+    overrideMovePreset: 0
+    movePreset: 0
+    overrideMoveParams: 0
+    moveParams:
+      kiteDistance: 0
+      keepAwayMinDist: 0
+      interceptVision: 0
+    overridePassives: 0
+    passives: []
+    hexOffset: {x: 2, y: -1}
+  dropConfig:
+    commonWeight: 60
+    uncommonWeight: 25
+    rareWeight: 12
+    legendaryWeight: 3
+    members:
+    - presetRef: {fileID: 11400000, guid: aa56949499c9dd743b586d6a81638a2b, type: 2}
+      soulMode: 0
+      soulOverride: {fileID: 0}
+      materials:
+      - item: {fileID: 11400000, guid: ea25436464fc0d4478a4e313d801cd55, type: 2}
+        min: 3
+        max: 5
+      rewardCards:
+      - card: {fileID: 11400000, guid: 2876081a7e3de0a4d87cc66fe5789aba, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: da012db2ca6d13847a28b3d7de538ada, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 41caeb22eea59cc408a9326e2aa04426, type: 2}
+        weight: 1
+      bagCardChance: 0.3
+      bagCards:
+      - card: {fileID: 11400000, guid: 2876081a7e3de0a4d87cc66fe5789aba, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: da012db2ca6d13847a28b3d7de538ada, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 41caeb22eea59cc408a9326e2aa04426, type: 2}
+        weight: 1
+    - presetRef: {fileID: 11400000, guid: faa931a1fb8268146b8d8641c41aca5f, type: 2}
+      soulMode: 0
+      soulOverride: {fileID: 0}
+      materials:
+      - item: {fileID: 11400000, guid: ea25436464fc0d4478a4e313d801cd55, type: 2}
+        min: 3
+        max: 5
+      rewardCards:
+      - card: {fileID: 11400000, guid: 2f55894ce446e774f987c5b040939e55, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 51229ae5f9fd9da4a8d591b905208ddd, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 2ae5ecfea042f4449ab3c2af81d992fe, type: 2}
+        weight: 1
+      bagCardChance: 0.3
+      bagCards:
+      - card: {fileID: 11400000, guid: 2f55894ce446e774f987c5b040939e55, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 51229ae5f9fd9da4a8d591b905208ddd, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 2ae5ecfea042f4449ab3c2af81d992fe, type: 2}
+        weight: 1
+    - presetRef: {fileID: 11400000, guid: e7da520cf2e751845b2bd5375631a475, type: 2}
+      soulMode: 0
+      soulOverride: {fileID: 0}
+      materials:
+      - item: {fileID: 11400000, guid: 94e13db3154b86f4ca93fc50a70ec6f2, type: 2}
+        min: 3
+        max: 5
+      rewardCards:
+      - card: {fileID: 11400000, guid: 30b30e17540ea784cb9fd53f6c5740c2, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 197106f17ab85e648ab4ab18c7a4234f, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: f4a0b4ec7b2278742a13eb69439e09d5, type: 2}
+        weight: 1
+      bagCardChance: 0.3
+      bagCards:
+      - card: {fileID: 11400000, guid: 30b30e17540ea784cb9fd53f6c5740c2, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 197106f17ab85e648ab4ab18c7a4234f, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: f4a0b4ec7b2278742a13eb69439e09d5, type: 2}
+        weight: 1
+    - presetRef: {fileID: 11400000, guid: d0704493ca765704fbdd691ccc2461bf, type: 2}
+      soulMode: 0
+      soulOverride: {fileID: 0}
+      materials:
+      - item: {fileID: 11400000, guid: 94e13db3154b86f4ca93fc50a70ec6f2, type: 2}
+        min: 6
+        max: 8
+      - item: {fileID: 11400000, guid: 7a51836fb3e62eb46a97eb21c99ccb98, type: 2}
+        min: 1
+        max: 1
+      rewardCards:
+      - card: {fileID: 11400000, guid: 78744e7597e51804f95e8708d28cca73, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 3e60eba80e32c594eac2061f08c7dcb4, type: 2}
+        weight: 1
+      bagCardChance: 0.3
+      bagCards:
+      - card: {fileID: 11400000, guid: 78744e7597e51804f95e8708d28cca73, type: 2}
+        weight: 1
+      - card: {fileID: 11400000, guid: 3e60eba80e32c594eac2061f08c7dcb4, type: 2}
+        weight: 1

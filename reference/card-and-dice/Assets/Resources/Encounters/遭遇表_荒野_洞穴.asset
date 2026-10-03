@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 243a1e73b7d23fd4f850b66d62082938, type: 3}
+  m_Name: "\u906D\u9047\u8868_\u8352\u91CE_\u6D1E\u7A74"
+  m_EditorClassIdentifier: 
+  mapId: wasteland
+  biome: C
+  minSquadsPerZone: 1
+  maxSquadsPerZone: 2
+  entries:
+  - squad: {fileID: 11400000, guid: 1d4df8b76c8724648ad63c1a0fe4d23b, type: 2}
+    weight: 6
+  - squad: {fileID: 11400000, guid: 46fdbe6d2f8b96f4e9ec0f0f8ffe149e, type: 2}
+    weight: 3
+  - squad: {fileID: 11400000, guid: af27b3f61cbb5b04d97e8871c008be4e, type: 2}
+    weight: 1
+  - squad: {fileID: 11400000, guid: 14a4780f25d713c469aa358da47c4c42, type: 2}
+    weight: 1
+  - squad: {fileID: 11400000, guid: 0af440d6c36976941b895530a4626599, type: 2}
+    weight: 1
+  - squad: {fileID: 11400000, guid: f6b9e7b4e76c19b4faa7b5ac39f2a950, type: 2}
+    weight: 1
+  - squad: {fileID: 11400000, guid: 1a76b16457d072b4b9d9070efd401ef7, type: 2}
+    weight: 1
+  minWaypoints: 2
+  maxWaypoints: 3
+  patrolAPMin: 1
+  patrolAPMax: 2
+  minDistanceFromStart: 8
+  minSquadSeparation: 4

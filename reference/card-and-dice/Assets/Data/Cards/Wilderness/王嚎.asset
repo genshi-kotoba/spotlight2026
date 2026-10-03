@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4aaf76e63b4db4458cee4e39b02b6ee, type: 3}
+  m_Name: "\u738B\u568E"
+  m_EditorClassIdentifier: 
+  cardID: "CARD_WILD_\u738B\u568E"
+  cardName: "\u738B\u568E"
+  energyCost: 1
+  cooldown: 3
+  rangeConfig:
+    baseValue: 3
+    diceSelect: 0
+  diceSlot1: {fileID: 0}
+  diceSlot2: {fileID: 0}
+  diceSlot3: {fileID: 0}
+  diceSlot4: {fileID: 0}
+  description: "\u5168\u4F53\u53CB\u519B \u75BE\u8DD1 1\uFF1B\u5168\u4F53\u53CB\u519B
+    \u62A4\u7532 2"
+  rarity: 1
+  effects:
+  - effectType: 1
+    targetType: 0
+    damageConfig:
+      baseValue: 0
+      diceSelect: 0
+    attackCountConfig:
+      baseValue: 1
+      diceSelect: 0
+    defenseConfig:
+      baseValue: 4
+      diceSelect: 0
+    defenseCountConfig:
+      baseValue: 1
+      diceSelect: 0
+    effectTypeName: 
+    effectStacksConfig:
+      baseValue: 0
+      diceSelect: 0
+    effectCountConfig:
+      baseValue: 0
+      diceSelect: 0
+    friendlyFire: 0
+  exploreEffects: []
+  suit1: 4
+  suit2: 0
+  suit3: 0
+  suit4: 0
+  cardImage: {fileID: 0}
+  isUpgraded: 0
+  upgradeEffect: "\u65E0"

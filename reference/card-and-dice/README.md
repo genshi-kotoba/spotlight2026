@@ -1,45 +1,56 @@
 # Card-and-Dice 参考工程
 
-本目录是团队成员在 Unity 上做的卡牌构筑 Roguelike 工程《代号：卡牌与骰子》的一份**可运行的裁剪版**。
+本目录是团队成员在 Unity 上做的卡牌构筑 Roguelike 工程《代号：卡牌与骰子》的**完整工程**。
 
 放在这里的原因：两个项目玩法骨架相近（卡牌构筑、局内局外两层状态、六边形地图），很多算法与数据模型可以改着用，不必从零写一遍。
 
 ## 怎么跑起来
 
-1. 用 Unity Hub 打开本目录，编辑器版本 **2022.3.62f1c1**（工程里 `ProjectSettings/ProjectVersion.txt` 写的就是这个）
+1. 用 Unity Hub 打开本目录，编辑器版本 **2022.3.62f1c1**（`ProjectSettings/ProjectVersion.txt` 写的就是这个）
 2. 首次打开会导入资源并编译脚本，需要几分钟
-3. 构建场景列表里有两个场景，按顺序为 `HideoutScene`（藏身处）和 `TutorialScene`（新手教程）
-4. 打开 `Assets/Scenes/TutorialScene.unity`，直接播放
+3. 构建场景列表里有四个场景，按顺序为 `HideoutScene`（藏身处）、`TutorialScene`（新手教程）、`FogTownScene`（雾镇）、`MainScene`（主场景）
+4. 从 `HideoutScene` 开始播放，或直接打开想看的场景
+
+## 工程规模
+
+```
+脚本      222 个，49726 行
+场景      5 个（含 CardEditor 工具场景）
+资源      约 1800 个文件，57 MB
+```
+
+数据资产分布：
+
+| 类别 | 数量 |
+| --- | --- |
+| 卡牌 | 162 |
+| 敌人 | 46 |
+| 小队 | 30 |
+| 事件 | 34 |
+| 被动 | 60 |
+| 物品 | 86 |
 
 ## 目录内容
 
 ```
-Assets/Scripts/          222 个 C# 脚本，49726 行
-Assets/Scenes/           三个场景（教程、藏身处、卡牌编辑器）
-Assets/Data/             教程用到的卡牌、敌人、小队、事件数据
+Assets/Scripts/          222 个 C# 脚本
+Assets/Scenes/           场景
+Assets/Data/             卡牌、敌人、小队、事件、被动、物品等数据资产
 Assets/Prefabs/          预制体
 Assets/Resources/        运行时加载的配置资产
+Assets/Art/ Materials/ Sprites/ Textures/ Models/   美术资源
+Assets/Plugins/          DOTween 等第三方库
 docs/可复用代码清单.md     按本项目的 PRG 编号组织的复用清单
 docs/移植注意事项.md       Unity/C# 到 Godot/GDScript 的对应关系与耦合清理项
 ```
 
 `reference/.gdignore` 让 Godot 跳过整个参考目录，这些 Unity 资源不会被我们的引擎扫描。
 
-## 裁剪掉了什么
+## 这个目录里没有什么
 
-为了控制体积和避免泄露设计，本目录**只保留了新手教程这条线**：
+**策划案、剧情大纲、数值策划文档、美术源文件不在本目录内。**
 
-| 保留 | 移除 |
-| --- | --- |
-| 敌人 3 个（史莱姆、哥布林、木桩） | 荒野敌人 43 个 |
-| 卡牌 9 张 | 荒野卡牌 153 张 |
-| 小队 3 组 | 荒野小队 27 组 |
-| 事件 6 个 | 生态专属事件 28 个 |
-| `TutorialScene` / `HideoutScene` / `CardEditor` | `MainScene`（16.5 MB）、`FogTownScene` |
-
-策划案、剧情大纲、数值表、美术源文件都没有放进来。
-
-保留的资产之间**没有断裂引用**，已逐条核对过 GUID。
+本目录只放工程本身。想看玩法设计请直接问作者。
 
 ## 字体说明
 
@@ -79,4 +90,4 @@ docs/移植注意事项.md       Unity/C# 到 Godot/GDScript 的对应关系与�
 
 ## 来源
 
-原工程仓库：`Ch3N-9/Card-and-Dice`（私有，完整版）。
+原工程仓库：`Ch3N-9/Card-and-Dice`（私有）。
