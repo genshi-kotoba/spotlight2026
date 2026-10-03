@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{9CBFD623-4A19-4F0A-86A5-DD52A0786D7C}" SchemaVersion="133">
+	<SoundBanks>
+		<WorkUnit Name="Default Work Unit" ID="{9CBFD623-4A19-4F0A-86A5-DD52A0786D7C}" PersistMode="Standalone">
+			<ChildrenList>
+				<SoundBank Name="TestBank" ID="{BC9C46CD-6CFE-4692-A6BF-31D682D7E7C9}">
+					<ObjectInclusionList>
+						<ObjectRef Name="TestClick" ID="{05725B69-DB3A-4442-8AC7-7085FA2BFDC4}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Test_Click" ID="{DBEC385D-780E-4543-B844-7E84D5A901B8}" WorkUnitID="{93B8C4E6-9252-4E83-B082-EBB22107F344}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+				<SoundBank Name="SFX" ID="{8D0491CA-9979-4D1A-8C52-7B0823C25729}">
+					<ObjectInclusionList>
+						<ObjectRef Name="SFX" ID="{BF534975-3BDC-4221-B0BA-6D8E1D04AB34}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="SFX" ID="{50FFEF4D-4BA8-4337-A501-3603B3FB7C9B}" WorkUnitID="{93B8C4E6-9252-4E83-B082-EBB22107F344}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+				<SoundBank Name="Music" ID="{129CFB0E-0AD4-44FA-A500-0751B4710B97}">
+					<ObjectInclusionList/>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+			</ChildrenList>
+		</WorkUnit>
+	</SoundBanks>
+</WwiseDocument>

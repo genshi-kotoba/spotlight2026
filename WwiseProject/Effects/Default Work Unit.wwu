@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{C639B9B1-66B7-46AA-8FBF-98F6C001AA37}" SchemaVersion="133">
+	<Effects>
+		<WorkUnit Name="Default Work Unit" ID="{C639B9B1-66B7-46AA-8FBF-98F6C001AA37}" PersistMode="Standalone">
+			<ChildrenList>
+				<Folder Name="Reverb" ID="{3EF8DA76-95B8-496E-A06E-A40BF7824797}" ShortID="996914145">
+					<ChildrenList>
+						<Effect Name="Rev_Workshop" ID="{1EAA2EED-D229-4054-8086-53979F047B78}" PluginName="Wwise RoomVerb" CompanyID="0" PluginID="118" PluginType="3">
+							<PropertyList>
+								<Property Name="DecayTime" Type="Real32" Value="0.6"/>
+								<Property Name="Diffusion" Type="Real32" Value="60"/>
+								<Property Name="HFDamping" Type="Real32" Value="3"/>
+								<Property Name="RoomSize" Type="Real32" Value="30"/>
+							</PropertyList>
+						</Effect>
+						<Effect Name="Rev_Slum" ID="{4C7D6973-7177-4DC2-9C22-63204F63EAEB}" PluginName="Wwise RoomVerb" CompanyID="0" PluginID="118" PluginType="3">
+							<PropertyList>
+								<Property Name="DecayTime" Type="Real32" Value="0.25"/>
+								<Property Name="Diffusion" Type="Real32" Value="30"/>
+								<Property Name="HFDamping" Type="Real32" Value="10"/>
+								<Property Name="RoomSize" Type="Real32" Value="85"/>
+							</PropertyList>
+						</Effect>
+						<Effect Name="Rev_Church" ID="{61994849-E61D-4584-9C8F-CA9C447283CD}" PluginName="Wwise RoomVerb" CompanyID="0" PluginID="118" PluginType="3">
+							<PropertyList>
+								<Property Name="DecayTime" Type="Real32" Value="4"/>
+								<Property Name="Diffusion" Type="Real32" Value="90"/>
+								<Property Name="HFDamping" Type="Real32" Value="1"/>
+								<Property Name="PreDelay" Type="Real32" Value="45"/>
+								<Property Name="RoomSize" Type="Real32" Value="95"/>
+							</PropertyList>
+						</Effect>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="Ducking" ID="{047EBF74-20A8-4F39-A409-43CB6267E81A}" ShortID="142193900">
+					<ChildrenList>
+						<Effect Name="Comp_Music_Duck" ID="{BB84FA46-FB1A-42D6-8ED6-D3D489830318}" PluginName="Wwise Compressor" CompanyID="0" PluginID="108" PluginType="3">
+							<PropertyList>
+								<Property Name="AttackTime" Type="Real32" Value="0.01"/>
+								<Property Name="Ratio" Type="Real32" Value="4"/>
+								<Property Name="ReleaseTime" Type="Real32" Value="0.4"/>
+								<Property Name="Threshold" Type="Real32" Value="-25"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="SidechainRef">
+									<ObjectRef Name="SCM_SFX" ID="{C4C83129-EBC0-4C60-99F0-9B774388E32C}" WorkUnitID="{D650D4C6-9CB2-4CEF-BB22-1CB7F1932381}"/>
+								</Reference>
+							</ReferenceList>
+						</Effect>
+						<Effect Name="SC_Send" ID="{DDAC47AB-056B-4EA4-B554-CAB1578F0840}" PluginName="Ak Sidechain Send" CompanyID="0" PluginID="193" PluginType="3">
+							<ReferenceList>
+								<Reference Name="SidechainRef">
+									<ObjectRef Name="SCM_SFX" ID="{C4C83129-EBC0-4C60-99F0-9B774388E32C}" WorkUnitID="{D650D4C6-9CB2-4CEF-BB22-1CB7F1932381}"/>
+								</Reference>
+							</ReferenceList>
+						</Effect>
+					</ChildrenList>
+				</Folder>
+			</ChildrenList>
+		</WorkUnit>
+	</Effects>
+</WwiseDocument>

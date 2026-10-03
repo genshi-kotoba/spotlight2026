@@ -1,0 +1,700 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{93B8C4E6-9252-4E83-B082-EBB22107F344}" SchemaVersion="133">
+	<Events>
+		<WorkUnit Name="Default Work Unit" ID="{93B8C4E6-9252-4E83-B082-EBB22107F344}" PersistMode="Standalone">
+			<ChildrenList>
+				<Event Name="Test_Event" ID="{D47F56C3-B12B-403F-8EF6-A57406EB7BAF}"/>
+				<Event Name="Test_Click" ID="{DBEC385D-780E-4543-B844-7E84D5A901B8}">
+					<ChildrenList>
+						<Action Name="Test_Click" ID="{0337FBD0-0B24-4C73-B8FE-051E8A2FD87D}" ShortID="681575213">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="TestClick" ID="{05725B69-DB3A-4442-8AC7-7085FA2BFDC4}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_TestClick" ID="{8A9EC505-E5B4-4378-8A1F-FC8324B518C2}">
+					<ChildrenList>
+						<Action Name="" ID="{3AFFF865-2A5A-4236-8C78-568092F20D51}" ShortID="853058693">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="TestClick" ID="{05725B69-DB3A-4442-8AC7-7085FA2BFDC4}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Folder Name="SFX" ID="{50FFEF4D-4BA8-4337-A501-3603B3FB7C9B}" ShortID="695315809">
+					<ChildrenList>
+						<Folder Name="Amb" ID="{9C49A839-B585-4AC9-80C2-8BDC771CF0F4}" ShortID="64961150">
+							<ChildrenList>
+								<Event Name="SFX_016_Amb_Workshop" ID="{CBF05321-2CEE-46BF-B8DD-FF1C2A62A20F}">
+									<ChildrenList>
+										<Action Name="SFX-016_Amb_Workshop" ID="{982F1E9A-0F1E-45B9-8742-8BCB596EA368}" ShortID="576994557">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_016_Amb_Workshop" ID="{642195B6-5F77-4D88-93F2-E062ADC70194}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_017_Amb_Slum" ID="{CA532AE3-62AD-4F8B-B778-2B4CBD8508C6}">
+									<ChildrenList>
+										<Action Name="SFX-017_Amb_Slum" ID="{C4423D15-CCAB-459B-9910-30461C1061F4}" ShortID="334798500">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_017_Amb_Slum" ID="{DF7E975E-FFD7-4072-884C-9C2B9C0523B6}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_018_Amb_Church" ID="{0BBBC390-CBBF-417E-BE58-200D4B568469}">
+									<ChildrenList>
+										<Action Name="SFX-018_Amb_Church" ID="{28427F35-854F-438F-ACFD-9B81F3E46680}" ShortID="388345717">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_018_Amb_Church" ID="{AA2436F0-A64A-4445-8DF0-6F533C84DC21}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_019_Amb_ChurchTop" ID="{77859475-5E2E-4E77-ABF9-BE3C47A784A4}">
+									<ChildrenList>
+										<Action Name="SFX-019_Amb_ChurchTop" ID="{E28502D1-6239-4B66-ACDC-22BA465155BA}" ShortID="907574340">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_019_Amb_ChurchTop" ID="{946E15DF-3C94-44CB-A801-CA6DD8AB9165}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Battle" ID="{61853222-6C08-4A12-90C3-8CFAD8327FA4}" ShortID="998845356">
+							<ChildrenList>
+								<Event Name="SFX_010_Battle_Pointer_Tick" ID="{4694BD1C-1CCA-444E-96A5-DCE2723EBA3E}">
+									<ChildrenList>
+										<Action Name="SFX-010_Battle_Pointer_Tick" ID="{F6544F94-4FDE-449F-A6E1-56319AC3C612}" ShortID="527915414">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_010_Battle_Pointer_Tick" ID="{D10EFEFB-4659-4B30-832C-758AB333F5EE}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_011_Battle_Pointer_Rewind" ID="{C915BE6F-6273-441F-A9E6-5E61913A2DAA}">
+									<ChildrenList>
+										<Action Name="SFX-011_Battle_Pointer_Rewind" ID="{DD8A32D8-224E-48F9-BB32-2411B1464845}" ShortID="370785583">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_011_Battle_Pointer_Rewind" ID="{D289F31B-30AF-444D-A345-6AA8C7194191}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_036_Battle_HitResolve" ID="{6BF4EE0B-AAAF-445C-8A0B-6F745DF316A4}">
+									<ChildrenList>
+										<Action Name="SFX-036_Battle_HitResolve" ID="{AC7B6624-2F03-4957-955D-536CD446FADF}" ShortID="1040372932">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_036_Battle_HitResolve" ID="{A967F0DA-ECCD-44F4-82D0-ED9F42AB97BE}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_037_Battle_Block" ID="{D327F56B-6DF3-4DB6-9915-832A50775B82}">
+									<ChildrenList>
+										<Action Name="SFX-037_Battle_Block" ID="{03F4BFD3-8DDB-4EF9-8E65-0C55279FC831}" ShortID="14635987">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_037_Battle_Block" ID="{7195D8FB-8CBB-4592-AC5D-FD38B232C6F0}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_038_Battle_Heal" ID="{AC15E048-3C7E-4174-8C66-BC0517BD4A0A}">
+									<ChildrenList>
+										<Action Name="SFX-038_Battle_Heal" ID="{EA3536E9-5F7E-4811-B53E-9705AFCB4E44}" ShortID="380529089">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_038_Battle_Heal" ID="{262413E6-57D0-41D0-903B-00DC9C980C49}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_039_Battle_BuffGain" ID="{CAFF4A9E-52CD-43E0-83BD-D04ABD9DEDDA}">
+									<ChildrenList>
+										<Action Name="SFX-039_Battle_BuffGain" ID="{A49F230E-0BFB-475F-A7F7-F1668C0424E6}" ShortID="977968370">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_039_Battle_BuffGain" ID="{00E26A80-2D68-428E-AF96-B9585D4A2E68}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_040_Battle_DebuffGain" ID="{B984D9C3-C74C-44D2-A5D8-1C9B8E5C3951}">
+									<ChildrenList>
+										<Action Name="SFX-040_Battle_DebuffGain" ID="{56BF76A2-4AAD-4689-A011-ABF515EB01E5}" ShortID="235514406">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_040_Battle_DebuffGain" ID="{B8D3C131-E4A4-41AF-9EDE-56CC4FEE45B7}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_041_Battle_Pickup" ID="{B800582F-78CC-4DB7-A1D6-C9AE4C7FEF30}">
+									<ChildrenList>
+										<Action Name="SFX-041_Battle_Pickup" ID="{6C8ED329-3E46-4491-BDB4-26647E2DCB88}" ShortID="618939618">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_041_Battle_Pickup" ID="{1527BBB6-F2EC-4AFE-9163-C1178DC6C0EC}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Card" ID="{50FA4BD6-9A35-4719-86A7-AE691D588B6B}" ShortID="565679446">
+							<ChildrenList>
+								<Event Name="SFX_006_Card_Pickup" ID="{94B8A269-D845-43C9-A399-0996202C4C6B}">
+									<ChildrenList>
+										<Action Name="SFX-006_Card_Pickup" ID="{F5131826-1504-4D7B-BD15-193C795DC02A}" ShortID="402623503">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_006_Card_Pickup" ID="{701B30D7-D0D3-426F-B7DF-24AD68021E09}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_007_Card_Play" ID="{0C290FF6-08E6-4D79-B006-EE906AF522E3}">
+									<ChildrenList>
+										<Action Name="SFX-007_Card_Play" ID="{9365C88C-6132-42DB-887C-66D697F9D8DF}" ShortID="475034315">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_007_Card_Play" ID="{48FD192C-6110-477E-AE99-867564A14E0D}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_008_Card_Draw" ID="{FB5BEB3B-728B-4471-B054-CFDC3C97FBB9}">
+									<ChildrenList>
+										<Action Name="SFX-008_Card_Draw" ID="{288AC2EC-AC5D-4BE6-9A07-AC3658C14023}" ShortID="161275273">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_008_Card_Draw" ID="{950A1E08-7A85-4559-8E8C-16837ADF3B85}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_009_Card_Shuffle" ID="{620A4C62-2C60-45D1-80E8-EECC6E5696BD}">
+									<ChildrenList>
+										<Action Name="SFX-009_Card_Shuffle" ID="{042AD79C-6B89-4C8A-A26C-2CE53335A72F}" ShortID="661089681">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_009_Card_Shuffle" ID="{4C03E7B3-379D-4CC3-9F95-8BD4BDAE4D51}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_032_Card_Trigger_Attack" ID="{BDE1DE8B-E063-447A-8E99-AA2F6BDC10E2}">
+									<ChildrenList>
+										<Action Name="SFX-032_Card_Trigger_Attack" ID="{5F56A914-D421-49B7-9777-3D6AAE3DB7F4}" ShortID="963012280">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_032_Card_Trigger_Attack" ID="{3F0E82E5-A2FF-4845-AC20-44C34FED8461}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_033_Card_TurnChange" ID="{E8150AF4-8ACA-461E-A4E2-3846217320B0}">
+									<ChildrenList>
+										<Action Name="SFX-033_Card_TurnChange" ID="{BAE6C809-B154-4C91-803D-F5483F0CD872}" ShortID="47160339">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_033_Card_TurnChange" ID="{3BBDE376-123F-4A62-81EF-1E2FF5DBDB1B}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_034_Card_Transform" ID="{6E1E5030-4121-4C7E-A4AC-EF4AF4645D94}">
+									<ChildrenList>
+										<Action Name="SFX-034_Card_Transform" ID="{2FCA1B99-2893-4457-9598-57843A636713}" ShortID="634928376">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_034_Card_Transform" ID="{3C776A77-14A0-4F32-BF32-C9CEF1CEEB3B}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Cutscene" ID="{2A49B815-40BF-4822-9387-17B30B9B4382}" ShortID="441677207">
+							<ChildrenList>
+								<Event Name="SFX_056_Cutscene_Opening" ID="{36638892-7A59-451E-898D-67FB9A1752F0}">
+									<ChildrenList>
+										<Action Name="SFX-056_Cutscene_Opening" ID="{3DBBB196-027D-4417-8066-5A09767E1150}" ShortID="538214007">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_056_Cutscene_Opening" ID="{629EB638-48C9-49AC-974C-2DD8858FBE6B}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Enemy" ID="{A8ADB538-4035-4378-B56C-FDB9FC225AB1}" ShortID="155356135">
+							<ChildrenList>
+								<Event Name="SFX_014_Enemy_Hit_Light" ID="{BE98094B-3DC8-4676-9006-243AA33B924C}">
+									<ChildrenList>
+										<Action Name="SFX-014_Enemy_Hit_Light" ID="{48BB0992-BC57-4482-AE46-B1D5B85203C7}" ShortID="12798139">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_014_Enemy_Hit_Light" ID="{1EE2B13F-5CFD-41AB-9E50-7D9652EB41E2}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_015_Enemy_Death" ID="{F6F3DFAA-22C6-4EC9-9191-3E8D21F1E679}">
+									<ChildrenList>
+										<Action Name="SFX-015_Enemy_Death" ID="{AB7B7FB1-9119-412C-9B61-D624AAC0291B}" ShortID="601515379">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_015_Enemy_Death" ID="{636E0E42-321C-43DA-895D-13814FD2BC04}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_044_Enemy_HitPlayer" ID="{03900DA4-38F9-4E05-AB34-F2795284F424}">
+									<ChildrenList>
+										<Action Name="SFX-044_Enemy_HitPlayer" ID="{ECE2A151-5D7D-4F80-8560-D0D507D1B6DE}" ShortID="648779331">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_044_Enemy_HitPlayer" ID="{429122B1-C425-4D2C-AFE6-F021EF2D1199}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_045_Enemy_Break" ID="{F9A373A6-2179-4A41-9102-5FAFB19FEDAA}">
+									<ChildrenList>
+										<Action Name="SFX-045_Enemy_Break" ID="{3CFBFB42-0634-43A4-B6E6-AA3765A1E179}" ShortID="480486065">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_045_Enemy_Break" ID="{93F28B91-49AA-48FF-96EA-D42FD9DA1158}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_046_Enemy_PiperFlute" ID="{2ED4908A-808E-4652-BCAE-7EDE7BDADAE1}">
+									<ChildrenList>
+										<Action Name="SFX-046_Enemy_PiperFlute" ID="{9E392947-BD61-4B77-B8A6-3A953877DE60}" ShortID="253384726">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_046_Enemy_PiperFlute" ID="{D4132FC0-2512-4D04-AC0F-FC44F68A603A}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_047_Enemy_BossIntro" ID="{EEE9027D-9C4D-4D36-A714-702948EB18C6}">
+									<ChildrenList>
+										<Action Name="SFX-047_Enemy_BossIntro" ID="{DFD54EA7-D1AE-45C6-9089-09A1BE885BD4}" ShortID="95533301">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_047_Enemy_BossIntro" ID="{73BA3AA8-F33D-471D-AF5B-30FABB35DD69}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Foot" ID="{7BB06E3D-9A02-47B6-ABB7-93DDF871D5BA}" ShortID="567767677">
+							<ChildrenList>
+								<Event Name="SFX_025_Foot_Wood" ID="{99B6A5C5-AF68-44F7-B611-AD3D81A59DE5}">
+									<ChildrenList>
+										<Action Name="SFX-025_Foot_Wood" ID="{90D3193A-B31E-47B8-8BCA-94BD5EB9ABF3}" ShortID="288644029">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_025_Foot_Wood" ID="{4B00313D-42AC-4B6E-AD47-52EC18208A53}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_026_Foot_Mud" ID="{439C53F1-B4A4-454C-982B-ACB3BFA01FF2}">
+									<ChildrenList>
+										<Action Name="SFX-026_Foot_Mud" ID="{6206841D-1877-4BFE-A8BD-3F3E35884624}" ShortID="271896769">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_026_Foot_Mud" ID="{ED8B7C03-C48F-463E-A929-1BE015524DE4}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_027_Foot_Stone" ID="{D4575241-B787-479C-8D49-9CBF13093A14}">
+									<ChildrenList>
+										<Action Name="SFX-027_Foot_Stone" ID="{A24A2D02-F6E0-4435-8371-B98081207CB1}" ShortID="312557857">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_027_Foot_Stone" ID="{3F47AAFB-B40E-4AA5-97F7-A32B57F9286C}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Map" ID="{FAFC4021-B5FC-4D82-B01A-FB4195DEED67}" ShortID="812339367">
+							<ChildrenList>
+								<Event Name="SFX_054_Map_MoveStep" ID="{02C4156B-D1C6-45C6-A4D7-CE3CBEDE0665}">
+									<ChildrenList>
+										<Action Name="SFX-054_Map_MoveStep" ID="{88D8CBAB-43AE-485E-8D22-410DDE2A83EA}" ShortID="80293317">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_054_Map_MoveStep" ID="{3F164849-989B-427E-9CC0-C8911B1B7A88}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_055_Map_FogReveal" ID="{F49E8A6C-2500-44DA-9759-5811E918638E}">
+									<ChildrenList>
+										<Action Name="SFX-055_Map_FogReveal" ID="{0659B2E3-7955-4817-B7B9-1A63135256A5}" ShortID="128098066">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_055_Map_FogReveal" ID="{4C26EDAF-87FB-4B1E-A48B-472603D95439}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Player" ID="{85722896-F79A-45C7-848A-7CC93D64DF11}" ShortID="172953614">
+							<ChildrenList>
+								<Event Name="SFX_012_Player_Hit_Light" ID="{B50DF804-C22B-49A8-971F-90BD5B847186}">
+									<ChildrenList>
+										<Action Name="SFX-012_Player_Hit_Light" ID="{5B46D69F-15F6-4FE2-A7EE-5CEBFF640E20}" ShortID="29615314">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_012_Player_Hit_Light" ID="{4116EECB-418D-47EA-91DC-2AADDCBD61C5}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_013_Player_Death" ID="{13E57565-E47E-4B0E-8A29-D2107C050EFE}">
+									<ChildrenList>
+										<Action Name="SFX-013_Player_Death" ID="{7D0C249C-A18A-4621-9FEF-6FEEDDB005FA}" ShortID="467765618">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_013_Player_Death" ID="{E6B62AC4-E493-4803-8060-48204125A51E}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_035_Player_Hit_Heavy" ID="{4099199F-C046-4EEB-AF2D-387B87236C99}">
+									<ChildrenList>
+										<Action Name="SFX-035_Player_Hit_Heavy" ID="{33D72FF5-17D1-4899-804A-206898A3C875}" ShortID="570097766">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_035_Player_Hit_Heavy" ID="{9BE1DD15-06D1-4333-92B9-46493B15533C}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_042_Player_Breath" ID="{1A525205-65E2-468D-8C34-780D128A5602}">
+									<ChildrenList>
+										<Action Name="SFX-042_Player_Breath" ID="{CE00D627-8B6E-4E55-B7E3-501C43B781C1}" ShortID="781785735">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_042_Player_Breath" ID="{29A52E8B-432E-4B27-87B8-20E6B2D82988}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_043_Player_LowHP" ID="{03B67CA1-3F6F-4311-926D-CEE07F175C0F}">
+									<ChildrenList>
+										<Action Name="SFX-043_Player_LowHP" ID="{89FCE158-B760-43EB-A9AA-187B5310B37F}" ShortID="260206710">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_043_Player_LowHP" ID="{30BDDAF0-AD0A-4A7D-A7E8-8EE6393432F6}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Potion" ID="{321CD5F9-94D6-4EB8-BF0F-5B7C424D5250}" ShortID="472855981">
+							<ChildrenList>
+								<Event Name="SFX_052_Potion_Select" ID="{FC3C1055-9187-43FC-A91F-B25D68E80A7B}">
+									<ChildrenList>
+										<Action Name="SFX-052_Potion_Select" ID="{A76409B6-2AB5-435D-BF46-99E243AC70D7}" ShortID="26755472">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_052_Potion_Select" ID="{20BCFDB7-732F-4C3F-931B-012B812A912E}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_053_Potion_Use" ID="{79CC2D94-5653-41BB-B22E-24719F5D4C4F}">
+									<ChildrenList>
+										<Action Name="SFX-053_Potion_Use" ID="{104B8645-BD65-4D68-A8F0-E465E32166FF}" ShortID="509956348">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_053_Potion_Use" ID="{903F0612-02DB-4077-BCDB-18C3ED4DCA97}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Relic" ID="{7C9C1F23-628B-4433-AC53-B539F2A7FD1C}" ShortID="684942561">
+							<ChildrenList>
+								<Event Name="SFX_048_Relic_Snap" ID="{6ECF2FAA-7937-4178-8C0D-EA7FCF7652B7}">
+									<ChildrenList>
+										<Action Name="SFX-048_Relic_Snap" ID="{BC2B67C0-A6D6-4000-91D0-DF6277CB6918}" ShortID="382456560">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_048_Relic_Snap" ID="{31C209B9-C963-4BEF-A608-67D3E13AC39C}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_049_Relic_Link" ID="{D236D40D-8F6C-4D3D-899C-BC4249FC44F8}">
+									<ChildrenList>
+										<Action Name="SFX-049_Relic_Link" ID="{C269CDBC-AD47-4351-950D-9F46EB70D8E6}" ShortID="313356039">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_049_Relic_Link" ID="{16772251-CD1C-40DA-9A81-B2AB1A77CE15}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_050_Relic_ChainTrigger" ID="{4C1D3E7A-D979-45FC-8179-CBF5A621D9A1}">
+									<ChildrenList>
+										<Action Name="SFX-050_Relic_ChainTrigger" ID="{6346A741-7166-478A-9458-AC2E392E2CD2}" ShortID="104910347">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_050_Relic_ChainTrigger" ID="{26CAD2CB-8F13-4B0E-8F8D-EE0881000DCD}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_051_Relic_Gain" ID="{202B7729-EE99-47FC-9D97-94655A41A8ED}">
+									<ChildrenList>
+										<Action Name="SFX-051_Relic_Gain" ID="{A59D22D7-409C-4D8A-9B0A-3A42C878C074}" ShortID="4823511">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_051_Relic_Gain" ID="{79FD2FF7-B3B1-4F64-84BA-4F9417EFEE93}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Trans" ID="{AB733F41-0490-47E4-B2CB-CD001DEA0ECD}" ShortID="494076151">
+							<ChildrenList>
+								<Event Name="SFX_020_Trans_Workshop_Slum" ID="{9106A1DA-AC8D-455D-A3CE-5DB97D8BD5DF}">
+									<ChildrenList>
+										<Action Name="SFX-020_Trans_Workshop_Slum" ID="{9C06B7F7-F9DE-4A92-81DD-6BA427E515D1}" ShortID="618387514">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_020_Trans_Workshop_Slum" ID="{FA6408B5-9432-4AA8-AB2E-0310D256572F}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_021_Trans_Slum_Church" ID="{CAFD99DC-F8E8-40E4-B4D9-8FA931E96562}">
+									<ChildrenList>
+										<Action Name="SFX-021_Trans_Slum_Church" ID="{788F9F3E-BE2C-444D-9679-6140BD716B89}" ShortID="574243776">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_021_Trans_Slum_Church" ID="{73C5C9F4-04CF-421E-9B00-53366B6180A6}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_022_Trans_EnterBattle" ID="{45A66BF0-657F-4A82-B7B3-B91BB8719B78}">
+									<ChildrenList>
+										<Action Name="SFX-022_Trans_EnterBattle" ID="{D71B7285-FA76-47E5-BBD3-B6C67951D813}" ShortID="283796918">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_022_Trans_EnterBattle" ID="{1DC51189-3E0E-4E4C-B787-8BB954A4253D}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_023_Trans_FloorChange" ID="{A3FD096B-9295-44D8-A99D-BBF73098B124}">
+									<ChildrenList>
+										<Action Name="SFX-023_Trans_FloorChange" ID="{D211EE2A-6868-4714-8C4C-8A54D68AEA3A}" ShortID="712359957">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_023_Trans_FloorChange" ID="{CB36351D-CBC2-41BC-891D-5904914268D7}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_024_Trans_ExitBattle" ID="{571FDE45-6401-44B6-8677-001FFC4D7666}">
+									<ChildrenList>
+										<Action Name="SFX-024_Trans_ExitBattle" ID="{90DFBE67-8D2B-4C77-91ED-C6FACE233529}" ShortID="333869834">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_024_Trans_ExitBattle" ID="{2F42A69D-E7FF-484A-8F7F-ACD1E1890901}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="UI" ID="{973EAEEB-3897-41DA-9508-7C464F4394B8}" ShortID="907630616">
+							<ChildrenList>
+								<Event Name="SFX_001_UI_Hover" ID="{6BE67A9B-291B-4FDA-97FE-4A605087C259}">
+									<ChildrenList>
+										<Action Name="SFX-001_UI_Hover" ID="{B70C83AB-AAF7-4C2A-B34B-B8338C905106}" ShortID="942273060">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_001_UI_Hover" ID="{E6FC4CE2-0962-4B69-B35A-D148693F113A}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_002_UI_Click" ID="{7FD3482D-6511-4FF3-AECC-70943576A99D}">
+									<ChildrenList>
+										<Action Name="SFX-002_UI_Click" ID="{6575B595-5815-45CD-98D0-198E4BE87A8F}" ShortID="543632411">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_002_UI_Click" ID="{FA393991-7C3C-4491-8446-D1A7B28BAC3D}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_003_UI_Back" ID="{8B74723B-0696-4B70-AD33-D1CFE603F67A}">
+									<ChildrenList>
+										<Action Name="SFX-003_UI_Back" ID="{8327330F-AD06-41C7-AF97-68FFD53A762B}" ShortID="306863005">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_003_UI_Back" ID="{A1F0E0ED-8F06-403F-A28C-82A9DB759E76}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_004_UI_Panel_Open" ID="{0273BA27-611E-41C4-8817-42AADED57B6C}">
+									<ChildrenList>
+										<Action Name="SFX-004_UI_Panel_Open" ID="{0541AB6C-91FC-4340-B526-DFE010738BFD}" ShortID="360061839">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_004_UI_Panel_Open" ID="{6C67ED46-E392-4B2D-AE4B-D315374608D8}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_005_UI_Panel_Close" ID="{CFDCE4E3-5CFD-4037-BC12-AF25A97CBF46}">
+									<ChildrenList>
+										<Action Name="SFX-005_UI_Panel_Close" ID="{E25EBE8A-9982-4858-BDFC-EBD0A0F7477A}" ShortID="93487292">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_005_UI_Panel_Close" ID="{A63CA064-8FD5-4D73-9A46-9D5E5C63115E}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_028_UI_Slider" ID="{6F71FFC9-BE12-46AC-9023-D747E85A7B9D}">
+									<ChildrenList>
+										<Action Name="SFX-028_UI_Slider" ID="{BBC70C39-8E6B-48A0-9FB2-CB91E74A0BCA}" ShortID="645051224">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_028_UI_Slider" ID="{55AD7185-9957-4C82-8E79-78E16FB58370}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_029_UI_Error" ID="{BFE952C0-8B04-482E-8E07-162F9815037A}">
+									<ChildrenList>
+										<Action Name="SFX-029_UI_Error" ID="{4D7850F1-B27E-41CE-B009-4E26E8C74E0F}" ShortID="575668343">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_029_UI_Error" ID="{7D2CD56A-66C2-4BFB-A74B-075CF9091D7E}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_030_UI_Result_Win" ID="{A935A655-8681-4659-A6B8-103AF6B6ACF5}">
+									<ChildrenList>
+										<Action Name="SFX-030_UI_Result_Win" ID="{25E88DC0-E834-4A7C-A65D-708F16400BB6}" ShortID="700138345">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_030_UI_Result_Win" ID="{EB52F535-A2E1-43A6-89FF-81A817B257D1}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_031_UI_Result_Lose" ID="{2F2BA819-C2F0-4106-B8A3-98F538FD1E01}">
+									<ChildrenList>
+										<Action Name="SFX-031_UI_Result_Lose" ID="{CED92170-F2FF-462E-9636-AB3A97C413B5}" ShortID="534477404">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_031_UI_Result_Lose" ID="{47A42B0F-3166-4721-A17D-69F874F3C2D3}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+					</ChildrenList>
+				</Folder>
+			</ChildrenList>
+		</WorkUnit>
+	</Events>
+</WwiseDocument>
