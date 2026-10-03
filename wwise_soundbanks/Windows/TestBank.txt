@@ -1,0 +1,7 @@
+Event	ID	Name			Wwise Object Path	Notes
+	83581882	Play_TestClick			\Default Work Unit\Play_TestClick	
+	556472348	Test_Click			\Default Work Unit\Test_Click	
+
+In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
+	234087332	TestClick	.cache\68\{6849AB7E-3F22-5A2E-CD4E-6060886A0350}.wem		\Containers\Default Work Unit\TestClick		11616
+

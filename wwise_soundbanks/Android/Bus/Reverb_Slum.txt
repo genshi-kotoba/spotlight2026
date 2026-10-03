@@ -1,0 +1,6 @@
+Auxiliary Bus	ID	Name			Wwise Object Path	Notes
+	1225611939	Reverb_Slum			\Default Work Unit\Main Audio Bus\Reverb_Slum	
+
+Effect plug-ins	ID	Name	Type				Notes
+	1346364472	Rev_Slum	Wwise RoomVerb			
+

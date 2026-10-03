@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Android",
+  "BasePlatform": "Android",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "4256874363",
+    "Type": "Bus",
+    "GUID": "{DB38CA55-F3BB-4C9A-A4CF-FACFED221E9F}",
+    "Language": "SFX",
+    "Hash": "{EF42E98F-EAD6-2226-AEF2-BD6FD32A6BE9}",
+    "ObjectPath": "Reverb_Workshop",
+    "ShortName": "Reverb_Workshop",
+    "Path": "Bus/Reverb_Workshop.bnk",
+    "Plugins": {
+     "ShareSets": [
+      {
+       "Id": "3312331036",
+       "Name": "Rev_Workshop",
+       "ObjectPath": "\\Effects\\Default Work Unit\\Reverb\\Rev_Workshop",
+       "GUID": "{1EAA2EED-D229-4054-8086-53979F047B78}",
+       "LibName": "Wwise RoomVerb",
+       "LibId": "7733251"
+      }
+     ]
+    },
+    "AuxBusses": [
+     {
+      "Id": "4256874363",
+      "Name": "Reverb_Workshop",
+      "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus\\Reverb_Workshop",
+      "GUID": "{DB38CA55-F3BB-4C9A-A4CF-FACFED221E9F}",
+      "PluginRefs": {
+       "ShareSets": [
+        {
+         "Id": "3312331036"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ],
+  "FileHash": "{17A964F5-C4FF-4F78-8A85-4B54450717E5}"
+ }
+}

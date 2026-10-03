@@ -1,0 +1,61 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "3291379323",
+    "Type": "User",
+    "GUID": "{BC9C46CD-6CFE-4692-A6BF-31D682D7E7C9}",
+    "Language": "SFX",
+    "Hash": "{4BCD3956-A84B-C66E-8302-21F6C2AF6375}",
+    "ObjectPath": "\\SoundBanks\\Default Work Unit\\TestBank",
+    "ShortName": "TestBank",
+    "Path": "TestBank.bnk",
+    "Media": [
+     {
+      "Id": "234087332",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\test_click_48k24b.wav",
+      "CachePath": "68/{6849AB7E-3F22-5A2E-CD4E-6060886A0350}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "83581882",
+      "Name": "Play_TestClick",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_TestClick",
+      "GUID": "{8A9EC505-E5B4-4378-8A1F-FC8324B518C2}",
+      "DurationType": "OneShot",
+      "DurationMin": "0.12",
+      "DurationMax": "0.12",
+      "MediaRefs": [
+       {
+        "Id": "234087332"
+       }
+      ]
+     },
+     {
+      "Id": "556472348",
+      "Name": "Test_Click",
+      "ObjectPath": "\\Events\\Default Work Unit\\Test_Click",
+      "GUID": "{DBEC385D-780E-4543-B844-7E84D5A901B8}",
+      "DurationType": "OneShot",
+      "DurationMin": "0.12",
+      "DurationMax": "0.12",
+      "MediaRefs": [
+       {
+        "Id": "234087332"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{4E5AB72E-BF61-2033-95BB-11D09C37A766}"
+ }
+}

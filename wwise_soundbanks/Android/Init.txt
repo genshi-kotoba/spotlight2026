@@ -1,0 +1,38 @@
+State Group	ID	Name			Wwise Object Path	Notes
+	1926883983	Scene			\Default Work Unit\Scene	
+	2764240573	Combat			\Default Work Unit\Combat	
+
+State	ID	Name	State Group			Notes
+	15731857	ChurchTop	Scene			
+	619828442	Slum	Scene			
+	748895195	None	Scene			
+	2535232994	Workshop	Scene			
+	2568407992	Church	Scene			
+	579523862	Explore	Combat			
+	748895195	None	Combat			
+	2937832959	Battle	Combat			
+
+Audio Bus	ID	Name			Wwise Object Path	Notes
+	85412153	Ambience			\Default Work Unit\Main Audio Bus\Ambience	
+	393239870	SFX			\Default Work Unit\Main Audio Bus\SFX	
+	1551306167	UI			\Default Work Unit\Main Audio Bus\UI	
+	2246998526	Main Audio Bus			\Default Work Unit\Main Audio Bus	
+	3170124113	Voice			\Default Work Unit\Main Audio Bus\Voice	
+	3991942870	Music			\Default Work Unit\Main Audio Bus\Music	
+
+Auxiliary Bus	ID	Name			Wwise Object Path	Notes
+	1225611939	Reverb_Slum			\Default Work Unit\Main Audio Bus\Reverb_Slum	
+	4135238417	Reverb_Church			\Default Work Unit\Main Audio Bus\Reverb_Church	
+	4256874363	Reverb_Workshop			\Default Work Unit\Main Audio Bus\Reverb_Workshop	
+
+Effect plug-ins	ID	Name	Type				Notes
+	296718464	Comp_Music_Duck	Wwise Compressor			
+	1192520156	SC_Send	Ak Sidechain Send			
+	1346364472	Rev_Slum	Wwise RoomVerb			
+	3312331036	Rev_Workshop	Wwise RoomVerb			
+	3416043182	Rev_Church	Wwise RoomVerb			
+
+Audio Devices	ID	Name	Type				Notes
+	2317455096	No_Output	No Output			
+	3859886410	System	System			
+
