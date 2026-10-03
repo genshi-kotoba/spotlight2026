@@ -40,7 +40,7 @@ Assets/Prefabs/          预制体
 Assets/Resources/        运行时加载的配置资产
 Assets/Art/ Materials/ Sprites/ Textures/ Models/   美术资源
 Assets/Plugins/          DOTween 等第三方库
-docs/可复用代码清单.md     按本项目的 PRG 编号组织的复用清单
+docs/可复用代码清单.md     本项目每个系统要做什么 × 原工程对应代码，逐条对照
 docs/移植注意事项.md       Unity/C# 到 Godot/GDScript 的对应关系与耦合清理项
 ```
 
