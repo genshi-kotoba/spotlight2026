@@ -5,7 +5,7 @@
    "GUID": "{7D29B16F-CACE-49C6-9C1E-CD9ADC081C18}",
    "Generator": "2025.1.11.9262"
   },
-  "CacheRoot": "../../../test/spotlight2026_wwise/.cache",
+  "CacheRoot": "../WwiseProject/.cache",
   "Platforms": [
    {
     "Name": "Android",
@@ -31,6 +31,6 @@
     "UseAsStandIn": "true"
    }
   ],
-  "FileHash": "{6B9533F5-1766-8842-A714-75477F663C87}"
+  "FileHash": "{E148CEE2-2849-83B6-204E-2F52E060CFBC}"
  }
 }

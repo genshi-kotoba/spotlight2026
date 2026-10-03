@@ -6,11 +6,11 @@
    "Generator": "2025.1.11.9262"
   },
   "RootPaths": {
-   "ProjectRoot": "../../../../test/spotlight2026_wwise",
-   "SourceFilesRoot": "../../../../test/spotlight2026_wwise/.cache",
+   "ProjectRoot": "../../WwiseProject",
+   "SourceFilesRoot": "../../WwiseProject/.cache",
    "SoundBanksRoot": ".",
    "ExternalSourcesInputFile": "",
-   "ExternalSourcesOutputRoot": "../../../../test/spotlight2026_wwise/GeneratedSoundBanks/Windows"
+   "ExternalSourcesOutputRoot": "../../WwiseProject/GeneratedSoundBanks/Windows"
   },
   "DefaultAlign": "16",
   "Settings": {
@@ -33,6 +33,6 @@
    "PrintObjectPath": "true",
    "PrintObjectColor": "true"
   },
-  "FileHash": "{9669E875-5BB0-369F-02C7-89B8255DAE4A}"
+  "FileHash": "{08A5DACB-0888-AC44-8F8E-AAE25366852E}"
  }
 }
