@@ -1,0 +1,56 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://systems/map/map_scene.gd" id="1_scene"]
+[ext_resource type="Script" path="res://systems/map/map_builder.gd" id="2_builder"]
+[ext_resource type="Script" path="res://systems/map/map_path_view.gd" id="3_pathview"]
+[ext_resource type="Script" path="res://systems/map/player_mover.gd" id="4_mover"]
+[ext_resource type="Script" path="res://systems/map/map_input.gd" id="5_input"]
+[ext_resource type="Script" path="res://systems/map/map_camera.gd" id="6_camera"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_Player"]
+albedo_color = Color(0.95, 0.78, 0.35, 1)
+roughness = 0.6
+
+[sub_resource type="CapsuleMesh" id="Mesh_Player"]
+material = SubResource("Mat_Player")
+radius = 0.35
+height = 1.1
+
+[sub_resource type="Environment" id="Env_Map"]
+background_mode = 1
+background_color = Color(0.13, 0.14, 0.18, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.57, 0.64, 1)
+ambient_light_energy = 0.42
+
+[node name="MapDemo" type="Node3D"]
+script = ExtResource("1_scene")
+
+[node name="MapBuilder" type="Node3D" parent="."]
+script = ExtResource("2_builder")
+
+[node name="PathView" type="Node3D" parent="."]
+script = ExtResource("3_pathview")
+
+[node name="Player" type="Node3D" parent="."]
+script = ExtResource("4_mover")
+
+[node name="Body" type="MeshInstance3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+mesh = SubResource("Mesh_Player")
+
+[node name="Input" type="Node" parent="."]
+script = ExtResource("5_input")
+
+[node name="Camera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, 0, 14.7, 10.3)
+script = ExtResource("6_camera")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 14, 0)
+light_energy = 1.25
+shadow_enabled = true
+directional_shadow_max_distance = 90.0
+
+[node name="Environment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env_Map")
