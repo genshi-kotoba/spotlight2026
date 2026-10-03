@@ -13,7 +13,6 @@ namespace AK
 {
     namespace EVENTS
     {
-        static const AkUniqueID PLAY_TESTCLICK = 83581882U;
         static const AkUniqueID SFX_001_UI_HOVER = 1904108632U;
         static const AkUniqueID SFX_002_UI_CLICK = 1091911267U;
         static const AkUniqueID SFX_003_UI_BACK = 2347086561U;
@@ -70,8 +69,6 @@ namespace AK
         static const AkUniqueID SFX_054_MAP_MOVESTEP = 1612996235U;
         static const AkUniqueID SFX_055_MAP_FOGREVEAL = 1669113984U;
         static const AkUniqueID SFX_056_CUTSCENE_OPENING = 3387093548U;
-        static const AkUniqueID TEST_CLICK = 556472348U;
-        static const AkUniqueID TEST_EVENT = 4258653052U;
     } // namespace EVENTS
 
     namespace STATES
@@ -160,7 +157,6 @@ namespace AK
         static const AkUniqueID INIT = 1355168291U;
         static const AkUniqueID MUSIC = 3991942870U;
         static const AkUniqueID SFX = 393239870U;
-        static const AkUniqueID TESTBANK = 3291379323U;
     } // namespace BANKS
 
     namespace BUSSES

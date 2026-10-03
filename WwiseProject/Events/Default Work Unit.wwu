@@ -3,29 +3,6 @@
 	<Events>
 		<WorkUnit Name="Default Work Unit" ID="{93B8C4E6-9252-4E83-B082-EBB22107F344}" PersistMode="Standalone">
 			<ChildrenList>
-				<Event Name="Test_Event" ID="{D47F56C3-B12B-403F-8EF6-A57406EB7BAF}"/>
-				<Event Name="Test_Click" ID="{DBEC385D-780E-4543-B844-7E84D5A901B8}">
-					<ChildrenList>
-						<Action Name="Test_Click" ID="{0337FBD0-0B24-4C73-B8FE-051E8A2FD87D}" ShortID="681575213">
-							<ReferenceList>
-								<Reference Name="Target">
-									<ObjectRef Name="TestClick" ID="{05725B69-DB3A-4442-8AC7-7085FA2BFDC4}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-								</Reference>
-							</ReferenceList>
-						</Action>
-					</ChildrenList>
-				</Event>
-				<Event Name="Play_TestClick" ID="{8A9EC505-E5B4-4378-8A1F-FC8324B518C2}">
-					<ChildrenList>
-						<Action Name="" ID="{3AFFF865-2A5A-4236-8C78-568092F20D51}" ShortID="853058693">
-							<ReferenceList>
-								<Reference Name="Target">
-									<ObjectRef Name="TestClick" ID="{05725B69-DB3A-4442-8AC7-7085FA2BFDC4}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-								</Reference>
-							</ReferenceList>
-						</Action>
-					</ChildrenList>
-				</Event>
 				<Folder Name="SFX" ID="{50FFEF4D-4BA8-4337-A501-3603B3FB7C9B}" ShortID="695315809">
 					<ChildrenList>
 						<Folder Name="Amb" ID="{9C49A839-B585-4AC9-80C2-8BDC771CF0F4}" ShortID="64961150">
