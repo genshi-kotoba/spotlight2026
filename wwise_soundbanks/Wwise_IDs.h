@@ -151,7 +151,6 @@ namespace AK
         static const AkUniqueID VOLUME_MUSIC = 3891337659U;
         static const AkUniqueID VOLUME_SFX = 3673881719U;
         static const AkUniqueID VOLUME_UI = 4212040332U;
-        static const AkUniqueID VOLUME_VOICE = 3676256460U;
     } // namespace GAME_PARAMETERS
 
     namespace BANKS
@@ -168,7 +167,6 @@ namespace AK
         static const AkUniqueID MUSIC = 3991942870U;
         static const AkUniqueID SFX = 393239870U;
         static const AkUniqueID UI = 1551306167U;
-        static const AkUniqueID VOICE = 3170124113U;
     } // namespace BUSSES
 
     namespace AUX_BUSSES

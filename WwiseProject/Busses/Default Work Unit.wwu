@@ -38,7 +38,6 @@
 						</Bus>
 						<Bus Name="UI" ID="{FD72B170-B360-4725-8677-1212456F9DA3}"/>
 						<Bus Name="Ambience" ID="{466C3A53-5754-480B-9235-88C369CBC4AF}"/>
-						<Bus Name="Voice" ID="{280A33C7-3E53-4EA4-8153-E797DA78A3B7}"/>
 						<AuxBus Name="Reverb_Workshop" ID="{DB38CA55-F3BB-4C9A-A4CF-FACFED221E9F}">
 							<ObjectLists>
 								<ObjectList Name="Effects">

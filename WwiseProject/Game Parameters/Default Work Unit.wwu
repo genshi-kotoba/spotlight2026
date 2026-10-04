@@ -34,11 +34,6 @@
 						<Property Name="InitialValue" Type="Real64" Value="0"/>
 					</PropertyList>
 				</GameParameter>
-				<GameParameter Name="Volume_Voice" ID="{1F4E0EB2-FD10-4634-A359-7E05ABB943E0}">
-					<PropertyList>
-						<Property Name="InitialValue" Type="Real64" Value="0"/>
-					</PropertyList>
-				</GameParameter>
 				<GameParameter Name="Tension" ID="{F9E3B37C-CFF1-417A-885D-802FD77BAD1C}">
 					<PropertyList>
 						<Property Name="InitialValue" Type="Real64" Value="0"/>
