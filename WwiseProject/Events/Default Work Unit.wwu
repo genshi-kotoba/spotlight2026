@@ -669,6 +669,32 @@
 								</Event>
 							</ChildrenList>
 						</Folder>
+						<Folder Name="Voice" ID="{579D9B3B-D3D3-456F-B862-0C2CEA06B60A}" ShortID="492050353">
+							<ChildrenList>
+								<Event Name="SFX_057_Voice_Talk" ID="{470A206E-D43D-422F-9F92-E02A65C646AA}">
+									<ChildrenList>
+										<Action Name="SFX_057_Voice_Talk" ID="{73492D22-290F-4BCD-ADB5-DF2503CD0DFA}" ShortID="369611267">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_057_Voice_Talk" ID="{6D418BAE-0088-4020-BD1A-5ED8BA30735B}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_058_Voice_PenWrite" ID="{79DF21E1-C958-48E4-A4E8-F89EA2223C42}">
+									<ChildrenList>
+										<Action Name="SFX_058_Voice_PenWrite" ID="{D3605644-72DF-4B3D-A140-D6B541986964}" ShortID="538929181">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_058_Voice_PenWrite" ID="{C50FAEE6-CF4C-4266-8ED0-C2D28E52C027}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
 					</ChildrenList>
 				</Folder>
 			</ChildrenList>

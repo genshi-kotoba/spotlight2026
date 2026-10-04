@@ -69,6 +69,8 @@ namespace AK
         static const AkUniqueID SFX_054_MAP_MOVESTEP = 1612996235U;
         static const AkUniqueID SFX_055_MAP_FOGREVEAL = 1669113984U;
         static const AkUniqueID SFX_056_CUTSCENE_OPENING = 3387093548U;
+        static const AkUniqueID SFX_057_VOICE_TALK = 3864440901U;
+        static const AkUniqueID SFX_058_VOICE_PENWRITE = 684639692U;
     } // namespace EVENTS
 
     namespace STATES

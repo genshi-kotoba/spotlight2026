@@ -8,6 +8,7 @@ Event	ID	Name			Wwise Object Path	Notes
 	517309637	SFX_039_Battle_BuffGain			\Default Work Unit\SFX\Battle\SFX_039_Battle_BuffGain	
 	587588346	SFX_041_Battle_Pickup			\Default Work Unit\SFX\Battle\SFX_041_Battle_Pickup	
 	677654771	SFX_046_Enemy_PiperFlute			\Default Work Unit\SFX\Enemy\SFX_046_Enemy_PiperFlute	
+	684639692	SFX_058_Voice_PenWrite			\Default Work Unit\SFX\Voice\SFX_058_Voice_PenWrite	
 	728956888	SFX_040_Battle_DebuffGain			\Default Work Unit\SFX\Battle\SFX_040_Battle_DebuffGain	
 	731281771	SFX_024_Trans_ExitBattle			\Default Work Unit\SFX\Trans\SFX_024_Trans_ExitBattle	
 	818430349	SFX_026_Foot_Mud			\Default Work Unit\SFX\Foot\SFX_026_Foot_Mud	
@@ -52,6 +53,7 @@ Event	ID	Name			Wwise Object Path	Notes
 	3600487749	SFX_008_Card_Draw			\Default Work Unit\SFX\Card\SFX_008_Card_Draw	
 	3703868213	SFX_049_Relic_Link			\Default Work Unit\SFX\Relic\SFX_049_Relic_Link	
 	3760848721	SFX_016_Amb_Workshop			\Default Work Unit\SFX\Amb\SFX_016_Amb_Workshop	
+	3864440901	SFX_057_Voice_Talk			\Default Work Unit\SFX\Voice\SFX_057_Voice_Talk	
 	3945563550	SFX_034_Card_Transform			\Default Work Unit\SFX\Card\SFX_034_Card_Transform	
 	3987020771	SFX_027_Foot_Stone			\Default Work Unit\SFX\Foot\SFX_027_Foot_Stone	
 	4113407574	SFX_011_Battle_Pointer_Rewind			\Default Work Unit\SFX\Battle\SFX_011_Battle_Pointer_Rewind	

@@ -10,7 +10,7 @@
     "Type": "User",
     "GUID": "{8D0491CA-9979-4D1A-8C52-7B0823C25729}",
     "Language": "SFX",
-    "Hash": "{CC4BB6C2-5148-4ADE-7FD9-E0D1EA195965}",
+    "Hash": "{219C4FE4-DF80-265B-66FB-7E876973BF83}",
     "ObjectPath": "\\SoundBanks\\Default Work Unit\\SFX",
     "ShortName": "SFX",
     "Path": "SFX.bnk",
@@ -518,10 +518,28 @@
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
+     },
+     {
+      "Id": "3864440901",
+      "Name": "SFX_057_Voice_Talk",
+      "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Voice\\SFX_057_Voice_Talk",
+      "GUID": "{470A206E-D43D-422F-9F92-E02A65C646AA}",
+      "DurationType": "OneShot",
+      "DurationMin": "0",
+      "DurationMax": "0"
+     },
+     {
+      "Id": "684639692",
+      "Name": "SFX_058_Voice_PenWrite",
+      "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Voice\\SFX_058_Voice_PenWrite",
+      "GUID": "{79DF21E1-C958-48E4-A4E8-F89EA2223C42}",
+      "DurationType": "OneShot",
+      "DurationMin": "0",
+      "DurationMax": "0"
      }
     ]
    }
   ],
-  "FileHash": "{6BB20F2C-D4A8-156F-BD29-578EB56D000F}"
+  "FileHash": "{5465869A-1001-F4AC-507D-8C01D22D8948}"
  }
 }
