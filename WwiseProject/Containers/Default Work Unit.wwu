@@ -14,6 +14,10 @@
 					</ReferenceList>
 					<ChildrenList>
 						<PropertyContainer Name="Amb" ID="{01A2B5C6-0E9E-4841-ABCE-C19759B4ECDF}" ShortID="568101412">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="7"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -25,6 +29,8 @@
 							<ChildrenList>
 								<BlendContainer Name="SFX_016_Amb_Workshop" ID="{D16FF9E6-74FF-4601-87FC-FC55C09BC0A0}" ShortID="566075454">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="7"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -37,6 +43,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_016_Amb_Workshop_L1" ID="{EC5B9177-3DB8-4D1D-BEE7-30B26E2FDD19}" ShortID="12042099">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="7"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -47,6 +57,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_016_Amb_Workshop_L1_01" ID="{652B2273-8982-423E-8FDA-8FB254095354}" ShortID="109211362">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="7"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -82,6 +96,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_017_Amb_Slum" ID="{2EF9FB24-1BDC-4B15-B62D-E12E5C2AA9FA}" ShortID="733614773">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="7"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -94,6 +110,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_017_Amb_Slum_L1" ID="{4358B614-FAEA-4342-AF75-8830AA38ED3E}" ShortID="787800445">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="7"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -104,6 +124,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_017_Amb_Slum_L1_01" ID="{2C571CD0-7DEE-48B8-BBDE-88CD80D42FAD}" ShortID="333744268">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="7"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -139,6 +163,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_018_Amb_Church" ID="{1185B2D4-D429-4DD5-8D14-6334B034C348}" ShortID="824992248">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="7"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -151,6 +177,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_018_Amb_Church_L1" ID="{98D74AD5-AF6C-4928-9624-482AC81E193F}" ShortID="404126348">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="7"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -161,6 +191,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_018_Amb_Church_L1_01" ID="{B559A180-60CB-40E5-A050-27141B64C548}" ShortID="130952137">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="7"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -196,6 +230,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_019_Amb_ChurchTop" ID="{32D1572C-CF22-4EEB-A9D9-AED81CF228CD}" ShortID="138991039">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="7"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -208,6 +244,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_019_Amb_ChurchTop_L1" ID="{D1DA52DA-7550-402C-8CE4-E7CB1BBC32CB}" ShortID="472080981">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="7"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -218,6 +258,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_019_Amb_ChurchTop_L1_01" ID="{5F6AAF79-A660-4C52-8ED2-C6FDFBFBB254}" ShortID="565761130">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="7"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -254,6 +298,10 @@
 							</ChildrenList>
 						</PropertyContainer>
 						<PropertyContainer Name="Battle" ID="{8A49D701-E65D-409F-8C0E-33900E05DA3C}" ShortID="950610314">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="1"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -265,6 +313,8 @@
 							<ChildrenList>
 								<Sound Name="SFX_039_Battle_BuffGain" ID="{00E26A80-2D68-428E-AF96-B9585D4A2E68}" ShortID="895370786">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -278,6 +328,8 @@
 								</Sound>
 								<Sound Name="SFX_040_Battle_DebuffGain" ID="{B8D3C131-E4A4-41AF-9EDE-56CC4FEE45B7}" ShortID="1011658333">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -291,6 +343,8 @@
 								</Sound>
 								<BlendContainer Name="SFX_010_Battle_Pointer_Tick" ID="{3FF00D0B-6BC2-4136-9312-064287AD7EDB}" ShortID="751963546">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -303,6 +357,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_010_Battle_Pointer_Tick_L1" ID="{C50C6581-9846-4A3A-B691-F80BC2F74F6C}" ShortID="1018987144">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="1"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -313,6 +371,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_010_Battle_Pointer_Tick_L1_01" ID="{7C3B15A3-BB17-44FD-930E-F1D4024FBD9C}" ShortID="322405093">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -323,6 +385,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_010_Battle_Pointer_Tick_L1_02" ID="{3530309E-CE0D-481F-A7C7-C5747E786AAB}" ShortID="944572193">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -333,6 +399,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_010_Battle_Pointer_Tick_L1_03" ID="{F70A3D83-4EE4-486E-9DF5-14785C9E53B2}" ShortID="592487434">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -343,6 +413,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_010_Battle_Pointer_Tick_L1_04" ID="{99CC9637-C9B4-46FC-A347-7D108F936A51}" ShortID="1013598989">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -387,6 +461,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_010_Battle_Pointer_Tick_L2" ID="{446BB568-4E22-424B-B228-E5B3950D0B41}" ShortID="618997516">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="1"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -397,6 +475,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_010_Battle_Pointer_Tick_L2_01" ID="{908DF413-7A90-4C11-BABA-6D59777CCF0E}" ShortID="639874875">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -407,6 +489,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_010_Battle_Pointer_Tick_L2_02" ID="{0B43AAF7-07D3-4526-915C-8BEA140A4D76}" ShortID="824948094">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -417,6 +503,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_010_Battle_Pointer_Tick_L2_03" ID="{FD28EE01-A6F9-4A67-8F69-A68186CBC974}" ShortID="594957753">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -427,6 +517,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_010_Battle_Pointer_Tick_L2_04" ID="{78CE3BBE-12FD-4CBD-8C63-696E0D2E93F4}" ShortID="290728927">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -490,6 +584,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_011_Battle_Pointer_Rewind" ID="{0ABA3260-6A0B-48F3-9964-82D93B4CAD0C}" ShortID="501552379">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -502,6 +598,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_011_Battle_Pointer_Rewind_L1" ID="{136793AE-D54B-4A6E-9003-9FABE9ABB3CD}" ShortID="629950546">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="1"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -512,6 +612,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_011_Battle_Pointer_Rewind_L1_01" ID="{364BF806-A4C5-4AB8-A2A0-2926565BA5A2}" ShortID="124299440">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -522,6 +626,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_011_Battle_Pointer_Rewind_L1_02" ID="{121DD6DC-89A9-415C-A6CD-B40F441BB978}" ShortID="181954249">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -532,6 +640,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_011_Battle_Pointer_Rewind_L1_03" ID="{ED3E7E95-41E2-4352-8A2B-286E805C5637}" ShortID="801085478">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -542,6 +654,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_011_Battle_Pointer_Rewind_L1_04" ID="{6B45240E-D241-4821-80F2-2768CBAC3CC3}" ShortID="262036897">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -586,6 +702,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_011_Battle_Pointer_Rewind_L2" ID="{91D02E1C-4DA7-447A-AB5A-71929A7CB419}" ShortID="403011284">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="1"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -596,6 +716,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_011_Battle_Pointer_Rewind_L2_01" ID="{23663275-77AE-477E-B993-AD76B3300CD3}" ShortID="178448974">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -606,6 +730,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_011_Battle_Pointer_Rewind_L2_02" ID="{6E0F9781-73FC-4789-81AD-3803FB77B621}" ShortID="693375478">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -616,6 +744,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_011_Battle_Pointer_Rewind_L2_03" ID="{8CF8B9B7-9E32-40CE-8140-F74781C1B878}" ShortID="929907186">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -626,6 +758,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_011_Battle_Pointer_Rewind_L2_04" ID="{DEAB5270-7326-48C2-A129-D26DED99BE99}" ShortID="147194952">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -689,6 +825,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_036_Battle_HitResolve" ID="{F3950DA3-C4BE-440D-B871-901755A66F2F}" ShortID="680365391">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -701,6 +839,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_036_Battle_HitResolve_L1" ID="{D1DAFBF4-BE70-4DE6-AAEA-2364F81FB390}" ShortID="224876651">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="1"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -711,6 +853,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_036_Battle_HitResolve_L1_01" ID="{D123FBBA-E8AE-492F-8FC0-D29BC2A9F13B}" ShortID="272253796">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -721,6 +867,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_036_Battle_HitResolve_L1_02" ID="{427759C2-09D2-4767-81F1-CDA255AB0263}" ShortID="464277262">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -731,6 +881,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_036_Battle_HitResolve_L1_03" ID="{0EE9B8B3-D69A-4F4F-9DD5-C9DAF5B7D41E}" ShortID="56827936">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -780,6 +934,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_037_Battle_Block" ID="{8B48A61B-17E2-4D2C-BAB9-B6D24B2F6D25}" ShortID="438119791">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -792,6 +948,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_037_Battle_Block_L1" ID="{FE674430-4CB6-4125-821A-D63FA63F6EAD}" ShortID="146917103">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="1"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -802,6 +962,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_037_Battle_Block_L1_01" ID="{1D734D87-DA8A-4323-A703-88CCE75428C7}" ShortID="813254826">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -812,6 +976,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_037_Battle_Block_L1_02" ID="{1C8385BD-DDE2-4EF5-8D9B-418E360B1153}" ShortID="1010506553">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -822,6 +990,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_037_Battle_Block_L1_03" ID="{6B5C18A4-5583-4E3F-A7E0-170E09B25191}" ShortID="995923770">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -832,6 +1004,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_037_Battle_Block_L1_04" ID="{56CFF42D-8014-41EE-AC31-1CF521CB87DE}" ShortID="220631267">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -876,6 +1052,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_037_Battle_Block_L2" ID="{4F0B43B1-FF01-44E9-87E2-65631209B36D}" ShortID="1042955027">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="1"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -886,6 +1066,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_037_Battle_Block_L2_01" ID="{6B0153A5-1538-4E09-B8CA-EF72D17395C6}" ShortID="577628984">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -896,6 +1080,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_037_Battle_Block_L2_02" ID="{11B4A7A6-0F53-42C4-9A40-01519CBF48E7}" ShortID="345553143">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -906,6 +1094,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_037_Battle_Block_L2_03" ID="{2FE6476D-DA49-4BAE-B2F5-F5BFD8F605AA}" ShortID="647414481">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -916,6 +1108,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_037_Battle_Block_L2_04" ID="{56774A0A-D2BC-4943-B002-9D97673206B9}" ShortID="106964555">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -979,6 +1175,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_038_Battle_Heal" ID="{E58A1522-7976-4B45-BED6-3B9574D58337}" ShortID="29664834">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -991,6 +1189,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_038_Battle_Heal_L1" ID="{530B8378-AD3E-4621-8AC4-02978E4500F2}" ShortID="169138289">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="1"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1001,6 +1203,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_038_Battle_Heal_L1_01" ID="{F13908DD-9405-4868-9D02-FA55BA7BC270}" ShortID="577341793">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1036,6 +1242,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_041_Battle_Pickup" ID="{82DB15B9-27D9-4FEB-9D0F-49BEF61DCEDF}" ShortID="250149571">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -1048,6 +1256,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_041_Battle_Pickup_L1" ID="{FE206721-6AA2-4E08-A091-5D202AC82167}" ShortID="11179522">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="1"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1058,6 +1270,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_041_Battle_Pickup_L1_01" ID="{1CA1077E-5C17-45B0-B617-42D94C856402}" ShortID="141427474">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1068,6 +1284,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_041_Battle_Pickup_L1_02" ID="{6A814F27-F1B6-4F75-907E-E370A32DE30D}" ShortID="1028509963">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1078,6 +1298,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_041_Battle_Pickup_L1_03" ID="{457AA4CB-1A7A-4F51-8C2D-92865F53C982}" ShortID="1027837597">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1088,6 +1312,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_041_Battle_Pickup_L1_04" ID="{663B37A1-6BD8-4DC2-BEC9-A1870C64A489}" ShortID="130899003">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1132,6 +1360,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_041_Battle_Pickup_L2" ID="{08986C6D-06E2-4A13-9E1A-C7734A159BF6}" ShortID="270036012">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="1"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1142,6 +1374,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_041_Battle_Pickup_L2_01" ID="{726F02FD-666B-431B-979F-0267D32DAB9E}" ShortID="1054582228">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1152,6 +1388,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_041_Battle_Pickup_L2_02" ID="{690D4DCF-9E81-42B7-BF2D-AFC3624C4809}" ShortID="884441161">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1162,6 +1402,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_041_Battle_Pickup_L2_03" ID="{2CCF80E7-1620-4094-AD87-24DF07DAF284}" ShortID="189053368">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1172,6 +1416,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_041_Battle_Pickup_L2_04" ID="{214B2E78-6C22-4FC4-A957-954D72F22F8F}" ShortID="221081417">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="1"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1236,6 +1484,10 @@
 							</ChildrenList>
 						</PropertyContainer>
 						<PropertyContainer Name="Card" ID="{B93C84A7-69D3-493F-B490-E37A755FCDDB}" ShortID="137975036">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="12"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1247,6 +1499,8 @@
 							<ChildrenList>
 								<Sound Name="SFX_034_Card_Transform" ID="{3C776A77-14A0-4F32-BF32-C9CEF1CEEB3B}" ShortID="588748184">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -1260,6 +1514,8 @@
 								</Sound>
 								<BlendContainer Name="SFX_006_Card_Pickup" ID="{09077314-A561-4F2C-96D5-EDC402D49CB6}" ShortID="202086327">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -1272,6 +1528,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_006_Card_Pickup_L1" ID="{6812606E-EE33-46FA-B3E2-FD1F700D96C5}" ShortID="619331981">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="12"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1282,6 +1542,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_006_Card_Pickup_L1_01" ID="{7514D6E7-2176-433F-BF1F-32C0A785748B}" ShortID="197336949">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1292,6 +1556,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_006_Card_Pickup_L1_02" ID="{B4E9EC25-C1F4-4F7D-B2CF-518B39A938C1}" ShortID="1049899093">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1302,6 +1570,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_006_Card_Pickup_L1_03" ID="{6F75FCF4-246F-4542-AABD-91DE33905729}" ShortID="196789871">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1351,6 +1623,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_007_Card_Play" ID="{DDBA68CC-002E-42B9-9869-D4FA4E183BCC}" ShortID="568729037">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -1363,6 +1637,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_007_Card_Play_L1" ID="{42E7EC09-F90A-4CC2-89EE-708B352F76B2}" ShortID="946433748">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="12"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1373,6 +1651,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_007_Card_Play_L1_01" ID="{DAC783F6-3D41-4334-957B-CE990B2BEAC3}" ShortID="777257998">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1383,6 +1665,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_007_Card_Play_L1_02" ID="{B7FFC8C1-BC66-402E-96C8-44782275B31D}" ShortID="422936600">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1393,6 +1679,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_007_Card_Play_L1_03" ID="{5DAA4CF8-70C2-40E6-A528-25006ED38153}" ShortID="260320970">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1442,6 +1732,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_008_Card_Draw" ID="{14D65C85-611B-4FAD-B6FE-CA2390AA580C}" ShortID="359630619">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -1454,6 +1746,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_008_Card_Draw_L1" ID="{02984E5D-A3C5-45FD-83F7-BAE3EB3D9A2A}" ShortID="484108436">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="12"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1464,6 +1760,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_008_Card_Draw_L1_01" ID="{066126DE-54C2-42B2-B596-43DFFC4239FC}" ShortID="430714405">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1474,6 +1774,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_008_Card_Draw_L1_02" ID="{8261584A-C6BD-4B7F-A00F-FE106D472899}" ShortID="877514238">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1484,6 +1788,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_008_Card_Draw_L1_03" ID="{E22428D3-A213-49B4-9B87-971A6943E730}" ShortID="72462047">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1533,6 +1841,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_009_Card_Shuffle" ID="{F7405355-16FB-4AD9-8136-A9382EC1B1CE}" ShortID="24178278">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -1545,6 +1855,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_009_Card_Shuffle_L1" ID="{46AEFE7F-8011-4982-8634-B1A196D302F8}" ShortID="244693394">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="12"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1555,6 +1869,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_009_Card_Shuffle_L1_01" ID="{06D44249-6C7A-4BD9-8B9A-BE1B1CE586BD}" ShortID="522710302">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1565,6 +1883,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_009_Card_Shuffle_L1_02" ID="{39812784-D077-4C09-8393-844A4A0896BB}" ShortID="199263619">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1575,6 +1897,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_009_Card_Shuffle_L1_03" ID="{E3A67247-AD5B-4B26-A02F-F9705B118EE3}" ShortID="943807248">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1624,6 +1950,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_032_Card_Trigger_Attack" ID="{DD23EF70-8D3E-40DB-9A34-91709F3E20A0}" ShortID="878275752">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -1636,6 +1964,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_032_Card_Trigger_Attack_L1" ID="{227BA376-70A9-49A6-B5EE-2BDAE470D167}" ShortID="587615891">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="12"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1646,6 +1978,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_032_Card_Trigger_Attack_L1_01" ID="{94FD84FF-4DC9-4B29-9781-951796F4751A}" ShortID="234229537">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1656,6 +1992,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_032_Card_Trigger_Attack_L1_02" ID="{C08F55ED-CCE0-499D-A8CA-8964D5D3095D}" ShortID="662984668">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1698,6 +2038,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_033_Card_TurnChange" ID="{5C5F7F3D-DC9B-4E41-9EAF-E55F5F404E1F}" ShortID="527781500">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -1710,6 +2052,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_033_Card_TurnChange_L1" ID="{CEF4F092-0893-4873-992A-4179F9D2024E}" ShortID="318670209">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="12"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1720,6 +2066,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_033_Card_TurnChange_L1_01" ID="{DAB7B9A0-953A-48A2-B046-411DD8AC1D32}" ShortID="159422391">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1730,6 +2080,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_033_Card_TurnChange_L1_02" ID="{65F7F31D-74CD-42EB-BD15-9C58BAB31F20}" ShortID="267706548">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1740,6 +2094,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_033_Card_TurnChange_L1_03" ID="{D7972EBA-B51E-4D46-B555-839C0EBE32E9}" ShortID="274650633">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1777,6 +2135,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_033_Card_TurnChange_L2" ID="{BB8D9783-264C-4E59-B0D1-E33E74737F52}" ShortID="93507496">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="12"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1787,6 +2149,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_033_Card_TurnChange_L2_01" ID="{1B1B0A58-3636-4126-BFF1-A4FD96D347DB}" ShortID="176001153">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1797,6 +2163,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_033_Card_TurnChange_L2_02" ID="{32AE08BB-842E-43B8-8D61-66CB7B726B4F}" ShortID="538561839">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1807,6 +2177,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_033_Card_TurnChange_L2_03" ID="{CC7BAD9D-7F93-4BFD-ABCF-B3B396D1C0F6}" ShortID="604770539">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="12"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1864,6 +2238,10 @@
 							</ChildrenList>
 						</PropertyContainer>
 						<PropertyContainer Name="Cutscene" ID="{5CA8D0E4-754F-4E75-9FC0-E93966437951}" ShortID="289729746">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="11"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1875,6 +2253,8 @@
 							<ChildrenList>
 								<BlendContainer Name="SFX_056_Cutscene_Opening" ID="{50F57A9A-2AFA-4664-83BA-64C7B7F61146}" ShortID="156256615">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="11"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -1887,6 +2267,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_056_Cutscene_Opening_L1" ID="{723931B6-5C1C-469B-A0E9-0F3A87961F56}" ShortID="908817468">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="11"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1897,6 +2281,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_056_Cutscene_Opening_L1_01" ID="{379B89D4-0176-446E-B316-8B2CE8CECCE4}" ShortID="239130670">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="11"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1920,6 +2308,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_056_Cutscene_Opening_L2" ID="{587EC348-7948-49A2-84B2-D9AC46B158E7}" ShortID="564371895">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="11"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1930,6 +2322,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_056_Cutscene_Opening_L2_01" ID="{B03E776D-1283-47DC-9801-15CD86DA7A2D}" ShortID="40564076">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="11"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1973,6 +2369,10 @@
 							</ChildrenList>
 						</PropertyContainer>
 						<PropertyContainer Name="Enemy" ID="{19DF698E-A6BE-4AC1-8A02-5982FE873EA5}" ShortID="882737911">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="2"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -1984,6 +2384,8 @@
 							<ChildrenList>
 								<Sound Name="SFX_044_Enemy_HitPlayer" ID="{429122B1-C425-4D2C-AFE6-F021EF2D1199}" ShortID="415299732">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -1997,6 +2399,8 @@
 								</Sound>
 								<Sound Name="SFX_045_Enemy_Break" ID="{93F28B91-49AA-48FF-96EA-D42FD9DA1158}" ShortID="92344203">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2010,6 +2414,8 @@
 								</Sound>
 								<Sound Name="SFX_046_Enemy_PiperFlute" ID="{D4132FC0-2512-4D04-AC0F-FC44F68A603A}" ShortID="653392141">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2023,6 +2429,8 @@
 								</Sound>
 								<Sound Name="SFX_047_Enemy_BossIntro" ID="{73BA3AA8-F33D-471D-AF5B-30FABB35DD69}" ShortID="473548385">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2036,6 +2444,8 @@
 								</Sound>
 								<BlendContainer Name="SFX_014_Enemy_Hit_Light" ID="{98483381-C804-4C05-B71A-A05B356C7375}" ShortID="929120625">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2048,6 +2458,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_014_Enemy_Hit_Light_L1" ID="{CF507021-6B9D-405F-AED6-7DA4A5EF9C6E}" ShortID="809854239">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="2"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2058,6 +2472,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_014_Enemy_Hit_Light_L1_01" ID="{D9A610C7-3850-485B-9CDB-A6DBA0E5B7BE}" ShortID="404171481">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="2"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2068,6 +2486,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_014_Enemy_Hit_Light_L1_02" ID="{92E0FF66-E2EB-4873-95EF-D463ACD946D6}" ShortID="5967293">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="2"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2078,6 +2500,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_014_Enemy_Hit_Light_L1_03" ID="{7D530FB2-C677-4978-9373-9D3ECDACE81E}" ShortID="864598619">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="2"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2127,6 +2553,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_015_Enemy_Death" ID="{92814F77-CF2B-41B6-93E0-B977FF46D4A5}" ShortID="232342805">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2139,6 +2567,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_015_Enemy_Death_L1" ID="{38417DAF-87EF-4C62-8398-8FF2B2E14853}" ShortID="322195694">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="2"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2149,6 +2581,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_015_Enemy_Death_L1_01" ID="{322BC339-DE02-44EA-ADD4-F54BB4DB0FF9}" ShortID="2758237">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="2"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2159,6 +2595,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_015_Enemy_Death_L1_02" ID="{556422EA-5AA5-435F-AE6E-CC9AAAAE2E1A}" ShortID="559370842">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="2"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2169,6 +2609,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_015_Enemy_Death_L1_03" ID="{8F3C2AD3-1B58-4334-801A-18816EAC03BE}" ShortID="405290019">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="2"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2219,6 +2663,10 @@
 							</ChildrenList>
 						</PropertyContainer>
 						<PropertyContainer Name="Foot" ID="{DAD87EAE-103B-4A6C-8191-6C6C9E87BB45}" ShortID="569907962">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="4"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2230,6 +2678,8 @@
 							<ChildrenList>
 								<Sound Name="SFX_026_Foot_Mud" ID="{ED8B7C03-C48F-463E-A929-1BE015524DE4}" ShortID="424783023">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="4"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2243,6 +2693,8 @@
 								</Sound>
 								<Sound Name="SFX_027_Foot_Stone" ID="{3F47AAFB-B40E-4AA5-97F7-A32B57F9286C}" ShortID="193284406">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="4"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2256,6 +2708,8 @@
 								</Sound>
 								<BlendContainer Name="SFX_025_Foot_Wood" ID="{5632521D-465B-4F09-98CF-EC9047176C73}" ShortID="681622000">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="4"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2268,6 +2722,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_025_Foot_Wood_L1" ID="{8D989228-55CD-478A-956A-864AFB8B5E2B}" ShortID="382476028">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="4"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2278,6 +2736,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_025_Foot_Wood_L1_01" ID="{7107540F-3E17-4B59-872F-47C5AF7CA3DD}" ShortID="705965875">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="4"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2288,6 +2750,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_025_Foot_Wood_L1_02" ID="{91A938A2-CAA0-427E-8C23-46212C728178}" ShortID="184075071">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="4"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2298,6 +2764,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_025_Foot_Wood_L1_03" ID="{E64E41BC-8F3F-40D3-92C2-FE3EE553C149}" ShortID="546776828">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="4"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2308,6 +2778,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_025_Foot_Wood_L1_04" ID="{FB7745CB-B29B-45B7-800E-90E82F37BF17}" ShortID="478917578">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="4"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2318,6 +2792,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_025_Foot_Wood_L1_05" ID="{FF64EFC5-FC43-4EEB-8D3D-63526169D4D2}" ShortID="403795445">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="4"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2328,6 +2806,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_025_Foot_Wood_L1_06" ID="{19F8D871-F654-42E6-9362-95B8FBA81D2A}" ShortID="574407307">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="4"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2399,6 +2881,10 @@
 							</ChildrenList>
 						</PropertyContainer>
 						<PropertyContainer Name="Map" ID="{F1938063-9A10-4C65-8CAE-ADC40CA760D5}" ShortID="1009093007">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="9"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2410,6 +2896,8 @@
 							<ChildrenList>
 								<Sound Name="SFX_054_Map_MoveStep" ID="{3F164849-989B-427E-9CC0-C8911B1B7A88}" ShortID="104265499">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="9"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2423,6 +2911,8 @@
 								</Sound>
 								<Sound Name="SFX_055_Map_FogReveal" ID="{4C26EDAF-87FB-4B1E-A48B-472603D95439}" ShortID="1073685580">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="9"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2437,6 +2927,10 @@
 							</ChildrenList>
 						</PropertyContainer>
 						<PropertyContainer Name="Player" ID="{8A6CCD01-BBF2-48A9-9B12-7BE9BBADB85B}" ShortID="903213689">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="3"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2448,6 +2942,8 @@
 							<ChildrenList>
 								<BlendContainer Name="SFX_012_Player_Hit_Light" ID="{6814B313-5C2C-4D9B-A388-190EC966DA63}" ShortID="92651742">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2460,6 +2956,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_012_Player_Hit_Light_L1" ID="{4DD72F90-D286-499E-855F-F369D7BBEA19}" ShortID="560613814">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="3"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2470,6 +2970,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_012_Player_Hit_Light_L1_01" ID="{763F3346-2121-4F4E-8659-EAD96C24F15E}" ShortID="423431126">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2480,6 +2984,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_012_Player_Hit_Light_L1_02" ID="{E6E6528D-7043-4D36-8396-8DB0C4630704}" ShortID="246674143">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2490,6 +2998,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_012_Player_Hit_Light_L1_03" ID="{C75CC682-5177-46BC-A1F8-4E13D9060303}" ShortID="70245897">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2539,6 +3051,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_013_Player_Death" ID="{A4F42F77-6C55-4DA8-A853-22D2C35EA9DA}" ShortID="1061173779">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2551,6 +3065,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_013_Player_Death_L1" ID="{50B23C38-7062-43BD-841F-D85206699C1F}" ShortID="162085336">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="3"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2561,6 +3079,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_013_Player_Death_L1_01" ID="{1FBD5E17-D479-4344-B86F-65A9F180181A}" ShortID="472580795">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2571,6 +3093,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_013_Player_Death_L1_02" ID="{B175D40A-338A-4C0A-A138-DDE9B9211718}" ShortID="99737694">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2581,6 +3107,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_013_Player_Death_L1_03" ID="{4EF95F8B-211F-45BD-A999-1DA9A6D06FBD}" ShortID="772433150">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2591,6 +3121,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_013_Player_Death_L1_04" ID="{D20B549F-984F-496C-8CF5-89A248E0CAA9}" ShortID="70473396">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2635,6 +3169,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_013_Player_Death_L2" ID="{2727A3EB-A50D-419C-B40D-A56DB519FD98}" ShortID="488454151">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="3"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2645,6 +3183,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_013_Player_Death_L2_01" ID="{5A2B457D-2406-4AF3-878F-406A7DFCBAF4}" ShortID="568845178">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2655,6 +3197,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_013_Player_Death_L2_02" ID="{FE363DC5-90C8-4972-BAB9-D869438F8593}" ShortID="735379090">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2665,6 +3211,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_013_Player_Death_L2_03" ID="{20847E73-6788-489B-9327-4996AE59378B}" ShortID="731051055">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2675,6 +3225,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_013_Player_Death_L2_04" ID="{27461186-CD35-40CF-AE01-AE22FF45EA60}" ShortID="505531592">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2738,6 +3292,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_035_Player_Hit_Heavy" ID="{8C2C17F6-D5EA-4E5A-9BE4-1327120EE8F7}" ShortID="1023530588">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2750,6 +3306,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_035_Player_Hit_Heavy_L1" ID="{53F84685-8E64-4BCF-A174-C7A6343D8AC1}" ShortID="579189412">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="3"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2760,6 +3320,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_035_Player_Hit_Heavy_L1_01" ID="{47F6ECC8-7ABA-4FDB-9C1C-440596F49BBB}" ShortID="907161619">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2770,6 +3334,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_035_Player_Hit_Heavy_L1_02" ID="{9F04EEBE-07E2-4B80-8F01-C8B7A3E2F4F3}" ShortID="163325613">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2780,6 +3348,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_035_Player_Hit_Heavy_L1_03" ID="{646B48BA-3FCE-4BA5-9990-FC7C86D608A5}" ShortID="261969765">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2817,6 +3389,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_035_Player_Hit_Heavy_L2" ID="{682D0531-708B-4E2C-BB85-ECBE1DEC1B31}" ShortID="335740016">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="3"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2827,6 +3403,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_035_Player_Hit_Heavy_L2_01" ID="{0942ECEF-E4CE-4649-824F-499D69577E4C}" ShortID="244873590">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2837,6 +3417,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_035_Player_Hit_Heavy_L2_02" ID="{4963ADB4-34C9-4887-AEEB-A20CA2653E57}" ShortID="42595204">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2847,6 +3431,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_035_Player_Hit_Heavy_L2_03" ID="{E4AD17F7-7769-487E-9B0D-156BD698E7DD}" ShortID="766628000">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2903,6 +3491,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_042_Player_Breath" ID="{F847EDC7-AB42-4E55-9259-C83D3F465356}" ShortID="273188497">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -2915,6 +3505,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_042_Player_Breath_L1" ID="{92E3F35D-D787-4DDA-9D5C-AA2BCEA9D59D}" ShortID="835290471">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="3"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2925,6 +3519,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_042_Player_Breath_L1_01" ID="{BDB16A31-16BF-4FBE-8A82-BB0590AABA95}" ShortID="830275232">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2935,6 +3533,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_042_Player_Breath_L1_02" ID="{84797558-0EDB-4947-B887-E03E855934D2}" ShortID="524433990">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2945,6 +3547,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_042_Player_Breath_L1_03" ID="{C48DFE0C-388F-4EA7-948A-702E40DD51EE}" ShortID="653275857">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -2994,6 +3600,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_043_Player_LowHP" ID="{D52D14D2-4337-4317-BDD9-1159FD54CCD3}" ShortID="732812804">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3006,6 +3614,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_043_Player_LowHP_L1" ID="{CFCC8459-BE9E-4930-A544-1D8E5D047B59}" ShortID="399066377">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="3"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3016,6 +3628,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_043_Player_LowHP_L1_01" ID="{CC7E78CA-8A50-41F1-8BC0-A71D4598C307}" ShortID="770383835">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="3"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3052,6 +3668,10 @@
 							</ChildrenList>
 						</PropertyContainer>
 						<PropertyContainer Name="Potion" ID="{AFD79463-C1BE-48FF-BF86-2D65C1FDDE01}" ShortID="951180841">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="13"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3063,6 +3683,8 @@
 							<ChildrenList>
 								<Sound Name="SFX_052_Potion_Select" ID="{20BCFDB7-732F-4C3F-931B-012B812A912E}" ShortID="588091485">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="13"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3076,6 +3698,8 @@
 								</Sound>
 								<Sound Name="SFX_053_Potion_Use" ID="{903F0612-02DB-4077-BCDB-18C3ED4DCA97}" ShortID="607639663">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="13"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3090,6 +3714,10 @@
 							</ChildrenList>
 						</PropertyContainer>
 						<PropertyContainer Name="Relic" ID="{3FEEA764-3789-4EE5-AF9B-382ADD50A2F6}" ShortID="644260385">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="5"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3101,6 +3729,8 @@
 							<ChildrenList>
 								<Sound Name="SFX_048_Relic_Snap" ID="{31C209B9-C963-4BEF-A608-67D3E13AC39C}" ShortID="313699118">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="5"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3114,6 +3744,8 @@
 								</Sound>
 								<Sound Name="SFX_049_Relic_Link" ID="{16772251-CD1C-40DA-9A81-B2AB1A77CE15}" ShortID="1027316915">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="5"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3127,6 +3759,8 @@
 								</Sound>
 								<Sound Name="SFX_050_Relic_ChainTrigger" ID="{26CAD2CB-8F13-4B0E-8F8D-EE0881000DCD}" ShortID="777969568">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="5"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3140,6 +3774,8 @@
 								</Sound>
 								<Sound Name="SFX_051_Relic_Gain" ID="{79FD2FF7-B3B1-4F64-84BA-4F9417EFEE93}" ShortID="757507884">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="5"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3154,6 +3790,10 @@
 							</ChildrenList>
 						</PropertyContainer>
 						<PropertyContainer Name="Trans" ID="{0BD33F48-199F-4928-ACDC-F2EBF0882D22}" ShortID="1061458028">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="8"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3165,6 +3805,8 @@
 							<ChildrenList>
 								<BlendContainer Name="SFX_020_Trans_Workshop_Slum" ID="{D8B94086-122F-4FF7-B66F-777CB7007FF0}" ShortID="205028026">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3177,6 +3819,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_020_Trans_Workshop_Slum_L1" ID="{DBCB415D-DCBD-47EF-A277-3C0D392E1485}" ShortID="601651591">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="8"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3187,6 +3833,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_020_Trans_Workshop_Slum_L1_01" ID="{1FFCD4CF-DF5D-426F-8E61-F1B584CE05C4}" ShortID="31790627">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3197,6 +3847,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_020_Trans_Workshop_Slum_L1_02" ID="{98AD47A9-2D84-4823-9E70-63877DC5A934}" ShortID="224985628">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3239,6 +3893,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_021_Trans_Slum_Church" ID="{296F38EA-2F41-40D1-91A9-7A62FF126A05}" ShortID="8589897">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3251,6 +3907,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_021_Trans_Slum_Church_L1" ID="{7A459FF0-0D45-4A1D-B054-B4364A7C37BE}" ShortID="974400510">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="8"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3261,6 +3921,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_021_Trans_Slum_Church_L1_01" ID="{BE3218A1-D26C-4462-A8AF-E9B3237B9433}" ShortID="4213971">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3271,6 +3935,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_021_Trans_Slum_Church_L1_02" ID="{29C8FC32-99BF-4923-A294-B7FC4ABAC183}" ShortID="135397090">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3313,6 +3981,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_022_Trans_EnterBattle" ID="{AD570152-85C0-4BFC-BF16-2BC7874E6570}" ShortID="270642304">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3325,6 +3995,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_022_Trans_EnterBattle_L1" ID="{94AB31F2-CD2D-4CFE-925B-8008BA7EE373}" ShortID="715267603">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="8"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3335,6 +4009,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_022_Trans_EnterBattle_L1_01" ID="{0E41806D-1C88-4137-8391-100EEC673460}" ShortID="855596820">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3345,6 +4023,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_022_Trans_EnterBattle_L1_02" ID="{7B8D3200-3E46-4FAD-AE1A-1C4407A27DBF}" ShortID="682544614">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3355,6 +4037,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_022_Trans_EnterBattle_L1_03" ID="{EEC2A71B-3517-496B-9BD4-A3B4C9C16A08}" ShortID="964047430">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3404,6 +4090,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_023_Trans_FloorChange" ID="{EE80D2DF-CC9F-44B8-9EF7-7FB49B76FB51}" ShortID="917127777">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3416,6 +4104,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_023_Trans_FloorChange_L1" ID="{26B87239-470F-4065-B03B-DE229EA851A3}" ShortID="579130657">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="8"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3426,6 +4118,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_023_Trans_FloorChange_L1_01" ID="{9EE72CC8-9820-4F69-B49C-DF536658EFC0}" ShortID="705660371">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3436,6 +4132,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_023_Trans_FloorChange_L1_02" ID="{D7F635F8-BF47-486F-9B43-12DEDA3C6554}" ShortID="276973276">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3446,6 +4146,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_023_Trans_FloorChange_L1_03" ID="{931D4EEB-5F2A-4AAA-ABE3-4D3298BAF0CB}" ShortID="692099783">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3483,6 +4187,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_023_Trans_FloorChange_L2" ID="{95883363-EF22-4C15-BDBD-C4EB8CA50B0E}" ShortID="6985513">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="8"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3493,6 +4201,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_023_Trans_FloorChange_L2_01" ID="{0B60328E-9BC8-4F52-88DB-A10268EAC555}" ShortID="246125391">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3503,6 +4215,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_023_Trans_FloorChange_L2_02" ID="{FA61A801-3197-4A95-B78B-0F1B17B441E7}" ShortID="476183597">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3513,6 +4229,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_023_Trans_FloorChange_L2_03" ID="{9C10D1DA-21D0-4B88-9D84-7B0EE93F0D82}" ShortID="245561011">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3569,6 +4289,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_024_Trans_ExitBattle" ID="{C27FA146-F35F-40E5-BF6C-6620DDBBC835}" ShortID="715420814">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3581,6 +4303,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_024_Trans_ExitBattle_L1" ID="{FE4DEA8F-675D-46D0-9A05-F2C291964518}" ShortID="110550230">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="8"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3591,6 +4317,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_024_Trans_ExitBattle_L1_01" ID="{2EC3438F-CCDA-46D8-8FA6-5CCCD755CCBA}" ShortID="451715605">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3601,6 +4331,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_024_Trans_ExitBattle_L1_02" ID="{3B90F075-99BF-41B3-94B7-F5B0E74ABF50}" ShortID="556172164">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3611,6 +4345,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_024_Trans_ExitBattle_L1_03" ID="{BFB15BFE-01AC-417E-8499-2660A7AF1774}" ShortID="722022595">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="8"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3661,6 +4399,10 @@
 							</ChildrenList>
 						</PropertyContainer>
 						<PropertyContainer Name="UI" ID="{0FE5DB55-BF25-4B23-BDA9-3F1CB29994DF}" ShortID="241804461">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="10"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3672,6 +4414,8 @@
 							<ChildrenList>
 								<Sound Name="SFX_028_UI_Slider" ID="{55AD7185-9957-4C82-8E79-78E16FB58370}" ShortID="99623739">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3685,6 +4429,8 @@
 								</Sound>
 								<Sound Name="SFX_029_UI_Error" ID="{7D2CD56A-66C2-4BFB-A74B-075CF9091D7E}" ShortID="599180173">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3698,6 +4444,8 @@
 								</Sound>
 								<Sound Name="SFX_030_UI_Result_Win" ID="{EB52F535-A2E1-43A6-89FF-81A817B257D1}" ShortID="667392825">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3711,6 +4459,8 @@
 								</Sound>
 								<Sound Name="SFX_031_UI_Result_Lose" ID="{47A42B0F-3166-4721-A17D-69F874F3C2D3}" ShortID="17031539">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3724,6 +4474,8 @@
 								</Sound>
 								<BlendContainer Name="SFX_001_UI_Hover" ID="{EDD762D4-170A-44B6-A25C-02CCA0618CB0}" ShortID="497473513">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3736,6 +4488,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_001_UI_Hover_L1" ID="{2AFFC055-E7A2-48A3-9091-57BF6AA7C1DB}" ShortID="565729075">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="10"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3746,6 +4502,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_001_UI_Hover_L1_01" ID="{C5F52E9D-1EE1-4D48-8AFE-1C7E5C6F71F4}" ShortID="600072691">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3756,6 +4516,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L1_02" ID="{A441AF72-018C-494E-BEDB-570278DAC549}" ShortID="1073115243">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3766,6 +4530,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L1_03" ID="{6E71B4D7-BFB4-4C64-B6E4-62A775F307FF}" ShortID="234513479">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3776,6 +4544,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L1_04" ID="{1B86B181-7792-4876-8CD6-AC0CA2205FCD}" ShortID="989943929">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3820,6 +4592,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_001_UI_Hover_L2" ID="{1518A776-8B15-4D8F-B09F-BAAE5383836E}" ShortID="528642213">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="10"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3830,6 +4606,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_001_UI_Hover_L2_01" ID="{31E6AA40-DA1D-42CA-9A4E-4029B835E7EA}" ShortID="754732465">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3840,6 +4620,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L2_02" ID="{34A4B1CB-0A65-4204-AB73-7D10B93338B4}" ShortID="777919686">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3850,6 +4634,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L2_03" ID="{6208AB6B-3867-4DAC-B90F-4AF988BB8007}" ShortID="304809190">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3860,6 +4648,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L2_04" ID="{C642555E-EC8F-491A-88FE-D1AE640FF4C3}" ShortID="824863802">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3870,6 +4662,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L2_05" ID="{E372C3C7-0BC7-4122-8BFF-61B10812BB86}" ShortID="171590853">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3940,6 +4736,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_002_UI_Click" ID="{1CE8F3D5-A93F-4BD1-8C8E-B526509E6270}" ShortID="759049547">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -3952,6 +4750,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_002_UI_Click_L1" ID="{9F90E102-667A-4FEF-A3E2-BE4AD4EAE901}" ShortID="618420187">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="10"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3962,6 +4764,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_002_UI_Click_L1_01" ID="{1812A274-BE8E-4218-9D1A-9CCDBFF20AAE}" ShortID="608513894">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3972,6 +4778,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L1_02" ID="{056D88D6-3474-405C-87D9-198A05D386B7}" ShortID="93441932">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3982,6 +4792,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L1_03" ID="{9A01A58F-2F36-4AF3-97CC-003C94752455}" ShortID="414028231">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -3992,6 +4806,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L1_04" ID="{869C469B-D6BB-4581-9766-7A57A61E371A}" ShortID="460409731">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4036,6 +4854,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_002_UI_Click_L2" ID="{5CDDF524-A8FB-4A56-BB7D-3312BF2412A8}" ShortID="490299489">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="10"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4046,6 +4868,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_002_UI_Click_L2_01" ID="{A52B8B21-165B-492E-B410-0D8AFAE4CBAF}" ShortID="31151133">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4056,6 +4882,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L2_02" ID="{C642FCE1-CFAD-4106-903C-1A119A925970}" ShortID="441437198">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4066,6 +4896,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L2_03" ID="{A0576992-D6E6-4459-BD3D-5C607B9B96CC}" ShortID="657448357">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4076,6 +4910,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L2_04" ID="{C8DD5717-81C1-4636-B03F-0ABE8C0245D4}" ShortID="297032152">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4139,6 +4977,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_003_UI_Back" ID="{618AB3C8-0F8C-4B61-AFD4-DF9ABC161709}" ShortID="834986882">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -4151,6 +4991,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_003_UI_Back_L1" ID="{AE7C0209-E2F0-4CBD-9F1C-80EA7870F6C4}" ShortID="283131232">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="10"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4161,6 +5005,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_003_UI_Back_L1_01" ID="{81945CC7-57B9-4B8B-A4DF-BB922005068D}" ShortID="447840177">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4171,6 +5019,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_003_UI_Back_L1_02" ID="{7D213E30-BCF4-49F5-A24F-5C9C9616D5CA}" ShortID="316436045">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4181,6 +5033,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_003_UI_Back_L1_03" ID="{5AD61A92-77F2-4EE2-80F9-46B59A15D3CB}" ShortID="331209583">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4191,6 +5047,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_003_UI_Back_L1_04" ID="{1ABAABCD-098A-4C3F-B47A-72F68A5BDE5E}" ShortID="267357213">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4235,6 +5095,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_003_UI_Back_L2" ID="{7D174F37-B124-40A6-8FC0-97CB944E9B35}" ShortID="580332440">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="10"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4245,6 +5109,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_003_UI_Back_L2_01" ID="{E47C8A5C-1C36-4E6D-83A3-B8285C446E80}" ShortID="681985246">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4255,6 +5123,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_003_UI_Back_L2_02" ID="{05E098FD-E7BD-468B-927F-A4C1C6216E1A}" ShortID="320245674">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4265,6 +5137,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_003_UI_Back_L2_03" ID="{2A5A481F-768A-4C08-8923-EFCCA28929F9}" ShortID="302041357">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4275,6 +5151,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_003_UI_Back_L2_04" ID="{3AF59AD0-EC25-4942-A567-661B188CB707}" ShortID="651947891">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4338,6 +5218,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_004_UI_Panel_Open" ID="{6FC4C09E-C977-4D59-9B8C-DA3EEDF0E146}" ShortID="25147191">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -4350,6 +5232,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_004_UI_Panel_Open_L1" ID="{49872E4E-9BBC-41A7-BA13-D01CF5A14D96}" ShortID="773470485">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="10"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4360,6 +5246,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_004_UI_Panel_Open_L1_01" ID="{FCAEC18F-891B-4AB4-B7E0-7C7BB76933E8}" ShortID="867240861">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4370,6 +5260,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_004_UI_Panel_Open_L1_02" ID="{4B7DEFE7-47E8-4103-86F6-058458B23B9B}" ShortID="103790153">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4380,6 +5274,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_004_UI_Panel_Open_L1_03" ID="{B3683202-A9A9-4904-86D2-C435440AA936}" ShortID="336934823">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4417,6 +5315,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_004_UI_Panel_Open_L2" ID="{44B359A9-73EE-4D15-894A-3039085FDED2}" ShortID="812985721">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="10"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4427,6 +5329,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_004_UI_Panel_Open_L2_01" ID="{AD7194C0-9653-43E1-AAD3-84D331AAEE21}" ShortID="805948073">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4437,6 +5343,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_004_UI_Panel_Open_L2_02" ID="{2DF3594C-AE25-412A-B4F1-094229CD608A}" ShortID="300682786">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4447,6 +5357,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_004_UI_Panel_Open_L2_03" ID="{28A98C47-71F8-4A9C-AB51-2EA3F00791AF}" ShortID="28391927">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4503,6 +5417,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_005_UI_Panel_Close" ID="{7CEF3BAF-5BFA-4EE6-98A7-A22EDD65E36D}" ShortID="85613374">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -4515,6 +5431,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_005_UI_Panel_Close_L1" ID="{4C847723-29FF-4079-A212-FFD2DA622DE8}" ShortID="51850534">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="10"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4525,6 +5445,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_005_UI_Panel_Close_L1_01" ID="{14978D4A-6256-4621-BB83-9ACAD48D8166}" ShortID="697501527">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4535,6 +5459,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_005_UI_Panel_Close_L1_02" ID="{F4BAC45A-9166-43CE-957F-7515F5384503}" ShortID="777518489">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4545,6 +5473,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_005_UI_Panel_Close_L1_03" ID="{821F9A7C-FD03-465D-A07F-DE7835DAD4C0}" ShortID="735900242">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4582,6 +5514,10 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_005_UI_Panel_Close_L2" ID="{7356220B-CE19-4205-ACE0-D11B968582E1}" ShortID="115284395">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="10"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4592,6 +5528,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_005_UI_Panel_Close_L2_01" ID="{637D0B7E-2251-430E-9B9B-A3A5716F1EC7}" ShortID="689436319">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4602,6 +5542,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_005_UI_Panel_Close_L2_02" ID="{4D9038F7-F607-403E-8468-E318AECDF1F0}" ShortID="307984140">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4612,6 +5556,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_005_UI_Panel_Close_L2_03" ID="{CFE93D18-705F-48E9-9BD2-776178EF1B74}" ShortID="1004353098">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="10"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4669,6 +5617,10 @@
 							</ChildrenList>
 						</PropertyContainer>
 						<PropertyContainer Name="Voice" ID="{ACE9B78B-BA03-451B-B6B9-BC123D469005}" ShortID="9249340">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="6"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4680,6 +5632,8 @@
 							<ChildrenList>
 								<BlendContainer Name="SFX_057_Voice_Talk" ID="{759D464D-7E6D-443C-A199-CD8F565DE01B}" ShortID="551678720">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="6"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -4692,6 +5646,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_057_Voice_Talk_L1" ID="{119B8CF8-3A4E-472D-974E-1AD08798C6E7}" ShortID="722248537">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="6"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4702,6 +5660,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_057_Voice_Talk_L1_01" ID="{4CFEAF19-43FA-4CB3-AE91-D7D57C15A6B7}" ShortID="692622362">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="6"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4712,6 +5674,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_057_Voice_Talk_L1_02" ID="{C8300CC8-85DD-4387-BF21-E5737C6644FE}" ShortID="812250978">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="6"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4722,6 +5688,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_057_Voice_Talk_L1_03" ID="{AB447747-2D12-4087-9DB4-0BC4EAD498D3}" ShortID="427674297">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="6"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4732,6 +5702,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_057_Voice_Talk_L1_04" ID="{FF1AFB87-59D1-4AF3-A246-8655C921FB39}" ShortID="946475698">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="6"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4742,6 +5716,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_057_Voice_Talk_L1_05" ID="{A23B0197-9A3F-40E9-91E9-A8EF3B9421E2}" ShortID="858973786">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="6"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4752,6 +5730,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_057_Voice_Talk_L1_06" ID="{0C5D053D-8C79-4CC3-AFF2-A47725DDD192}" ShortID="594599456">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="6"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4762,6 +5744,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_057_Voice_Talk_L1_07" ID="{DF28E807-D435-43AE-98A7-E3E447644A4B}" ShortID="457180465">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="6"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4772,6 +5758,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_057_Voice_Talk_L1_08" ID="{02396349-F9D7-4954-AB65-E6540A11C1FF}" ShortID="1047846999">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="6"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4856,6 +5846,8 @@
 								</BlendContainer>
 								<BlendContainer Name="SFX_058_Voice_PenWrite" ID="{08F82922-BCE4-4347-872E-8E767CA0B6C5}" ShortID="915693664">
 									<PropertyList>
+										<Property Name="Color" Type="int16" Value="6"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
 										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
@@ -4868,6 +5860,10 @@
 									</ReferenceList>
 									<ChildrenList>
 										<RandomSequenceContainer Name="SFX_058_Voice_PenWrite_L1" ID="{064312F4-109D-4455-A2B4-548C271BE432}" ShortID="985408369">
+											<PropertyList>
+												<Property Name="Color" Type="int16" Value="6"/>
+												<Property Name="OverrideColor" Type="bool" Value="True"/>
+											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4878,6 +5874,10 @@
 											</ReferenceList>
 											<ChildrenList>
 												<Sound Name="SFX_058_Voice_PenWrite_L1_01" ID="{806A4EFB-E3BB-4104-84A1-A7D01DAD436E}" ShortID="643392274">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="6"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4888,6 +5888,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_058_Voice_PenWrite_L1_02" ID="{D276C038-4146-4B53-B3D0-8E7039CE50CF}" ShortID="154767605">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="6"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4898,6 +5902,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_058_Voice_PenWrite_L1_03" ID="{7F2FB820-DFF5-4D98-8D9C-F206FCB9D754}" ShortID="683628294">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="6"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
@@ -4908,6 +5916,10 @@
 													</ReferenceList>
 												</Sound>
 												<Sound Name="SFX_058_Voice_PenWrite_L1_04" ID="{2BC33E8C-55A4-4CD7-B337-D2F8B941B566}" ShortID="281744777">
+													<PropertyList>
+														<Property Name="Color" Type="int16" Value="6"/>
+														<Property Name="OverrideColor" Type="bool" Value="True"/>
+													</PropertyList>
 													<ReferenceList>
 														<Reference Name="Conversion">
 															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
