@@ -7,13 +7,13 @@
 					<ChildrenList>
 						<Folder Name="Amb" ID="{9C49A839-B585-4AC9-80C2-8BDC771CF0F4}" ShortID="64961150">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="7"/>
+								<Property Name="Color" Type="int16" Value="17"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_016_Amb_Workshop" ID="{CBF05321-2CEE-46BF-B8DD-FF1C2A62A20F}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="7"/>
+										<Property Name="Color" Type="int16" Value="17"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -28,7 +28,7 @@
 								</Event>
 								<Event Name="SFX_017_Amb_Slum" ID="{CA532AE3-62AD-4F8B-B778-2B4CBD8508C6}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="7"/>
+										<Property Name="Color" Type="int16" Value="17"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -43,7 +43,7 @@
 								</Event>
 								<Event Name="SFX_018_Amb_Church" ID="{0BBBC390-CBBF-417E-BE58-200D4B568469}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="7"/>
+										<Property Name="Color" Type="int16" Value="17"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -58,7 +58,7 @@
 								</Event>
 								<Event Name="SFX_019_Amb_ChurchTop" ID="{77859475-5E2E-4E77-ABF9-BE3C47A784A4}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="7"/>
+										<Property Name="Color" Type="int16" Value="17"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -75,13 +75,13 @@
 						</Folder>
 						<Folder Name="Battle" ID="{61853222-6C08-4A12-90C3-8CFAD8327FA4}" ShortID="998845356">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="1"/>
+								<Property Name="Color" Type="int16" Value="10"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_010_Battle_Pointer_Tick" ID="{4694BD1C-1CCA-444E-96A5-DCE2723EBA3E}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -96,7 +96,7 @@
 								</Event>
 								<Event Name="SFX_011_Battle_Pointer_Rewind" ID="{C915BE6F-6273-441F-A9E6-5E61913A2DAA}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -111,7 +111,7 @@
 								</Event>
 								<Event Name="SFX_036_Battle_HitResolve" ID="{6BF4EE0B-AAAF-445C-8A0B-6F745DF316A4}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -126,7 +126,7 @@
 								</Event>
 								<Event Name="SFX_037_Battle_Block" ID="{D327F56B-6DF3-4DB6-9915-832A50775B82}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -141,7 +141,7 @@
 								</Event>
 								<Event Name="SFX_038_Battle_Heal" ID="{AC15E048-3C7E-4174-8C66-BC0517BD4A0A}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -156,7 +156,7 @@
 								</Event>
 								<Event Name="SFX_039_Battle_BuffGain" ID="{CAFF4A9E-52CD-43E0-83BD-D04ABD9DEDDA}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -171,7 +171,7 @@
 								</Event>
 								<Event Name="SFX_040_Battle_DebuffGain" ID="{B984D9C3-C74C-44D2-A5D8-1C9B8E5C3951}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -186,7 +186,7 @@
 								</Event>
 								<Event Name="SFX_041_Battle_Pickup" ID="{B800582F-78CC-4DB7-A1D6-C9AE4C7FEF30}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="1"/>
+										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -203,13 +203,13 @@
 						</Folder>
 						<Folder Name="Card" ID="{50FA4BD6-9A35-4719-86A7-AE691D588B6B}" ShortID="565679446">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="12"/>
+								<Property Name="Color" Type="int16" Value="25"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_006_Card_Pickup" ID="{94B8A269-D845-43C9-A399-0996202C4C6B}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -224,7 +224,7 @@
 								</Event>
 								<Event Name="SFX_007_Card_Play" ID="{0C290FF6-08E6-4D79-B006-EE906AF522E3}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -239,7 +239,7 @@
 								</Event>
 								<Event Name="SFX_008_Card_Draw" ID="{FB5BEB3B-728B-4471-B054-CFDC3C97FBB9}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -254,7 +254,7 @@
 								</Event>
 								<Event Name="SFX_009_Card_Shuffle" ID="{620A4C62-2C60-45D1-80E8-EECC6E5696BD}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -269,7 +269,7 @@
 								</Event>
 								<Event Name="SFX_032_Card_Trigger_Attack" ID="{BDE1DE8B-E063-447A-8E99-AA2F6BDC10E2}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -284,7 +284,7 @@
 								</Event>
 								<Event Name="SFX_033_Card_TurnChange" ID="{E8150AF4-8ACA-461E-A4E2-3846217320B0}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -299,7 +299,7 @@
 								</Event>
 								<Event Name="SFX_034_Card_Transform" ID="{6E1E5030-4121-4C7E-A4AC-EF4AF4645D94}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="12"/>
+										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -316,13 +316,13 @@
 						</Folder>
 						<Folder Name="Cutscene" ID="{2A49B815-40BF-4822-9387-17B30B9B4382}" ShortID="441677207">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="11"/>
+								<Property Name="Color" Type="int16" Value="26"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_056_Cutscene_Opening" ID="{36638892-7A59-451E-898D-67FB9A1752F0}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="11"/>
+										<Property Name="Color" Type="int16" Value="26"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -339,13 +339,13 @@
 						</Folder>
 						<Folder Name="Enemy" ID="{A8ADB538-4035-4378-B56C-FDB9FC225AB1}" ShortID="155356135">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="2"/>
+								<Property Name="Color" Type="int16" Value="23"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_014_Enemy_Hit_Light" ID="{BE98094B-3DC8-4676-9006-243AA33B924C}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="Color" Type="int16" Value="23"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -360,7 +360,7 @@
 								</Event>
 								<Event Name="SFX_015_Enemy_Death" ID="{F6F3DFAA-22C6-4EC9-9191-3E8D21F1E679}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="Color" Type="int16" Value="23"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -375,7 +375,7 @@
 								</Event>
 								<Event Name="SFX_044_Enemy_HitPlayer" ID="{03900DA4-38F9-4E05-AB34-F2795284F424}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="Color" Type="int16" Value="23"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -390,7 +390,7 @@
 								</Event>
 								<Event Name="SFX_045_Enemy_Break" ID="{F9A373A6-2179-4A41-9102-5FAFB19FEDAA}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="Color" Type="int16" Value="23"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -405,7 +405,7 @@
 								</Event>
 								<Event Name="SFX_046_Enemy_PiperFlute" ID="{2ED4908A-808E-4652-BCAE-7EDE7BDADAE1}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="Color" Type="int16" Value="23"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -420,7 +420,7 @@
 								</Event>
 								<Event Name="SFX_047_Enemy_BossIntro" ID="{EEE9027D-9C4D-4D36-A714-702948EB18C6}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="Color" Type="int16" Value="23"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -437,13 +437,13 @@
 						</Folder>
 						<Folder Name="Foot" ID="{7BB06E3D-9A02-47B6-ABB7-93DDF871D5BA}" ShortID="567767677">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="4"/>
+								<Property Name="Color" Type="int16" Value="20"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_025_Foot_Wood" ID="{99B6A5C5-AF68-44F7-B611-AD3D81A59DE5}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="4"/>
+										<Property Name="Color" Type="int16" Value="20"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -458,7 +458,7 @@
 								</Event>
 								<Event Name="SFX_026_Foot_Mud" ID="{439C53F1-B4A4-454C-982B-ACB3BFA01FF2}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="4"/>
+										<Property Name="Color" Type="int16" Value="20"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -473,7 +473,7 @@
 								</Event>
 								<Event Name="SFX_027_Foot_Stone" ID="{D4575241-B787-479C-8D49-9CBF13093A14}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="4"/>
+										<Property Name="Color" Type="int16" Value="20"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -490,13 +490,13 @@
 						</Folder>
 						<Folder Name="Map" ID="{FAFC4021-B5FC-4D82-B01A-FB4195DEED67}" ShortID="812339367">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="9"/>
+								<Property Name="Color" Type="int16" Value="16"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_054_Map_MoveStep" ID="{02C4156B-D1C6-45C6-A4D7-CE3CBEDE0665}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="9"/>
+										<Property Name="Color" Type="int16" Value="16"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -511,7 +511,7 @@
 								</Event>
 								<Event Name="SFX_055_Map_FogReveal" ID="{F49E8A6C-2500-44DA-9759-5811E918638E}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="9"/>
+										<Property Name="Color" Type="int16" Value="16"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -528,13 +528,13 @@
 						</Folder>
 						<Folder Name="Player" ID="{85722896-F79A-45C7-848A-7CC93D64DF11}" ShortID="172953614">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="3"/>
+								<Property Name="Color" Type="int16" Value="8"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_012_Player_Hit_Light" ID="{B50DF804-C22B-49A8-971F-90BD5B847186}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="Color" Type="int16" Value="8"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -549,7 +549,7 @@
 								</Event>
 								<Event Name="SFX_013_Player_Death" ID="{13E57565-E47E-4B0E-8A29-D2107C050EFE}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="Color" Type="int16" Value="8"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -564,7 +564,7 @@
 								</Event>
 								<Event Name="SFX_035_Player_Hit_Heavy" ID="{4099199F-C046-4EEB-AF2D-387B87236C99}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="Color" Type="int16" Value="8"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -579,7 +579,7 @@
 								</Event>
 								<Event Name="SFX_042_Player_Breath" ID="{1A525205-65E2-468D-8C34-780D128A5602}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="Color" Type="int16" Value="8"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -594,7 +594,7 @@
 								</Event>
 								<Event Name="SFX_043_Player_LowHP" ID="{03B67CA1-3F6F-4311-926D-CEE07F175C0F}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="Color" Type="int16" Value="8"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -611,13 +611,13 @@
 						</Folder>
 						<Folder Name="Potion" ID="{321CD5F9-94D6-4EB8-BF0F-5B7C424D5250}" ShortID="472855981">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="13"/>
+								<Property Name="Color" Type="int16" Value="24"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_052_Potion_Select" ID="{FC3C1055-9187-43FC-A91F-B25D68E80A7B}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="13"/>
+										<Property Name="Color" Type="int16" Value="24"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -632,7 +632,7 @@
 								</Event>
 								<Event Name="SFX_053_Potion_Use" ID="{79CC2D94-5653-41BB-B22E-24719F5D4C4F}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="13"/>
+										<Property Name="Color" Type="int16" Value="24"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -649,13 +649,13 @@
 						</Folder>
 						<Folder Name="Relic" ID="{7C9C1F23-628B-4433-AC53-B539F2A7FD1C}" ShortID="684942561">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="5"/>
+								<Property Name="Color" Type="int16" Value="7"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_048_Relic_Snap" ID="{6ECF2FAA-7937-4178-8C0D-EA7FCF7652B7}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="5"/>
+										<Property Name="Color" Type="int16" Value="7"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -670,7 +670,7 @@
 								</Event>
 								<Event Name="SFX_049_Relic_Link" ID="{D236D40D-8F6C-4D3D-899C-BC4249FC44F8}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="5"/>
+										<Property Name="Color" Type="int16" Value="7"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -685,7 +685,7 @@
 								</Event>
 								<Event Name="SFX_050_Relic_ChainTrigger" ID="{4C1D3E7A-D979-45FC-8179-CBF5A621D9A1}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="5"/>
+										<Property Name="Color" Type="int16" Value="7"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -700,7 +700,7 @@
 								</Event>
 								<Event Name="SFX_051_Relic_Gain" ID="{202B7729-EE99-47FC-9D97-94655A41A8ED}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="5"/>
+										<Property Name="Color" Type="int16" Value="7"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -717,13 +717,13 @@
 						</Folder>
 						<Folder Name="Trans" ID="{AB733F41-0490-47E4-B2CB-CD001DEA0ECD}" ShortID="494076151">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="8"/>
+								<Property Name="Color" Type="int16" Value="3"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_020_Trans_Workshop_Slum" ID="{9106A1DA-AC8D-455D-A3CE-5DB97D8BD5DF}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="Color" Type="int16" Value="3"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -738,7 +738,7 @@
 								</Event>
 								<Event Name="SFX_021_Trans_Slum_Church" ID="{CAFD99DC-F8E8-40E4-B4D9-8FA931E96562}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="Color" Type="int16" Value="3"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -753,7 +753,7 @@
 								</Event>
 								<Event Name="SFX_022_Trans_EnterBattle" ID="{45A66BF0-657F-4A82-B7B3-B91BB8719B78}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="Color" Type="int16" Value="3"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -768,7 +768,7 @@
 								</Event>
 								<Event Name="SFX_023_Trans_FloorChange" ID="{A3FD096B-9295-44D8-A99D-BBF73098B124}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="Color" Type="int16" Value="3"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -783,7 +783,7 @@
 								</Event>
 								<Event Name="SFX_024_Trans_ExitBattle" ID="{571FDE45-6401-44B6-8677-001FFC4D7666}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="Color" Type="int16" Value="3"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -800,13 +800,13 @@
 						</Folder>
 						<Folder Name="UI" ID="{973EAEEB-3897-41DA-9508-7C464F4394B8}" ShortID="907630616">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="10"/>
+								<Property Name="Color" Type="int16" Value="2"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_001_UI_Hover" ID="{6BE67A9B-291B-4FDA-97FE-4A605087C259}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -821,7 +821,7 @@
 								</Event>
 								<Event Name="SFX_002_UI_Click" ID="{7FD3482D-6511-4FF3-AECC-70943576A99D}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -836,7 +836,7 @@
 								</Event>
 								<Event Name="SFX_003_UI_Back" ID="{8B74723B-0696-4B70-AD33-D1CFE603F67A}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -851,7 +851,7 @@
 								</Event>
 								<Event Name="SFX_004_UI_Panel_Open" ID="{0273BA27-611E-41C4-8817-42AADED57B6C}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -866,7 +866,7 @@
 								</Event>
 								<Event Name="SFX_005_UI_Panel_Close" ID="{CFDCE4E3-5CFD-4037-BC12-AF25A97CBF46}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -881,7 +881,7 @@
 								</Event>
 								<Event Name="SFX_028_UI_Slider" ID="{6F71FFC9-BE12-46AC-9023-D747E85A7B9D}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -896,7 +896,7 @@
 								</Event>
 								<Event Name="SFX_029_UI_Error" ID="{BFE952C0-8B04-482E-8E07-162F9815037A}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -911,7 +911,7 @@
 								</Event>
 								<Event Name="SFX_030_UI_Result_Win" ID="{A935A655-8681-4659-A6B8-103AF6B6ACF5}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -926,7 +926,7 @@
 								</Event>
 								<Event Name="SFX_031_UI_Result_Lose" ID="{2F2BA819-C2F0-4106-B8A3-98F538FD1E01}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -943,13 +943,13 @@
 						</Folder>
 						<Folder Name="Voice" ID="{579D9B3B-D3D3-456F-B862-0C2CEA06B60A}" ShortID="492050353">
 							<PropertyList>
-								<Property Name="Color" Type="int16" Value="6"/>
+								<Property Name="Color" Type="int16" Value="18"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
 								<Event Name="SFX_057_Voice_Talk" ID="{470A206E-D43D-422F-9F92-E02A65C646AA}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="6"/>
+										<Property Name="Color" Type="int16" Value="18"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
@@ -964,7 +964,7 @@
 								</Event>
 								<Event Name="SFX_058_Voice_PenWrite" ID="{79DF21E1-C958-48E4-A4E8-F89EA2223C42}">
 									<PropertyList>
-										<Property Name="Color" Type="int16" Value="6"/>
+										<Property Name="Color" Type="int16" Value="18"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
 									</PropertyList>
 									<ChildrenList>
