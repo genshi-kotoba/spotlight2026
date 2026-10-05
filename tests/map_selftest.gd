@@ -21,6 +21,7 @@ func _initialize() -> void:
 	_test_symmetric(layout)
 	_test_pathfinding(layout)
 	_test_reachable(layout)
+	_test_seeded_node_distribution(layout)
 	_test_geometry_normals(layout)
 
 	if _failures == 0:
@@ -179,6 +180,64 @@ func _test_reachable(layout: MapLayout) -> void:
 	var highest := _find_highest(layout)
 	_check("最高格可达", reachable.has(highest),
 		"高度 %d" % _height_of(layout, highest))
+
+
+func _test_seeded_node_distribution(layout: MapLayout) -> void:
+	print("[地图 × 种子集成]")
+	var first := _generate_plan(layout, "integration-seed", "map-001")
+	var repeated := _generate_plan(layout, "integration-seed", "map-001")
+	var changed := _generate_plan(layout, "another-seed", "map-001")
+	var isolated := _generate_plan(layout, "integration-seed", "map-001", true)
+
+	_check("同主种子与地图身份产生相同节点", first != null and repeated != null \
+		and first.signature() == repeated.signature())
+	_check("其他随机域的消费不改变地图节点", first != null and isolated != null \
+		and first.signature() == isolated.signature())
+	_check("不同主种子产生不同节点", first != null and changed != null \
+		and first.signature() != changed.signature())
+	if first == null:
+		return
+
+	_check("分配 3 个普通战斗", first.count(MapNodeKind.Type.BATTLE) == 3)
+	_check("分配 1 个精英", first.count(MapNodeKind.Type.ELITE) == 1)
+	_check("分配 1 个 Boss", first.count(MapNodeKind.Type.BOSS) == 1)
+	_check("分配 7 至 9 个事件", first.count(MapNodeKind.Type.EVENT) >= 7 \
+		and first.count(MapNodeKind.Type.EVENT) <= 9)
+	_check("起点被标记且不被其他节点覆盖",
+		first.kind_at(layout.start_coord) == MapNodeKind.Type.START)
+	var restored := MapNodePlan.from_dictionary(first.to_dictionary())
+	_check("节点计划可无损写入并恢复业务存档", restored != null \
+		and restored.signature() == first.signature() and restored.map_id == first.map_id)
+
+	var reachable := MapPathfinder.reachable_from(layout.start_coord, layout.can_move)
+	var invalid := 0
+	var boss_distance := -1
+	var farthest := 0
+	for coord: Vector2i in reachable:
+		if coord != layout.start_coord:
+			farthest = maxi(farthest, HexCoord.distance(layout.start_coord, coord))
+	for coord: Vector2i in first.assignments:
+		var tile := layout.tile_at(coord)
+		if tile == null or not tile.is_passable() or not reachable.has(coord):
+			invalid += 1
+		if first.kind_at(coord) == MapNodeKind.Type.BOSS:
+			boss_distance = HexCoord.distance(layout.start_coord, coord)
+	_check("全部节点位于可达可通行格", invalid == 0, "非法节点 %d" % invalid)
+	_check("Boss 位于距起点最远两圈", boss_distance >= farthest - 1,
+		"Boss 距离 %d，最远 %d" % [boss_distance, farthest])
+
+
+func _generate_plan(layout: MapLayout, seed_text: String, map_id: String,
+		consume_other_domain := false) -> MapNodePlan:
+	var registry := SeedRegistry.new("map-integration-test-v1")
+	if registry.begin_run(seed_text).is_empty():
+		return null
+	if consume_other_domain:
+		var shop := registry.get_stream(RandomDomains.SHOP, [map_id, "hex:0,0"])
+		if shop == null or shop.pick(["a", "b", "c"]) == null:
+			return null
+	var stream := registry.get_stream(RandomDomains.MAP_NODES, [map_id])
+	return MapNodeDistributor.generate_first_map(layout, stream, map_id)
 
 
 func _test_geometry_normals(layout: MapLayout) -> void:
