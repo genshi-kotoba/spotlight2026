@@ -4,6 +4,13 @@
   "BasePlatform": "Windows",
   "PluginLibs": [
    {
+    "LibName": "Wwise Parametric EQ",
+    "LibId": "6881283",
+    "Type": "Effect",
+    "DLL": "AkParametricEQ",
+    "StaticLib": "AkParametricEQFX"
+   },
+   {
     "LibName": "Wwise Compressor",
     "LibId": "7077891",
     "Type": "Effect",
@@ -35,6 +42,6 @@
     "StaticLib": "AkSidechainFX"
    }
   ],
-  "FileHash": "{1FE90FC4-A6F4-3E90-A0EF-84B0344FB32F}"
+  "FileHash": "{5F45CDE9-5E49-A2E6-E0EC-3DC4D0DC337D}"
  }
 }

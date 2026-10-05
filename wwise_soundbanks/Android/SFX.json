@@ -10,34 +10,249 @@
     "Type": "User",
     "GUID": "{8D0491CA-9979-4D1A-8C52-7B0823C25729}",
     "Language": "SFX",
-    "Hash": "{9C053E26-7A90-72D8-76B3-B3DAEA86495B}",
+    "Hash": "{5C23BCF6-AEAB-7FFB-006A-0CE1F3D4D60A}",
     "ObjectPath": "\\SoundBanks\\Default Work Unit\\SFX",
     "ShortName": "SFX",
     "Path": "SFX.bnk",
+    "Media": [
+     {
+      "Id": "14931060",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_002_UI_Click_L2_02.wav",
+      "CachePath": "D3/{D3E21722-394B-B096-17B8-8258C2294EC1}.wem"
+     },
+     {
+      "Id": "96934615",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_001_UI_Hover_L2_01.wav",
+      "CachePath": "87/{87576162-630E-1B0C-C007-2E29F095EA26}.wem"
+     },
+     {
+      "Id": "177916429",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_002_UI_Click_L1_04.wav",
+      "CachePath": "3A/{3A1DE551-87FD-45F2-8552-F83F04B1A4F2}.wem"
+     },
+     {
+      "Id": "186571361",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_001_UI_Hover_L1_01.wav",
+      "CachePath": "CA/{CAC5CEDA-4263-16A2-6733-FE052B6943FF}.wem"
+     },
+     {
+      "Id": "216354842",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_001_UI_Hover_L2_04.wav",
+      "CachePath": "96/{96F572C1-B004-0E63-CFFC-A492BE579969}.wem"
+     },
+     {
+      "Id": "284299713",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_002_UI_Click_L2_04.wav",
+      "CachePath": "8C/{8C731056-0FFC-A61C-E65A-D5AB99AAFD58}.wem"
+     },
+     {
+      "Id": "485754780",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_002_UI_Click_L1_02.wav",
+      "CachePath": "7B/{7BCC3099-6C0C-B360-A48B-62DA949F5607}.wem"
+     },
+     {
+      "Id": "693014678",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_002_UI_Click_L2_01.wav",
+      "CachePath": "A1/{A1118898-5A29-DDA1-DE82-BBB7355F54E1}.wem"
+     },
+     {
+      "Id": "723102474",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_001_UI_Hover_L1_03.wav",
+      "CachePath": "8C/{8C6790B2-EF94-3E9F-F790-E1CAB6B296D0}.wem"
+     },
+     {
+      "Id": "747490154",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_001_UI_Hover_L1_04.wav",
+      "CachePath": "A7/{A7B335F1-2A94-EEAB-C889-1ACA22237024}.wem"
+     },
+     {
+      "Id": "773663309",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_001_UI_Hover_L1_02.wav",
+      "CachePath": "C3/{C379C30F-0C89-CF6D-3DAE-8CC92AEDE2DA}.wem"
+     },
+     {
+      "Id": "776806059",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_001_UI_Hover_L2_05.wav",
+      "CachePath": "06/{06E18E7E-61E0-0893-4EAD-807DA64B1ED2}.wem"
+     },
+     {
+      "Id": "816831334",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_001_UI_Hover_L2_03.wav",
+      "CachePath": "B4/{B43B9A6F-F68E-5943-A09A-E1ADCAA0C1A8}.wem"
+     },
+     {
+      "Id": "880961998",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_001_UI_Hover_L2_02.wav",
+      "CachePath": "BB/{BB75AFEC-6358-1DB8-17F4-85B5853A000A}.wem"
+     },
+     {
+      "Id": "891012469",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_002_UI_Click_L1_03.wav",
+      "CachePath": "FD/{FDFC20D3-AD79-B9E6-EA3E-7DE7F9BF286A}.wem"
+     },
+     {
+      "Id": "1005899778",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_002_UI_Click_L2_03.wav",
+      "CachePath": "51/{51EE6046-89BD-06CF-58C5-BCEE4E7C5A54}.wem"
+     },
+     {
+      "Id": "1013124170",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\SFX_002_UI_Click_L1_01.wav",
+      "CachePath": "FC/{FC092E78-40D9-D49E-042F-C4D877C9127E}.wem"
+     }
+    ],
+    "Plugins": {
+     "ShareSets": [
+      {
+       "Id": "3604890626",
+       "Name": "High_Pass_60Hz",
+       "ObjectPath": "\\Effects\\Factory Effects\\Parametric EQ\\High Pass Filters\\High_Pass_60Hz",
+       "GUID": "{F9627628-0B10-4272-BC30-D4C20423CB38}",
+       "LibName": "Wwise Parametric EQ",
+       "LibId": "6881283"
+      }
+     ]
+    },
     "Events": [
      {
       "Id": "1904108632",
       "Name": "SFX_001_UI_Hover",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\UI\\SFX_001_UI_Hover",
       "GUID": "{6BE67A9B-291B-4FDA-97FE-4A605087C259}",
+      "Color": "2",
       "DurationType": "OneShot",
-      "DurationMin": "0",
-      "DurationMax": "0"
+      "DurationMin": "0.161375",
+      "DurationMax": "0.161375",
+      "MediaRefs": [
+       {
+        "Id": "96934615"
+       },
+       {
+        "Id": "186571361"
+       },
+       {
+        "Id": "216354842"
+       },
+       {
+        "Id": "723102474"
+       },
+       {
+        "Id": "747490154"
+       },
+       {
+        "Id": "773663309"
+       },
+       {
+        "Id": "776806059"
+       },
+       {
+        "Id": "816831334"
+       },
+       {
+        "Id": "880961998"
+       }
+      ],
+      "PluginRefs": {
+       "ShareSets": [
+        {
+         "Id": "3604890626"
+        }
+       ]
+      }
      },
      {
       "Id": "1091911267",
       "Name": "SFX_002_UI_Click",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\UI\\SFX_002_UI_Click",
       "GUID": "{7FD3482D-6511-4FF3-AECC-70943576A99D}",
+      "Color": "2",
       "DurationType": "OneShot",
-      "DurationMin": "0",
-      "DurationMax": "0"
+      "DurationMin": "0.14525",
+      "DurationMax": "0.14525",
+      "MediaRefs": [
+       {
+        "Id": "14931060"
+       },
+       {
+        "Id": "177916429"
+       },
+       {
+        "Id": "284299713"
+       },
+       {
+        "Id": "485754780"
+       },
+       {
+        "Id": "693014678"
+       },
+       {
+        "Id": "891012469"
+       },
+       {
+        "Id": "1005899778"
+       },
+       {
+        "Id": "1013124170"
+       }
+      ]
      },
      {
       "Id": "2347086561",
       "Name": "SFX_003_UI_Back",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\UI\\SFX_003_UI_Back",
       "GUID": "{8B74723B-0696-4B70-AD33-D1CFE603F67A}",
+      "Color": "2",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -47,6 +262,7 @@
       "Name": "SFX_004_UI_Panel_Open",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\UI\\SFX_004_UI_Panel_Open",
       "GUID": "{0273BA27-611E-41C4-8817-42AADED57B6C}",
+      "Color": "2",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -56,6 +272,7 @@
       "Name": "SFX_005_UI_Panel_Close",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\UI\\SFX_005_UI_Panel_Close",
       "GUID": "{CFDCE4E3-5CFD-4037-BC12-AF25A97CBF46}",
+      "Color": "2",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -65,6 +282,7 @@
       "Name": "SFX_006_Card_Pickup",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Card\\SFX_006_Card_Pickup",
       "GUID": "{94B8A269-D845-43C9-A399-0996202C4C6B}",
+      "Color": "25",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -74,6 +292,7 @@
       "Name": "SFX_007_Card_Play",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Card\\SFX_007_Card_Play",
       "GUID": "{0C290FF6-08E6-4D79-B006-EE906AF522E3}",
+      "Color": "25",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -83,6 +302,7 @@
       "Name": "SFX_008_Card_Draw",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Card\\SFX_008_Card_Draw",
       "GUID": "{FB5BEB3B-728B-4471-B054-CFDC3C97FBB9}",
+      "Color": "25",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -92,6 +312,7 @@
       "Name": "SFX_009_Card_Shuffle",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Card\\SFX_009_Card_Shuffle",
       "GUID": "{620A4C62-2C60-45D1-80E8-EECC6E5696BD}",
+      "Color": "25",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -101,6 +322,7 @@
       "Name": "SFX_010_Battle_Pointer_Tick",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Battle\\SFX_010_Battle_Pointer_Tick",
       "GUID": "{4694BD1C-1CCA-444E-96A5-DCE2723EBA3E}",
+      "Color": "10",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -110,6 +332,7 @@
       "Name": "SFX_011_Battle_Pointer_Rewind",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Battle\\SFX_011_Battle_Pointer_Rewind",
       "GUID": "{C915BE6F-6273-441F-A9E6-5E61913A2DAA}",
+      "Color": "10",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -119,6 +342,7 @@
       "Name": "SFX_012_Player_Hit_Light",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Player\\SFX_012_Player_Hit_Light",
       "GUID": "{B50DF804-C22B-49A8-971F-90BD5B847186}",
+      "Color": "8",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -128,6 +352,7 @@
       "Name": "SFX_013_Player_Death",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Player\\SFX_013_Player_Death",
       "GUID": "{13E57565-E47E-4B0E-8A29-D2107C050EFE}",
+      "Color": "8",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -137,6 +362,7 @@
       "Name": "SFX_014_Enemy_Hit_Light",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Enemy\\SFX_014_Enemy_Hit_Light",
       "GUID": "{BE98094B-3DC8-4676-9006-243AA33B924C}",
+      "Color": "23",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -146,6 +372,7 @@
       "Name": "SFX_015_Enemy_Death",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Enemy\\SFX_015_Enemy_Death",
       "GUID": "{F6F3DFAA-22C6-4EC9-9191-3E8D21F1E679}",
+      "Color": "23",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -155,6 +382,7 @@
       "Name": "SFX_016_Amb_Workshop",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Amb\\SFX_016_Amb_Workshop",
       "GUID": "{CBF05321-2CEE-46BF-B8DD-FF1C2A62A20F}",
+      "Color": "17",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -164,6 +392,7 @@
       "Name": "SFX_017_Amb_Slum",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Amb\\SFX_017_Amb_Slum",
       "GUID": "{CA532AE3-62AD-4F8B-B778-2B4CBD8508C6}",
+      "Color": "17",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -173,6 +402,7 @@
       "Name": "SFX_018_Amb_Church",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Amb\\SFX_018_Amb_Church",
       "GUID": "{0BBBC390-CBBF-417E-BE58-200D4B568469}",
+      "Color": "17",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -182,6 +412,7 @@
       "Name": "SFX_019_Amb_ChurchTop",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Amb\\SFX_019_Amb_ChurchTop",
       "GUID": "{77859475-5E2E-4E77-ABF9-BE3C47A784A4}",
+      "Color": "17",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -191,6 +422,7 @@
       "Name": "SFX_020_Trans_Workshop_Slum",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Trans\\SFX_020_Trans_Workshop_Slum",
       "GUID": "{9106A1DA-AC8D-455D-A3CE-5DB97D8BD5DF}",
+      "Color": "3",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -200,6 +432,7 @@
       "Name": "SFX_021_Trans_Slum_Church",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Trans\\SFX_021_Trans_Slum_Church",
       "GUID": "{CAFD99DC-F8E8-40E4-B4D9-8FA931E96562}",
+      "Color": "3",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -209,6 +442,7 @@
       "Name": "SFX_022_Trans_EnterBattle",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Trans\\SFX_022_Trans_EnterBattle",
       "GUID": "{45A66BF0-657F-4A82-B7B3-B91BB8719B78}",
+      "Color": "3",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -218,6 +452,7 @@
       "Name": "SFX_023_Trans_FloorChange",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Trans\\SFX_023_Trans_FloorChange",
       "GUID": "{A3FD096B-9295-44D8-A99D-BBF73098B124}",
+      "Color": "3",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -227,6 +462,7 @@
       "Name": "SFX_024_Trans_ExitBattle",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Trans\\SFX_024_Trans_ExitBattle",
       "GUID": "{571FDE45-6401-44B6-8677-001FFC4D7666}",
+      "Color": "3",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -236,6 +472,7 @@
       "Name": "SFX_025_Foot_Wood",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Foot\\SFX_025_Foot_Wood",
       "GUID": "{99B6A5C5-AF68-44F7-B611-AD3D81A59DE5}",
+      "Color": "20",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -245,6 +482,7 @@
       "Name": "SFX_026_Foot_Mud",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Foot\\SFX_026_Foot_Mud",
       "GUID": "{439C53F1-B4A4-454C-982B-ACB3BFA01FF2}",
+      "Color": "20",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -254,6 +492,7 @@
       "Name": "SFX_027_Foot_Stone",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Foot\\SFX_027_Foot_Stone",
       "GUID": "{D4575241-B787-479C-8D49-9CBF13093A14}",
+      "Color": "20",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -263,6 +502,7 @@
       "Name": "SFX_028_UI_Slider",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\UI\\SFX_028_UI_Slider",
       "GUID": "{6F71FFC9-BE12-46AC-9023-D747E85A7B9D}",
+      "Color": "2",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -272,6 +512,7 @@
       "Name": "SFX_029_UI_Error",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\UI\\SFX_029_UI_Error",
       "GUID": "{BFE952C0-8B04-482E-8E07-162F9815037A}",
+      "Color": "2",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -281,6 +522,7 @@
       "Name": "SFX_030_UI_Result_Win",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\UI\\SFX_030_UI_Result_Win",
       "GUID": "{A935A655-8681-4659-A6B8-103AF6B6ACF5}",
+      "Color": "2",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -290,6 +532,7 @@
       "Name": "SFX_031_UI_Result_Lose",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\UI\\SFX_031_UI_Result_Lose",
       "GUID": "{2F2BA819-C2F0-4106-B8A3-98F538FD1E01}",
+      "Color": "2",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -299,6 +542,7 @@
       "Name": "SFX_032_Card_Trigger_Attack",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Card\\SFX_032_Card_Trigger_Attack",
       "GUID": "{BDE1DE8B-E063-447A-8E99-AA2F6BDC10E2}",
+      "Color": "25",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -308,6 +552,7 @@
       "Name": "SFX_033_Card_TurnChange",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Card\\SFX_033_Card_TurnChange",
       "GUID": "{E8150AF4-8ACA-461E-A4E2-3846217320B0}",
+      "Color": "25",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -317,6 +562,7 @@
       "Name": "SFX_034_Card_Transform",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Card\\SFX_034_Card_Transform",
       "GUID": "{6E1E5030-4121-4C7E-A4AC-EF4AF4645D94}",
+      "Color": "25",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -326,6 +572,7 @@
       "Name": "SFX_035_Player_Hit_Heavy",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Player\\SFX_035_Player_Hit_Heavy",
       "GUID": "{4099199F-C046-4EEB-AF2D-387B87236C99}",
+      "Color": "8",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -335,6 +582,7 @@
       "Name": "SFX_036_Battle_HitResolve",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Battle\\SFX_036_Battle_HitResolve",
       "GUID": "{6BF4EE0B-AAAF-445C-8A0B-6F745DF316A4}",
+      "Color": "10",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -344,6 +592,7 @@
       "Name": "SFX_037_Battle_Block",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Battle\\SFX_037_Battle_Block",
       "GUID": "{D327F56B-6DF3-4DB6-9915-832A50775B82}",
+      "Color": "10",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -353,6 +602,7 @@
       "Name": "SFX_038_Battle_Heal",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Battle\\SFX_038_Battle_Heal",
       "GUID": "{AC15E048-3C7E-4174-8C66-BC0517BD4A0A}",
+      "Color": "10",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -362,6 +612,7 @@
       "Name": "SFX_039_Battle_BuffGain",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Battle\\SFX_039_Battle_BuffGain",
       "GUID": "{CAFF4A9E-52CD-43E0-83BD-D04ABD9DEDDA}",
+      "Color": "10",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -371,6 +622,7 @@
       "Name": "SFX_040_Battle_DebuffGain",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Battle\\SFX_040_Battle_DebuffGain",
       "GUID": "{B984D9C3-C74C-44D2-A5D8-1C9B8E5C3951}",
+      "Color": "10",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -380,6 +632,7 @@
       "Name": "SFX_041_Battle_Pickup",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Battle\\SFX_041_Battle_Pickup",
       "GUID": "{B800582F-78CC-4DB7-A1D6-C9AE4C7FEF30}",
+      "Color": "10",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -389,6 +642,7 @@
       "Name": "SFX_042_Player_Breath",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Player\\SFX_042_Player_Breath",
       "GUID": "{1A525205-65E2-468D-8C34-780D128A5602}",
+      "Color": "8",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -398,6 +652,7 @@
       "Name": "SFX_043_Player_LowHP",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Player\\SFX_043_Player_LowHP",
       "GUID": "{03B67CA1-3F6F-4311-926D-CEE07F175C0F}",
+      "Color": "8",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -407,6 +662,7 @@
       "Name": "SFX_044_Enemy_HitPlayer",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Enemy\\SFX_044_Enemy_HitPlayer",
       "GUID": "{03900DA4-38F9-4E05-AB34-F2795284F424}",
+      "Color": "23",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -416,6 +672,7 @@
       "Name": "SFX_045_Enemy_Break",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Enemy\\SFX_045_Enemy_Break",
       "GUID": "{F9A373A6-2179-4A41-9102-5FAFB19FEDAA}",
+      "Color": "23",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -425,6 +682,7 @@
       "Name": "SFX_046_Enemy_PiperFlute",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Enemy\\SFX_046_Enemy_PiperFlute",
       "GUID": "{2ED4908A-808E-4652-BCAE-7EDE7BDADAE1}",
+      "Color": "23",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -434,6 +692,7 @@
       "Name": "SFX_047_Enemy_BossIntro",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Enemy\\SFX_047_Enemy_BossIntro",
       "GUID": "{EEE9027D-9C4D-4D36-A714-702948EB18C6}",
+      "Color": "23",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -443,6 +702,7 @@
       "Name": "SFX_048_Relic_Snap",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Relic\\SFX_048_Relic_Snap",
       "GUID": "{6ECF2FAA-7937-4178-8C0D-EA7FCF7652B7}",
+      "Color": "7",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -452,6 +712,7 @@
       "Name": "SFX_049_Relic_Link",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Relic\\SFX_049_Relic_Link",
       "GUID": "{D236D40D-8F6C-4D3D-899C-BC4249FC44F8}",
+      "Color": "7",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -461,6 +722,7 @@
       "Name": "SFX_050_Relic_ChainTrigger",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Relic\\SFX_050_Relic_ChainTrigger",
       "GUID": "{4C1D3E7A-D979-45FC-8179-CBF5A621D9A1}",
+      "Color": "7",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -470,6 +732,7 @@
       "Name": "SFX_051_Relic_Gain",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Relic\\SFX_051_Relic_Gain",
       "GUID": "{202B7729-EE99-47FC-9D97-94655A41A8ED}",
+      "Color": "7",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -479,6 +742,7 @@
       "Name": "SFX_052_Potion_Select",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Potion\\SFX_052_Potion_Select",
       "GUID": "{FC3C1055-9187-43FC-A91F-B25D68E80A7B}",
+      "Color": "24",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -488,6 +752,7 @@
       "Name": "SFX_053_Potion_Use",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Potion\\SFX_053_Potion_Use",
       "GUID": "{79CC2D94-5653-41BB-B22E-24719F5D4C4F}",
+      "Color": "24",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -497,6 +762,7 @@
       "Name": "SFX_054_Map_MoveStep",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Map\\SFX_054_Map_MoveStep",
       "GUID": "{02C4156B-D1C6-45C6-A4D7-CE3CBEDE0665}",
+      "Color": "16",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -506,6 +772,7 @@
       "Name": "SFX_055_Map_FogReveal",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Map\\SFX_055_Map_FogReveal",
       "GUID": "{F49E8A6C-2500-44DA-9759-5811E918638E}",
+      "Color": "16",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -515,6 +782,7 @@
       "Name": "SFX_056_Cutscene_Opening",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Cutscene\\SFX_056_Cutscene_Opening",
       "GUID": "{36638892-7A59-451E-898D-67FB9A1752F0}",
+      "Color": "26",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -524,6 +792,7 @@
       "Name": "SFX_057_Voice_Talk",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Voice\\SFX_057_Voice_Talk",
       "GUID": "{470A206E-D43D-422F-9F92-E02A65C646AA}",
+      "Color": "18",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -533,6 +802,7 @@
       "Name": "SFX_058_Voice_PenWrite",
       "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Voice\\SFX_058_Voice_PenWrite",
       "GUID": "{79DF21E1-C958-48E4-A4E8-F89EA2223C42}",
+      "Color": "18",
       "DurationType": "OneShot",
       "DurationMin": "0",
       "DurationMax": "0"
@@ -540,6 +810,6 @@
     ]
    }
   ],
-  "FileHash": "{05ADC1BE-4834-BAC5-C8BE-E731A748A411}"
+  "FileHash": "{F147AFB4-8E52-C531-0615-4701ACD228AD}"
  }
 }

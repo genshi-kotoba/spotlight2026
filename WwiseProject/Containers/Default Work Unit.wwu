@@ -17,13 +17,14 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="17"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="Ambience" ID="{466C3A53-5754-480B-9235-88C369CBC4AF}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -31,7 +32,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="17"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -98,7 +98,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="17"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -165,7 +164,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="17"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -232,7 +230,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="17"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -301,13 +298,15 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="10"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideConversion" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
-									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
+									<ObjectRef Name="SFX_Short_ADPCM" ID="{F6136021-F8F1-47F2-8AA0-7BE06608BB19}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -315,7 +314,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -330,7 +328,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -345,7 +342,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -586,7 +582,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -827,7 +822,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -936,7 +930,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -1177,7 +1170,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -1244,7 +1236,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="10"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -1487,13 +1478,15 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="25"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideConversion" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
-									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
+									<ObjectRef Name="SFX_Short_ADPCM" ID="{F6136021-F8F1-47F2-8AA0-7BE06608BB19}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -1501,7 +1494,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -1516,7 +1508,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -1625,7 +1616,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -1734,7 +1724,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -1843,7 +1832,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -1952,7 +1940,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2040,7 +2027,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="25"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2241,13 +2227,14 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="26"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -2255,7 +2242,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="26"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2372,13 +2358,15 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="23"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideConversion" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
-									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
+									<ObjectRef Name="SFX_Short_ADPCM" ID="{F6136021-F8F1-47F2-8AA0-7BE06608BB19}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -2386,7 +2374,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="23"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2401,7 +2388,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="23"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2416,7 +2402,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="23"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2431,7 +2416,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="23"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2446,7 +2430,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="23"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2555,7 +2538,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="23"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2666,13 +2648,15 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="20"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideConversion" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
-									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
+									<ObjectRef Name="SFX_Short_ADPCM" ID="{F6136021-F8F1-47F2-8AA0-7BE06608BB19}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -2680,7 +2664,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="20"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2695,7 +2678,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="20"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2710,7 +2692,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="20"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2884,13 +2865,15 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="16"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideConversion" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
-									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
+									<ObjectRef Name="SFX_Short_ADPCM" ID="{F6136021-F8F1-47F2-8AA0-7BE06608BB19}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -2898,7 +2881,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="16"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2913,7 +2895,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="16"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -2930,13 +2911,15 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="8"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideConversion" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
-									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
+									<ObjectRef Name="SFX_Short_ADPCM" ID="{F6136021-F8F1-47F2-8AA0-7BE06608BB19}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -2944,7 +2927,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="8"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3053,7 +3035,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="8"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3294,7 +3275,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="8"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3493,7 +3473,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="8"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3602,7 +3581,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="8"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3671,13 +3649,15 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="24"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideConversion" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
-									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
+									<ObjectRef Name="SFX_Short_ADPCM" ID="{F6136021-F8F1-47F2-8AA0-7BE06608BB19}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -3685,7 +3665,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="24"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3700,7 +3679,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="24"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3717,13 +3695,15 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="7"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideConversion" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
-									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
+									<ObjectRef Name="SFX_Short_ADPCM" ID="{F6136021-F8F1-47F2-8AA0-7BE06608BB19}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -3731,7 +3711,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="7"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3746,7 +3725,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="7"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3761,7 +3739,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="7"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3776,7 +3753,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="7"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3793,13 +3769,14 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="3"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -3807,7 +3784,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="3"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3895,7 +3871,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="3"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -3983,7 +3958,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="3"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -4092,7 +4066,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="3"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -4291,7 +4264,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="3"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -4402,13 +4374,15 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="2"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideConversion" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
-									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
+									<ObjectRef Name="SFX_Short_ADPCM" ID="{F6136021-F8F1-47F2-8AA0-7BE06608BB19}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="UI" ID="{FD72B170-B360-4725-8677-1212456F9DA3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -4416,7 +4390,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -4431,7 +4404,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -4446,7 +4418,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -4461,7 +4432,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -4476,7 +4446,7 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
+										<Property Name="OverrideEffect" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -4491,6 +4461,11 @@
 											<PropertyList>
 												<Property Name="Color" Type="int16" Value="2"/>
 												<Property Name="OverrideColor" Type="bool" Value="True"/>
+												<Property Name="Volume" Type="Real64">
+													<ValueList>
+														<Value>-7</Value>
+													</ValueList>
+												</Property>
 											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
@@ -4514,6 +4489,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_001_UI_Hover_L1_01" ID="{7F551943-6FD1-4E88-A606-3EFCE65CF6D6}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_001_UI_Hover_L1_01.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="186571361"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_001_UI_Hover_L1_01" ID="{7F551943-6FD1-4E88-A606-3EFCE65CF6D6}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L1_02" ID="{A441AF72-018C-494E-BEDB-570278DAC549}" ShortID="1073115243">
 													<PropertyList>
@@ -4528,6 +4515,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_001_UI_Hover_L1_02" ID="{D466CDD1-B96C-46C3-AA84-E418C96CD6DD}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_001_UI_Hover_L1_02.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="773663309"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_001_UI_Hover_L1_02" ID="{D466CDD1-B96C-46C3-AA84-E418C96CD6DD}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L1_03" ID="{6E71B4D7-BFB4-4C64-B6E4-62A775F307FF}" ShortID="234513479">
 													<PropertyList>
@@ -4542,6 +4541,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_001_UI_Hover_L1_03" ID="{76E67EE4-5B7A-4839-833B-8F90225D329D}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_001_UI_Hover_L1_03.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="723102474"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_001_UI_Hover_L1_03" ID="{76E67EE4-5B7A-4839-833B-8F90225D329D}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L1_04" ID="{1B86B181-7792-4876-8CD6-AC0CA2205FCD}" ShortID="989943929">
 													<PropertyList>
@@ -4556,9 +4567,30 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_001_UI_Hover_L1_04" ID="{C6B724F5-4E54-439C-BE9A-A3B3444D4544}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_001_UI_Hover_L1_04.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="747490154"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_001_UI_Hover_L1_04" ID="{C6B724F5-4E54-439C-BE9A-A3B3444D4544}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
 											<ObjectLists>
+												<ObjectList Name="Effects">
+													<EffectSlot Name="" ID="{05042667-8761-42D2-A6FA-D3DCA4D7EC0A}" ShortID="175648730">
+														<ReferenceList>
+															<Reference Name="Effect" PluginName="Wwise Parametric EQ" CompanyID="0" PluginID="105" PluginType="3">
+																<ObjectRef Name="High_Pass_60Hz" ID="{F9627628-0B10-4272-BC30-D4C20423CB38}" WorkUnitID="{E8613F7D-BAD3-45CD-A3ED-505576F31277}"/>
+															</Reference>
+														</ReferenceList>
+													</EffectSlot>
+												</ObjectList>
 												<ObjectList Name="Playlist">
 													<PluginInnerObject Name="" ID="{823CA85C-2918-4865-9F22-74E89B621AD8}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
 														<ReferenceList>
@@ -4595,6 +4627,11 @@
 											<PropertyList>
 												<Property Name="Color" Type="int16" Value="2"/>
 												<Property Name="OverrideColor" Type="bool" Value="True"/>
+												<Property Name="Volume" Type="Real64">
+													<ValueList>
+														<Value>-10</Value>
+													</ValueList>
+												</Property>
 											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
@@ -4618,6 +4655,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_001_UI_Hover_L2_01" ID="{87D137EE-9111-4329-A269-B5EE86CA90D2}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_001_UI_Hover_L2_01.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="96934615"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_001_UI_Hover_L2_01" ID="{87D137EE-9111-4329-A269-B5EE86CA90D2}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L2_02" ID="{34A4B1CB-0A65-4204-AB73-7D10B93338B4}" ShortID="777919686">
 													<PropertyList>
@@ -4632,6 +4681,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_001_UI_Hover_L2_02" ID="{F18CF076-369E-4498-9A1C-0F694947571C}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_001_UI_Hover_L2_02.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="880961998"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_001_UI_Hover_L2_02" ID="{F18CF076-369E-4498-9A1C-0F694947571C}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L2_03" ID="{6208AB6B-3867-4DAC-B90F-4AF988BB8007}" ShortID="304809190">
 													<PropertyList>
@@ -4646,6 +4707,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_001_UI_Hover_L2_03" ID="{0E965641-F963-4553-99ED-50DD19280F66}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_001_UI_Hover_L2_03.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="816831334"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_001_UI_Hover_L2_03" ID="{0E965641-F963-4553-99ED-50DD19280F66}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L2_04" ID="{C642555E-EC8F-491A-88FE-D1AE640FF4C3}" ShortID="824863802">
 													<PropertyList>
@@ -4660,6 +4733,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_001_UI_Hover_L2_04" ID="{9A90A67E-1A21-4FCD-A71B-6BBDBB03AB14}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_001_UI_Hover_L2_04.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="216354842"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_001_UI_Hover_L2_04" ID="{9A90A67E-1A21-4FCD-A71B-6BBDBB03AB14}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L2_05" ID="{E372C3C7-0BC7-4122-8BFF-61B10812BB86}" ShortID="171590853">
 													<PropertyList>
@@ -4674,6 +4759,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_001_UI_Hover_L2_05" ID="{07B843B0-0DF9-418A-B3B5-10F4951F4464}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_001_UI_Hover_L2_05.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="776806059"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_001_UI_Hover_L2_05" ID="{07B843B0-0DF9-418A-B3B5-10F4951F4464}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
 											<ObjectLists>
@@ -4717,6 +4814,17 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 									</ChildrenList>
+									<ObjectLists>
+										<ObjectList Name="Effects">
+											<EffectSlot Name="" ID="{8AF491EC-E150-4D7B-B850-9A8F9888A0ED}" ShortID="928940998">
+												<ReferenceList>
+													<Reference Name="Effect" PluginName="Wwise Parametric EQ" CompanyID="0" PluginID="105" PluginType="3">
+														<ObjectRef Name="High_Pass_60Hz" ID="{F9627628-0B10-4272-BC30-D4C20423CB38}" WorkUnitID="{E8613F7D-BAD3-45CD-A3ED-505576F31277}"/>
+													</Reference>
+												</ReferenceList>
+											</EffectSlot>
+										</ObjectList>
+									</ObjectLists>
 									<BlendTrackList>
 										<BlendTrack Name="L1" ID="{F8074244-497D-46F0-8454-799864DD8339}" ShortID="41407499">
 											<BlendTrackAssocList>
@@ -4738,7 +4846,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -4753,6 +4860,11 @@
 											<PropertyList>
 												<Property Name="Color" Type="int16" Value="2"/>
 												<Property Name="OverrideColor" Type="bool" Value="True"/>
+												<Property Name="Volume" Type="Real64">
+													<ValueList>
+														<Value>-1</Value>
+													</ValueList>
+												</Property>
 											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
@@ -4776,6 +4888,22 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_002_UI_Click_L1_01" ID="{7274EACD-D55F-4D1D-992E-954D6BAA6AA9}">
+															<PropertyList>
+																<Property Name="LoopBegin" Type="Real64" Value="0"/>
+																<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+															</PropertyList>
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_002_UI_Click_L1_01.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="1013124170"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_002_UI_Click_L1_01" ID="{7274EACD-D55F-4D1D-992E-954D6BAA6AA9}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L1_02" ID="{056D88D6-3474-405C-87D9-198A05D386B7}" ShortID="93441932">
 													<PropertyList>
@@ -4790,6 +4918,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_002_UI_Click_L1_02" ID="{B7AB3EF6-5865-4853-9E28-0E88A6CCBDE7}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_002_UI_Click_L1_02.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="485754780"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_002_UI_Click_L1_02" ID="{B7AB3EF6-5865-4853-9E28-0E88A6CCBDE7}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L1_03" ID="{9A01A58F-2F36-4AF3-97CC-003C94752455}" ShortID="414028231">
 													<PropertyList>
@@ -4804,6 +4944,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_002_UI_Click_L1_03" ID="{C134C7E2-5D36-455E-B746-4700F8ABD77B}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_002_UI_Click_L1_03.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="891012469"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_002_UI_Click_L1_03" ID="{C134C7E2-5D36-455E-B746-4700F8ABD77B}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L1_04" ID="{869C469B-D6BB-4581-9766-7A57A61E371A}" ShortID="460409731">
 													<PropertyList>
@@ -4818,6 +4970,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_002_UI_Click_L1_04" ID="{83DFE1BC-9104-4FCB-B18B-2D7230BC60B4}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_002_UI_Click_L1_04.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="177916429"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_002_UI_Click_L1_04" ID="{83DFE1BC-9104-4FCB-B18B-2D7230BC60B4}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
 											<ObjectLists>
@@ -4857,6 +5021,11 @@
 											<PropertyList>
 												<Property Name="Color" Type="int16" Value="2"/>
 												<Property Name="OverrideColor" Type="bool" Value="True"/>
+												<Property Name="Volume" Type="Real64">
+													<ValueList>
+														<Value>-4</Value>
+													</ValueList>
+												</Property>
 											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
@@ -4880,6 +5049,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_002_UI_Click_L2_01" ID="{BDCE5DD6-D6A2-41FE-8A3A-C3937C45FF72}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_002_UI_Click_L2_01.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="693014678"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_002_UI_Click_L2_01" ID="{BDCE5DD6-D6A2-41FE-8A3A-C3937C45FF72}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L2_02" ID="{C642FCE1-CFAD-4106-903C-1A119A925970}" ShortID="441437198">
 													<PropertyList>
@@ -4894,6 +5075,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_002_UI_Click_L2_02" ID="{7DE0EF2A-B0F7-4017-8B97-3AFB5443E9EF}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_002_UI_Click_L2_02.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="14931060"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_002_UI_Click_L2_02" ID="{7DE0EF2A-B0F7-4017-8B97-3AFB5443E9EF}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L2_03" ID="{A0576992-D6E6-4459-BD3D-5C607B9B96CC}" ShortID="657448357">
 													<PropertyList>
@@ -4908,6 +5101,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_002_UI_Click_L2_03" ID="{D0A10E84-973F-4EF4-90BD-B5B42DAEC48C}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_002_UI_Click_L2_03.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="1005899778"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_002_UI_Click_L2_03" ID="{D0A10E84-973F-4EF4-90BD-B5B42DAEC48C}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L2_04" ID="{C8DD5717-81C1-4636-B03F-0ABE8C0245D4}" ShortID="297032152">
 													<PropertyList>
@@ -4922,6 +5127,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_002_UI_Click_L2_04" ID="{86478DC7-54E7-4012-942F-565176BB71AD}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_002_UI_Click_L2_04.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="284299713"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_002_UI_Click_L2_04" ID="{86478DC7-54E7-4012-942F-565176BB71AD}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
 											<ObjectLists>
@@ -4979,7 +5196,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -5220,7 +5436,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -5419,7 +5634,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -5620,13 +5834,14 @@
 							<PropertyList>
 								<Property Name="Color" Type="int16" Value="18"/>
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
+								<Property Name="OverrideOutput" Type="bool" Value="True"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Conversion">
 									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 								</Reference>
 								<Reference Name="OutputBus">
-									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+									<ObjectRef Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 								</Reference>
 							</ReferenceList>
 							<ChildrenList>
@@ -5634,7 +5849,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="18"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -5848,7 +6062,6 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="18"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
-										<Property Name="OverrideOutput" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
