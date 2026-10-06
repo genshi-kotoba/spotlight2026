@@ -4490,7 +4490,7 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_001_UI_Hover_L1_01" ID="{7F551943-6FD1-4E88-A606-3EFCE65CF6D6}">
+														<AudioFileSource Name="SFX_001_UI_Hover_L1_01" ID="{D7D6B96B-C8C4-4517-9C65-89CC866B0DC8}">
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_001_UI_Hover_L1_01.wav</AudioFile>
 															<MediaIDList>
@@ -4499,7 +4499,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_001_UI_Hover_L1_01" ID="{7F551943-6FD1-4E88-A606-3EFCE65CF6D6}" Platform="Linked"/>
+														<ActiveSource Name="SFX_001_UI_Hover_L1_01" ID="{D7D6B96B-C8C4-4517-9C65-89CC866B0DC8}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L1_02" ID="{A441AF72-018C-494E-BEDB-570278DAC549}" ShortID="1073115243">
@@ -4516,7 +4516,7 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_001_UI_Hover_L1_02" ID="{D466CDD1-B96C-46C3-AA84-E418C96CD6DD}">
+														<AudioFileSource Name="SFX_001_UI_Hover_L1_02" ID="{4EB7ACE6-8274-45A2-87C5-5B715DAC572A}">
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_001_UI_Hover_L1_02.wav</AudioFile>
 															<MediaIDList>
@@ -4525,7 +4525,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_001_UI_Hover_L1_02" ID="{D466CDD1-B96C-46C3-AA84-E418C96CD6DD}" Platform="Linked"/>
+														<ActiveSource Name="SFX_001_UI_Hover_L1_02" ID="{4EB7ACE6-8274-45A2-87C5-5B715DAC572A}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L1_03" ID="{6E71B4D7-BFB4-4C64-B6E4-62A775F307FF}" ShortID="234513479">
@@ -4542,7 +4542,7 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_001_UI_Hover_L1_03" ID="{76E67EE4-5B7A-4839-833B-8F90225D329D}">
+														<AudioFileSource Name="SFX_001_UI_Hover_L1_03" ID="{47DFD41F-D81D-43BA-8BE4-D531E3C20DC9}">
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_001_UI_Hover_L1_03.wav</AudioFile>
 															<MediaIDList>
@@ -4551,7 +4551,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_001_UI_Hover_L1_03" ID="{76E67EE4-5B7A-4839-833B-8F90225D329D}" Platform="Linked"/>
+														<ActiveSource Name="SFX_001_UI_Hover_L1_03" ID="{47DFD41F-D81D-43BA-8BE4-D531E3C20DC9}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L1_04" ID="{1B86B181-7792-4876-8CD6-AC0CA2205FCD}" ShortID="989943929">
@@ -4568,7 +4568,7 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_001_UI_Hover_L1_04" ID="{C6B724F5-4E54-439C-BE9A-A3B3444D4544}">
+														<AudioFileSource Name="SFX_001_UI_Hover_L1_04" ID="{6204A7D0-EE15-427C-807A-E0216FC268F0}">
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_001_UI_Hover_L1_04.wav</AudioFile>
 															<MediaIDList>
@@ -4577,7 +4577,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_001_UI_Hover_L1_04" ID="{C6B724F5-4E54-439C-BE9A-A3B3444D4544}" Platform="Linked"/>
+														<ActiveSource Name="SFX_001_UI_Hover_L1_04" ID="{6204A7D0-EE15-427C-807A-E0216FC268F0}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
@@ -4656,7 +4656,7 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_001_UI_Hover_L2_01" ID="{87D137EE-9111-4329-A269-B5EE86CA90D2}">
+														<AudioFileSource Name="SFX_001_UI_Hover_L2_01" ID="{8E37EBF5-E466-4556-B100-8E99F90D3EA2}">
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_001_UI_Hover_L2_01.wav</AudioFile>
 															<MediaIDList>
@@ -4665,7 +4665,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_001_UI_Hover_L2_01" ID="{87D137EE-9111-4329-A269-B5EE86CA90D2}" Platform="Linked"/>
+														<ActiveSource Name="SFX_001_UI_Hover_L2_01" ID="{8E37EBF5-E466-4556-B100-8E99F90D3EA2}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L2_02" ID="{34A4B1CB-0A65-4204-AB73-7D10B93338B4}" ShortID="777919686">
@@ -4682,7 +4682,7 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_001_UI_Hover_L2_02" ID="{F18CF076-369E-4498-9A1C-0F694947571C}">
+														<AudioFileSource Name="SFX_001_UI_Hover_L2_02" ID="{9444B2E5-459F-47B0-9556-3D8D5AB953CD}">
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_001_UI_Hover_L2_02.wav</AudioFile>
 															<MediaIDList>
@@ -4691,7 +4691,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_001_UI_Hover_L2_02" ID="{F18CF076-369E-4498-9A1C-0F694947571C}" Platform="Linked"/>
+														<ActiveSource Name="SFX_001_UI_Hover_L2_02" ID="{9444B2E5-459F-47B0-9556-3D8D5AB953CD}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L2_03" ID="{6208AB6B-3867-4DAC-B90F-4AF988BB8007}" ShortID="304809190">
@@ -4708,7 +4708,7 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_001_UI_Hover_L2_03" ID="{0E965641-F963-4553-99ED-50DD19280F66}">
+														<AudioFileSource Name="SFX_001_UI_Hover_L2_03" ID="{FD178088-46A0-4772-B1C7-6DEDFD99B7B9}">
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_001_UI_Hover_L2_03.wav</AudioFile>
 															<MediaIDList>
@@ -4717,7 +4717,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_001_UI_Hover_L2_03" ID="{0E965641-F963-4553-99ED-50DD19280F66}" Platform="Linked"/>
+														<ActiveSource Name="SFX_001_UI_Hover_L2_03" ID="{FD178088-46A0-4772-B1C7-6DEDFD99B7B9}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L2_04" ID="{C642555E-EC8F-491A-88FE-D1AE640FF4C3}" ShortID="824863802">
@@ -4734,7 +4734,7 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_001_UI_Hover_L2_04" ID="{9A90A67E-1A21-4FCD-A71B-6BBDBB03AB14}">
+														<AudioFileSource Name="SFX_001_UI_Hover_L2_04" ID="{2C4978C3-2F1C-4431-8D65-2C658381E3BD}">
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_001_UI_Hover_L2_04.wav</AudioFile>
 															<MediaIDList>
@@ -4743,7 +4743,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_001_UI_Hover_L2_04" ID="{9A90A67E-1A21-4FCD-A71B-6BBDBB03AB14}" Platform="Linked"/>
+														<ActiveSource Name="SFX_001_UI_Hover_L2_04" ID="{2C4978C3-2F1C-4431-8D65-2C658381E3BD}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_001_UI_Hover_L2_05" ID="{E372C3C7-0BC7-4122-8BFF-61B10812BB86}" ShortID="171590853">
@@ -4760,7 +4760,7 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_001_UI_Hover_L2_05" ID="{07B843B0-0DF9-418A-B3B5-10F4951F4464}">
+														<AudioFileSource Name="SFX_001_UI_Hover_L2_05" ID="{9CCED1E7-4AA2-44AE-872E-FBB9FDB6617B}">
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_001_UI_Hover_L2_05.wav</AudioFile>
 															<MediaIDList>
@@ -4769,7 +4769,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_001_UI_Hover_L2_05" ID="{07B843B0-0DF9-418A-B3B5-10F4951F4464}" Platform="Linked"/>
+														<ActiveSource Name="SFX_001_UI_Hover_L2_05" ID="{9CCED1E7-4AA2-44AE-872E-FBB9FDB6617B}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
@@ -4846,6 +4846,7 @@
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="2"/>
 										<Property Name="OverrideColor" Type="bool" Value="True"/>
+										<Property Name="OverrideEffect" Type="bool" Value="True"/>
 									</PropertyList>
 									<ReferenceList>
 										<Reference Name="Conversion">
@@ -4860,11 +4861,6 @@
 											<PropertyList>
 												<Property Name="Color" Type="int16" Value="2"/>
 												<Property Name="OverrideColor" Type="bool" Value="True"/>
-												<Property Name="Volume" Type="Real64">
-													<ValueList>
-														<Value>-1</Value>
-													</ValueList>
-												</Property>
 											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
@@ -4889,9 +4885,9 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_002_UI_Click_L1_01" ID="{7274EACD-D55F-4D1D-992E-954D6BAA6AA9}">
+														<AudioFileSource Name="SFX_002_UI_Click_L1_01" ID="{98215B64-2C4B-42AC-90B7-FB2C92A467CB}">
 															<PropertyList>
-																<Property Name="LoopBegin" Type="Real64" Value="0"/>
+																<Property Name="FadeOutDuration" Type="Real64" Value="0.10753"/>
 																<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
 															</PropertyList>
 															<Language>SFX</Language>
@@ -4902,7 +4898,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_002_UI_Click_L1_01" ID="{7274EACD-D55F-4D1D-992E-954D6BAA6AA9}" Platform="Linked"/>
+														<ActiveSource Name="SFX_002_UI_Click_L1_01" ID="{98215B64-2C4B-42AC-90B7-FB2C92A467CB}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L1_02" ID="{056D88D6-3474-405C-87D9-198A05D386B7}" ShortID="93441932">
@@ -4919,7 +4915,12 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_002_UI_Click_L1_02" ID="{B7AB3EF6-5865-4853-9E28-0E88A6CCBDE7}">
+														<AudioFileSource Name="SFX_002_UI_Click_L1_02" ID="{35D98E03-BBEA-4299-B349-1FFC125C92F2}">
+															<PropertyList>
+																<Property Name="FadeOutDuration" Type="Real64" Value="0.05566"/>
+																<Property Name="LoopBegin" Type="Real64" Value="0"/>
+																<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+															</PropertyList>
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_002_UI_Click_L1_02.wav</AudioFile>
 															<MediaIDList>
@@ -4928,7 +4929,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_002_UI_Click_L1_02" ID="{B7AB3EF6-5865-4853-9E28-0E88A6CCBDE7}" Platform="Linked"/>
+														<ActiveSource Name="SFX_002_UI_Click_L1_02" ID="{35D98E03-BBEA-4299-B349-1FFC125C92F2}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L1_03" ID="{9A01A58F-2F36-4AF3-97CC-003C94752455}" ShortID="414028231">
@@ -4945,7 +4946,11 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_002_UI_Click_L1_03" ID="{C134C7E2-5D36-455E-B746-4700F8ABD77B}">
+														<AudioFileSource Name="SFX_002_UI_Click_L1_03" ID="{23781B61-B186-43B7-922A-08463343C496}">
+															<PropertyList>
+																<Property Name="FadeOutDuration" Type="Real64" Value="0.1257"/>
+																<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+															</PropertyList>
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_002_UI_Click_L1_03.wav</AudioFile>
 															<MediaIDList>
@@ -4954,7 +4959,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_002_UI_Click_L1_03" ID="{C134C7E2-5D36-455E-B746-4700F8ABD77B}" Platform="Linked"/>
+														<ActiveSource Name="SFX_002_UI_Click_L1_03" ID="{23781B61-B186-43B7-922A-08463343C496}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L1_04" ID="{869C469B-D6BB-4581-9766-7A57A61E371A}" ShortID="460409731">
@@ -4971,7 +4976,12 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_002_UI_Click_L1_04" ID="{83DFE1BC-9104-4FCB-B18B-2D7230BC60B4}">
+														<AudioFileSource Name="SFX_002_UI_Click_L1_04" ID="{3ACB3FBD-7C3B-4CBB-A072-EBF5A277F6C6}">
+															<PropertyList>
+																<Property Name="FadeOutDuration" Type="Real64" Value="0.13872"/>
+																<Property Name="LoopBegin" Type="Real64" Value="0"/>
+																<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+															</PropertyList>
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_002_UI_Click_L1_04.wav</AudioFile>
 															<MediaIDList>
@@ -4980,7 +4990,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_002_UI_Click_L1_04" ID="{83DFE1BC-9104-4FCB-B18B-2D7230BC60B4}" Platform="Linked"/>
+														<ActiveSource Name="SFX_002_UI_Click_L1_04" ID="{3ACB3FBD-7C3B-4CBB-A072-EBF5A277F6C6}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
@@ -5050,7 +5060,7 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_002_UI_Click_L2_01" ID="{BDCE5DD6-D6A2-41FE-8A3A-C3937C45FF72}">
+														<AudioFileSource Name="SFX_002_UI_Click_L2_01" ID="{4FE44D0A-704B-442E-820D-A04038374AAD}">
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_002_UI_Click_L2_01.wav</AudioFile>
 															<MediaIDList>
@@ -5059,7 +5069,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_002_UI_Click_L2_01" ID="{BDCE5DD6-D6A2-41FE-8A3A-C3937C45FF72}" Platform="Linked"/>
+														<ActiveSource Name="SFX_002_UI_Click_L2_01" ID="{4FE44D0A-704B-442E-820D-A04038374AAD}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L2_02" ID="{C642FCE1-CFAD-4106-903C-1A119A925970}" ShortID="441437198">
@@ -5076,7 +5086,7 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_002_UI_Click_L2_02" ID="{7DE0EF2A-B0F7-4017-8B97-3AFB5443E9EF}">
+														<AudioFileSource Name="SFX_002_UI_Click_L2_02" ID="{8B80D5A3-DCF9-4155-87F0-6055FA536C8C}">
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_002_UI_Click_L2_02.wav</AudioFile>
 															<MediaIDList>
@@ -5085,7 +5095,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_002_UI_Click_L2_02" ID="{7DE0EF2A-B0F7-4017-8B97-3AFB5443E9EF}" Platform="Linked"/>
+														<ActiveSource Name="SFX_002_UI_Click_L2_02" ID="{8B80D5A3-DCF9-4155-87F0-6055FA536C8C}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L2_03" ID="{A0576992-D6E6-4459-BD3D-5C607B9B96CC}" ShortID="657448357">
@@ -5102,7 +5112,11 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_002_UI_Click_L2_03" ID="{D0A10E84-973F-4EF4-90BD-B5B42DAEC48C}">
+														<AudioFileSource Name="SFX_002_UI_Click_L2_03" ID="{6FC867E9-F5F1-44D1-86D9-DA2652DD8764}">
+															<PropertyList>
+																<Property Name="FadeOutDuration" Type="Real64" Value="0.0586"/>
+																<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+															</PropertyList>
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_002_UI_Click_L2_03.wav</AudioFile>
 															<MediaIDList>
@@ -5111,7 +5125,7 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_002_UI_Click_L2_03" ID="{D0A10E84-973F-4EF4-90BD-B5B42DAEC48C}" Platform="Linked"/>
+														<ActiveSource Name="SFX_002_UI_Click_L2_03" ID="{6FC867E9-F5F1-44D1-86D9-DA2652DD8764}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_002_UI_Click_L2_04" ID="{C8DD5717-81C1-4636-B03F-0ABE8C0245D4}" ShortID="297032152">
@@ -5128,7 +5142,10 @@
 														</Reference>
 													</ReferenceList>
 													<ChildrenList>
-														<AudioFileSource Name="SFX_002_UI_Click_L2_04" ID="{86478DC7-54E7-4012-942F-565176BB71AD}">
+														<AudioFileSource Name="SFX_002_UI_Click_L2_04" ID="{C4E5D66E-0EBB-4EA3-BF45-274A34453EF7}">
+															<PropertyList>
+																<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+															</PropertyList>
 															<Language>SFX</Language>
 															<AudioFile>SFX\SFX_002_UI_Click_L2_04.wav</AudioFile>
 															<MediaIDList>
@@ -5137,11 +5154,31 @@
 														</AudioFileSource>
 													</ChildrenList>
 													<ActiveSourceList>
-														<ActiveSource Name="SFX_002_UI_Click_L2_04" ID="{86478DC7-54E7-4012-942F-565176BB71AD}" Platform="Linked"/>
+														<ActiveSource Name="SFX_002_UI_Click_L2_04" ID="{C4E5D66E-0EBB-4EA3-BF45-274A34453EF7}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
 											<ObjectLists>
+												<ObjectList Name="Effects">
+													<EffectSlot Name="" ID="{224D0D50-A633-4627-98A5-2B68C91D4939}" ShortID="203327297">
+														<ReferenceList>
+															<Reference Name="Effect">
+																<Custom>
+																	<Effect Name="Parametric EQ (Custom)" ID="{4CA60D95-40DC-489B-A4E8-ABB3E3C0B4E8}" ShortID="159745786" PluginName="Wwise Parametric EQ" CompanyID="0" PluginID="105" PluginType="3">
+																		<PropertyList>
+																			<Property Name="FilterTypeBand1" Type="int32" Value="1"/>
+																			<Property Name="FrequencyBand1" Type="Real32" Value="142.7178"/>
+																			<Property Name="FrequencyBand3" Type="Real32" Value="7267.329"/>
+																			<Property Name="GainBand3" Type="Real32" Value="6.25"/>
+																			<Property Name="OnOffBand3" Type="bool" Value="True"/>
+																			<Property Name="QFactorBand3" Type="Real32" Value="0.125"/>
+																		</PropertyList>
+																	</Effect>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</EffectSlot>
+												</ObjectList>
 												<ObjectList Name="Playlist">
 													<PluginInnerObject Name="" ID="{4E1D3D6D-85A3-406B-8DB9-A60037D668DF}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
 														<ReferenceList>
@@ -5175,6 +5212,17 @@
 											</ObjectLists>
 										</RandomSequenceContainer>
 									</ChildrenList>
+									<ObjectLists>
+										<ObjectList Name="Effects">
+											<EffectSlot Name="" ID="{EB589755-B19F-4233-9555-73F9433A7B24}" ShortID="568979079">
+												<ReferenceList>
+													<Reference Name="Effect" PluginName="Wwise Parametric EQ" CompanyID="0" PluginID="105" PluginType="3">
+														<ObjectRef Name="High_Pass_60Hz" ID="{F9627628-0B10-4272-BC30-D4C20423CB38}" WorkUnitID="{E8613F7D-BAD3-45CD-A3ED-505576F31277}"/>
+													</Reference>
+												</ReferenceList>
+											</EffectSlot>
+										</ObjectList>
+									</ObjectLists>
 									<BlendTrackList>
 										<BlendTrack Name="L1" ID="{124E926E-278C-4D48-B597-7277E853AB6D}" ShortID="240698320">
 											<BlendTrackAssocList>
@@ -5210,6 +5258,25 @@
 											<PropertyList>
 												<Property Name="Color" Type="int16" Value="2"/>
 												<Property Name="OverrideColor" Type="bool" Value="True"/>
+												<Property Name="OverrideEffect" Type="bool" Value="True"/>
+												<Property Name="Pitch" Type="int32">
+													<ModifierList>
+														<ModifierInfo>
+															<Modifier Name="" ID="{18928A80-1D89-43F0-8F65-3DD810D6F08C}">
+																<PropertyList>
+																	<Property Name="Enabled" Type="bool" Value="True"/>
+																	<Property Name="Max" Type="Real64" Value="500"/>
+																	<Property Name="Min" Type="Real64" Value="-500"/>
+																</PropertyList>
+															</Modifier>
+														</ModifierInfo>
+													</ModifierList>
+												</Property>
+												<Property Name="Volume" Type="Real64">
+													<ValueList>
+														<Value>-12</Value>
+													</ValueList>
+												</Property>
 											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
@@ -5233,6 +5300,22 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_003_UI_Back_L1_01" ID="{760E884F-ED09-48F2-9F62-F2406D05AF4E}">
+															<PropertyList>
+																<Property Name="FadeInDuration" Type="Real64" Value="0.02145"/>
+																<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+															</PropertyList>
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_003_UI_Back_L1_01.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="145815218"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_003_UI_Back_L1_01" ID="{760E884F-ED09-48F2-9F62-F2406D05AF4E}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_003_UI_Back_L1_02" ID="{7D213E30-BCF4-49F5-A24F-5C9C9616D5CA}" ShortID="316436045">
 													<PropertyList>
@@ -5247,6 +5330,23 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_003_UI_Back_L1_02" ID="{BFFA4708-914C-454C-BDA3-83CC1555FEE9}">
+															<PropertyList>
+																<Property Name="FadeInDuration" Type="Real64" Value="0.039"/>
+																<Property Name="LoopBegin" Type="Real64" Value="0"/>
+																<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+															</PropertyList>
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_003_UI_Back_L1_02.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="495786533"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_003_UI_Back_L1_02" ID="{BFFA4708-914C-454C-BDA3-83CC1555FEE9}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_003_UI_Back_L1_03" ID="{5AD61A92-77F2-4EE2-80F9-46B59A15D3CB}" ShortID="331209583">
 													<PropertyList>
@@ -5261,6 +5361,22 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_003_UI_Back_L1_03" ID="{74510658-3032-4B5D-9F20-D85994D88D5E}">
+															<PropertyList>
+																<Property Name="FadeInDuration" Type="Real64" Value="0.02025"/>
+																<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+															</PropertyList>
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_003_UI_Back_L1_03.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="657590864"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_003_UI_Back_L1_03" ID="{74510658-3032-4B5D-9F20-D85994D88D5E}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_003_UI_Back_L1_04" ID="{1ABAABCD-098A-4C3F-B47A-72F68A5BDE5E}" ShortID="267357213">
 													<PropertyList>
@@ -5275,9 +5391,34 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_003_UI_Back_L1_04" ID="{33ABBE95-518D-469A-BE4F-E571CFCB91AA}">
+															<PropertyList>
+																<Property Name="FadeInDuration" Type="Real64" Value="0.03039"/>
+																<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
+															</PropertyList>
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_003_UI_Back_L1_04.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="639757475"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_003_UI_Back_L1_04" ID="{33ABBE95-518D-469A-BE4F-E571CFCB91AA}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
 											<ObjectLists>
+												<ObjectList Name="Effects">
+													<EffectSlot Name="" ID="{BC9C8849-BAB7-4745-BFCF-2D5DF4A77AF5}" ShortID="298845334">
+														<ReferenceList>
+															<Reference Name="Effect" PluginName="Wwise Parametric EQ" CompanyID="0" PluginID="105" PluginType="3">
+																<ObjectRef Name="High_Pass_60Hz" ID="{F9627628-0B10-4272-BC30-D4C20423CB38}" WorkUnitID="{E8613F7D-BAD3-45CD-A3ED-505576F31277}"/>
+															</Reference>
+														</ReferenceList>
+													</EffectSlot>
+												</ObjectList>
 												<ObjectList Name="Playlist">
 													<PluginInnerObject Name="" ID="{081AD65A-3939-4EE9-B22E-D70F4DAFF1FC}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
 														<ReferenceList>
@@ -5313,7 +5454,17 @@
 										<RandomSequenceContainer Name="SFX_003_UI_Back_L2" ID="{7D174F37-B124-40A6-8FC0-97CB944E9B35}" ShortID="580332440">
 											<PropertyList>
 												<Property Name="Color" Type="int16" Value="2"/>
+												<Property Name="Lowpass" Type="int16">
+													<ValueList>
+														<Value>35</Value>
+													</ValueList>
+												</Property>
 												<Property Name="OverrideColor" Type="bool" Value="True"/>
+												<Property Name="Volume" Type="Real64">
+													<ValueList>
+														<Value>4</Value>
+													</ValueList>
+												</Property>
 											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
@@ -5337,6 +5488,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_003_UI_Back_L2_01" ID="{AF38FF66-864A-4032-BA2A-0F166A3C5264}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_003_UI_Back_L2_01.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="258241524"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_003_UI_Back_L2_01" ID="{AF38FF66-864A-4032-BA2A-0F166A3C5264}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_003_UI_Back_L2_02" ID="{05E098FD-E7BD-468B-927F-A4C1C6216E1A}" ShortID="320245674">
 													<PropertyList>
@@ -5351,6 +5514,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_003_UI_Back_L2_02" ID="{E7788441-E1D5-4AE2-BCFC-1DCE3133F413}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_003_UI_Back_L2_02.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="265735674"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_003_UI_Back_L2_02" ID="{E7788441-E1D5-4AE2-BCFC-1DCE3133F413}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_003_UI_Back_L2_03" ID="{2A5A481F-768A-4C08-8923-EFCCA28929F9}" ShortID="302041357">
 													<PropertyList>
@@ -5365,6 +5540,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_003_UI_Back_L2_03" ID="{C801F62A-6268-455F-9FC2-571C03FC18D8}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_003_UI_Back_L2_03.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="485536653"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_003_UI_Back_L2_03" ID="{C801F62A-6268-455F-9FC2-571C03FC18D8}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_003_UI_Back_L2_04" ID="{3AF59AD0-EC25-4942-A567-661B188CB707}" ShortID="651947891">
 													<PropertyList>
@@ -5379,6 +5566,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_003_UI_Back_L2_04" ID="{EBB71298-5135-4CE3-AA50-B8CDACDB88F7}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_003_UI_Back_L2_04.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="155397052"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_003_UI_Back_L2_04" ID="{EBB71298-5135-4CE3-AA50-B8CDACDB88F7}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
 											<ObjectLists>
@@ -5450,6 +5649,11 @@
 											<PropertyList>
 												<Property Name="Color" Type="int16" Value="2"/>
 												<Property Name="OverrideColor" Type="bool" Value="True"/>
+												<Property Name="Volume" Type="Real64">
+													<ValueList>
+														<Value>-5</Value>
+													</ValueList>
+												</Property>
 											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
@@ -5473,6 +5677,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_004_UI_Panel_Open_L1_01" ID="{EA090D9A-CF9C-4ED9-B0D6-7E336B6083E2}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_004_UI_Panel_Open_L1_01.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="400833896"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_004_UI_Panel_Open_L1_01" ID="{EA090D9A-CF9C-4ED9-B0D6-7E336B6083E2}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_004_UI_Panel_Open_L1_02" ID="{4B7DEFE7-47E8-4103-86F6-058458B23B9B}" ShortID="103790153">
 													<PropertyList>
@@ -5487,6 +5703,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_004_UI_Panel_Open_L1_02" ID="{90C40444-C6F2-4A5A-A4C9-5A7CC77A6AB5}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_004_UI_Panel_Open_L1_02.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="381312748"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_004_UI_Panel_Open_L1_02" ID="{90C40444-C6F2-4A5A-A4C9-5A7CC77A6AB5}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_004_UI_Panel_Open_L1_03" ID="{B3683202-A9A9-4904-86D2-C435440AA936}" ShortID="336934823">
 													<PropertyList>
@@ -5501,6 +5729,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_004_UI_Panel_Open_L1_03" ID="{DD3678E4-1F30-4CFA-9485-D6805801F4FA}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_004_UI_Panel_Open_L1_03.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="105051413"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_004_UI_Panel_Open_L1_03" ID="{DD3678E4-1F30-4CFA-9485-D6805801F4FA}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
 											<ObjectLists>
@@ -5556,6 +5796,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_004_UI_Panel_Open_L2_01" ID="{49A58D98-8AF1-46A1-BF34-EE5655D6FE9B}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_004_UI_Panel_Open_L2_01.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="986971857"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_004_UI_Panel_Open_L2_01" ID="{49A58D98-8AF1-46A1-BF34-EE5655D6FE9B}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_004_UI_Panel_Open_L2_02" ID="{2DF3594C-AE25-412A-B4F1-094229CD608A}" ShortID="300682786">
 													<PropertyList>
@@ -5570,6 +5822,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_004_UI_Panel_Open_L2_02" ID="{24DD5F62-EB8D-4CED-9B1F-D8BA66B9FAD7}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_004_UI_Panel_Open_L2_02.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="902449175"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_004_UI_Panel_Open_L2_02" ID="{24DD5F62-EB8D-4CED-9B1F-D8BA66B9FAD7}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_004_UI_Panel_Open_L2_03" ID="{28A98C47-71F8-4A9C-AB51-2EA3F00791AF}" ShortID="28391927">
 													<PropertyList>
@@ -5584,6 +5848,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_004_UI_Panel_Open_L2_03" ID="{AD7C0CC9-A208-4AA3-BA02-85FC33C23220}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_004_UI_Panel_Open_L2_03.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="474093976"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_004_UI_Panel_Open_L2_03" ID="{AD7C0CC9-A208-4AA3-BA02-85FC33C23220}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
 											<ObjectLists>
@@ -5648,6 +5924,11 @@
 											<PropertyList>
 												<Property Name="Color" Type="int16" Value="2"/>
 												<Property Name="OverrideColor" Type="bool" Value="True"/>
+												<Property Name="Volume" Type="Real64">
+													<ValueList>
+														<Value>-3</Value>
+													</ValueList>
+												</Property>
 											</PropertyList>
 											<ReferenceList>
 												<Reference Name="Conversion">
@@ -5671,6 +5952,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_005_UI_Panel_Close_L1_01" ID="{68A956C0-6195-4A76-AB0C-C95CAC0CE776}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_005_UI_Panel_Close_L1_01.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="1064877578"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_005_UI_Panel_Close_L1_01" ID="{68A956C0-6195-4A76-AB0C-C95CAC0CE776}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_005_UI_Panel_Close_L1_02" ID="{F4BAC45A-9166-43CE-957F-7515F5384503}" ShortID="777518489">
 													<PropertyList>
@@ -5685,6 +5978,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_005_UI_Panel_Close_L1_02" ID="{4AC4755C-5BE5-4E77-953F-58F4F1C45DE7}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_005_UI_Panel_Close_L1_02.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="291084928"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_005_UI_Panel_Close_L1_02" ID="{4AC4755C-5BE5-4E77-953F-58F4F1C45DE7}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_005_UI_Panel_Close_L1_03" ID="{821F9A7C-FD03-465D-A07F-DE7835DAD4C0}" ShortID="735900242">
 													<PropertyList>
@@ -5699,6 +6004,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_005_UI_Panel_Close_L1_03" ID="{FC64FF93-CD5B-4823-BB0C-939AF4D5982E}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_005_UI_Panel_Close_L1_03.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="617042662"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_005_UI_Panel_Close_L1_03" ID="{FC64FF93-CD5B-4823-BB0C-939AF4D5982E}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
 											<ObjectLists>
@@ -5754,6 +6071,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_005_UI_Panel_Close_L2_01" ID="{5F72FE7D-EA76-4BEB-BE8E-D970FBC48CEA}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_005_UI_Panel_Close_L2_01.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="259846253"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_005_UI_Panel_Close_L2_01" ID="{5F72FE7D-EA76-4BEB-BE8E-D970FBC48CEA}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_005_UI_Panel_Close_L2_02" ID="{4D9038F7-F607-403E-8468-E318AECDF1F0}" ShortID="307984140">
 													<PropertyList>
@@ -5768,6 +6097,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_005_UI_Panel_Close_L2_02" ID="{0C5B2F79-0741-4D42-82F6-48576F2629CD}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_005_UI_Panel_Close_L2_02.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="816076218"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_005_UI_Panel_Close_L2_02" ID="{0C5B2F79-0741-4D42-82F6-48576F2629CD}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 												<Sound Name="SFX_005_UI_Panel_Close_L2_03" ID="{CFE93D18-705F-48E9-9BD2-776178EF1B74}" ShortID="1004353098">
 													<PropertyList>
@@ -5782,6 +6123,18 @@
 															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
 														</Reference>
 													</ReferenceList>
+													<ChildrenList>
+														<AudioFileSource Name="SFX_005_UI_Panel_Close_L2_03" ID="{C118E306-A24F-4E30-8863-DF8D6DA934BB}">
+															<Language>SFX</Language>
+															<AudioFile>SFX\SFX_005_UI_Panel_Close_L2_03.wav</AudioFile>
+															<MediaIDList>
+																<MediaID ID="710649861"/>
+															</MediaIDList>
+														</AudioFileSource>
+													</ChildrenList>
+													<ActiveSourceList>
+														<ActiveSource Name="SFX_005_UI_Panel_Close_L2_03" ID="{C118E306-A24F-4E30-8863-DF8D6DA934BB}" Platform="Linked"/>
+													</ActiveSourceList>
 												</Sound>
 											</ChildrenList>
 											<ObjectLists>
