@@ -35,6 +35,14 @@ var _last_cell := Vector2i(999999, 999999)
 var _status_elapsed := 0.0
 var _toast := ""
 var _toast_left := 0.0
+var _mouse_steering_held := false
+var _mouse_cursor := Vector2.ZERO
+var _manual_selection := false
+var _selection_origin := Vector2.ZERO
+var _target_marker: Node2D
+var _render_actor_plane := Vector2.ZERO
+var _render_path: Array[Vector2] = []
+var _render_path_length := 0.0
 
 class CircleActor extends Node2D:
 	var radius := 10.8
@@ -44,6 +52,14 @@ class CircleActor extends Node2D:
 		draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color.WHITE, 1.2, true)
 		draw_circle(Vector2.ZERO, radius * 0.25, Color(0.06, 0.28, 0.28))
 
+class TargetMarker extends Node2D:
+	var radius := 40.0
+	func _draw() -> void:
+		draw_arc(Vector2.ZERO, radius, 0, TAU, 48, Color("fff0a8"), 2.0, true)
+		for i in 4:
+			var direction := Vector2.from_angle(TAU * i / 4.0)
+			draw_line(direction * (radius + 3), direction * (radius + 10), Color("fff0a8"), 2.0, true)
+
 func _ready() -> void:
 	RenderingServer.set_default_clear_color(Color("101923"))
 	_register_input()
@@ -52,13 +68,21 @@ func _ready() -> void:
 		cell_radius_px = clampf(float(config.get("cell_radius_px", 60)), 20, 200)
 		map_scale = clampf(float(config.get("map_scale", 4)), 0.5, 16)
 		move_speed = clampf(float(config.get("move_speed", 2.1)), 0.1, 10)
+	# Render interpolation is local to this assembly; logical state stays fixed-step.
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_view = MapView.new()
 	add_child(_view)
+	_target_marker = TargetMarker.new()
+	_target_marker.radius = cell_radius_px * 0.6
+	_target_marker.z_index = 10
+	_target_marker.hide()
+	add_child(_target_marker)
 	_player = CircleActor.new()
 	_player.radius = Session.FOOT_RADIUS * cell_radius_px
 	_player.z_index = 20
 	add_child(_player)
 	_camera = Camera2D.new()
+	_camera.process_callback = Camera2D.CAMERA2D_PROCESS_IDLE
 	_camera.position_smoothing_enabled = false
 	_camera.rotation_smoothing_enabled = false
 	_camera.ignore_rotation = true
@@ -168,7 +192,7 @@ func _build_hud() -> void:
 	_interaction = _button("交互 E", _interact)
 	row.add_child(_interaction)
 	var help := Label.new()
-	help.text = "WASD / 方向键移动 · E 交互 · Tab 切换邻近节点 · 滚轮缩放 · Esc 暂停"
+	help.text = "WASD / 方向键，或按住左键朝鼠标移动 · E 交互 · Tab 切换 · 滚轮缩放 · Esc 暂停"
 	help.add_theme_color_override("font_color", Color("a9bbcc"))
 	footer_box.add_child(help)
 	var legend := Label.new()
@@ -202,6 +226,8 @@ func load_map(snapshot: Dictionary, saved_state: Dictionary = {}) -> bool:
 	session = candidate
 	_map_snapshot = candidate.get_snapshot()
 	_selected = ""
+	_manual_selection = false
+	_mouse_steering_held = false
 	_last_cell = Vector2i(999999, 999999)
 	_dialog.hide()
 	_dialog_request_id = ""
@@ -243,8 +269,13 @@ func _sync_view() -> void:
 	_mini.set_view(data, cell_radius_px)
 
 func _sync_actor(emit_notifications: bool = true) -> void:
-	_player.position = session.actor_plane * cell_radius_px
-	_camera.force_update_scroll()
+	# Teleports/load/results reset the interpolation history atomically.
+	_render_path = [session.actor_plane]
+	_render_path_length = 0.0
+	_render_motion(1.0)
+	_notify_actor_cell(emit_notifications)
+
+func _notify_actor_cell(emit_notifications: bool = true) -> void:
 	var c := Hex.from_plane(session.actor_plane, 1.0)
 	if c != _last_cell:
 		_last_cell = c
@@ -253,6 +284,20 @@ func _sync_actor(emit_notifications: bool = true) -> void:
 			_bus.player_cell_entered.emit(session.map_id, c)
 			if session == active:
 				_emit_state()
+
+func _render_motion(fraction: float) -> void:
+	var distance := _render_path_length * clampf(fraction, 0.0, 1.0)
+	_render_actor_plane = session.actor_plane
+	# Follow the collision-safe polyline, rather than cutting across corners
+	# with a straight interpolation between the two physics endpoints.
+	for i in range(1, _render_path.size()):
+		var length := _render_path[i - 1].distance_to(_render_path[i])
+		if distance <= length and length > 0.0000001:
+			_render_actor_plane = _render_path[i - 1].lerp(_render_path[i], distance / length)
+			break
+		distance -= length
+	_player.position = _render_actor_plane * cell_radius_px
+	_camera.force_update_scroll()
 	_update_minimap()
 
 func _update_camera() -> void:
@@ -272,22 +317,59 @@ func _update_minimap() -> void:
 	if not is_instance_valid(_mini):
 		return
 	var half := get_viewport_rect().size / (_camera.zoom * cell_radius_px * 2.0)
-	_mini.set_player(session.actor_plane, Rect2(session.actor_plane - half, half * 2))
+	_mini.set_player(_render_actor_plane, Rect2(_render_actor_plane - half, half * 2))
 
 func _physics_process(delta: float) -> void:
-	if paused or not session.pending.is_empty() or not DisplayServer.window_is_focused():
-		return
-	var direction := Input.get_vector("map2d_left", "map2d_right", "map2d_up", "map2d_down")
-	if not direction.is_zero_approx():
-		session.move_actor(direction * move_speed * speed_multiplier * minf(delta, 0.05))
-		_sync_actor()
+	var direction := Vector2.ZERO
+	if not paused and session.pending.is_empty() and DisplayServer.window_is_focused():
+		direction = _movement_direction()
+	_advance_motion(direction, delta)
+
+func _advance_motion(direction: Vector2, delta: float) -> void:
+	session.move_actor(direction * move_speed * speed_multiplier * minf(delta, 0.05))
+	_render_path.assign(session.motion_path)
+	_render_path_length = 0.0
+	for i in range(1, _render_path.size()):
+		_render_path_length += _render_path[i - 1].distance_to(_render_path[i])
+	_notify_actor_cell()
+
+func _movement_direction() -> Vector2:
+	var keyboard := Input.get_vector("map2d_left", "map2d_right", "map2d_up", "map2d_down")
+	if not keyboard.is_zero_approx():
+		return keyboard
+	if not _mouse_steering_held or not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		return Vector2.ZERO
+	var cursor := _mouse_cursor
+	if not get_viewport_rect().has_point(cursor) or get_viewport().gui_get_hovered_control() != null:
+		return Vector2.ZERO
+	# Camera stays centered: this is continuous steering, not a world-space
+	# click destination. A small screen deadzone avoids jitter near the actor.
+	var offset := cursor - get_viewport_rect().get_center()
+	return offset.normalized() if offset.length() > 12.0 else Vector2.ZERO
+
+func _update_selection() -> void:
+	var nearby: Array[String] = session.nearby_nodes()
+	if _selected not in nearby or session.actor_plane.distance_to(_selection_origin) > 0.25:
+		_manual_selection = false
+	if not _manual_selection:
+		_selected = nearby[0] if not nearby.is_empty() else ""
+	_target_marker.visible = not _selected.is_empty()
+	if not _selected.is_empty():
+		var node: Dictionary = session.nodes[_selected]
+		var point := Session.coord(node.coord)
+		if not session.known.has(Session.key(point)):
+			for value in node.footprint:
+				if session.known.has(Session.key(Session.coord(value))):
+					point = Session.coord(value)
+					break
+		_target_marker.position = Hex.to_plane(point, cell_radius_px)
 
 func _process(delta: float) -> void:
+	_render_motion(Engine.get_physics_interpolation_fraction())
 	_toast_left = maxf(0, _toast_left - delta)
 	_status_elapsed += delta
-	var nearby: Array[String] = session.nearby_nodes()
-	if _selected not in nearby:
-		_selected = nearby[0] if not nearby.is_empty() else ""
+	_update_selection()
+	_interaction.text = "进入关口 E" if not _selected.is_empty() and session.nodes[_selected].is_route_gate else "交互 E"
 	_interaction.disabled = paused or not session.pending.is_empty() or _selected.is_empty()
 	if not session.pending.is_empty():
 		_prompt.text = "正在处理节点；等待结果回传"
@@ -297,10 +379,19 @@ func _process(delta: float) -> void:
 		_prompt.text = "自由探索 · 灰雾只显示轮廓 · 橙色关口需完成本地战斗"
 	else:
 		var node: Dictionary = session.nodes[_selected]
-		_prompt.text = "%s  %s%s%s" % [LABELS[node.type], _selected, " · 路线关口" if node.is_route_gate else "", " · 可再次访问" if session.completed.has(_selected) else ""]
+		_prompt.text = "交互目标：%s  %s%s%s" % [LABELS[node.type], _selected, " · 路线关口" if node.is_route_gate else "", " · 可再次访问" if session.completed.has(_selected) else ""]
 	if _status_elapsed >= 0.25:
 		_status_elapsed = 0
 		_status.text = "位置 (%d, %d) · 已完成 %d / %d · %.0f FPS%s" % [_last_cell.x, _last_cell.y, session.completed.size(), session.nodes.size(), Engine.get_frames_per_second(), " · " + _toast if _toast_left > 0 else ""]
+
+func _input(event: InputEvent) -> void:
+	# Use viewport-local event positions, including the first button press.
+	# OS cursor polling can disagree with routed window events on macOS.
+	if event is InputEventMouse:
+		_mouse_cursor = event.position
+	# Release must also reach us when a UI control consumes the event.
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		_mouse_steering_held = false
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("map2d_pause"):
@@ -314,6 +405,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		var nearby: Array[String] = session.nearby_nodes()
 		if not nearby.is_empty():
 			_selected = nearby[(nearby.find(_selected) + 1) % nearby.size()]
+			_manual_selection = true
+			_selection_origin = session.actor_plane
+		get_viewport().set_input_as_handled()
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and not paused and session.pending.is_empty():
+		_mouse_steering_held = true
 		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and not paused and session.pending.is_empty():
 		map_scale = clampf(map_scale * (1.1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1 / 1.1), 0.5, 16)
@@ -323,19 +419,27 @@ func _unhandled_input(event: InputEvent) -> void:
 func _notification(what: int) -> void:
 	# A node's modal temporarily takes focus from the root window. Pending
 	# already blocks movement, so do not leave the map paused on its return.
-	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT and is_instance_valid(_pause_button) and session.pending.is_empty():
-		_set_paused(true)
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		_mouse_steering_held = false
+		if is_instance_valid(_pause_button) and session.pending.is_empty():
+			_set_paused(true)
 
 func _set_paused(value: bool) -> void:
 	paused = value
+	_mouse_steering_held = false
+	if is_instance_valid(_player):
+		_sync_actor(false)
 	_pause_button.text = "继续 Esc" if paused else "暂停 Esc"
 
 func _interact() -> void:
+	_update_selection()
 	if paused or _selected.is_empty():
 		return
 	var request: Dictionary = session.request_node(_selected)
 	if request.is_empty():
 		return
+	_mouse_steering_held = false
+	_sync_actor(false)
 	var active = session
 	_emit_state()
 	if session != active or session.pending.get("request_id") != request.request_id:
@@ -344,7 +448,8 @@ func _interact() -> void:
 	# A synchronous external result may already have resolved this request.
 	if demo_interactions_enabled and session == active and session.pending.get("request_id") == request.request_id:
 		_dialog_request_id = request.request_id
-		_dialog.dialog_text = "%s · %s\n\n这里只演示节点请求与结果回传。\n正式战斗、商店和事件由各自模块处理。\n取消不完成节点；完成关口只解锁其后区域。" % [LABELS[request.type], request.node_id]
+		_dialog.title = "路线关口 · 完成后开放后方" if request.is_route_gate else "节点接入演示"
+		_dialog.dialog_text = "%s · %s\n\n这里只演示节点请求与结果回传。\n正式战斗、商店和事件由各自模块处理。\n%s" % [LABELS[request.type], request.node_id, "完成本关口将揭开后方迷雾并允许通行；取消不解锁。" if request.is_route_gate else "此节点不是路线关口；完成不改变后方区域的可达性。"]
 		_dialog.popup_centered(Vector2i(570, 255))
 
 func _demo_result(status: String) -> void:
@@ -355,6 +460,7 @@ func _demo_result(status: String) -> void:
 func submit_node_result(result: Dictionary) -> bool:
 	var active = session
 	var request: Dictionary = session.pending.duplicate(true)
+	var previous_known: int = session.known.size()
 	if not session.resolve_request(result):
 		_show_toast("结果拒绝：" + session.last_error)
 		return false
@@ -371,7 +477,10 @@ func submit_node_result(result: Dictionary) -> bool:
 		if session == active:
 			_show_toast("Boss 已完成；其余未完成节点仍可继续探索")
 	elif session == active:
-		_show_toast("节点已完成" if result.status == "completed" else "已返回地图，节点仍未完成")
+		if result.status == "completed" and request.is_route_gate:
+			_show_toast("关口已开放 · 新揭开 %d 格 · 可继续向后探索" % (session.known.size() - previous_known))
+		else:
+			_show_toast("节点已完成" if result.status == "completed" else "已返回地图，节点仍未完成")
 	return true
 
 func _emit_state() -> void:

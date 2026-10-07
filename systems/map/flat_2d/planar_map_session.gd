@@ -18,6 +18,8 @@ var last_error := ""
 var _snapshot: Dictionary = {}
 var _gate_cells: Dictionary = {}
 var _serial := 0
+var _boundaries: Dictionary = {}
+var motion_path: Array[Vector2] = []
 
 static func key(c: Vector2i) -> String:
 	return "%d,%d" % [c.x, c.y]
@@ -125,6 +127,8 @@ func _adopt(other) -> void:
 	pending = other.pending
 	_snapshot = other._snapshot
 	_gate_cells = other._gate_cells
+	_boundaries = other._boundaries
+	motion_path = [actor_plane]
 	_serial += 1
 	last_error = ""
 
@@ -156,6 +160,29 @@ func _discover() -> void:
 		for c in Hex.neighbors(Vector2i(cell.q, cell.r)):
 			if cells.has(key(c)):
 				known[key(c)] = true
+
+	_rebuild_boundaries()
+
+func _rebuild_boundaries() -> void:
+	_boundaries.clear()
+	for k in cells:
+		var cell: Dictionary = cells[k]
+		var c := Vector2i(cell.q, cell.r)
+		if not _passable(c) or not known.has(k):
+			continue
+		var center := Hex.to_plane(c, 1.0)
+		var edges: Array = []
+		var neighbors: Array = Hex.neighbors(c)
+		for i in 6:
+			var neighbor: Vector2i = neighbors[i]
+			if _passable(neighbor) and known.has(key(neighbor)):
+				continue
+			var vertex := (6 - i) % 6
+			var a := center + Vector2.from_angle(TAU * vertex / 6.0)
+			var b := center + Vector2.from_angle(TAU * (vertex + 1) / 6.0)
+			var inward := (center - Hex.to_plane(neighbor, 1.0)).normalized()
+			edges.append({"a": a, "b": b, "normal": inward})
+		_boundaries[k] = edges
 
 func _node_visible(node: Dictionary) -> bool:
 	var visible := known.has(key(coord(node.coord)))
@@ -190,24 +217,87 @@ func can_stand(point: Vector2) -> bool:
 	return true
 
 func move_actor(displacement: Vector2) -> Vector2:
+	motion_path = [actor_plane]
 	if not pending.is_empty() or not displacement.is_finite():
 		return actor_plane
-	var distance := displacement.length()
-	# Bound pathological calls while accepting fast movement without tunneling.
-	if distance > 12.0:
+	if displacement.length() > 12.0:
 		displacement = displacement.normalized() * 12.0
+	# Local continuous circle sweeps prevent tunneling; short pieces also
+	# give render interpolation the actual path around rounded corners.
 	var count := maxi(1, ceili(displacement.length() / 0.04))
 	var step := displacement / count
 	for i in count:
-		var next := actor_plane + step
-		if can_stand(next):
-			actor_plane = next
-		else:
-			if can_stand(actor_plane + Vector2(step.x, 0)):
-				actor_plane.x += step.x
-			if can_stand(actor_plane + Vector2(0, step.y)):
-				actor_plane.y += step.y
+		_slide_piece(step)
 	return actor_plane
+
+func _slide_piece(displacement: Vector2) -> void:
+	var remaining := displacement
+	for iteration in 5:
+		if remaining.length_squared() < 0.0000000001:
+			break
+		var hit := _sweep_circle(actor_plane, remaining)
+		if hit.is_empty():
+			var next := actor_plane + remaining
+			if can_stand(next):
+				actor_plane = next
+				motion_path.append(actor_plane)
+			break
+		var t: float = hit.time
+		# Stop just before contact. Remove only the component pointing into
+		# the wall; the tangent remains, including on diagonal hex edges.
+		var safe_t := maxf(0.0, t - 0.00001 / maxf(remaining.length(), 0.00001))
+		var next := actor_plane + remaining * safe_t
+		if not can_stand(next):
+			break
+		actor_plane = next
+		motion_path.append(actor_plane)
+		remaining *= 1.0 - t
+		for normal in hit.normals:
+			remaining -= normal * minf(remaining.dot(normal), 0.0)
+
+func _sweep_circle(point: Vector2, motion: Vector2) -> Dictionary:
+	var center := Hex.from_plane(point, 1.0)
+	var local_cells: Array = [center]
+	local_cells.append_array(Hex.neighbors(center))
+	var hits: Array = []
+	for c in local_cells:
+		for edge in _boundaries.get(key(c), []):
+			var a: Vector2 = edge.a
+			var b: Vector2 = edge.b
+			var normal: Vector2 = edge.normal
+			var velocity := motion.dot(normal)
+			if velocity < -0.0000001:
+				var t := (FOOT_RADIUS - (point - a).dot(normal)) / velocity
+				if t >= -0.00001 and t <= 1.0:
+					t = maxf(t, 0.0)
+					var contact := point + motion * t - normal * FOOT_RADIUS
+					var along := (contact - a).dot(b - a) / a.distance_squared_to(b)
+					if along >= 0.0 and along <= 1.0:
+						hits.append({"time": t, "normal": normal})
+			for vertex in [a, b]:
+				var offset: Vector2 = point - vertex
+				var aa := motion.length_squared()
+				var bb := 2.0 * offset.dot(motion)
+				var cc := offset.length_squared() - FOOT_RADIUS * FOOT_RADIUS
+				var discriminant := bb * bb - 4.0 * aa * cc
+				if bb >= 0.0 or discriminant < 0.0:
+					continue
+				var t := (-bb - sqrt(discriminant)) / (2.0 * aa)
+				if t >= -0.00001 and t <= 1.0:
+					t = maxf(t, 0.0)
+					var corner_normal: Vector2 = (point + motion * t - vertex).normalized()
+					if motion.dot(corner_normal) < -0.0000001:
+						hits.append({"time": t, "normal": corner_normal})
+	if hits.is_empty():
+		return {}
+	var earliest := 1.0
+	for hit in hits:
+		earliest = minf(earliest, hit.time)
+	var normals: Array[Vector2] = []
+	for hit in hits:
+		if absf(hit.time - earliest) <= 0.00001 and hit.normal not in normals:
+			normals.append(hit.normal)
+	return {"time": earliest, "normals": normals}
 
 func nearby_nodes() -> Array[String]:
 	var found: Array[String] = []
