@@ -11,12 +11,14 @@ config_version=5
 [application]
 
 config/name="spotlight2026"
+config/seed_content_version="jam-seed-v1"
 run/main_scene="res://ui/world_map/flat_2d/map_demo.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
+SeedService="*res://autoload/seed_service.gd"
 MapEvents="*res://core/signals/map_events.gd"
 
 [display]
