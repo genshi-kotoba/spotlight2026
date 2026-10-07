@@ -43,6 +43,7 @@ var _target_marker: Node2D
 var _render_actor_plane := Vector2.ZERO
 var _render_path: Array[Vector2] = []
 var _render_path_length := 0.0
+var _hud_root: Control
 
 class CircleActor extends Node2D:
 	var radius := 10.8
@@ -95,12 +96,17 @@ func _ready() -> void:
 	_bus.map_load_requested.connect(load_map)
 	_bus.node_result_submitted.connect(submit_node_result)
 	get_viewport().size_changed.connect(_update_camera)
-	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
-	if not data is Dictionary or not load_map(data):
+	var data := _initial_snapshot()
+	if data.is_empty() or not load_map(data):
 		_toast = "地图加载失败：" + session.last_error
 		push_error(_toast)
 	set_process(true)
 	set_physics_process(true)
+
+## Run demo overrides the bootstrap; the shared view never resets SeedService.
+func _initial_snapshot() -> Dictionary:
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
+	return data if data is Dictionary else {}
 
 func _register_input() -> void:
 	var actions := {"map2d_left": [KEY_A, KEY_LEFT], "map2d_right": [KEY_D, KEY_RIGHT], "map2d_up": [KEY_W, KEY_UP], "map2d_down": [KEY_S, KEY_DOWN], "map2d_interact": [KEY_E], "map2d_pause": [KEY_ESCAPE], "map2d_cycle": [KEY_TAB]}
@@ -116,6 +122,7 @@ func _build_hud() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	var root := Control.new()
+	_hud_root = root
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var theme := Theme.new()
@@ -301,11 +308,11 @@ func _render_motion(fraction: float) -> void:
 	_update_minimap()
 
 func _update_camera() -> void:
-	if not is_instance_valid(_view) or not is_instance_valid(_camera):
+	if not is_inside_tree() or not is_instance_valid(_view) or not is_instance_valid(_camera):
 		return
 	var bounds: Rect2 = _view.get_map_bounds()
 	var viewport := get_viewport_rect().size
-	if bounds.size.x <= 0 or bounds.size.y <= 0:
+	if bounds.size.x <= 0 or bounds.size.y <= 0 or viewport.x <= 0 or viewport.y <= 0:
 		return
 	var fit := minf(viewport.x / (bounds.size.x + cell_radius_px * 2), viewport.y / (bounds.size.y + cell_radius_px * 2))
 	_camera.zoom = Vector2.ONE * fit * map_scale
@@ -314,7 +321,7 @@ func _update_camera() -> void:
 	_update_minimap()
 
 func _update_minimap() -> void:
-	if not is_instance_valid(_mini):
+	if not is_inside_tree() or not is_instance_valid(_mini):
 		return
 	var half := get_viewport_rect().size / (_camera.zoom * cell_radius_px * 2.0)
 	_mini.set_player(_render_actor_plane, Rect2(_render_actor_plane - half, half * 2))
@@ -334,6 +341,8 @@ func _advance_motion(direction: Vector2, delta: float) -> void:
 	_notify_actor_cell()
 
 func _movement_direction() -> Vector2:
+	if get_viewport().gui_get_focus_owner() != null:
+		return Vector2.ZERO
 	var keyboard := Input.get_vector("map2d_left", "map2d_right", "map2d_up", "map2d_down")
 	if not keyboard.is_zero_approx():
 		return keyboard
@@ -419,7 +428,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _notification(what: int) -> void:
 	# A node's modal temporarily takes focus from the root window. Pending
 	# already blocks movement, so do not leave the map paused on its return.
-	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT and is_inside_tree():
 		_mouse_steering_held = false
 		if is_instance_valid(_pause_button) and session.pending.is_empty():
 			_set_paused(true)

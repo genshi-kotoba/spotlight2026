@@ -1,6 +1,6 @@
 # 纯 2D 地图 Demo 与接入接口
 
-基线：main `811e415`。入口 `ui/world_map/flat_2d/map_demo.tscn`，在 Godot 4.7.2 中打开项目后 F6 运行此场景，或 F5 运行当前默认入口。旧 3D demo 保留在 `systems/map/map_demo.tscn`，可以单独 F6 运行；本模块不使用它的高度通行判断，也不影响并行的 2.5D 实现。
+原生随机地图入口 `ui/world_map/flat_2d/map_run_demo.tscn`，Godot 4.7.2 下 F5 运行默认入口。纯地图装配/冻结样本入口 `map_demo.tscn` 可单独 F6 运行，供团队用外部局内调度器加载。旧 3D demo 保留在 `systems/map/map_demo.tscn`；新模块不采用它的高度通行或自由相机规则。
 
 ## 当前功能与边界
 
@@ -12,12 +12,18 @@
 - 未清的普通/精英路线关口阻挡其占地；成功结算只开放对应关口和后方可达区域，界面提示新揭开的格数。普通非关口战斗完成不揭开另一个关口的区域。精英身份不意味着关口。Boss 完成不会自动完成其他节点或强制换层。
 - Esc 暂停；离开应用窗口自动暂停；移速 0.25×–4×。节点待回传时移动暂停。取消/失败保留未完成状态。
 
-**当前地图是此前批准的 v8.5 平面生成结果快照**（seed `516e6b84508e2ac3cfe5b9ba0c68fe25`，walk，小轮廓，最多六处一段过渡，214 格/13 节点）。本次移植地图运行与团队接口，没有把网页生成器搬入 Godot。更换 seed 文本不会重新生成地形。以后生成器输出同一协议即可替换快照。默认节点窗口的“模拟完成”只用于接入演示，不是正式战斗/奖励/商店实现。
+当前使用 Godot 原生 `planar-walk-v1` 紧凑折返游走生成器，直接从现有 SeedService 取流，无网页或第二套 PRNG。不同 seed 生成不同地图；相同 seed、稳定 map_id、配置、生成版本及引擎构建复现同一结果。它保留节点优先、递归分支、局部关口和短过渡连接；不保证与旧网页同名 seed 的格子逐个相同。默认小轮廓、最多六处一段过渡；“最多”允许因碰撞、紧凑性或实际路径收益不足而少插几处，不用填侧边空洞代替通道延长。
+
+Demo 提供三层，逐层按需生成。开始新局按钮才重置主种子；空白 seed 创建并显示新 seed。完成本层 Boss 后可手动进入下一层，其余战斗/事件仍可保留；上一层恢复原位置与探索状态。换层规则属于上层流程，不由生成器强制。暂存/恢复仅在内存演示整局快照，关闭程序不保存。模拟节点窗口仍只是请求/结果回传示例，正式战斗、奖励、商店由团队模块实现。
 
 ## 分层与坐标
 
 | 文件 | 责任 |
 | --- | --- |
+| `systems/map/flat_2d/planar_map_generator.gd` | 原生节点/地形/障碍生成及质量验收，只使用注入的 seed 服务 |
+| `state_machines/run/planar_map_run.gd` | 主种子生命周期、楼层身份、生成结果与状态缓存、整局快照预检/恢复 |
+| `ui/world_map/flat_2d/map_run_demo.gd` | 继承共享装配的三层示例入口，新局/换层/暂存控件 |
+| `data/config/flat_2d/demo_run.json` | 示例初始 seed 与各层独立生成配置 |
 | `systems/map/flat_2d/planar_map_session.gd` | 纯 RefCounted 平面数据、碰撞、迷雾、关口、节点请求/回传、状态恢复 |
 | `ui/world_map/flat_2d/map_demo.gd` | 装配输入、圆形角色、相机、HUD、全局信号；不实现战斗或奖励 |
 | `ui/world_map/flat_2d/map_view.gd` / `map_minimap.gd` | 静态绘制及总地图；与逻辑共用一份已知/完成状态 |
@@ -106,7 +112,76 @@ func finish_node(request: Dictionary, won: bool) -> void:
 
 待结算节点恢复会生成新的 request_id，并发出 `node_interaction_restored(request)`；**不重新发起业务请求、不增加访问次数**。局内调度器同时恢复对应业务模块，并将已恢复的业务状态重新绑定到此新请求。旧回调被拒绝；不要把恢复通知当作再次抽取内容或重新开战的命令。若无法恢复业务，应使用新 request_id 回传 cancelled，而非默默把节点标记完成。当前没有探索卷轴/任意揭雾接口，恢复的 known 必须与从出生点及已完成关口重建的可达地形和相邻边界完全一致。
 
-最新 main 尚无未合并的 seed PR #1。此模块没有复制、初始化或重置 SeedService；“重开本图”仅重置局部探索/节点状态。以后地图生成器由局内调度器传入其 SeedRegistry 的 `map.layout` / `map.nodes` 等稳定流；业务内容按 seed 手册使用 floor_index、稳定 node_id、visit_index 等地址。UI 绘制、移动、暂停、缩放不抽随机数；不能因为切换地图界面调用 begin_run，也不能用 Godot 实例 ID 当 RNG 地址。
+既有 SeedService 代码保持原样。一次新局只调用一次 `begin_run`；换层、回访、绘制、移动、暂停、缩放不调用它。不要为每张地图初始化独立主种子，也不要在界面 `_ready` 重置已存在的 seed 上下文。`map_demo.gd` 纯装配不初始化 seed；独立 `map_run_demo.gd` 只在没有现存上下文时引导新局。正式局内状态机须持有并复用同一个 PlanarMapRun 对象，切换 2D/2.5D 界面不能重新创建楼层缓存。
+
+## 多楼层调用与 2.5D 复用
+
+这里的“层”是肉鸽的不同地图；同一坐标没有上下重叠房间。平面 snapshot/state 是唯一玩法事实来源。2.5D 只替换输入坐标投影和地图/角色绘制，复用同一 Run、Session、MapEvents；高度、35.3°投影、Y 深度排序、遮挡切片由表现层另存，不进入平面连通性或状态 fingerprint。
+
+```gdscript
+const MapRun = preload("res://state_machines/run/planar_map_run.gd")
+var maps = MapRun.new(SeedService, ProjectSettings.get_setting(
+    "application/config/seed_content_version"))
+
+# 仅真正“开始新局”执行；若局内控制器已 begin_run，则用 attach_existing_run。
+if maps.start_new_run("player-seed", [{}, {"normal": 4}, {"elite": 2}]):
+    var entry = maps.enter_floor(1)
+    if not entry.is_empty():
+        map_view.load_map(entry.snapshot, entry.state)
+
+# 离开前捕获精确位置；不要只用跨格事件中的旧位置。
+var entry = maps.enter_floor(2, map_view.capture_state())
+if not entry.is_empty():
+    map_view.load_map(entry.snapshot, entry.state)
+
+# 整局保存/恢复由局内控制器组织，与战斗/库存/玩家状态一起持久化。
+var saved = maps.capture_snapshot(map_view.capture_state())
+if maps.restore_snapshot(saved):
+    var restored = maps.get_floor(maps.current_floor)
+    map_view.load_map(restored.snapshot, restored.state)
+```
+
+`start_new_run(seed, configs, map_set_id="world")` / `attach_existing_run(configs, map_set_id="world")` 返回 bool；`get_floor(index)` / `enter_floor(index, current_state={})` 返回 `{snapshot, state}`，失败返回 `{}`；`store_current(state)`、`restore_snapshot(saved)` 返回 bool；失败原因读 `last_error`。楼层从 1 开始，最多 20 层。`current_floor=0` 表示尚未进入。`get_floor` 可预生成且不切换当前层；换层不允许留下 pending 节点。返回值是拷贝，不要修改 Run 私有缓存。
+
+`map_set_id` 是开发者稳定地图系列名称，默认 `world`；地图身份为 `world:floor-001` 等。主种子已经隔离不同局，不把时间戳、随机 UUID、Godot 实例 ID、临时 request_id 或视角放入生成地址。回访只读缓存，不能再次直接调用 generator；相同地址的 RandomStream 会继续前进。失败楼层也缓存失败，重新尝试应显式重开局或恢复原快照，不能悄悄耗更多随机数撞好图。
+
+整局快照 v1 包含生成版本、每层规范化配置、已生成静态地图及 Session 状态、生成失败记录、当前层与 SeedService 全部随机流快照。恢复先用可信项目 content_version 验证 seed，再候选验证所有楼层，全部通过才提交 seed；失败保留旧上下文与旧句柄。成功恢复或新局后旧 RandomStream 全部失效，业务模块必须按稳定地址重新取流。Run 用 `map.run / [map_set_id] / 0` 的零抽取句柄检测外部替换上下文，同 seed 重开也会拒绝继续使用旧地图对象。地图快照不包含战斗/背包/商店库存；上层完整存档必须先验证其他业务候选，再执行整局提交，不可只恢复地图后盲用旧业务。
+
+### 生成配置与随机地址
+
+`normalize_config(Dictionary)` 校验以下唯一键；不支持高度、旧实验算法、nodeGap 或轮廓填充参数。只保留一个经筛选的紧凑生成方案，避免团队依赖多套实验实现。
+
+| 键 | 默认 | 含义 |
+| --- | --- | --- |
+| `size` | `small` | 小轮廓（当前支持项） |
+| `normal` / `elite` | `3` / `1` | 普通/精英总数，含各自可能承担的关口 |
+| `events` | `8` | 事件/服务总数，包含一个商店，其余归随机事件 |
+| `min_boss_content_nodes` | `4` | 完全开放图上到 Boss 至少经过的中间内容节点数；不等于强制打完四场战斗 |
+| `transition_count` / `transition_steps` | `6` / `1` | 最多六处额外通道格，每处一段，移动完整节点占地并验证真实路径增量 |
+| `obstacle_rate` | `0.06` | 非保护格障碍比例，最终仍须通过连通/关口验收 |
+
+各层可独立覆盖配置，未提供键用默认值；未知键和非法配额拒绝，具体上下界见生成器 `normalize_config`。生成器从有限候选中选择满足节点配额、Boss 内容距离、内容连续性、局部关口无绕行与轮廓约束的地图；全部候选失败就报告失败，不悄悄换成固定备用地图。
+
+| 用途 | domain | ids | occurrence |
+| --- | --- | --- | --- |
+| 布局 | `map.layout` | `[稳定 map_id]` | 候选尝试序号 |
+| 节点类型与事件子类 | `map.nodes` | `[稳定 map_id]` | 相同候选尝试序号 |
+| 局部短过渡 | `map.transitions` | `[稳定 map_id]` | 相同候选尝试序号 |
+| 生命周期检测 | `map.run` | `[map_set_id]` | `0`，不抽取 |
+
+额外 domain 直接通过现有动态接口使用，不需预分配子种子。玩家行为、库存或战斗不共享上述地图流。业务路由收到请求后可依照 seed 手册取流：
+
+```gdscript
+# 每次真正开始一场战斗，由战斗模块持久化 battle_index。
+var draw_rng = SeedService.get_stream(RandomDomains.BATTLE_DRAW,
+    [request.map_id, request.node_id, battle_index], 0)
+# 商店模块持久化 refresh_index；同一次访问 UI 重开不能增加它。
+var shop_rng = SeedService.get_stream(RandomDomains.SHOP,
+    [request.map_id, request.node_id], refresh_index)
+```
+
+`visit_index` 仅表示此节点成功完成次数，失败/取消不会递增；它不能替代 battle_index、商店刷新序号或战斗回合计数。程序必须一起保存这些业务计数与抽取结果，界面重绘不重新抽奖。恢复 pending 时重新绑定新 request_id，保留原战斗与库存随机状态，不重新开战/刷新。地图的 `map_loaded`、`boss_cleared` 都是通知，不能监听一次就重开 seed。
+
 
 ## 本地原生预览打包
 

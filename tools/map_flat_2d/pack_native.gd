@@ -15,8 +15,8 @@ func _initialize() -> void:
 	if pack.pck_start(output) != OK or pack.add_file("res://project.binary", settings) != OK:
 		quit(1)
 		return
-	var files: Array[String] = ["systems/map/hex_coord.gd", "core/signals/map_events.gd", ".godot/global_script_class_cache.cfg"]
-	for folder in ["systems/map/flat_2d", "ui/world_map/flat_2d", "data/config/flat_2d"]:
+	var files: Array[String] = ["systems/map/hex_coord.gd", "core/signals/map_events.gd", "autoload/seed_service.gd", "state_machines/run/planar_map_run.gd", ".godot/global_script_class_cache.cfg"]
+	for folder in ["systems/map/flat_2d", "systems/random", "ui/world_map/flat_2d", "data/config/flat_2d"]:
 		for file in DirAccess.get_files_at("res://" + folder):
 			if file.get_extension() in ["gd", "tscn", "json"]:
 				files.append(folder.path_join(file))

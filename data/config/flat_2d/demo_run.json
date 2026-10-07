@@ -1,0 +1,8 @@
+{
+  "seed": "516e6b84508e2ac3cfe5b9ba0c68fe25",
+  "floors": [
+    {},
+    {"normal": 4, "elite": 1},
+    {"normal": 4, "elite": 2}
+  ]
+}
