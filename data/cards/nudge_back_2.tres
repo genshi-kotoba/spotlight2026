@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_v1hu5"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_move_pointer.gd" id="2_7asn1"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_tg6wh"]
+
+[sub_resource type="Resource" id="Resource_s2pm2"]
+script = ExtResource("2_7asn1")
+
+[resource]
+script = ExtResource("3_tg6wh")
+"卡牌标识" = &"nudge_back"
+"卡牌名" = "再来一次"
+"描述" = "再来一次（原型卡第 2 份，同名两份用于验证实例区分）"
+"颜色" = 2
+"效果" = Array[ExtResource("1_v1hu5")]([SubResource("Resource_s2pm2")])
