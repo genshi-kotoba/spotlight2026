@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_t7sg5"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_discard_random.gd" id="2_uwx0m"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_b7ldp"]
+
+[sub_resource type="Resource" id="Resource_7h7qy"]
+script = ExtResource("2_uwx0m")
+
+[resource]
+script = ExtResource("3_b7ldp")
+"卡牌标识" = &"oops"
+"卡牌名" = "我不要了"
+"描述" = "我不要了（原型卡第 1 份，同名两份用于验证实例区分）"
+"颜色" = 3
+"效果" = Array[ExtResource("1_t7sg5")]([SubResource("Resource_7h7qy")])

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardFaceSet" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://ui/components/card/card_face_set.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://brgcj8p7jy1rw" path="res://assets/ui/UI-001/日灰.png" id="2_sun_gray"]
+[ext_resource type="Texture2D" uid="uid://synsukijtqv7" path="res://assets/ui/UI-001/日红.png" id="3_sun_red"]
+[ext_resource type="Texture2D" uid="uid://dhdphtitooais" path="res://assets/ui/UI-001/日蓝.png" id="4_sun_blue"]
+[ext_resource type="Texture2D" uid="uid://dycmsww1ih0ml" path="res://assets/ui/UI-001/日黄.png" id="5_sun_yellow"]
+[ext_resource type="Texture2D" uid="uid://bpjwqg4rfxaah" path="res://assets/ui/UI-001/月灰.png" id="6_moon_gray"]
+[ext_resource type="Texture2D" uid="uid://dttk0tveiicch" path="res://assets/ui/UI-001/月红.png" id="7_moon_red"]
+[ext_resource type="Texture2D" uid="uid://15hv6d5fab5p" path="res://assets/ui/UI-001/月蓝.png" id="8_moon_blue"]
+[ext_resource type="Texture2D" uid="uid://bwnuv0b6h3emb" path="res://assets/ui/UI-001/月黄.png" id="9_moon_yellow"]
+
+[resource]
+script = ExtResource("1_script")
+"底图列表" = Array[Texture2D]([ExtResource("2_sun_gray"), ExtResource("3_sun_red"), ExtResource("4_sun_blue"), ExtResource("5_sun_yellow"), ExtResource("6_moon_gray"), ExtResource("7_moon_red"), ExtResource("8_moon_blue"), ExtResource("9_moon_yellow")])

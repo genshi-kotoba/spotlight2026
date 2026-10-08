@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_kubcy"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_destroy_self.gd" id="2_1emje"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_hcltm"]
+
+[sub_resource type="Resource" id="Resource_1q7px"]
+script = ExtResource("2_1emje")
+
+[resource]
+script = ExtResource("3_hcltm")
+"卡牌标识" = &"one_shot"
+"卡牌名" = "一次性的"
+"描述" = "一次性的（原型卡第 2 份，同名两份用于验证实例区分）"
+"颜色" = 3
+"效果" = Array[ExtResource("1_kubcy")]([SubResource("Resource_1q7px")])

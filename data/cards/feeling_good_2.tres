@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_255jo"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_buff.gd" id="2_1dgh6"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_b7lkp"]
+
+[sub_resource type="Resource" id="Resource_l44pi"]
+script = ExtResource("2_1dgh6")
+"层数" = 2
+
+[resource]
+script = ExtResource("3_b7lkp")
+"卡牌标识" = &"feeling_good"
+"卡牌名" = "我又行了"
+"描述" = "我又行了（原型卡第 2 份，同名两份用于验证实例区分）"
+"颜色" = 1
+"效果" = Array[ExtResource("1_255jo")]([SubResource("Resource_l44pi")])
