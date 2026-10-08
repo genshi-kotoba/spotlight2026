@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "4135238417",
+    "Type": "Bus",
+    "GUID": "{F6EA1BCD-832A-4EEA-AB9B-83EF8CCFAEF9}",
+    "Language": "SFX",
+    "Hash": "{2FDF4949-F3CB-373D-0CBA-B9A137AF1719}",
+    "ObjectPath": "Reverb_Church",
+    "ShortName": "Reverb_Church",
+    "Path": "Bus/Reverb_Church.bnk",
+    "Plugins": {
+     "ShareSets": [
+      {
+       "Id": "3416043182",
+       "Name": "Rev_Church",
+       "ObjectPath": "\\Effects\\Default Work Unit\\Reverb\\Rev_Church",
+       "GUID": "{61994849-E61D-4584-9C8F-CA9C447283CD}",
+       "LibName": "Wwise RoomVerb",
+       "LibId": "7733251"
+      }
+     ]
+    },
+    "AuxBusses": [
+     {
+      "Id": "4135238417",
+      "Name": "Reverb_Church",
+      "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus\\Reverb_Church",
+      "GUID": "{F6EA1BCD-832A-4EEA-AB9B-83EF8CCFAEF9}",
+      "PluginRefs": {
+       "ShareSets": [
+        {
+         "Id": "3416043182"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ],
+  "FileHash": "{BCC87A19-CB33-2FF8-A343-7381BB92A404}"
+ }
+}

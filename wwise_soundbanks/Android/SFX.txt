@@ -1,0 +1,102 @@
+Event	ID	Name			Wwise Object Path	Notes
+	115475678	SFX_050_Relic_ChainTrigger			\Default Work Unit\SFX\Relic\SFX_050_Relic_ChainTrigger	
+	119365039	SFX_015_Enemy_Death			\Default Work Unit\SFX\Enemy\SFX_015_Enemy_Death	
+	193804015	SFX_047_Enemy_BossIntro			\Default Work Unit\SFX\Enemy\SFX_047_Enemy_BossIntro	
+	336439554	SFX_023_Trans_FloorChange			\Default Work Unit\SFX\Trans\SFX_023_Trans_FloorChange	
+	377365198	SFX_030_UI_Result_Win			\Default Work Unit\SFX\UI\SFX_030_UI_Result_Win	
+	389873053	SFX_036_Battle_HitResolve			\Default Work Unit\SFX\Battle\SFX_036_Battle_HitResolve	
+	517309637	SFX_039_Battle_BuffGain			\Default Work Unit\SFX\Battle\SFX_039_Battle_BuffGain	
+	587588346	SFX_041_Battle_Pickup			\Default Work Unit\SFX\Battle\SFX_041_Battle_Pickup	
+	677654771	SFX_046_Enemy_PiperFlute			\Default Work Unit\SFX\Enemy\SFX_046_Enemy_PiperFlute	
+	684639692	SFX_058_Voice_PenWrite			\Default Work Unit\SFX\Voice\SFX_058_Voice_PenWrite	
+	728956888	SFX_040_Battle_DebuffGain			\Default Work Unit\SFX\Battle\SFX_040_Battle_DebuffGain	
+	731281771	SFX_024_Trans_ExitBattle			\Default Work Unit\SFX\Trans\SFX_024_Trans_ExitBattle	
+	818430349	SFX_026_Foot_Mud			\Default Work Unit\SFX\Foot\SFX_026_Foot_Mud	
+	842323735	SFX_035_Player_Hit_Heavy			\Default Work Unit\SFX\Player\SFX_035_Player_Hit_Heavy	
+	1004843182	SFX_013_Player_Death			\Default Work Unit\SFX\Player\SFX_013_Player_Death	
+	1021841383	SFX_044_Enemy_HitPlayer			\Default Work Unit\SFX\Enemy\SFX_044_Enemy_HitPlayer	
+	1034180137	SFX_025_Foot_Wood			\Default Work Unit\SFX\Foot\SFX_025_Foot_Wood	
+	1045662498	SFX_014_Enemy_Hit_Light			\Default Work Unit\SFX\Enemy\SFX_014_Enemy_Hit_Light	
+	1046402479	SFX_019_Amb_ChurchTop			\Default Work Unit\SFX\Amb\SFX_019_Amb_ChurchTop	
+	1091911267	SFX_002_UI_Click			\Default Work Unit\SFX\UI\SFX_002_UI_Click	
+	1324281690	SFX_017_Amb_Slum			\Default Work Unit\SFX\Amb\SFX_017_Amb_Slum	
+	1366673525	SFX_006_Card_Pickup			\Default Work Unit\SFX\Card\SFX_006_Card_Pickup	
+	1562498281	SFX_051_Relic_Gain			\Default Work Unit\SFX\Relic\SFX_051_Relic_Gain	
+	1612996235	SFX_054_Map_MoveStep			\Default Work Unit\SFX\Map\SFX_054_Map_MoveStep	
+	1653917388	SFX_033_Card_TurnChange			\Default Work Unit\SFX\Card\SFX_033_Card_TurnChange	
+	1669113984	SFX_055_Map_FogReveal			\Default Work Unit\SFX\Map\SFX_055_Map_FogReveal	
+	1815322456	SFX_037_Battle_Block			\Default Work Unit\SFX\Battle\SFX_037_Battle_Block	
+	1847505946	SFX_028_UI_Slider			\Default Work Unit\SFX\UI\SFX_028_UI_Slider	
+	1896849710	SFX_007_Card_Play			\Default Work Unit\SFX\Card\SFX_007_Card_Play	
+	1902541742	SFX_020_Trans_Workshop_Slum			\Default Work Unit\SFX\Trans\SFX_020_Trans_Workshop_Slum	
+	1904108632	SFX_001_UI_Hover			\Default Work Unit\SFX\UI\SFX_001_UI_Hover	
+	1917899439	SFX_045_Enemy_Break			\Default Work Unit\SFX\Enemy\SFX_045_Enemy_Break	
+	1921734107	SFX_053_Potion_Use			\Default Work Unit\SFX\Potion\SFX_053_Potion_Use	
+	1967973705	SFX_010_Battle_Pointer_Tick			\Default Work Unit\SFX\Battle\SFX_010_Battle_Pointer_Tick	
+	2347086561	SFX_003_UI_Back			\Default Work Unit\SFX\UI\SFX_003_UI_Back	
+	2373032523	SFX_032_Card_Trigger_Attack			\Default Work Unit\SFX\Card\SFX_032_Card_Trigger_Attack	
+	2465957385	SFX_009_Card_Shuffle			\Default Work Unit\SFX\Card\SFX_009_Card_Shuffle	
+	2510050715	SFX_052_Potion_Select			\Default Work Unit\SFX\Potion\SFX_052_Potion_Select	
+	2568482664	SFX_031_UI_Result_Lose			\Default Work Unit\SFX\UI\SFX_031_UI_Result_Lose	
+	2790018089	SFX_005_UI_Panel_Close			\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close	
+	2878579436	SFX_038_Battle_Heal			\Default Work Unit\SFX\Battle\SFX_038_Battle_Heal	
+	3025619858	SFX_048_Relic_Snap			\Default Work Unit\SFX\Relic\SFX_048_Relic_Snap	
+	3041791395	SFX_043_Player_LowHP			\Default Work Unit\SFX\Player\SFX_043_Player_LowHP	
+	3075558629	SFX_021_Trans_Slum_Church			\Default Work Unit\SFX\Trans\SFX_021_Trans_Slum_Church	
+	3131618225	SFX_012_Player_Hit_Light			\Default Work Unit\SFX\Player\SFX_012_Player_Hit_Light	
+	3229356388	SFX_042_Player_Breath			\Default Work Unit\SFX\Player\SFX_042_Player_Breath	
+	3279272161	SFX_018_Amb_Church			\Default Work Unit\SFX\Amb\SFX_018_Amb_Church	
+	3308600789	SFX_022_Trans_EnterBattle			\Default Work Unit\SFX\Trans\SFX_022_Trans_EnterBattle	
+	3311595226	SFX_029_UI_Error			\Default Work Unit\SFX\UI\SFX_029_UI_Error	
+	3387093548	SFX_056_Cutscene_Opening			\Default Work Unit\SFX\Cutscene\SFX_056_Cutscene_Opening	
+	3589774278	SFX_004_UI_Panel_Open			\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open	
+	3600487749	SFX_008_Card_Draw			\Default Work Unit\SFX\Card\SFX_008_Card_Draw	
+	3703868213	SFX_049_Relic_Link			\Default Work Unit\SFX\Relic\SFX_049_Relic_Link	
+	3760848721	SFX_016_Amb_Workshop			\Default Work Unit\SFX\Amb\SFX_016_Amb_Workshop	
+	3864440901	SFX_057_Voice_Talk			\Default Work Unit\SFX\Voice\SFX_057_Voice_Talk	
+	3945563550	SFX_034_Card_Transform			\Default Work Unit\SFX\Card\SFX_034_Card_Transform	
+	3987020771	SFX_027_Foot_Stone			\Default Work Unit\SFX\Foot\SFX_027_Foot_Stone	
+	4113407574	SFX_011_Battle_Pointer_Rewind			\Default Work Unit\SFX\Battle\SFX_011_Battle_Pointer_Rewind	
+
+Effect plug-ins	ID	Name	Type				Notes
+	3604890626	High_Pass_60Hz	Wwise Parametric EQ			
+
+In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
+	14931060	SFX_002_UI_Click_L2_02	.cache\60\{60D7AC29-8CAF-0EF3-DA05-58B7A226C9EF}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L2\SFX_002_UI_Click_L2_02		656
+	96934615	SFX_001_UI_Hover_L2_01	.cache\EA\{EACF8EDF-C018-EFFD-7E41-464D73B01599}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L2\SFX_001_UI_Hover_L2_01		404
+	105051413	SFX_004_UI_Panel_Open_L1_03	.cache\87\{87F95E19-0AB7-18CF-8A4C-CC252B80C9A2}.wem		\Containers\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open\SFX_004_UI_Panel_Open_L1\SFX_004_UI_Panel_Open_L1_03		12140
+	145815218	SFX_003_UI_Back_L1_01	.cache\1A\{1A0D90EA-8D22-1C8A-A1AE-3836E8A171C7}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L1\SFX_003_UI_Back_L1_01		4544
+	155397052	SFX_003_UI_Back_L2_04	.cache\C5\{C52B8942-5BC0-75F0-E2B1-4F4D369F39E0}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L2\SFX_003_UI_Back_L2_04		1664
+	177916429	SFX_002_UI_Click_L1_04	.cache\33\{33076AD3-604B-8D56-6253-8EE721B7302B}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L1\SFX_002_UI_Click_L1_04		4976
+	186571361	SFX_001_UI_Hover_L1_01	.cache\91\{9108248D-86D7-AC74-3133-A57775616D87}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L1\SFX_001_UI_Hover_L1_01		1160
+	216354842	SFX_001_UI_Hover_L2_04	.cache\16\{16D34D1F-076B-5DDA-925F-767260BD73E9}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L2\SFX_001_UI_Hover_L2_04		4328
+	258241524	SFX_003_UI_Back_L2_01	.cache\B9\{B9BF2B06-BB0E-0488-F642-AAC119FF3493}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L2\SFX_003_UI_Back_L2_01		944
+	259846253	SFX_005_UI_Panel_Close_L2_01	.cache\0D\{0D41783A-BF34-9827-D461-A0A5BAD3F123}.wem		\Containers\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close\SFX_005_UI_Panel_Close_L2\SFX_005_UI_Panel_Close_L2_01		8108
+	265735674	SFX_003_UI_Back_L2_02	.cache\74\{7401F7AA-9C7F-AC8D-56B6-50A5BD8DF029}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L2\SFX_003_UI_Back_L2_02		1448
+	284299713	SFX_002_UI_Click_L2_04	.cache\63\{63F77AAF-60D9-5FCD-E518-152B0B8E7D84}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L2\SFX_002_UI_Click_L2_04		2276
+	291084928	SFX_005_UI_Panel_Close_L1_02	.cache\B7\{B74AA3A0-2973-1A89-8D60-CFF4A2C13F2E}.wem		\Containers\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close\SFX_005_UI_Panel_Close_L1\SFX_005_UI_Panel_Close_L1_02		13436
+	381312748	SFX_004_UI_Panel_Open_L1_02	.cache\76\{76B732EF-54FE-F64B-5670-ED7CA7D39564}.wem		\Containers\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open\SFX_004_UI_Panel_Open_L1\SFX_004_UI_Panel_Open_L1_02		14948
+	400833896	SFX_004_UI_Panel_Open_L1_01	.cache\D5\{D5040972-CDEF-D5BA-97AA-0914E8719C3D}.wem		\Containers\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open\SFX_004_UI_Panel_Open_L1\SFX_004_UI_Panel_Open_L1_01		14012
+	474093976	SFX_004_UI_Panel_Open_L2_03	.cache\A9\{A9BBD637-8475-82AE-4F65-C934F70CBEBE}.wem		\Containers\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open\SFX_004_UI_Panel_Open_L2\SFX_004_UI_Panel_Open_L2_03		25640
+	485536653	SFX_003_UI_Back_L2_03	.cache\67\{67DDE966-95AA-B689-11C4-E6F9E9AD3AE3}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L2\SFX_003_UI_Back_L2_03		944
+	485754780	SFX_002_UI_Click_L1_02	.cache\54\{545E104F-D439-0689-0BE1-BE98631A976A}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L1\SFX_002_UI_Click_L1_02		5156
+	495786533	SFX_003_UI_Back_L1_02	.cache\3D\{3DB05192-7CC4-A20B-560D-79EE2BC0951E}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L1\SFX_003_UI_Back_L1_02		4544
+	617042662	SFX_005_UI_Panel_Close_L1_03	.cache\81\{81ED02FB-C009-39D1-30CA-D4666C87EF81}.wem		\Containers\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close\SFX_005_UI_Panel_Close_L1\SFX_005_UI_Panel_Close_L1_03		11816
+	639757475	SFX_003_UI_Back_L1_04	.cache\0B\{0BDDA78B-9D38-91A6-D9E8-CE8551A5F438}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L1\SFX_003_UI_Back_L1_04		4580
+	657590864	SFX_003_UI_Back_L1_03	.cache\49\{49E6EE03-FC7F-A47D-B8AC-35C115695231}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L1\SFX_003_UI_Back_L1_03		4112
+	693014678	SFX_002_UI_Click_L2_01	.cache\9B\{9B750E52-E145-F3B9-103B-B3419CA75239}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L2\SFX_002_UI_Click_L2_01		656
+	710649861	SFX_005_UI_Panel_Close_L2_03	.cache\6F\{6F98D620-906E-1476-3618-3C80C5A09E4E}.wem		\Containers\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close\SFX_005_UI_Panel_Close_L2\SFX_005_UI_Panel_Close_L2_03		10664
+	723102474	SFX_001_UI_Hover_L1_03	.cache\09\{096872B0-6443-8C21-B4FF-1EF3C4A2B28B}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L1\SFX_001_UI_Hover_L1_03		3428
+	747490154	SFX_001_UI_Hover_L1_04	.cache\93\{9339E4F2-D1A0-0248-8FF5-B29A47C7E824}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L1\SFX_001_UI_Hover_L1_04		2060
+	773663309	SFX_001_UI_Hover_L1_02	.cache\F4\{F42569E3-1B5A-FF29-7DB6-3B4F5055E9F7}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L1\SFX_001_UI_Hover_L1_02		4256
+	776806059	SFX_001_UI_Hover_L2_05	.cache\E9\{E941BDB6-D00F-A436-8A67-C38FC7C39FF2}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L2\SFX_001_UI_Hover_L2_05		3284
+	816076218	SFX_005_UI_Panel_Close_L2_02	.cache\37\{3767345C-A276-955A-7BB8-5AEB31FADEE9}.wem		\Containers\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close\SFX_005_UI_Panel_Close_L2\SFX_005_UI_Panel_Close_L2_02		12140
+	816831334	SFX_001_UI_Hover_L2_03	.cache\E0\{E0401DA2-F0DA-134E-EB1C-5E4948BCFEAC}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L2\SFX_001_UI_Hover_L2_03		4436
+	880961998	SFX_001_UI_Hover_L2_02	.cache\DD\{DD6877FE-78A7-B837-7303-34BA02A03F3C}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L2\SFX_001_UI_Hover_L2_02		1304
+	891012469	SFX_002_UI_Click_L1_03	.cache\A3\{A306CB77-6B85-FC0D-9C04-CCA450F62778}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L1\SFX_002_UI_Click_L1_03		5588
+	902449175	SFX_004_UI_Panel_Open_L2_02	.cache\BE\{BE5487C8-1193-0D27-9F8D-C14432E3A4F5}.wem		\Containers\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open\SFX_004_UI_Panel_Open_L2\SFX_004_UI_Panel_Open_L2_02		25820
+	986971857	SFX_004_UI_Panel_Open_L2_01	.cache\61\{61576E87-8727-3201-6A2E-F4A25D88D857}.wem		\Containers\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open\SFX_004_UI_Panel_Open_L2\SFX_004_UI_Panel_Open_L2_01		23372
+	1005899778	SFX_002_UI_Click_L2_03	.cache\D4\{D4550736-8BC2-652D-5967-7753914E1C42}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L2\SFX_002_UI_Click_L2_03		1952
+	1013124170	SFX_002_UI_Click_L1_01	.cache\3C\{3C6181CE-02A2-72BF-53B2-A58A515F5A21}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L1\SFX_002_UI_Click_L1_01		5768
+	1064877578	SFX_005_UI_Panel_Close_L1_01	.cache\4B\{4B7DB02F-1D47-AE17-976F-B1E3AB9ECC1C}.wem		\Containers\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close\SFX_005_UI_Panel_Close_L1\SFX_005_UI_Panel_Close_L1_01		13436
+

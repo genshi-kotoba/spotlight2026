@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{9076A15E-2499-44B5-9A24-5CDF395A7445}" SchemaVersion="133">
+	<Busses>
+		<WorkUnit Name="Default Work Unit" ID="{9076A15E-2499-44B5-9A24-5CDF395A7445}" PersistMode="Standalone">
+			<ChildrenList>
+				<Bus Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}">
+					<ReferenceList>
+						<Reference Name="AudioDevice" PluginName="System" CompanyID="0" PluginID="174" PluginType="7">
+							<ObjectRef Name="System" ID="{A2CFECFB-95CE-406D-AE1D-51ABF70CDC5F}" WorkUnitID="{EBCE9869-8E19-47D5-A1AC-C76045E076D6}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<Bus Name="Music" ID="{DC7B478D-DB4B-447C-9CFF-5DA50F831C3F}">
+							<ObjectLists>
+								<ObjectList Name="Effects">
+									<EffectSlot Name="" ID="{EB9A2F46-D051-4950-BB80-29D302D4AE6E}" ShortID="685034264">
+										<ReferenceList>
+											<Reference Name="Effect" PluginName="Wwise Compressor" CompanyID="0" PluginID="108" PluginType="3">
+												<ObjectRef Name="Comp_Music_Duck" ID="{BB84FA46-FB1A-42D6-8ED6-D3D489830318}" WorkUnitID="{C639B9B1-66B7-46AA-8FBF-98F6C001AA37}"/>
+											</Reference>
+										</ReferenceList>
+									</EffectSlot>
+								</ObjectList>
+							</ObjectLists>
+						</Bus>
+						<Bus Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}">
+							<ObjectLists>
+								<ObjectList Name="Effects">
+									<EffectSlot Name="" ID="{C564B8B7-B169-4A98-8BB9-2546797A833B}" ShortID="640151402">
+										<ReferenceList>
+											<Reference Name="Effect" PluginName="Ak Sidechain Send" CompanyID="0" PluginID="193" PluginType="3">
+												<ObjectRef Name="SC_Send" ID="{DDAC47AB-056B-4EA4-B554-CAB1578F0840}" WorkUnitID="{C639B9B1-66B7-46AA-8FBF-98F6C001AA37}"/>
+											</Reference>
+										</ReferenceList>
+									</EffectSlot>
+								</ObjectList>
+							</ObjectLists>
+						</Bus>
+						<Bus Name="UI" ID="{FD72B170-B360-4725-8677-1212456F9DA3}"/>
+						<Bus Name="Ambience" ID="{466C3A53-5754-480B-9235-88C369CBC4AF}"/>
+						<AuxBus Name="Reverb_Workshop" ID="{DB38CA55-F3BB-4C9A-A4CF-FACFED221E9F}">
+							<ObjectLists>
+								<ObjectList Name="Effects">
+									<EffectSlot Name="" ID="{A635010D-9943-46EA-9E09-E6941E58165E}" ShortID="933059805">
+										<ReferenceList>
+											<Reference Name="Effect" PluginName="Wwise RoomVerb" CompanyID="0" PluginID="118" PluginType="3">
+												<ObjectRef Name="Rev_Workshop" ID="{1EAA2EED-D229-4054-8086-53979F047B78}" WorkUnitID="{C639B9B1-66B7-46AA-8FBF-98F6C001AA37}"/>
+											</Reference>
+										</ReferenceList>
+									</EffectSlot>
+								</ObjectList>
+							</ObjectLists>
+						</AuxBus>
+						<AuxBus Name="Reverb_Slum" ID="{8BA0662E-326F-440C-AFE1-FE45799C682D}">
+							<ObjectLists>
+								<ObjectList Name="Effects">
+									<EffectSlot Name="" ID="{B4FDC19F-C1E3-4798-B239-D2FC8892619F}" ShortID="211577519">
+										<ReferenceList>
+											<Reference Name="Effect" PluginName="Wwise RoomVerb" CompanyID="0" PluginID="118" PluginType="3">
+												<ObjectRef Name="Rev_Slum" ID="{4C7D6973-7177-4DC2-9C22-63204F63EAEB}" WorkUnitID="{C639B9B1-66B7-46AA-8FBF-98F6C001AA37}"/>
+											</Reference>
+										</ReferenceList>
+									</EffectSlot>
+								</ObjectList>
+							</ObjectLists>
+						</AuxBus>
+						<AuxBus Name="Reverb_Church" ID="{F6EA1BCD-832A-4EEA-AB9B-83EF8CCFAEF9}">
+							<ObjectLists>
+								<ObjectList Name="Effects">
+									<EffectSlot Name="" ID="{FEE9C138-BADD-491A-80BB-A77544915608}" ShortID="149935036">
+										<ReferenceList>
+											<Reference Name="Effect" PluginName="Wwise RoomVerb" CompanyID="0" PluginID="118" PluginType="3">
+												<ObjectRef Name="Rev_Church" ID="{61994849-E61D-4584-9C8F-CA9C447283CD}" WorkUnitID="{C639B9B1-66B7-46AA-8FBF-98F6C001AA37}"/>
+											</Reference>
+										</ReferenceList>
+									</EffectSlot>
+								</ObjectList>
+							</ObjectLists>
+						</AuxBus>
+					</ChildrenList>
+				</Bus>
+			</ChildrenList>
+		</WorkUnit>
+	</Busses>
+</WwiseDocument>

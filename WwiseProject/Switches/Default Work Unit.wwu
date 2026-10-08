@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{A4FD52AD-35A3-4D4B-AED0-9127D8035F2D}" SchemaVersion="133">
+	<Switches>
+		<WorkUnit Name="Default Work Unit" ID="{A4FD52AD-35A3-4D4B-AED0-9127D8035F2D}" PersistMode="Standalone">
+			<ChildrenList>
+				<SwitchGroup Name="Foot_Material" ID="{DA68F562-F042-40D0-A276-F54CA549A58C}">
+					<ChildrenList>
+						<Switch Name="Wood" ID="{8E89E059-0E95-4CE8-A58F-0AFC4574955A}"/>
+						<Switch Name="Mud" ID="{A0A37FC3-74EF-422D-9F0F-D48E93498779}"/>
+						<Switch Name="Stone" ID="{B3579E90-4E04-4118-8561-CAD090E21067}"/>
+					</ChildrenList>
+				</SwitchGroup>
+				<SwitchGroup Name="Enemy_Tier" ID="{1E657D9F-E00A-455F-B2B8-BC5778C9304E}">
+					<ChildrenList>
+						<Switch Name="Normal" ID="{A72FC155-599D-4E38-8C74-60DB4287F357}"/>
+						<Switch Name="Elite" ID="{C62EBC2C-AB72-4AAA-A411-28DCAF255BD5}"/>
+						<Switch Name="Boss" ID="{082108FB-44C7-4235-9781-6F3E86273D52}"/>
+					</ChildrenList>
+				</SwitchGroup>
+			</ChildrenList>
+		</WorkUnit>
+	</Switches>
+</WwiseDocument>

@@ -1,2 +1,8 @@
 # Normalize EOL for all files that Git considers text files.
 * text=auto eol=lf
+
+# Wwise 工程文件：Wwise 以 CRLF 写出 .wproj（实测 12,742 处 CRLF、0 处裸 LF）。
+# 不加这条的话，每次在 Wwise 里保存后 git add 都会报
+# "CRLF will be replaced by LF the next time Git touches it"。
+# 声明后：索引存 LF、工作区保持 CRLF —— 与 Wwise 的写法一致，不再告警、无 diff 抖动。
+WwiseProject/**/*.wproj text eol=crlf

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{C1317E2B-7418-4C64-A2FA-67AFA42E6ACF}" SchemaVersion="133">
+	<GameParameters>
+		<WorkUnit Name="Default Work Unit" ID="{C1317E2B-7418-4C64-A2FA-67AFA42E6ACF}" PersistMode="Standalone">
+			<ChildrenList>
+				<GameParameter Name="Player_Speed" ID="{DBB5AC02-F9DD-4696-BA6C-B7955B7248ED}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+						<Property Name="Max" Type="Real64" Value="10"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="Player_Health" ID="{BEB8ADE8-B4AD-47F4-9E5D-A9D54788EA51}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="Volume_Music" ID="{1871E77C-2B0D-413B-A931-76B31717816A}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="Volume_SFX" ID="{85D77EAA-ED13-489C-85E1-4E840EE13CE2}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="Volume_UI" ID="{143606D9-B48A-462D-953A-FB01F82544EE}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="Volume_Ambience" ID="{198BF088-851D-447E-9E54-957466108A64}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="Tension" ID="{F9E3B37C-CFF1-417A-885D-802FD77BAD1C}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="Deck_Size" ID="{9D36355F-A224-437F-B4D6-296EF3B234C5}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+					</PropertyList>
+				</GameParameter>
+			</ChildrenList>
+		</WorkUnit>
+	</GameParameters>
+</WwiseDocument>
