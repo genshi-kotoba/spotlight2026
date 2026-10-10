@@ -128,11 +128,11 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 			or (saved_battle != null and not saved_battle is Dictionary):
 		return _fail(ERR_INVALID_DATA, "Run snapshot fields are invalid")
 
-	var saved_max := _integer_value(data.get("max_health"))
-	var saved_health := _integer_value(data.get("health"))
-	var saved_gold := _integer_value(data.get("gold"))
-	var saved_battles := _integer_value(data.get("battles_fought"))
-	var saved_stages := _integer_value(data.get("stages_completed"))
+	var saved_max: Variant = _integer_value(data.get("max_health"))
+	var saved_health: Variant = _integer_value(data.get("health"))
+	var saved_gold: Variant = _integer_value(data.get("gold"))
+	var saved_battles: Variant = _integer_value(data.get("battles_fought"))
+	var saved_stages: Variant = _integer_value(data.get("stages_completed"))
 	if saved_max == null or saved_health == null or saved_gold == null \
 			or saved_battles == null or saved_stages == null or saved_max <= 0 \
 			or saved_health < 0 or saved_health > saved_max or saved_gold < 0 \
@@ -177,6 +177,11 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 			return _fail(error, "Could not restore current battle")
 		current_battle = battle
 		_connect_battle(battle)
+		var attach_error := _attach_effect_resolver(battle)
+		if attach_error != OK:
+			current_battle = null
+			battle.queue_free()
+			return _fail(attach_error, "Could not attach restored card/buff effects")
 	last_error = OK
 	return OK
 
@@ -345,6 +350,10 @@ func start_battle(node_id: String, enemies: Array, draw_count: int = 5,
 	if error != OK:
 		battle.queue_free()
 		return _fail(error, "Battle initialization failed")
+	var attach_error := _attach_effect_resolver(battle)
+	if attach_error != OK:
+		battle.queue_free()
+		return _fail(attach_error, "Could not attach card/buff effects")
 	battle_index_by_node[key] = battle_index + 1
 	battles_fought += 1
 	current_battle = battle
@@ -383,9 +392,9 @@ func build_history_record(end_result: Dictionary) -> Dictionary:
 
 func _prepare_new_config(config: Dictionary, unlocked_cards: Array) -> Dictionary:
 	var configured_run_id: Variant = config.get("run_id")
-	var configured_max := _integer_value(config.get("max_health"))
-	var configured_health := _integer_value(config.get("initial_health"))
-	var configured_gold := _integer_value(config.get("initial_gold", 0))
+	var configured_max: Variant = _integer_value(config.get("max_health"))
+	var configured_health: Variant = _integer_value(config.get("initial_health"))
+	var configured_gold: Variant = _integer_value(config.get("initial_gold", 0))
 	var catalog: Variant = config.get("card_catalog", [])
 	var initial_deck: Variant = config.get("initial_deck", [])
 	var configured_items: Variant = config.get("initial_items", [])
@@ -450,6 +459,12 @@ func _connect_battle(battle: BattleStateMachine) -> void:
 	battle.battle_ended.connect(_on_battle_ended)
 
 
+func _attach_effect_resolver(battle: BattleStateMachine) -> Error:
+	var resolver := BattleEffectResolver.new()
+	battle.add_child(resolver)
+	return resolver.attach_to_battle(battle)
+
+
 func _on_battle_ended(battle_result: Dictionary) -> void:
 	if current_battle == null:
 		return
@@ -507,7 +522,7 @@ static func _integer_value(value: Variant) -> Variant:
 
 
 static func _integer_equals(value: Variant, expected: int) -> bool:
-	var integer := _integer_value(value)
+	var integer: Variant = _integer_value(value)
 	return integer != null and integer == expected
 
 
@@ -559,7 +574,7 @@ static func _valid_nonnegative_int_dictionary(values: Dictionary) -> bool:
 	for key: Variant in values:
 		if not key is String:
 			return false
-		var number := _integer_value(values[key])
+		var number: Variant = _integer_value(values[key])
 		if number == null or number < 0:
 			return false
 	return true

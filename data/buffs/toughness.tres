@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BuffData" format=3]
+
+[ext_resource type="Script" path="res://systems/buffs/buff_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="2"]
+[ext_resource type="Script" path="res://systems/buffs/effects/buff_effect_stat.gd" id="3"]
+
+[sub_resource type="Resource" id="Stat"]
+script = ExtResource("3")
+buff_id = &"toughness"
+stat = 1
+
+[resource]
+script = ExtResource("1")
+buff_id = &"toughness"
+display_name = "坚韧"
+effects = Array[ExtResource("2")]([SubResource("Stat")])

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BuffData" format=3]
+
+[ext_resource type="Script" path="res://systems/buffs/buff_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="2"]
+[ext_resource type="Script" path="res://systems/buffs/effects/buff_effect_poison.gd" id="3"]
+
+[sub_resource type="Resource" id="Poison"]
+script = ExtResource("3")
+buff_id = &"poison"
+
+[resource]
+script = ExtResource("1")
+buff_id = &"poison"
+display_name = "中毒"
+description = "回合结束时受到等于层数的伤害；随后层数减半并向上取整，1 层减半后归零。"
+effects = Array[ExtResource("2")]([SubResource("Poison")])

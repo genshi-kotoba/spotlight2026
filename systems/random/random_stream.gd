@@ -38,9 +38,14 @@ func int_range(min_inclusive: int, max_exclusive: int) -> Variant:
 func pick(items: Array) -> Variant:
 	if not _check_current():
 		return null
-	if items.is_empty() or items.has(null):
+	if items.is_empty():
 		_fail("Expected a nonempty pool without null items")
 		return null
+	# Typed Array[Vector2i] 等不允许 has(null)，逐项检查可兼容所有数组类型。
+	for item: Variant in items:
+		if item == null:
+			_fail("Expected a nonempty pool without null items")
+			return null
 	last_error = OK
 	return items[_rng.randi_range(0, items.size() - 1)]
 

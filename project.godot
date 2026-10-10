@@ -11,15 +11,16 @@ config_version=5
 [application]
 
 config/name="spotlight2026"
-config/seed_content_version="jam-map-seed-v1"
-run/main_scene="res://systems/map/map_demo.tscn"
+run/main_scene="res://ui/world_map/flat_2d/map_run_demo.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
+config/seed_content_version="jam-map-seed-v1"
 
 [autoload]
 
 SeedService="*res://autoload/seed_service.gd"
 GlobalState="*res://state_machines/global/global_state_machine.gd"
+MapEvents="*res://core/signals/map_events.gd"
 
 [display]
 
@@ -29,6 +30,10 @@ window/size/window_width_override=1920
 window/size/window_height_override=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/card_preview/plugin.cfg")
 
 [physics]
 

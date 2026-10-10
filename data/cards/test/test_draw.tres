@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_base"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_draw.gd" id="2_effect"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_card"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("2_effect")
+count = 2
+
+[resource]
+script = ExtResource("3_card")
+card_id = &"test_draw"
+card_name = "测试·抽牌"
+description = "抽 2 张牌；抽牌堆为空时会将弃牌堆洗回。"
+kind = 3
+face_tint = 3
+effects = Array[ExtResource("1_base")]([SubResource("Effect")])

@@ -1,0 +1,105 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://ui/components/card/card_view.gd" id="1_view"]
+[ext_resource type="Texture2D" uid="uid://brgcj8p7jy1rw" path="res://assets/ui/UI-001/日灰.png" id="2_frame_default"]
+[ext_resource type="Resource" path="res://data/config/card_face_set.tres" id="3_face_set"]
+
+[sub_resource type="SystemFont" id="SystemFont_cjk"]
+font_names = PackedStringArray("Microsoft YaHei", "SimHei", "Noto Sans CJK SC")
+
+[node name="CardView" type="Control"]
+custom_minimum_size = Vector2(480, 818)
+offset_right = 480.0
+offset_bottom = 818.0
+mouse_filter = 2
+script = ExtResource("1_view")
+"底图集" = ExtResource("3_face_set")
+"稀有度" = 0
+"颜色" = 0
+
+[node name="插画位" type="TextureRect" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.1192
+anchor_top = 0.2087
+anchor_right = 0.8727
+anchor_bottom = 0.5668
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="卡框" type="TextureRect" parent="."]
+unique_name_in_owner = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_frame_default")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="卡名" type="Label" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.0959
+anchor_top = 0.5749
+anchor_right = 0.896
+anchor_bottom = 0.696
+offset_left = 10.0
+offset_top = 6.0
+offset_right = -10.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.94902, 0.929412, 0.858824, 1)
+theme_override_fonts/font = SubResource("SystemFont_cjk")
+theme_override_font_sizes/font_size = 40
+text = "卡牌名"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="效果文本" type="Label" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.1223
+anchor_top = 0.719
+anchor_right = 0.8696
+anchor_bottom = 0.819
+offset_left = 10.0
+offset_top = 6.0
+offset_right = -10.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.94902, 0.929412, 0.858824, 1)
+theme_override_fonts/font = SubResource("SystemFont_cjk")
+theme_override_font_sizes/font_size = 24
+text = "卡牌效果"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="介绍文本" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+anchor_left = 0.1223
+anchor_top = 0.819
+anchor_right = 0.8696
+anchor_bottom = 0.919
+offset_left = 10.0
+offset_top = 6.0
+offset_right = -10.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.760784, 0.741176, 0.694118, 1)
+theme_override_fonts/font = SubResource("SystemFont_cjk")
+theme_override_font_sizes/font_size = 20
+text = "卡牌介绍"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3

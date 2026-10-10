@@ -1,7 +1,7 @@
-extends SceneTree
+extends Node
 
 ## PRG-002 / 003 / 004 无渲染自测：
-## godot --headless --path . --script res://tests/state_machine_selftest.gd
+## godot --headless --path . res://tests/state_machine_selftest.tscn
 
 var _failures := 0
 var _effect_battle: BattleStateMachine
@@ -11,7 +11,7 @@ var _buff_requests := 0
 var _reshuffles := 0
 
 
-func _initialize() -> void:
+func _ready() -> void:
 	_test_run_state_and_seed_restore()
 	_test_battle_order_and_pointer()
 	_test_discard_reshuffle()
@@ -19,7 +19,7 @@ func _initialize() -> void:
 	_test_initial_battle_outcome()
 	_test_global_save_round_trip()
 	print("全部通过" if _failures == 0 else "失败 %d 项" % _failures)
-	quit(_failures)
+	get_tree().quit(_failures)
 
 
 func _check(label: String, condition: bool, detail: String = "") -> void:
@@ -49,7 +49,7 @@ func _base_run_config(run_id: String) -> Dictionary:
 func _test_run_state_and_seed_restore() -> void:
 	print("[PRG-003 局内状态与随机池]")
 	var run := RunStateMachine.new()
-	get_root().add_child(run)
+	add_child(run)
 	var stats: Array[StringName] = []
 	run.stat_updated.connect(func(metric: StringName, _value: Variant): stats.append(metric))
 	var error := run.initialize_new(
@@ -75,7 +75,7 @@ func _test_run_state_and_seed_restore() -> void:
 
 	error = SeedService.restore_snapshot(seed_snapshot)
 	var restored := RunStateMachine.new()
-	get_root().add_child(restored)
+	add_child(restored)
 	error = restored.restore_from_dictionary(run_snapshot) if error == OK else error
 	_check("局内与随机快照可共同恢复", error == OK)
 	_check("恢复后资源一致", restored.health == 70 and restored.gold == 25)
@@ -113,7 +113,7 @@ func _test_battle_order_and_pointer() -> void:
 	print("[PRG-004 阶段与指针结算]")
 	SeedService.begin_run("battle-pointer-seed")
 	var battle := BattleStateMachine.new()
-	get_root().add_child(battle)
+	add_child(battle)
 	var phases: Array[int] = []
 	_buff_requests = 0
 	battle.phase_changed.connect(func(_old: int, next: int): phases.append(next))
@@ -155,7 +155,7 @@ func _test_discard_reshuffle() -> void:
 	print("[PRG-004 弃牌堆重洗]")
 	SeedService.begin_run("battle-reshuffle-seed")
 	var battle := BattleStateMachine.new()
-	get_root().add_child(battle)
+	add_child(battle)
 	_reshuffles = 0
 	battle.discard_pile_shuffled.connect(func(_size: int): _reshuffles += 1)
 	var config := _battle_config(20, 3)
@@ -174,14 +174,14 @@ func _test_battle_snapshot_validation() -> void:
 	print("[PRG-004 战斗快照一致性]")
 	SeedService.begin_run("battle-snapshot-validation-seed")
 	var battle := BattleStateMachine.new()
-	get_root().add_child(battle)
+	add_child(battle)
 	var error := battle.initialize_battle(_battle_config())
 	error = battle.start_battle() if error == OK else error
 	var snapshot := battle.to_dictionary()
 	var duplicate_card: Dictionary = snapshot["hand"][0].duplicate(true)
 	snapshot["discard_pile"].append(duplicate_card)
 	var restored := BattleStateMachine.new()
-	get_root().add_child(restored)
+	add_child(restored)
 	error = restored.restore_from_dictionary(snapshot)
 	_check("同一卡牌实例不能同时存在于多个牌区", error == ERR_INVALID_DATA)
 	battle.queue_free()
@@ -192,7 +192,7 @@ func _test_initial_battle_outcome() -> void:
 	print("[PRG-004 初始终局判定]")
 	SeedService.begin_run("battle-initial-outcome-seed")
 	var battle := BattleStateMachine.new()
-	get_root().add_child(battle)
+	add_child(battle)
 	var ended := {"status": ""}
 	battle.battle_ended.connect(
 		func(result: Dictionary): ended["status"] = result.get("status", "")
@@ -207,7 +207,8 @@ func _test_initial_battle_outcome() -> void:
 
 func _test_global_save_round_trip() -> void:
 	print("[PRG-002 JSON 存档]")
-	var path := "user://state_machine_selftest.json"
+	var path := "res://_local/state_machine_selftest.json"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://_local"))
 	var absolute := ProjectSettings.globalize_path(path)
 	DirAccess.remove_absolute(absolute)
 	DirAccess.remove_absolute(absolute + ".tmp")

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_base"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_move_pointer.gd" id="2_effect"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_card"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("2_effect")
+direction = 0
+steps = 1
+
+[resource]
+script = ExtResource("3_card")
+card_id = &"test_move_pointer"
+card_name = "测试·移动指针"
+description = "使指针向左回退 1 格，让前一张牌再次触发。该移动牌再次被遇到时不会重复回跳。"
+kind = 2
+face_tint = 3
+effects = Array[ExtResource("1_base")]([SubResource("Effect")])

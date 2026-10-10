@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_qqwte"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_buff.gd" id="2_3i5c3"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_6v27w"]
+
+[sub_resource type="Resource" id="Resource_yston"]
+script = ExtResource("2_3i5c3")
+layers = 2
+
+[resource]
+script = ExtResource("3_6v27w")
+card_id = &"feeling_good"
+card_name = "我又行了"
+description = "我又行了（原型卡第 1 份，同名两份用于验证实例区分）"
+kind = 1
+face_tint = 1
+effects = Array[ExtResource("1_qqwte")]([SubResource("Resource_yston")])

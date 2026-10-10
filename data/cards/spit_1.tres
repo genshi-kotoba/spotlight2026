@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_2cskc"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_buff.gd" id="2_c71rx"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_beo4a"]
+
+[sub_resource type="Resource" id="Resource_40foo"]
+script = ExtResource("2_c71rx")
+buff_id = &"poison"
+layers = 2
+receiver = 1
+
+[resource]
+script = ExtResource("3_beo4a")
+card_id = &"spit"
+card_name = "泼你毒药"
+description = "泼你毒药（原型卡第 1 份，同名两份用于验证实例区分）"
+kind = 1
+face_tint = 1
+effects = Array[ExtResource("1_2cskc")]([SubResource("Resource_40foo")])

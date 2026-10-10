@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/state_machine_selftest.gd" id="1"]
+
+[node name="StateMachineSelftest" type="Node"]
+script = ExtResource("1")

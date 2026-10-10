@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_base"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_buff.gd" id="2_effect"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_card"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("2_effect")
+buff_id = &"poison"
+layers = 4
+receiver = 1
+
+[resource]
+script = ExtResource("3_card")
+card_id = &"test_poison"
+card_name = "测试·中毒"
+description = "给予目标 4 层中毒。其回合结束时受到层数伤害，然后层数减半并向上取整。"
+kind = 1
+face_tint = 2
+effects = Array[ExtResource("1_base")]([SubResource("Effect")])
