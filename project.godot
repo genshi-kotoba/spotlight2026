@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="spotlight2026"
-run/main_scene="res://systems/map/map_demo.tscn"
+run/main_scene="res://ui/main_menu/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
+
+[autoload]
+
+SaveGateway="*res://autoload/save_gateway.gd"
 
 [display]
 

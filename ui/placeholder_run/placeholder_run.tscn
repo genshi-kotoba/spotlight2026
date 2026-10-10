@@ -1,0 +1,73 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ui/placeholder_run/placeholder_run.gd" id="1_run"]
+
+[node name="占位跑图" type="Node2D"]
+script = ExtResource("1_run")
+
+[node name="计时" type="Timer" parent="."]
+wait_time = 2.0
+autostart = true
+
+[node name="界面" type="CanvasLayer" parent="."]
+
+[node name="标题" type="Label" parent="界面"]
+offset_left = 80.0
+offset_top = 48.0
+offset_right = 900.0
+offset_bottom = 136.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 64
+text = "占位跑图场景"
+
+[node name="进度" type="Label" parent="界面"]
+offset_left = 80.0
+offset_top = 180.0
+offset_right = 1400.0
+offset_bottom = 316.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 96
+text = "本局进度 0"
+
+[node name="状态" type="Label" parent="界面"]
+offset_left = 80.0
+offset_top = 340.0
+offset_right = 1400.0
+offset_bottom = 388.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 26
+text = "当前档案 1 · 已进行 0 秒"
+
+[node name="档案时间" type="Label" parent="界面"]
+offset_left = 80.0
+offset_top = 396.0
+offset_right = 1400.0
+offset_bottom = 440.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+text = "档案写入时间：—"
+
+[node name="说明" type="Label" parent="界面"]
+offset_left = 80.0
+offset_top = 470.0
+offset_right = 1400.0
+offset_bottom = 560.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 3
+text = "每 2 秒 +1 进度，进度写进档案。点「回主菜单」再点「继续游戏」，进度从存档里的数接着涨。"
+
+[node name="按钮行" type="HBoxContainer" parent="界面"]
+offset_left = 80.0
+offset_top = 940.0
+offset_right = 900.0
+offset_bottom = 1020.0
+theme_override_constants/separation = 24
+
+[node name="回主菜单" type="Button" parent="界面/按钮行"]
+custom_minimum_size = Vector2(280, 80)
+text = "回主菜单"
+
+[node name="放弃本局" type="Button" parent="界面/按钮行"]
+custom_minimum_size = Vector2(280, 80)
+text = "放弃本局"

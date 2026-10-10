@@ -1,0 +1,118 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://ui/settings/settings.gd" id="1_settings"]
+[ext_resource type="PackedScene" path="res://ui/main_menu/message_bar.tscn" id="2_bar"]
+
+[node name="设置" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_settings")
+
+[node name="标题" type="Label" parent="."]
+offset_left = 80.0
+offset_top = 48.0
+offset_right = 700.0
+offset_bottom = 128.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 56
+text = "设置"
+
+[node name="面板" type="PanelContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -420.0
+offset_top = -280.0
+offset_right = 420.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="条目" type="VBoxContainer" parent="面板"]
+theme_override_constants/separation = 24
+
+[node name="主音量" type="HBoxContainer" parent="面板/条目"]
+theme_override_constants/separation = 24
+
+[node name="名称" type="Label" parent="面板/条目/主音量"]
+custom_minimum_size = Vector2(160, 0)
+mouse_filter = 2
+text = "主音量"
+
+[node name="滑条" type="HSlider" parent="面板/条目/主音量"]
+custom_minimum_size = Vector2(440, 40)
+size_flags_vertical = 4
+
+[node name="数值" type="Label" parent="面板/条目/主音量"]
+custom_minimum_size = Vector2(88, 0)
+mouse_filter = 2
+text = "100"
+horizontal_alignment = 2
+
+[node name="音乐" type="HBoxContainer" parent="面板/条目"]
+theme_override_constants/separation = 24
+
+[node name="名称" type="Label" parent="面板/条目/音乐"]
+custom_minimum_size = Vector2(160, 0)
+mouse_filter = 2
+text = "音乐"
+
+[node name="滑条" type="HSlider" parent="面板/条目/音乐"]
+custom_minimum_size = Vector2(440, 40)
+size_flags_vertical = 4
+
+[node name="数值" type="Label" parent="面板/条目/音乐"]
+custom_minimum_size = Vector2(88, 0)
+mouse_filter = 2
+text = "100"
+horizontal_alignment = 2
+
+[node name="音效" type="HBoxContainer" parent="面板/条目"]
+theme_override_constants/separation = 24
+
+[node name="名称" type="Label" parent="面板/条目/音效"]
+custom_minimum_size = Vector2(160, 0)
+mouse_filter = 2
+text = "音效"
+
+[node name="滑条" type="HSlider" parent="面板/条目/音效"]
+custom_minimum_size = Vector2(440, 40)
+size_flags_vertical = 4
+
+[node name="数值" type="Label" parent="面板/条目/音效"]
+custom_minimum_size = Vector2(88, 0)
+mouse_filter = 2
+text = "100"
+horizontal_alignment = 2
+
+[node name="全屏" type="HBoxContainer" parent="面板/条目"]
+theme_override_constants/separation = 24
+
+[node name="名称" type="Label" parent="面板/条目/全屏"]
+custom_minimum_size = Vector2(160, 0)
+mouse_filter = 2
+text = "全屏"
+
+[node name="开关" type="CheckButton" parent="面板/条目/全屏"]
+custom_minimum_size = Vector2(120, 40)
+button_pressed = true
+
+[node name="分辨率" type="HBoxContainer" parent="面板/条目"]
+theme_override_constants/separation = 24
+
+[node name="名称" type="Label" parent="面板/条目/分辨率"]
+custom_minimum_size = Vector2(160, 0)
+mouse_filter = 2
+text = "分辨率"
+
+[node name="下拉" type="OptionButton" parent="面板/条目/分辨率"]
+custom_minimum_size = Vector2(240, 40)
+
+[node name="返回" type="Button" parent="面板/条目"]
+custom_minimum_size = Vector2(200, 64)
+text = "返回"
+
+[node name="提示条" parent="." instance=ExtResource("2_bar")]

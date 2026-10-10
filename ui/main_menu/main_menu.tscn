@@ -1,0 +1,91 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://ui/main_menu/main_menu.gd" id="1_menu"]
+[ext_resource type="PackedScene" path="res://ui/main_menu/message_bar.tscn" id="2_bar"]
+[ext_resource type="PackedScene" path="res://ui/main_menu/confirm_dialog.tscn" id="3_dialog"]
+
+[node name="主菜单" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+
+[node name="背景" type="TextureRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="标题" type="Label" parent="."]
+offset_left = 80.0
+offset_top = 48.0
+offset_right = 900.0
+offset_bottom = 168.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 76
+text = "这里是标题"
+
+[node name="按钮列" type="VBoxContainer" parent="."]
+offset_left = 80.0
+offset_top = 220.0
+offset_right = 460.0
+offset_bottom = 860.0
+theme_override_constants/separation = 18
+
+[node name="继续游戏" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 76)
+text = "继续游戏"
+
+[node name="新游戏" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 76)
+text = "新游戏"
+
+[node name="设置" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 76)
+text = "设置"
+
+[node name="成就" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 76)
+text = "成就"
+
+[node name="感谢名单" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 76)
+text = "感谢名单"
+
+[node name="退出游戏" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 76)
+text = "退出游戏"
+
+[node name="档案" type="Button" parent="."]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -360.0
+offset_top = 48.0
+offset_right = -80.0
+offset_bottom = 116.0
+grow_horizontal = 0
+text = "当前档案 1 ▾"
+
+[node name="版本" type="Label" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -240.0
+offset_top = -76.0
+offset_right = -80.0
+offset_bottom = -40.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+text = "v0.1.0"
+horizontal_alignment = 2
+
+[node name="提示条" parent="." instance=ExtResource("2_bar")]
+
+[node name="确认弹窗" parent="." instance=ExtResource("3_dialog")]
