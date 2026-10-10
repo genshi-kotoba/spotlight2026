@@ -1,0 +1,429 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://ui/battle/battle_test_scene.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/battle_test/battle_background_1920x1080.png" id="2_bg"]
+[ext_resource type="Texture2D" path="res://assets/battle_test/CHR-025.png" id="3_enemy"]
+
+[sub_resource type="StyleBoxFlat" id="PanelDark"]
+bg_color = Color(0.035, 0.043, 0.055, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.62, 0.51, 0.3, 0.8)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="PanelLight"]
+bg_color = Color(0.09, 0.1, 0.13, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.78, 0.69, 0.5, 0.55)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="ButtonNormal"]
+bg_color = Color(0.18, 0.15, 0.14, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.55, 0.3, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="ButtonHover"]
+bg_color = Color(0.35, 0.22, 0.16, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.75, 0.36, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="ModalPanel"]
+bg_color = Color(0.025, 0.03, 0.04, 0.985)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.78, 0.65, 0.38, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 24.0
+content_margin_top = 20.0
+content_margin_right = 24.0
+content_margin_bottom = 20.0
+
+[node name="BattleTestScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackgroundDim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.015, 0.02, 0.028, 0.76)
+
+[node name="Header" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 18.0
+offset_right = 1900.0
+offset_bottom = 82.0
+theme_override_styles/panel = SubResource("PanelDark")
+
+[node name="Margin" type="MarginContainer" parent="Header"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 8
+
+[node name="Row" type="HBoxContainer" parent="Header/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 28
+
+[node name="TurnLabel" type="Label" parent="Header/Margin/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 27
+text = "回合 1"
+
+[node name="PhaseLabel" type="Label" parent="Header/Margin/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 25
+text = "玩家回合 · 编排阶段"
+horizontal_alignment = 1
+
+[node name="CountLabel" type="Label" parent="Header/Margin/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.78, 0.76, 1)
+theme_override_font_sizes/font_size = 20
+text = "首抽 12  |  每回合抽 2  |  出牌上限 10"
+vertical_alignment = 1
+
+[node name="EnemyArea" type="Control" parent="."]
+layout_mode = 0
+offset_left = 220.0
+offset_top = 90.0
+offset_right = 1510.0
+offset_bottom = 690.0
+mouse_filter = 2
+
+[node name="EnemyPortrait" type="TextureRect" parent="EnemyArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_enemy")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EnemyName" type="Label" parent="EnemyArea"]
+layout_mode = 0
+offset_left = 315.0
+offset_top = 498.0
+offset_right = 975.0
+offset_bottom = 550.0
+theme_override_colors/font_color = Color(0.95, 0.87, 0.7, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 31
+text = "CHR-025 · 人造之神，方舟缔造者"
+horizontal_alignment = 1
+
+[node name="PlayerStatusPanel" type="PanelContainer" parent="EnemyArea"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 18.0
+offset_right = 500.0
+offset_bottom = 104.0
+theme_override_styles/panel = SubResource("PanelLight")
+
+[node name="PlayerStatus" type="Label" parent="EnemyArea/PlayerStatusPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.83, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 19
+text = "玩家  HP 60/100  格挡 0\nBuff：无"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EnemyStatusPanel" type="PanelContainer" parent="EnemyArea"]
+layout_mode = 0
+offset_left = 790.0
+offset_top = 18.0
+offset_right = 1274.0
+offset_bottom = 104.0
+theme_override_styles/panel = SubResource("PanelLight")
+
+[node name="EnemyStatus" type="Label" parent="EnemyArea/EnemyStatusPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.79, 0.73, 1)
+theme_override_font_sizes/font_size = 19
+text = "CHR-025  HP 300/300  格挡 0\nBuff：无"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayPanel" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_left = 1530.0
+offset_top = 100.0
+offset_right = 1900.0
+offset_bottom = 850.0
+theme_override_styles/panel = SubResource("PanelDark")
+
+[node name="Margin" type="MarginContainer" parent="PlayPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="Column" type="VBoxContainer" parent="PlayPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="PlayPanel/Margin/Column"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 27
+text = "出牌区"
+horizontal_alignment = 1
+
+[node name="Rule" type="Label" parent="PlayPanel/Margin/Column"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.68, 0.68, 0.68, 1)
+theme_override_font_sizes/font_size = 16
+text = "从上到下依次结算 · 手牌的 1/2 大小"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="PlayPanel/Margin/Column"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="PlayCards" type="VBoxContainer" parent="PlayPanel/Margin/Column/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="HandPanel" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_left = 180.0
+offset_top = 640.0
+offset_right = 1355.0
+offset_bottom = 1058.0
+theme_override_styles/panel = SubResource("PanelDark")
+
+[node name="Margin" type="MarginContainer" parent="HandPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="Column" type="VBoxContainer" parent="HandPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HandTitle" type="Label" parent="HandPanel/Margin/Column"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 22
+text = "手牌 · 点击卡牌加入出牌区"
+horizontal_alignment = 1
+
+[node name="HandScroll" type="ScrollContainer" parent="HandPanel/Margin/Column"]
+layout_mode = 2
+size_flags_vertical = 3
+vertical_scroll_mode = 0
+
+[node name="HandCards" type="HBoxContainer" parent="HandPanel/Margin/Column/HandScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="DrawPileButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 24.0
+offset_top = 718.0
+offset_right = 158.0
+offset_bottom = 976.0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.95, 0.87, 0.7, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "抽牌堆\n15"
+
+[node name="DiscardPileButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1372.0
+offset_top = 718.0
+offset_right = 1506.0
+offset_bottom = 976.0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.95, 0.87, 0.7, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "弃牌堆\n0"
+
+[node name="HintLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1540.0
+offset_top = 858.0
+offset_right = 1890.0
+offset_bottom = 922.0
+theme_override_colors/font_color = Color(0.8, 0.8, 0.78, 1)
+theme_override_font_sizes/font_size = 17
+text = "玩家回合开始：请选择手牌编排到右侧"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="CancelButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1540.0
+offset_top = 936.0
+offset_right = 1704.0
+offset_bottom = 1010.0
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "取消"
+
+[node name="PlayButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1720.0
+offset_top = 936.0
+offset_right = 1890.0
+offset_bottom = 1010.0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.64, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "结算 0 张"
+
+[node name="PileModal" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PileModalShade" type="ColorRect" parent="PileModal"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.72)
+
+[node name="Window" type="PanelContainer" parent="PileModal"]
+layout_mode = 0
+offset_left = 390.0
+offset_top = 145.0
+offset_right = 1530.0
+offset_bottom = 930.0
+theme_override_styles/panel = SubResource("ModalPanel")
+
+[node name="Column" type="VBoxContainer" parent="PileModal/Window"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="PileModal/Window/Column"]
+layout_mode = 2
+
+[node name="PileTitle" type="Label" parent="PileModal/Window/Column/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 30
+text = "抽牌堆（0 张）"
+
+[node name="ClosePileButton" type="Button" parent="PileModal/Window/Column/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(100, 48)
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "关闭"
+
+[node name="Scroll" type="ScrollContainer" parent="PileModal/Window/Column"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="PileGrid" type="GridContainer" parent="PileModal/Window/Column/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 22
+theme_override_constants/v_separation = 18
+columns = 5

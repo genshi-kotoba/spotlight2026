@@ -1,0 +1,15 @@
+[remap]
+
+importer="keep"
+
+[deps]
+
+
+source_file="res://data/relics/test_fragments.csv"
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

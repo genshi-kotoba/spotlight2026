@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_f6k3p"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_attack.gd" id="2_lr37m"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_sd722"]
+
+[sub_resource type="Resource" id="Resource_cggfy"]
+script = ExtResource("2_lr37m")
+
+[resource]
+script = ExtResource("3_sd722")
+card_id = &"bonk"
+card_name = "给你一拳"
+description = "给你一拳（原型卡第 2 份，同名两份用于验证实例区分）"
+effects = Array[ExtResource("1_f6k3p")]([SubResource("Resource_cggfy")])

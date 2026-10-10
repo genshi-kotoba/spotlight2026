@@ -1,0 +1,6 @@
+fragment_id,display_name,description,kind,event_id,reach,action_id,amount
+on_card_gained,拾页,获得卡牌时触发周围四格的效果残片,trigger,card_gained,four,,0
+on_enemy_damaged,余震,对敌人造成伤害时触发周围八格的效果残片,trigger,enemy_damaged,eight,,0
+deal_damage,灼刻,造成2点伤害,effect,,none,damage,2
+gain_block,护纹,获得1点格挡,effect,,none,block,1
+turn_strength,恒力,每个玩家回合开始时获得1层力量,presence,player_turn_started,none,strength,1

@@ -11,9 +11,18 @@ config_version=5
 [application]
 
 config/name="spotlight2026"
-run/main_scene="res://systems/map/map_demo.tscn"
+run/main_scene="res://ui/main_menu/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
+config/seed_content_version="jam-map-seed-v1"
+
+[autoload]
+
+SeedService="*res://autoload/seed_service.gd"
+GlobalState="*res://state_machines/global/global_state_machine.gd"
+MapEvents="*res://core/signals/map_events.gd"
+SaveGateway="*res://autoload/save_gateway.gd"
+TextCatalog="*res://systems/text/text_catalog.gd"
 
 [display]
 
@@ -26,7 +35,7 @@ window/stretch/aspect="expand"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
+enabled=PackedStringArray("res://addons/card_preview/plugin.cfg")
 
 [physics]
 
