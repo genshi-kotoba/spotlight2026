@@ -53,10 +53,15 @@ signal card_data_applied(card_id: StringName)
 @onready var _intro_label: Label = %介绍文本
 
 var _card_id: StringName = &""
+var _csv_art_applied := false
 
 
 func _ready() -> void:
 	_refresh_face()
+	# CSV 展示文本统一入口；编辑器预览仍读资源，空表保留原测试卡文案。
+	var catalog := get_node_or_null("/root/TextCatalog")
+	if not Engine.is_editor_hint() and catalog != null:
+		catalog.catalog_changed.connect(_on_catalog_changed)
 	# 卡牌数据为空时不动文本，场景里手写的样张文案要留着。
 	if 卡牌数据 != null:
 		_render_card_data()
@@ -84,6 +89,12 @@ func set_card(data: CardData) -> void:
 ## 不用重新赋值卡牌数据（那样会走一遍 setter，语义上也重复）。
 func refresh() -> void:
 	_render_card_data()
+
+
+func _on_catalog_changed() -> void:
+	# set_texts() 驱动的图鉴卡面由页面刷新，不能被资源模式的 clear() 擦除。
+	if 卡牌数据 != null:
+		refresh()
 
 
 ## 按两个栏位换底图。挂了卡牌数据时会被数据覆盖，要单独指定用 set_face_texture()。
@@ -139,6 +150,16 @@ func _render_card_data() -> void:
 		title = String(卡牌数据.card_id)
 	set_texts(title, 卡牌数据.description, "")
 	_card_id = 卡牌数据.card_id
+	var catalog := get_node_or_null("/root/TextCatalog")
+	if not Engine.is_editor_hint() and catalog != null:
+		var record: Dictionary = catalog.entry("cards", String(_card_id))
+		if not record.is_empty():
+			set_texts(str(record.get("name", "")), str(record.get("effect", "")), "")
+			set_art_texture(catalog.art_texture(str(record.get("art_path", ""))))
+			_csv_art_applied = true
+		elif _csv_art_applied:
+			set_art_texture(null)
+			_csv_art_applied = false
 	card_data_applied.emit(_card_id)
 
 

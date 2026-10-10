@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="spotlight2026"
-run/main_scene="res://ui/world_map/flat_2d/map_run_demo.tscn"
+run/main_scene="res://ui/main_menu/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 config/seed_content_version="jam-map-seed-v1"
@@ -21,6 +21,8 @@ config/seed_content_version="jam-map-seed-v1"
 SeedService="*res://autoload/seed_service.gd"
 GlobalState="*res://state_machines/global/global_state_machine.gd"
 MapEvents="*res://core/signals/map_events.gd"
+SaveGateway="*res://autoload/save_gateway.gd"
+TextCatalog="*res://systems/text/text_catalog.gd"
 
 [display]
 

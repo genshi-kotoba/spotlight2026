@@ -13,6 +13,7 @@ signal achievement_check_requested(metric: StringName, value: Variant, run_snaps
 signal achievement_unlocked(achievement_id: String)
 signal settings_changed(key: String, value: Variant)
 signal unlocked_cards_changed(card_ids: Array[String])
+signal collection_unlocked(category: String, entry_id: String)
 
 const SAVE_VERSION := 1
 const DEFAULT_SAVE_PATH := "user://spotlight_save.json"
@@ -21,6 +22,8 @@ var save_path := DEFAULT_SAVE_PATH
 var settings: Dictionary = {}
 var achievements: Dictionary = {}
 var unlocked_cards: Array[String] = []
+var unlocked_fragments: Array[String] = []
+var unlocked_monsters: Array[String] = []
 var run_history: Array[Dictionary] = []
 
 var current_run: RunStateMachine
@@ -119,6 +122,8 @@ func save_game() -> Error:
 		"settings": settings.duplicate(true),
 		"achievements": achievements.duplicate(true),
 		"unlocked_cards": unlocked_cards.duplicate(),
+		"unlocked_fragments": unlocked_fragments.duplicate(),
+		"unlocked_monsters": unlocked_monsters.duplicate(),
 		"run_history": run_history.duplicate(true),
 		"active_run": active_payload,
 	}
@@ -170,7 +175,19 @@ func unlock_card(card_id: String) -> Error:
 	return OK
 
 
-## 具体成就条件不在本任务内；外部规则监听检查请求，满足后调用本方法。
+func unlock_collection(category: String, entry_id: String) -> Error:
+	var normalized := entry_id.strip_edges()
+	if category not in ["fragments", "monsters"] or normalized.is_empty():
+		return _fail(ERR_INVALID_PARAMETER, "Collection category/id is invalid")
+	var target: Array[String] = unlocked_fragments if category == "fragments" else unlocked_monsters
+	if not target.has(normalized):
+		target.append(normalized)
+		target.sort()
+		collection_unlocked.emit(category, normalized)
+	return OK
+
+
+## 具体成就条件由外部规则监听检查请求，满足后调用本方法。
 func complete_achievement(achievement_id: String, metadata: Dictionary = {}) -> Error:
 	var normalized := achievement_id.strip_edges()
 	if normalized.is_empty() or not _is_json_safe(metadata):
@@ -225,25 +242,35 @@ func _install_save(data: Dictionary) -> Error:
 	var loaded_settings: Variant = data.get("settings")
 	var loaded_achievements: Variant = data.get("achievements")
 	var loaded_cards: Variant = data.get("unlocked_cards")
+	# 可选字段保持旧版 v1 存档兼容，缺省为空，不从 CSV 重置已有进度。
+	var loaded_fragments: Variant = data.get("unlocked_fragments", [])
+	var loaded_monsters: Variant = data.get("unlocked_monsters", [])
 	var loaded_history: Variant = data.get("run_history")
 	var loaded_active: Variant = data.get("active_run")
 	if not loaded_settings is Dictionary or not loaded_achievements is Dictionary \
 			or not loaded_cards is Array or not loaded_history is Array \
+			or not loaded_fragments is Array or not loaded_monsters is Array \
 			or (loaded_active != null and not loaded_active is Dictionary):
 		return ERR_INVALID_DATA
 	if not _string_array_valid(loaded_cards) or not _is_json_safe(loaded_settings) \
+			or not _string_array_valid(loaded_fragments) or not _string_array_valid(loaded_monsters) \
 			or not _is_json_safe(loaded_achievements) or not _is_json_safe(loaded_history) \
 			or (loaded_active != null and not _is_json_safe(loaded_active)):
 		return ERR_INVALID_DATA
 
+	for record: Variant in loaded_history:
+		if not record is Dictionary:
+			return ERR_INVALID_DATA
 	settings = loaded_settings.duplicate(true)
 	achievements = loaded_achievements.duplicate(true)
 	unlocked_cards.assign(loaded_cards)
 	unlocked_cards.sort()
+	unlocked_fragments.assign(loaded_fragments)
+	unlocked_monsters.assign(loaded_monsters)
+	unlocked_fragments.sort()
+	unlocked_monsters.sort()
 	run_history.clear()
 	for record: Variant in loaded_history:
-		if not record is Dictionary:
-			return ERR_INVALID_DATA
 		run_history.append(record.duplicate(true))
 	_saved_active_run = {} if loaded_active == null else loaded_active.duplicate(true)
 	run_active = false
@@ -255,6 +282,8 @@ func _reset_loaded_data() -> void:
 	settings.clear()
 	achievements.clear()
 	unlocked_cards.clear()
+	unlocked_fragments.clear()
+	unlocked_monsters.clear()
 	run_history.clear()
 	_saved_active_run.clear()
 	run_active = false

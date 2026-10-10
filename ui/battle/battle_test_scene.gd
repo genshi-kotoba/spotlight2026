@@ -547,7 +547,7 @@ func _make_card_slot(card: Dictionary, card_scale: float, clickable: bool) -> Co
 		button.flat = true
 		button.disabled = not _can_click_hand()
 		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		button.tooltip_text = "点击选择：%s" % (data.card_name if data != null else "未知卡牌")
+		button.tooltip_text = "点击选择：%s" % TextCatalog.display_name("cards", String(card.get("card_id", "")), data.card_name if data != null else "未知卡牌")
 		button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		button.pressed.connect(_on_hand_card_pressed.bind(String(card["instance_id"])))
 		button.mouse_entered.connect(_on_hand_card_hover_changed.bind(slot, view, true))
@@ -621,7 +621,7 @@ func _card_display_name(instance_id: String) -> String:
 	if card.is_empty():
 		return instance_id
 	var data := _card_data(String(card.get("card_id", "")))
-	return data.card_name if data != null else String(card.get("card_id", instance_id))
+	return TextCatalog.display_name("cards", String(card.get("card_id", "")), data.card_name if data != null else String(card.get("card_id", instance_id)))
 
 
 static func _card_data(card_id: String) -> CardData:

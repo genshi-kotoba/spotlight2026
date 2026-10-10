@@ -1,6 +1,6 @@
 # 纯 2D 地图 Demo 与接入接口
 
-原生随机地图入口 `ui/world_map/flat_2d/map_run_demo.tscn`，Godot 4.7.2 下 F5 运行默认入口。纯地图装配/冻结样本入口 `map_demo.tscn` 可单独 F6 运行，供团队用外部局内调度器加载。旧 3D demo 保留在 `systems/map/map_demo.tscn`；新模块不采用它的高度通行或自由相机规则。
+原生随机地图入口 `ui/world_map/flat_2d/map_run_demo.tscn`，Godot 4.7.2 下可独立 F6 运行。项目 F5 默认入口现为 `ui/main_menu/main_menu.tscn`；新游戏/继续游戏通过薄装配层进入本地图，定向接入见 `10-开始界面定向整合说明.md`。纯地图装配/冻结样本入口 `map_demo.tscn` 可单独 F6 运行，供团队用外部局内调度器加载。旧 3D demo 保留在 `systems/map/map_demo.tscn`；新模块不采用它的高度通行或自由相机规则。
 
 ## 当前功能与边界
 
