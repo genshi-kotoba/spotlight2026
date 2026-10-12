@@ -29,3 +29,13 @@ addons/godot_mcp/
 test_scene.tscn
 lark_login_qr*.png
 /_local/
+
+# DSH harness 工具产物（不属于游戏工程）
+.dsh-acl-recovery/
+.dsh/
+_work/
+
+# 音频工作区临时文件
+*.rpp-bak
+*.bak
+

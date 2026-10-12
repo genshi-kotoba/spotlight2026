@@ -17,6 +17,18 @@
 						<Switch Name="Boss" ID="{082108FB-44C7-4235-9781-6F3E86273D52}"/>
 					</ChildrenList>
 				</SwitchGroup>
+				<SwitchGroup Name="Pointer_Position" ID="{9582CF37-1912-413C-9985-3C76DC997143}">
+					<ChildrenList>
+						<Switch Name="Pos_1" ID="{AFA18F15-2FE0-4562-95C5-B583E95BB720}"/>
+						<Switch Name="Pos_2" ID="{D58AE568-3C76-4157-8262-CF3CE567E1CD}"/>
+						<Switch Name="Pos_3" ID="{ED6AB7FB-4ABD-49A5-8948-F87BA3618B62}"/>
+						<Switch Name="Pos_4" ID="{21B987C2-0BA5-4D64-BA06-6BE0A23EA142}"/>
+						<Switch Name="Pos_5" ID="{2C81C467-446C-4C85-9206-A922B0308459}"/>
+						<Switch Name="Pos_6" ID="{649C3C8F-C3C7-484C-B6CB-54FCF5EAAD48}"/>
+						<Switch Name="Pos_7" ID="{03427C76-D89B-4C9F-B01C-CEEF82E18661}"/>
+						<Switch Name="Pos_8" ID="{FDF542BB-9228-408B-ACAB-5A837C410C73}"/>
+					</ChildrenList>
+				</SwitchGroup>
 			</ChildrenList>
 		</WorkUnit>
 	</Switches>

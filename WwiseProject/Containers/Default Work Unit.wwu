@@ -326,8 +326,14 @@
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 												</Reference>
+												<Reference Name="DefaultSwitchOrState">
+													<ObjectRef Name="Pos_1" ID="{AFA18F15-2FE0-4562-95C5-B583E95BB720}" WorkUnitID="{A4FD52AD-35A3-4D4B-AED0-9127D8035F2D}"/>
+												</Reference>
 												<Reference Name="OutputBus">
 													<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+												</Reference>
+												<Reference Name="SwitchGroupOrStateGroup">
+													<ObjectRef Name="Pointer_Position" ID="{9582CF37-1912-413C-9985-3C76DC997143}" WorkUnitID="{A4FD52AD-35A3-4D4B-AED0-9127D8035F2D}"/>
 												</Reference>
 											</ReferenceList>
 											<ChildrenList>
@@ -535,6 +541,56 @@
 														<ItemRef Name="SFX_010_Battle_Pointer_Tick_L1_03" ID="{8D0E90EB-DCED-4DC3-A8BD-EE425B23F7ED}"/>
 													</GroupingBehavior>
 												</GroupingBehaviorList>
+												<GroupingList>
+													<Grouping>
+														<SwitchRef Name="Pos_1" ID="{AFA18F15-2FE0-4562-95C5-B583E95BB720}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L1_01" ID="{B5591C0A-C9BC-4B4A-AC05-163CBD0C028B}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_5" ID="{2C81C467-446C-4C85-9206-A922B0308459}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L1_05" ID="{40403E9D-F17F-413D-AECB-72E03565EF91}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_2" ID="{D58AE568-3C76-4157-8262-CF3CE567E1CD}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L1_02" ID="{467B85A4-01DB-4BBF-897F-6CC682D355E2}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_7" ID="{03427C76-D89B-4C9F-B01C-CEEF82E18661}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L1_07" ID="{0B18644F-66F4-457A-BFC4-F01CF5152EFE}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_6" ID="{649C3C8F-C3C7-484C-B6CB-54FCF5EAAD48}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L1_06" ID="{BD2D85E4-9D89-42D3-B13F-38B859703BED}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_8" ID="{FDF542BB-9228-408B-ACAB-5A837C410C73}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L1_08" ID="{AC0A9E51-45D2-491B-A33D-08E33D8A9C9A}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_4" ID="{21B987C2-0BA5-4D64-BA06-6BE0A23EA142}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L1_04" ID="{BC1F6C8D-C701-4A79-B9EB-A865BDA302C6}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_3" ID="{ED6AB7FB-4ABD-49A5-8948-F87BA3618B62}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L1_03" ID="{8D0E90EB-DCED-4DC3-A8BD-EE425B23F7ED}"/>
+														</ItemList>
+													</Grouping>
+												</GroupingList>
 											</GroupingInfo>
 										</SwitchContainer>
 										<SwitchContainer Name="SFX_010_Battle_Pointer_Tick_L2" ID="{FB72A3F5-8DE4-45ED-B022-F48B57964296}" ShortID="386341006">
@@ -545,8 +601,14 @@
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 												</Reference>
+												<Reference Name="DefaultSwitchOrState">
+													<ObjectRef Name="Pos_1" ID="{AFA18F15-2FE0-4562-95C5-B583E95BB720}" WorkUnitID="{A4FD52AD-35A3-4D4B-AED0-9127D8035F2D}"/>
+												</Reference>
 												<Reference Name="OutputBus">
 													<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+												</Reference>
+												<Reference Name="SwitchGroupOrStateGroup">
+													<ObjectRef Name="Pointer_Position" ID="{9582CF37-1912-413C-9985-3C76DC997143}" WorkUnitID="{A4FD52AD-35A3-4D4B-AED0-9127D8035F2D}"/>
 												</Reference>
 											</ReferenceList>
 											<ChildrenList>
@@ -774,6 +836,56 @@
 														<ItemRef Name="SFX_010_Battle_Pointer_Tick_L2_01" ID="{247551EB-03E9-4B39-9BA7-258394D36228}"/>
 													</GroupingBehavior>
 												</GroupingBehaviorList>
+												<GroupingList>
+													<Grouping>
+														<SwitchRef Name="Pos_1" ID="{AFA18F15-2FE0-4562-95C5-B583E95BB720}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L2_01" ID="{247551EB-03E9-4B39-9BA7-258394D36228}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_5" ID="{2C81C467-446C-4C85-9206-A922B0308459}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L2_05" ID="{4E7418E6-F57E-49A4-AADC-6A9626C47D66}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_2" ID="{D58AE568-3C76-4157-8262-CF3CE567E1CD}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L2_02" ID="{5BDCD785-AEC9-42BB-8E05-BA22AEB959C4}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_7" ID="{03427C76-D89B-4C9F-B01C-CEEF82E18661}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L2_07" ID="{DC8407B7-11CE-4771-AA5D-EF47C6E713AE}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_6" ID="{649C3C8F-C3C7-484C-B6CB-54FCF5EAAD48}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L2_06" ID="{46F38C97-9CF9-41A1-ACDB-B0106523DCC0}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_8" ID="{FDF542BB-9228-408B-ACAB-5A837C410C73}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L2_08" ID="{DB0F4415-7FD3-4AE4-A745-C143A1D89AC6}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_4" ID="{21B987C2-0BA5-4D64-BA06-6BE0A23EA142}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L2_04" ID="{F2632BB9-7A7E-4FE8-A1A0-58C1394ECC25}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_3" ID="{ED6AB7FB-4ABD-49A5-8948-F87BA3618B62}"/>
+														<ItemList>
+															<ItemRef Name="SFX_010_Battle_Pointer_Tick_L2_03" ID="{93FACF3B-2A79-430A-8F89-BB1764BC4FF8}"/>
+														</ItemList>
+													</Grouping>
+												</GroupingList>
 											</GroupingInfo>
 										</SwitchContainer>
 									</ChildrenList>
