@@ -8,8 +8,10 @@ Event	ID	Name			Wwise Object Path	Notes
 	517309637	SFX_039_Battle_BuffGain			\Default Work Unit\SFX\Battle\SFX_039_Battle_BuffGain	
 	587588346	SFX_041_Battle_Pickup			\Default Work Unit\SFX\Battle\SFX_041_Battle_Pickup	
 	677654771	SFX_046_Enemy_PiperFlute			\Default Work Unit\SFX\Enemy\SFX_046_Enemy_PiperFlute	
+	684639692	SFX_058_Voice_PenWrite			\Default Work Unit\SFX\Voice\SFX_058_Voice_PenWrite	
 	728956888	SFX_040_Battle_DebuffGain			\Default Work Unit\SFX\Battle\SFX_040_Battle_DebuffGain	
 	731281771	SFX_024_Trans_ExitBattle			\Default Work Unit\SFX\Trans\SFX_024_Trans_ExitBattle	
+	770812252	SFX_059_Battle_HitBlocked			\Default Work Unit\SFX\Battle\SFX_059_Battle_HitBlocked	
 	818430349	SFX_026_Foot_Mud			\Default Work Unit\SFX\Foot\SFX_026_Foot_Mud	
 	842323735	SFX_035_Player_Hit_Heavy			\Default Work Unit\SFX\Player\SFX_035_Player_Hit_Heavy	
 	1004843182	SFX_013_Player_Death			\Default Work Unit\SFX\Player\SFX_013_Player_Death	
@@ -21,13 +23,10 @@ Event	ID	Name			Wwise Object Path	Notes
 	1324281690	SFX_017_Amb_Slum			\Default Work Unit\SFX\Amb\SFX_017_Amb_Slum	
 	1366673525	SFX_006_Card_Pickup			\Default Work Unit\SFX\Card\SFX_006_Card_Pickup	
 	1562498281	SFX_051_Relic_Gain			\Default Work Unit\SFX\Relic\SFX_051_Relic_Gain	
-	1612996235	SFX_054_Map_MoveStep			\Default Work Unit\SFX\Map\SFX_054_Map_MoveStep	
-	1653917388	SFX_033_Card_TurnChange			\Default Work Unit\SFX\Card\SFX_033_Card_TurnChange	
 	1669113984	SFX_055_Map_FogReveal			\Default Work Unit\SFX\Map\SFX_055_Map_FogReveal	
 	1815322456	SFX_037_Battle_Block			\Default Work Unit\SFX\Battle\SFX_037_Battle_Block	
 	1847505946	SFX_028_UI_Slider			\Default Work Unit\SFX\UI\SFX_028_UI_Slider	
 	1896849710	SFX_007_Card_Play			\Default Work Unit\SFX\Card\SFX_007_Card_Play	
-	1902541742	SFX_020_Trans_Workshop_Slum			\Default Work Unit\SFX\Trans\SFX_020_Trans_Workshop_Slum	
 	1904108632	SFX_001_UI_Hover			\Default Work Unit\SFX\UI\SFX_001_UI_Hover	
 	1917899439	SFX_045_Enemy_Break			\Default Work Unit\SFX\Enemy\SFX_045_Enemy_Break	
 	1921734107	SFX_053_Potion_Use			\Default Work Unit\SFX\Potion\SFX_053_Potion_Use	
@@ -41,18 +40,216 @@ Event	ID	Name			Wwise Object Path	Notes
 	2878579436	SFX_038_Battle_Heal			\Default Work Unit\SFX\Battle\SFX_038_Battle_Heal	
 	3025619858	SFX_048_Relic_Snap			\Default Work Unit\SFX\Relic\SFX_048_Relic_Snap	
 	3041791395	SFX_043_Player_LowHP			\Default Work Unit\SFX\Player\SFX_043_Player_LowHP	
-	3075558629	SFX_021_Trans_Slum_Church			\Default Work Unit\SFX\Trans\SFX_021_Trans_Slum_Church	
 	3131618225	SFX_012_Player_Hit_Light			\Default Work Unit\SFX\Player\SFX_012_Player_Hit_Light	
 	3229356388	SFX_042_Player_Breath			\Default Work Unit\SFX\Player\SFX_042_Player_Breath	
 	3279272161	SFX_018_Amb_Church			\Default Work Unit\SFX\Amb\SFX_018_Amb_Church	
 	3308600789	SFX_022_Trans_EnterBattle			\Default Work Unit\SFX\Trans\SFX_022_Trans_EnterBattle	
 	3311595226	SFX_029_UI_Error			\Default Work Unit\SFX\UI\SFX_029_UI_Error	
+	3376797818	SFX_060_Player_AttackThrow			\Default Work Unit\SFX\Player\SFX_060_Player_AttackThrow	
 	3387093548	SFX_056_Cutscene_Opening			\Default Work Unit\SFX\Cutscene\SFX_056_Cutscene_Opening	
+	3490436888	SFX_033_Battle_TurnChange			\Default Work Unit\SFX\Battle\SFX_033_Battle_TurnChange	
 	3589774278	SFX_004_UI_Panel_Open			\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open	
 	3600487749	SFX_008_Card_Draw			\Default Work Unit\SFX\Card\SFX_008_Card_Draw	
 	3703868213	SFX_049_Relic_Link			\Default Work Unit\SFX\Relic\SFX_049_Relic_Link	
 	3760848721	SFX_016_Amb_Workshop			\Default Work Unit\SFX\Amb\SFX_016_Amb_Workshop	
+	3864440901	SFX_057_Voice_Talk			\Default Work Unit\SFX\Voice\SFX_057_Voice_Talk	
 	3945563550	SFX_034_Card_Transform			\Default Work Unit\SFX\Card\SFX_034_Card_Transform	
 	3987020771	SFX_027_Foot_Stone			\Default Work Unit\SFX\Foot\SFX_027_Foot_Stone	
 	4113407574	SFX_011_Battle_Pointer_Rewind			\Default Work Unit\SFX\Battle\SFX_011_Battle_Pointer_Rewind	
+
+Switch Group	ID	Name			Wwise Object Path	Notes
+	2155740875	Foot_Material			\Default Work Unit\Foot_Material	
+
+Switch	ID	Name	Switch Group			Notes
+	712897245	Mud	Foot_Material			
+	1216965916	Stone	Foot_Material			
+	2058049674	Wood	Foot_Material			
+
+Game Parameter	ID	Name			Wwise Object Path	Notes
+	1571361561	Tension			\Default Work Unit\Tension	
+
+Effect plug-ins	ID	Name	Type				Notes
+	221690491	Matrix Reverb (Custom)	Wwise Matrix Reverb			
+	349907618	Parametric EQ (Custom)	Wwise Parametric EQ			
+	661508376	Parametric EQ (Custom)	Wwise Parametric EQ			
+	798645645	RoomVerb (Custom)	Wwise RoomVerb			
+
+In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
+	10285352	SFX_050_Relic_ChainTrigger_L1_01	.cache\38\{38276B5B-E000-0467-BC45-39A75D7DE04C}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_050_Relic_ChainTrigger\SFX_050_Relic_ChainTrigger_L1\SFX_050_Relic_ChainTrigger_L1_01		497172
+	10463381	SFX_006_Card_Pickup_L1_02	.cache\D9\{D9519472-6058-C78E-71EC-0B8AC6A98A42}.wem		\Containers\Default Work Unit\SFX\Card\SFX_006_Card_Pickup\SFX_006_Card_Pickup_L1\SFX_006_Card_Pickup_L1_02		25964
+	14752680	SFX_053_Potion_Use_05	.cache\35\{3561032A-A49D-7282-BC1F-9F9B5B7BBDE9}.wem		\Containers\Default Work Unit\SFX\Potion\SFX_053_Potion_Use\SFX_053_Potion_Use_05		155964
+	14931060	SFX_002_UI_Click_L2_02	.cache\FD\{FD53FEF4-DF09-40C2-C27B-EECBA27A773D}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L2\SFX_002_UI_Click_L2_02		2018
+	24229145	SFX_014_Enemy_Hit_Light_L1_04	.cache\70\{70E4EE8D-F17E-B470-C6C6-3A0E219B99CC}.wem		\Containers\Default Work Unit\SFX\Enemy\SFX_014_Enemy_Hit_Light\SFX_014_Enemy_Hit_Light_L1\SFX_014_Enemy_Hit_Light_L1_04		149268
+	41698998	SFX_060_Player_AttackThrow_L2_01	.cache\F9\{F97FC4A3-3453-B6EE-DFE3-E724D8864904}.wem		\Containers\Default Work Unit\SFX\Player\SFX_060_Player_AttackThrow\SFX_060_Player_AttackThrow_L2\SFX_060_Player_AttackThrow_L2_01		137524
+	48416958	SFX_026_Foot_Mud_03	.cache\8A\{8A6B835C-8B6B-525E-C13E-93AACE3044B6}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_026_Foot_Mud\SFX_026_Foot_Mud_03		48096
+	63687843	SFX_049_Relic_Link_L2_01	.cache\52\{52FE6628-E53C-B84A-F45F-FF257DC22FE3}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_049_Relic_Link\SFX_049_Relic_Link_L2\SFX_049_Relic_Link_L2_01		153580
+	67790610	SFX_051_Relic_Gain_L2_03	.cache\EA\{EAC00A8B-192B-0403-79A1-C182C9B69C25}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_051_Relic_Gain\SFX_051_Relic_Gain_L2\SFX_051_Relic_Gain_L2_03		200546
+	68161758	SFX_060_Player_AttackThrow_L1_01	.cache\FE\{FECFF1BA-7B85-665B-274F-14601C13A16D}.wem		\Containers\Default Work Unit\SFX\Player\SFX_060_Player_AttackThrow\SFX_060_Player_AttackThrow_L1\SFX_060_Player_AttackThrow_L1_01		197352
+	72268620	SFX_007_Card_Play_L1_03	.cache\EB\{EB722DEE-94C0-7FE2-C63B-984C56BBE448}.wem		\Containers\Default Work Unit\SFX\Card\SFX_007_Card_Play\SFX_007_Card_Play_L1\SFX_007_Card_Play_L1_03		86320
+	84860265	SFX_042_Player_Breath_L2_01	.cache\B9\{B9227935-5411-08BC-9277-FCB8953CE458}.wem		\Containers\Default Work Unit\SFX\Player\SFX_042_Player_Breath\SFX_042_Player_Breath_L2\SFX_042_Player_Breath_L2_01		731812
+	95253640	SFX_037_Battle_Block_L1_01	.cache\0C\{0CDE0578-5DBC-AAA8-3713-BC9D321CE1E7}.wem		\Containers\Default Work Unit\SFX\Battle\SFX_037_Battle_Block\SFX_037_Battle_Block_L1\SFX_037_Battle_Block_L1_01		101656
+	96934615	SFX_001_UI_Hover_L2_01	.cache\9D\{9D106C8A-A508-2F25-0D4B-BBAC0D3ED671}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L2\SFX_001_UI_Hover_L2_01		1232
+	105051413	SFX_004_UI_Panel_Open_L1_03	.cache\3B\{3BB042B8-E95D-251C-ED07-E5FA34AAB305}.wem		\Containers\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open\SFX_004_UI_Panel_Open_L1\SFX_004_UI_Panel_Open_L1_03		42976
+	110490510	SFX_027_Foot_Stone_01	.cache\42\{421D2BD3-49E5-4B4D-8E78-F4C1F72E0800}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_027_Foot_Stone\SFX_027_Foot_Stone_01		48096
+	117963272	SFX_052_Potion_Select_05	.cache\D7\{D76B77BE-A42D-750D-DAE4-25E99436B6B6}.wem		\Containers\Default Work Unit\SFX\Potion\SFX_052_Potion_Select\SFX_052_Potion_Select_05		178664
+	120379923	SFX_060_Player_AttackThrow_L1_05	.cache\22\{2221876E-8696-BC36-DFD3-C8218C4A8FB7}.wem		\Containers\Default Work Unit\SFX\Player\SFX_060_Player_AttackThrow\SFX_060_Player_AttackThrow_L1\SFX_060_Player_AttackThrow_L1_05		229912
+	145060492	SFX_042_Player_Breath_L1_01	.cache\EE\{EE7A1053-CAFC-2F8F-43CF-7960552448A6}.wem		\Containers\Default Work Unit\SFX\Player\SFX_042_Player_Breath\SFX_042_Player_Breath_L1\SFX_042_Player_Breath_L1_01		1375266
+	145815218	SFX_003_UI_Back_L1_01	.cache\53\{53BD552D-5F77-E351-5A80-D30763FBE768}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L1\SFX_003_UI_Back_L1_01		15912
+	155397052	SFX_003_UI_Back_L2_04	.cache\99\{99748679-5EFA-072D-4A2D-CC6A89C43EEE}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L2\SFX_003_UI_Back_L2_04		5712
+	155939407	SFX_027_Foot_Stone_04	.cache\49\{49C3305D-EE89-679E-E3D9-1771EAF21ED0}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_027_Foot_Stone\SFX_027_Foot_Stone_04		48096
+	167473812	SFX_048_Relic_Snap_L2_01	.cache\35\{3549B6EB-840D-1F2D-D114-3B0160A4F294}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_048_Relic_Snap\SFX_048_Relic_Snap_L2\SFX_048_Relic_Snap_L2_01		153580
+	169581045	SFX_023_Trans_FloorChange_L1_05	.cache\C1\{C1905D73-FB81-AAC5-D922-ADF72BD1E8A1}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_023_Trans_FloorChange\SFX_023_Trans_FloorChange_L1\SFX_023_Trans_FloorChange_L1_05		127578
+	177916429	SFX_002_UI_Click_L1_04	.cache\3A\{3ACE832A-122A-C286-76B9-88DAAAA58681}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L1\SFX_002_UI_Click_L1_04		17486
+	182306840	SFX_053_Potion_Use_04	.cache\4C\{4CC910CE-734A-D9BF-C85B-A3317C3BA772}.wem		\Containers\Default Work Unit\SFX\Potion\SFX_053_Potion_Use\SFX_053_Potion_Use_04		133358
+	186571361	SFX_001_UI_Hover_L1_01	.cache\92\{92D6F5F2-CEB6-9480-E8AC-60AB807C6325}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L1\SFX_001_UI_Hover_L1_01		3902
+	192572902	SFX_012_Player_Hit_Light_L1_02	.cache\9A\{9AE5E530-968C-5FCA-D029-CDC535FF99C0}.wem		\Containers\Default Work Unit\SFX\Player\SFX_012_Player_Hit_Light\SFX_012_Player_Hit_Light_L1\SFX_012_Player_Hit_Light_L1_02		47632
+	196066702	SFX_024_Trans_ExitBattle_L1_01	.cache\4A\{4A5D5DFB-12A1-1888-6A90-9122DBF373C5}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_024_Trans_ExitBattle\SFX_024_Trans_ExitBattle_L1\SFX_024_Trans_ExitBattle_L1_01		146866
+	197667629	SFX_027_Foot_Stone_02	.cache\ED\{ED19B8FA-691C-F032-6819-9D1A6B6C9535}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_027_Foot_Stone\SFX_027_Foot_Stone_02		48096
+	214927572	SFX_012_Player_Hit_Light_L2_04	.cache\8F\{8F37B359-0B71-DD63-5B65-7D7AE5284FEA}.wem		\Containers\Default Work Unit\SFX\Player\SFX_012_Player_Hit_Light\SFX_012_Player_Hit_Light_L2\SFX_012_Player_Hit_Light_L2_04		23104
+	216354842	SFX_001_UI_Hover_L2_04	.cache\ED\{ED44F5E6-DD39-B4A7-99E7-CE2C7E95433E}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L2\SFX_001_UI_Hover_L2_04		15196
+	219336503	SFX_025_Foot_Wood_03	.cache\0C\{0CC5B171-BF18-C36A-F069-269544BD7BBE}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_025_Foot_Wood\SFX_025_Foot_Wood_03		48096
+	230803541	SFX_022_Trans_EnterBattle_L2_04	.cache\58\{58DF5659-80BF-959E-4611-C4184FC607D8}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_022_Trans_EnterBattle\SFX_022_Trans_EnterBattle_L2\SFX_022_Trans_EnterBattle_L2_04		139208
+	243772259	SFX_058_Voice_PenWrite_L1_02	.cache\48\{48B4E2FA-6492-CEAB-20DA-7FD49806DE6B}.wem		\Containers\Default Work Unit\SFX\Voice\SFX_058_Voice_PenWrite\SFX_058_Voice_PenWrite_L1\SFX_058_Voice_PenWrite_L1_02		313450
+	258241524	SFX_003_UI_Back_L2_01	.cache\60\{60EF9C3A-C8E0-855F-E7A9-6314DA60797A}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L2\SFX_003_UI_Back_L2_01		3158
+	259846253	SFX_005_UI_Panel_Close_L2_01	.cache\EE\{EE0203F7-6F17-1DBA-2F78-57019E4D0C7E}.wem		\Containers\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close\SFX_005_UI_Panel_Close_L2\SFX_005_UI_Panel_Close_L2_01		28550
+	265735674	SFX_003_UI_Back_L2_02	.cache\67\{673F43C6-6E7F-8E2A-AD46-10A165499FB1}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L2\SFX_003_UI_Back_L2_02		4950
+	268957171	SFX_012_Player_Hit_Light_L1_04	.cache\C3\{C3DCFD0E-C075-97B6-F1BC-851B8542EC3E}.wem		\Containers\Default Work Unit\SFX\Player\SFX_012_Player_Hit_Light\SFX_012_Player_Hit_Light_L1\SFX_012_Player_Hit_Light_L1_04		36566
+	279156960	SFX_006_Card_Pickup_L1_01	.cache\2C\{2C088464-05A9-C32B-92CA-84B20672DCD0}.wem		\Containers\Default Work Unit\SFX\Card\SFX_006_Card_Pickup\SFX_006_Card_Pickup_L1\SFX_006_Card_Pickup_L1_01		24526
+	284299713	SFX_002_UI_Click_L2_04	.cache\05\{05A26F2C-F5D6-68C0-1827-B3163EB3B2B4}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L2\SFX_002_UI_Click_L2_04		7798
+	291084928	SFX_005_UI_Panel_Close_L1_02	.cache\65\{65F61317-139C-EF90-6D77-87DC2880EF42}.wem		\Containers\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close\SFX_005_UI_Panel_Close_L1\SFX_005_UI_Panel_Close_L1_02		47520
+	299489528	SFX_006_Card_Pickup_L1_04	.cache\E4\{E41C02EE-DCE5-B2DC-53D0-3358D0E81C67}.wem		\Containers\Default Work Unit\SFX\Card\SFX_006_Card_Pickup\SFX_006_Card_Pickup_L1\SFX_006_Card_Pickup_L1_04		28838
+	320042253	SFX_006_Card_Pickup_L2_05	.cache\49\{4916A4F7-944E-4959-702F-98E0DA8D8C10}.wem		\Containers\Default Work Unit\SFX\Card\SFX_006_Card_Pickup\SFX_006_Card_Pickup_L2\SFX_006_Card_Pickup_L2_05		14894
+	324658095	SFX_024_Trans_ExitBattle_L1_04	.cache\6E\{6EBE4177-70F0-7C35-9340-74FD93CD7D33}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_024_Trans_ExitBattle\SFX_024_Trans_ExitBattle_L1\SFX_024_Trans_ExitBattle_L1_04		150648
+	328352397	SFX_008_Card_Draw_L1_04	.cache\A5\{A50E607D-E637-1EB2-7E98-15AE8D1ABCA6}.wem		\Containers\Default Work Unit\SFX\Card\SFX_008_Card_Draw\SFX_008_Card_Draw_L1\SFX_008_Card_Draw_L1_04		21536
+	336012148	SFX_023_Trans_FloorChange_L1_01	.cache\BE\{BE454B80-E69B-9A77-101E-699C172281FD}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_023_Trans_FloorChange\SFX_023_Trans_FloorChange_L1\SFX_023_Trans_FloorChange_L1_01		110964
+	356471398	SFX_053_Potion_Use_03	.cache\8D\{8D9AF7A5-7482-76C8-6910-D38DAB99F4DC}.wem		\Containers\Default Work Unit\SFX\Potion\SFX_053_Potion_Use\SFX_053_Potion_Use_03		189420
+	380843968	SFX_012_Player_Hit_Light_L2_01	.cache\20\{209FAA6D-512A-E56B-ADEE-A51198DD56A0}.wem		\Containers\Default Work Unit\SFX\Player\SFX_012_Player_Hit_Light\SFX_012_Player_Hit_Light_L2\SFX_012_Player_Hit_Light_L2_01		31886
+	381312748	SFX_004_UI_Panel_Open_L1_02	.cache\87\{87DBF187-7869-CCC8-4A4A-3A6812AD09BA}.wem		\Containers\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open\SFX_004_UI_Panel_Open_L1\SFX_004_UI_Panel_Open_L1_02		52894
+	383313521	SFX_026_Foot_Mud_08	.cache\B2\{B2DBC2F3-A40A-CA8B-4DD2-F2324C087257}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_026_Foot_Mud\SFX_026_Foot_Mud_08		48096
+	384577370	SFX_024_Trans_ExitBattle_L2_02	.cache\0A\{0A3DA66D-CA64-F31A-1D86-CED69E8959BA}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_024_Trans_ExitBattle\SFX_024_Trans_ExitBattle_L2\SFX_024_Trans_ExitBattle_L2_02		125236
+	386872013	SFX_012_Player_Hit_Light_L2_03	.cache\5A\{5A7E42C0-4938-0EF5-D681-A22EF1D04271}.wem		\Containers\Default Work Unit\SFX\Player\SFX_012_Player_Hit_Light\SFX_012_Player_Hit_Light_L2\SFX_012_Player_Hit_Light_L2_03		24438
+	391046826	SFX_025_Foot_Wood_07	.cache\F8\{F869B4C6-E5A2-2226-3E7A-AD07D15CD158}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_025_Foot_Wood\SFX_025_Foot_Wood_07		32202
+	391327362	SFX_058_Voice_PenWrite_L1_03	.cache\7E\{7EA8616A-5DB8-7A90-2C8A-39EF197E08BB}.wem		\Containers\Default Work Unit\SFX\Voice\SFX_058_Voice_PenWrite\SFX_058_Voice_PenWrite_L1\SFX_058_Voice_PenWrite_L1_03		296766
+	397509052	SFX_051_Relic_Gain_L2_05	.cache\01\{01709C69-0E29-F9A1-E51E-DA6A706ADF88}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_051_Relic_Gain\SFX_051_Relic_Gain_L2\SFX_051_Relic_Gain_L2_05		241300
+	400833896	SFX_004_UI_Panel_Open_L1_01	.cache\B5\{B586472E-2ADF-45F7-4FDA-133727AD3734}.wem		\Containers\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open\SFX_004_UI_Panel_Open_L1\SFX_004_UI_Panel_Open_L1_01		49568
+	407789134	SFX_007_Card_Play_L1_01	.cache\5B\{5B38513D-3DCE-87EF-83F2-16048CC5DB1F}.wem		\Containers\Default Work Unit\SFX\Card\SFX_007_Card_Play\SFX_007_Card_Play_L1\SFX_007_Card_Play_L1_01		84254
+	409905632	SFX_049_Relic_Link_L2_03	.cache\92\{92A8C9BE-78C5-FEA7-D769-A4A0DDD2BDA5}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_049_Relic_Link\SFX_049_Relic_Link_L2\SFX_049_Relic_Link_L2_03		143308
+	412970528	SFX_024_Trans_ExitBattle_L2_03	.cache\3A\{3AA9C299-EFF1-85B0-A0FD-5CB100CE8429}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_024_Trans_ExitBattle\SFX_024_Trans_ExitBattle_L2\SFX_024_Trans_ExitBattle_L2_03		165654
+	423120073	SFX_014_Enemy_Hit_Light_L2_01	.cache\27\{271F579F-860F-8CCA-BD66-BAA18EEB9DEA}.wem		\Containers\Default Work Unit\SFX\Enemy\SFX_014_Enemy_Hit_Light\SFX_014_Enemy_Hit_Light_L2\SFX_014_Enemy_Hit_Light_L2_01		301598
+	423263073	SFX_025_Foot_Wood_08	.cache\87\{870A9009-F3BA-5B3A-A8FA-25FA59C00591}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_025_Foot_Wood\SFX_025_Foot_Wood_08		48096
+	437126386	SFX_006_Card_Pickup_L1_03	.cache\7B\{7BB11FA0-13CE-EFBB-85C0-D156D5284085}.wem		\Containers\Default Work Unit\SFX\Card\SFX_006_Card_Pickup\SFX_006_Card_Pickup_L1\SFX_006_Card_Pickup_L1_03		37460
+	447364091	SFX_008_Card_Draw_L1_03	.cache\38\{38659742-EF43-3799-C9FC-DCC94E79C653}.wem		\Containers\Default Work Unit\SFX\Card\SFX_008_Card_Draw\SFX_008_Card_Draw_L1\SFX_008_Card_Draw_L1_03		19516
+	452749809	SFX_006_Card_Pickup_L2_01	.cache\07\{07DA3350-905D-1051-18E4-FCD7AB78979D}.wem		\Containers\Default Work Unit\SFX\Card\SFX_006_Card_Pickup\SFX_006_Card_Pickup_L2\SFX_006_Card_Pickup_L2_01		26660
+	459581390	SFX_024_Trans_ExitBattle_L1_02	.cache\DC\{DC81F07C-DBF8-1BC5-6620-318EECD280A2}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_024_Trans_ExitBattle\SFX_024_Trans_ExitBattle_L1\SFX_024_Trans_ExitBattle_L1_02		155312
+	462313637	SFX_037_Battle_Block_L2_01	.cache\A4\{A46C2A4D-8CF8-625C-DA7E-D57219497EC3}.wem		\Containers\Default Work Unit\SFX\Battle\SFX_037_Battle_Block\SFX_037_Battle_Block_L2\SFX_037_Battle_Block_L2_01		91120
+	465421365	SFX_014_Enemy_Hit_Light_L1_02	.cache\24\{2462F06D-66D2-7290-AB63-E488A72CBA23}.wem		\Containers\Default Work Unit\SFX\Enemy\SFX_014_Enemy_Hit_Light\SFX_014_Enemy_Hit_Light_L1\SFX_014_Enemy_Hit_Light_L1_02		163638
+	474093976	SFX_004_UI_Panel_Open_L2_03	.cache\D2\{D2553E39-E3D5-00F6-4100-378307FCB941}.wem		\Containers\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open\SFX_004_UI_Panel_Open_L2\SFX_004_UI_Panel_Open_L2_03		90936
+	485536653	SFX_003_UI_Back_L2_03	.cache\DE\{DEDC884E-61E8-1070-589A-10132FDB5EE7}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L2\SFX_003_UI_Back_L2_03		3076
+	485754780	SFX_002_UI_Click_L1_02	.cache\39\{39AF992D-83D7-FDD5-3150-F6CAF3E6D146}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L1\SFX_002_UI_Click_L1_02		18106
+	495786533	SFX_003_UI_Back_L1_02	.cache\48\{4874611B-58FA-8C88-63ED-A6C8C44F5BF0}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L1\SFX_003_UI_Back_L1_02		15912
+	514913973	SFX_023_Trans_FloorChange_L1_04	.cache\8D\{8D15A596-80C9-6DC2-72D1-464EB47A542A}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_023_Trans_FloorChange\SFX_023_Trans_FloorChange_L1\SFX_023_Trans_FloorChange_L1_04		101234
+	520091094	SFX_012_Player_Hit_Light_L2_02	.cache\5B\{5BEB5B5B-E14E-BB56-8D79-3E9836972A63}.wem		\Containers\Default Work Unit\SFX\Player\SFX_012_Player_Hit_Light\SFX_012_Player_Hit_Light_L2\SFX_012_Player_Hit_Light_L2_02		18388
+	526359927	SFX_027_Foot_Stone_06	.cache\E7\{E7EAF63E-69C7-FDFC-7966-E175B36816F8}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_027_Foot_Stone\SFX_027_Foot_Stone_06		48096
+	531632278	SFX_026_Foot_Mud_07	.cache\20\{207ED9D1-E439-D31F-697B-ECA5BC6AD0F4}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_026_Foot_Mud\SFX_026_Foot_Mud_07		48096
+	541226591	SFX_053_Potion_Use_01	.cache\8A\{8A6A6F08-E4CC-E71D-4DCB-9309CAF3994D}.wem		\Containers\Default Work Unit\SFX\Potion\SFX_053_Potion_Use\SFX_053_Potion_Use_01		134848
+	542514356	SFX_027_Foot_Stone_05	.cache\23\{23BCED63-65E9-2354-5A32-E77C5B1DF062}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_027_Foot_Stone\SFX_027_Foot_Stone_05		48096
+	549454625	SFX_022_Trans_EnterBattle_L2_02	.cache\AE\{AED24821-DC2B-3E4F-AFF3-A8F9F47216F6}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_022_Trans_EnterBattle\SFX_022_Trans_EnterBattle_L2\SFX_022_Trans_EnterBattle_L2_02		130586
+	554845623	SFX_037_Battle_Block_L1_02	.cache\42\{42F5F056-093E-AD61-B2C2-3CF3E494DD18}.wem		\Containers\Default Work Unit\SFX\Battle\SFX_037_Battle_Block\SFX_037_Battle_Block_L1\SFX_037_Battle_Block_L1_02		83754
+	559793223	SFX_060_Player_AttackThrow_L1_04	.cache\31\{31F81062-4423-77B2-0BD7-1BAA463F1503}.wem		\Containers\Default Work Unit\SFX\Player\SFX_060_Player_AttackThrow\SFX_060_Player_AttackThrow_L1\SFX_060_Player_AttackThrow_L1_04		215676
+	564118710	SFX_060_Player_AttackThrow_L1_02	.cache\46\{46FCA2BC-7521-DD1D-047A-3166CC0EE43D}.wem		\Containers\Default Work Unit\SFX\Player\SFX_060_Player_AttackThrow\SFX_060_Player_AttackThrow_L1\SFX_060_Player_AttackThrow_L1_02		209982
+	587220441	SFX_024_Trans_ExitBattle_L2_01	.cache\48\{4845483B-BBA1-6042-E6C6-A2067F7CC62E}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_024_Trans_ExitBattle\SFX_024_Trans_ExitBattle_L2\SFX_024_Trans_ExitBattle_L2_01		156778
+	588216464	SFX_060_Player_AttackThrow_L2_05	.cache\00\{00F79362-6319-DEBF-C587-FB028488E21E}.wem		\Containers\Default Work Unit\SFX\Player\SFX_060_Player_AttackThrow\SFX_060_Player_AttackThrow_L2\SFX_060_Player_AttackThrow_L2_05		142330
+	591697418	SFX_023_Trans_FloorChange_L1_02	.cache\38\{38D65D3F-EFCA-6B03-C008-38969C69E0F5}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_023_Trans_FloorChange\SFX_023_Trans_FloorChange_L1\SFX_023_Trans_FloorChange_L1_02		137644
+	592481902	SFX_051_Relic_Gain_L2_02	.cache\D9\{D9C2DBC6-A1D2-5DC9-D256-F2C0AEA38780}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_051_Relic_Gain\SFX_051_Relic_Gain_L2\SFX_051_Relic_Gain_L2_02		228110
+	617042662	SFX_005_UI_Panel_Close_L1_03	.cache\B8\{B8E8624F-2215-AE32-AC23-5D74222F6C11}.wem		\Containers\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close\SFX_005_UI_Panel_Close_L1\SFX_005_UI_Panel_Close_L1_03		41772
+	620010076	SFX_036_Battle_HitResolve_L1_01	.cache\F6\{F6DC932D-26D0-4B4C-21BF-73F6E34603F5}.wem		\Containers\Default Work Unit\SFX\Battle\SFX_036_Battle_HitResolve\SFX_036_Battle_HitResolve_L1\SFX_036_Battle_HitResolve_L1_01		175150
+	627654085	SFX_025_Foot_Wood_02	.cache\C8\{C83DE526-A9A9-098F-B1C7-B45A4FACEEAD}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_025_Foot_Wood\SFX_025_Foot_Wood_02		40852
+	639757475	SFX_003_UI_Back_L1_04	.cache\FA\{FA3A0815-43F9-4CD7-7F14-E281A467DCAF}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L1\SFX_003_UI_Back_L1_04		16060
+	657590864	SFX_003_UI_Back_L1_03	.cache\05\{05010E12-C7AA-F4FA-2BE5-29F9ED28D09E}.wem		\Containers\Default Work Unit\SFX\UI\SFX_003_UI_Back\SFX_003_UI_Back_L1\SFX_003_UI_Back_L1_03		14328
+	658411272	SFX_014_Enemy_Hit_Light_L2_02	.cache\E5\{E5695C26-C7FC-96B6-0327-0585A595491F}.wem		\Containers\Default Work Unit\SFX\Enemy\SFX_014_Enemy_Hit_Light\SFX_014_Enemy_Hit_Light_L2\SFX_014_Enemy_Hit_Light_L2_02		287228
+	658919682	SFX_014_Enemy_Hit_Light_L1_05	.cache\53\{53E0F43B-3454-1EFD-09F4-ACD86A0CA773}.wem		\Containers\Default Work Unit\SFX\Enemy\SFX_014_Enemy_Hit_Light\SFX_014_Enemy_Hit_Light_L1\SFX_014_Enemy_Hit_Light_L1_05		238572
+	667843024	SFX_012_Player_Hit_Light_L2_05	.cache\22\{22A729D4-2A0F-3AF2-E30A-5C2D604C6203}.wem		\Containers\Default Work Unit\SFX\Player\SFX_012_Player_Hit_Light\SFX_012_Player_Hit_Light_L2\SFX_012_Player_Hit_Light_L2_05		19976
+	678466648	SFX_060_Player_AttackThrow_L1_03	.cache\88\{883025D4-D72E-A32D-1878-37D61CE4ADC3}.wem		\Containers\Default Work Unit\SFX\Player\SFX_060_Player_AttackThrow\SFX_060_Player_AttackThrow_L1\SFX_060_Player_AttackThrow_L1_03		224218
+	690798510	SFX_027_Foot_Stone_08	.cache\F3\{F3A49C8F-2938-10A0-EEDE-1CBCD7D28D5C}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_027_Foot_Stone\SFX_027_Foot_Stone_08		48096
+	693014678	SFX_002_UI_Click_L2_01	.cache\70\{708E6F3A-827D-E262-43C0-A7F977E4DD14}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L2\SFX_002_UI_Click_L2_01		2018
+	695997097	SFX_007_Card_Play_L1_04	.cache\77\{7702A789-2302-6C3F-8EA6-D1FA8C954CD0}.wem		\Containers\Default Work Unit\SFX\Card\SFX_007_Card_Play\SFX_007_Card_Play_L1\SFX_007_Card_Play_L1_04		92068
+	710649861	SFX_005_UI_Panel_Close_L2_03	.cache\02\{026D2743-C41D-A82B-E081-51407F14C1FF}.wem		\Containers\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close\SFX_005_UI_Panel_Close_L2\SFX_005_UI_Panel_Close_L2_03		37716
+	710950395	SFX_048_Relic_Snap_L2_03	.cache\48\{485AACC8-61B0-D655-F273-863CFCE41126}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_048_Relic_Snap\SFX_048_Relic_Snap_L2\SFX_048_Relic_Snap_L2_03		143308
+	711508333	SFX_052_Potion_Select_01	.cache\CD\{CD9F0345-0B5A-A4DB-7A3B-A49C8C2C1E12}.wem		\Containers\Default Work Unit\SFX\Potion\SFX_052_Potion_Select\SFX_052_Potion_Select_01		174628
+	713559863	SFX_022_Trans_EnterBattle_L1_03	.cache\9F\{9FE9FF06-F410-002B-F143-69270F51D0AC}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_022_Trans_EnterBattle\SFX_022_Trans_EnterBattle_L1\SFX_022_Trans_EnterBattle_L1_03		197610
+	716280205	SFX_037_Battle_Block_L1_04	.cache\CD\{CD684739-7DDC-CFBE-7AC3-997C90700B0F}.wem		\Containers\Default Work Unit\SFX\Battle\SFX_037_Battle_Block\SFX_037_Battle_Block_L1\SFX_037_Battle_Block_L1_04		108128
+	722918172	SFX_027_Foot_Stone_07	.cache\21\{210F8EF1-26F5-8540-9857-1AA34F8355F6}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_027_Foot_Stone\SFX_027_Foot_Stone_07		48096
+	723102474	SFX_001_UI_Hover_L1_03	.cache\EB\{EB687547-8C4D-BD68-8F59-0C39FFEEACC5}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L1\SFX_001_UI_Hover_L1_03		11912
+	735506248	SFX_024_Trans_ExitBattle_L1_03	.cache\38\{38D67289-92E8-1714-2C76-9ED1CEC48CE6}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_024_Trans_ExitBattle\SFX_024_Trans_ExitBattle_L1\SFX_024_Trans_ExitBattle_L1_03		173878
+	736116614	SFX_022_Trans_EnterBattle_L2_01	.cache\B7\{B7E384C8-48D5-DBB6-916F-E857AEF510B8}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_022_Trans_EnterBattle\SFX_022_Trans_EnterBattle_L2\SFX_022_Trans_EnterBattle_L2_01		121964
+	743354300	SFX_008_Card_Draw_L1_05	.cache\4C\{4C5141B7-CFF1-441D-211D-198589A7771E}.wem		\Containers\Default Work Unit\SFX\Card\SFX_008_Card_Draw\SFX_008_Card_Draw_L1\SFX_008_Card_Draw_L1_05		25620
+	746720396	SFX_051_Relic_Gain_L2_01	.cache\82\{8282B154-5F5A-86E1-EE49-7F2011AF0063}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_051_Relic_Gain\SFX_051_Relic_Gain_L2\SFX_051_Relic_Gain_L2_01		164280
+	747490154	SFX_001_UI_Hover_L1_04	.cache\01\{01397503-EABA-9891-08F6-2490AD267BDD}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L1\SFX_001_UI_Hover_L1_04		7046
+	757520181	SFX_012_Player_Hit_Light_L1_01	.cache\F9\{F9C8FDC2-0A72-15CA-687A-719B60D78758}.wem		\Containers\Default Work Unit\SFX\Player\SFX_012_Player_Hit_Light\SFX_012_Player_Hit_Light_L1\SFX_012_Player_Hit_Light_L1_01		90152
+	763102271	SFX_026_Foot_Mud_02	.cache\77\{77E86B88-1856-5280-21D7-9F20A8CF1FD8}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_026_Foot_Mud\SFX_026_Foot_Mud_02		48096
+	763984947	SFX_051_Relic_Gain_L2_04	.cache\44\{44194211-ADF4-15DD-79F9-F7DA77E094B7}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_051_Relic_Gain\SFX_051_Relic_Gain_L2\SFX_051_Relic_Gain_L2_04		259914
+	767540733	SFX_039_Battle_BuffGain_L1_01	.cache\BB\{BBCDDA8A-BD26-27FD-8A13-D47A9A9945E0}.wem		\Containers\Default Work Unit\SFX\Battle\SFX_039_Battle_BuffGain\SFX_039_Battle_BuffGain_L1\SFX_039_Battle_BuffGain_L1_01		268656
+	773663309	SFX_001_UI_Hover_L1_02	.cache\A2\{A2B361B8-1BBA-D4AC-B9E7-A9BDD2B6343F}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L1\SFX_001_UI_Hover_L1_02		14866
+	776125175	SFX_022_Trans_EnterBattle_L1_02	.cache\46\{46630062-59F0-BE2D-7A74-A57DA8308657}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_022_Trans_EnterBattle\SFX_022_Trans_EnterBattle_L1\SFX_022_Trans_EnterBattle_L1_02		191668
+	776806059	SFX_001_UI_Hover_L2_05	.cache\77\{777F1BEE-BFBF-6794-A9F9-74F39D5E6836}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L2\SFX_001_UI_Hover_L2_05		11410
+	782775723	SFX_049_Relic_Link_L1_01	.cache\A4\{A44F39B7-6A3B-3428-08B0-EE28D3A788CB}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_049_Relic_Link\SFX_049_Relic_Link_L1\SFX_049_Relic_Link_L1_01		525000
+	784440702	SFX_006_Card_Pickup_L1_05	.cache\74\{74526827-5324-767F-4674-7B9518FD8B57}.wem		\Containers\Default Work Unit\SFX\Card\SFX_006_Card_Pickup\SFX_006_Card_Pickup_L1\SFX_006_Card_Pickup_L1_05		18778
+	784614180	SFX_037_Battle_Block_L2_04	.cache\FE\{FE602506-BDD2-83BA-9E34-8CE2D81DDE03}.wem		\Containers\Default Work Unit\SFX\Battle\SFX_037_Battle_Block\SFX_037_Battle_Block_L2\SFX_037_Battle_Block_L2_04		46120
+	786131603	SFX_051_Relic_Gain_L1_01	.cache\A0\{A0A461B4-4EA6-F88D-4759-3A8B567C0018}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_051_Relic_Gain\SFX_051_Relic_Gain_L1\SFX_051_Relic_Gain_L1_01		825736
+	797531328	SFX_009_Card_Shuffle_L1_02	.cache\BC\{BCAE4C8C-A18E-CCCC-A26C-2048B1FCF011}.wem		\Containers\Default Work Unit\SFX\Card\SFX_009_Card_Shuffle\SFX_009_Card_Shuffle_L1\SFX_009_Card_Shuffle_L1_02		90606
+	798027756	SFX_008_Card_Draw_L1_01	.cache\89\{89A69D35-9F60-F2C8-FAD1-619661406A4F}.wem		\Containers\Default Work Unit\SFX\Card\SFX_008_Card_Draw\SFX_008_Card_Draw_L1\SFX_008_Card_Draw_L1_01		26378
+	808096447	SFX_037_Battle_Block_L2_03	.cache\20\{205CDBFA-BE41-D7A0-4869-A7313511B8A3}.wem		\Containers\Default Work Unit\SFX\Battle\SFX_037_Battle_Block\SFX_037_Battle_Block_L2\SFX_037_Battle_Block_L2_03		60296
+	812568060	SFX_060_Player_AttackThrow_L2_04	.cache\F7\{F75DAD3D-00F4-B21E-9FB3-378D6C41D111}.wem		\Containers\Default Work Unit\SFX\Player\SFX_060_Player_AttackThrow\SFX_060_Player_AttackThrow_L2\SFX_060_Player_AttackThrow_L2_04		163768
+	813736228	SFX_026_Foot_Mud_05	.cache\B1\{B1C59948-F96B-A5BC-BDF5-8DD4C78D2995}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_026_Foot_Mud\SFX_026_Foot_Mud_05		48096
+	816076218	SFX_005_UI_Panel_Close_L2_02	.cache\60\{6000E9C4-436B-F584-9914-F06B2838CEDC}.wem		\Containers\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close\SFX_005_UI_Panel_Close_L2\SFX_005_UI_Panel_Close_L2_02		42976
+	816831334	SFX_001_UI_Hover_L2_03	.cache\7D\{7DE83409-E937-4E28-5B52-9FB49E011114}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L2\SFX_001_UI_Hover_L2_03		15574
+	826454134	SFX_022_Trans_EnterBattle_L1_04	.cache\3E\{3E0B693D-C481-690E-D3C7-F51ED261F753}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_022_Trans_EnterBattle\SFX_022_Trans_EnterBattle_L1\SFX_022_Trans_EnterBattle_L1_04		170260
+	832513282	SFX_023_Trans_FloorChange_L1_03	.cache\01\{01B8E6F0-589A-C251-74FE-389DCA2640B9}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_023_Trans_FloorChange\SFX_023_Trans_FloorChange_L1\SFX_023_Trans_FloorChange_L1_03		93144
+	847518639	SFX_026_Foot_Mud_01	.cache\BD\{BDE00692-FAED-D01B-567F-E1ED4B352E2F}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_026_Foot_Mud\SFX_026_Foot_Mud_01		48096
+	847884415	SFX_058_Voice_PenWrite_L1_01	.cache\A8\{A8372E21-2E93-586A-A544-9177F7073BEB}.wem		\Containers\Default Work Unit\SFX\Voice\SFX_058_Voice_PenWrite\SFX_058_Voice_PenWrite_L1\SFX_058_Voice_PenWrite_L1_01		407746
+	854992220	SFX_052_Potion_Select_03	.cache\8A\{8A9D5E7C-AAC1-69B8-EF8B-01CD8A784DEA}.wem		\Containers\Default Work Unit\SFX\Potion\SFX_052_Potion_Select\SFX_052_Potion_Select_03		165524
+	866342655	SFX_050_Relic_ChainTrigger_L2_02	.cache\67\{674AED3C-B307-F809-F8A1-3FD26D299064}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_050_Relic_ChainTrigger\SFX_050_Relic_ChainTrigger_L2\SFX_050_Relic_ChainTrigger_L2_02		146394
+	870836145	SFX_049_Relic_Link_L2_02	.cache\1C\{1C2157A1-A126-9F8D-B23B-0A4A5F10668E}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_049_Relic_Link\SFX_049_Relic_Link_L2\SFX_049_Relic_Link_L2_02		146394
+	879184911	SFX_025_Foot_Wood_04	.cache\75\{754DA8B1-30EE-7485-B811-33BA42E7AF96}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_025_Foot_Wood\SFX_025_Foot_Wood_04		48096
+	880961998	SFX_001_UI_Hover_L2_02	.cache\39\{398B851D-7F43-43E8-1830-C85F2E01E8EB}.wem		\Containers\Default Work Unit\SFX\UI\SFX_001_UI_Hover\SFX_001_UI_Hover_L2\SFX_001_UI_Hover_L2_02		4336
+	883351140	SFX_058_Voice_PenWrite_L1_04	.cache\AF\{AF7C2519-B626-90BE-D8EB-51127B479BDB}.wem		\Containers\Default Work Unit\SFX\Voice\SFX_058_Voice_PenWrite\SFX_058_Voice_PenWrite_L1\SFX_058_Voice_PenWrite_L1_04		370752
+	891012469	SFX_002_UI_Click_L1_03	.cache\AD\{AD48CE4A-4309-2731-D57E-24B2BE406184}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L1\SFX_002_UI_Click_L1_03		19670
+	892816366	SFX_052_Potion_Select_02	.cache\49\{49DEF4E9-C6AC-E8FB-B95D-56C588A45C02}.wem		\Containers\Default Work Unit\SFX\Potion\SFX_052_Potion_Select\SFX_052_Potion_Select_02		201440
+	894833195	SFX_026_Foot_Mud_04	.cache\F1\{F16E2AED-5292-DEBC-93A5-D0A1E2072417}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_026_Foot_Mud\SFX_026_Foot_Mud_04		48096
+	895976503	SFX_006_Card_Pickup_L2_02	.cache\EC\{EC831F24-B620-604B-4889-1654BFC1C907}.wem		\Containers\Default Work Unit\SFX\Card\SFX_006_Card_Pickup\SFX_006_Card_Pickup_L2\SFX_006_Card_Pickup_L2_02		14830
+	902449175	SFX_004_UI_Panel_Open_L2_02	.cache\B9\{B9640075-A48A-7EB4-8A79-552B6F4C19C1}.wem		\Containers\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open\SFX_004_UI_Panel_Open_L2\SFX_004_UI_Panel_Open_L2_02		91552
+	909848335	SFX_025_Foot_Wood_05	.cache\25\{25F0122F-3A05-5219-05E6-86505E1DF6A5}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_025_Foot_Wood\SFX_025_Foot_Wood_05		48096
+	913691187	SFX_052_Potion_Select_04	.cache\93\{93F8520A-DFDC-290D-CB61-0609D280D802}.wem		\Containers\Default Work Unit\SFX\Potion\SFX_052_Potion_Select\SFX_052_Potion_Select_04		190052
+	918763974	SFX_009_Card_Shuffle_L1_01	.cache\61\{61CBB115-F3B5-D2B0-14CC-5CC72BB91083}.wem		\Containers\Default Work Unit\SFX\Card\SFX_009_Card_Shuffle\SFX_009_Card_Shuffle_L1\SFX_009_Card_Shuffle_L1_01		94378
+	920652293	SFX_050_Relic_ChainTrigger_L2_03	.cache\E7\{E72438CD-1962-4511-7A2E-17AC91F5B2C8}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_050_Relic_ChainTrigger\SFX_050_Relic_ChainTrigger_L2\SFX_050_Relic_ChainTrigger_L2_03		143308
+	926349219	SFX_040_Battle_DebuffGain_L1_01	.cache\FA\{FAFE5636-1D82-8E8B-0243-867CD86023C8}.wem		\Containers\Default Work Unit\SFX\Battle\SFX_040_Battle_DebuffGain\SFX_040_Battle_DebuffGain_L1\SFX_040_Battle_DebuffGain_L1_01		204292
+	926842308	SFX_060_Player_AttackThrow_L2_03	.cache\C1\{C1D26C89-003E-0BF2-0118-1A19D2C0412E}.wem		\Containers\Default Work Unit\SFX\Player\SFX_060_Player_AttackThrow\SFX_060_Player_AttackThrow_L2\SFX_060_Player_AttackThrow_L2_03		130132
+	934497074	SFX_023_Trans_FloorChange_L2_01	.cache\C5\{C5E3BC82-9077-1A3E-8DF9-B0835D9DE597}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_023_Trans_FloorChange\SFX_023_Trans_FloorChange_L2\SFX_023_Trans_FloorChange_L2_01		528168
+	941815253	SFX_048_Relic_Snap_L2_02	.cache\B2\{B256D97C-5861-729F-2636-EF78D110B7AE}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_048_Relic_Snap\SFX_048_Relic_Snap_L2\SFX_048_Relic_Snap_L2_02		146394
+	949917545	SFX_053_Potion_Use_06	.cache\96\{96D379C0-90FD-A07C-2029-5CE970B8E332}.wem		\Containers\Default Work Unit\SFX\Potion\SFX_053_Potion_Use\SFX_053_Potion_Use_06		151940
+	958720205	SFX_037_Battle_Block_L2_02	.cache\65\{65B5AF36-D4FD-FB11-776F-6A10072D9549}.wem		\Containers\Default Work Unit\SFX\Battle\SFX_037_Battle_Block\SFX_037_Battle_Block_L2\SFX_037_Battle_Block_L2_02		53046
+	964626502	SFX_026_Foot_Mud_06	.cache\92\{92A8013A-7C41-0CF1-CF3E-22EBEB8DFE01}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_026_Foot_Mud\SFX_026_Foot_Mud_06		48096
+	967621509	SFX_048_Relic_Snap_L1_01	.cache\1B\{1B1B528C-B5D3-5C3E-4DB5-8E917E81FC89}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_048_Relic_Snap\SFX_048_Relic_Snap_L1\SFX_048_Relic_Snap_L1_01		489492
+	969162770	SFX_022_Trans_EnterBattle_L2_03	.cache\75\{75015C1A-634B-BB40-DCF5-1DFB386A168F}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_022_Trans_EnterBattle\SFX_022_Trans_EnterBattle_L2\SFX_022_Trans_EnterBattle_L2_03		129148
+	970871673	SFX_052_Potion_Select_06	.cache\6E\{6E7EF895-99E6-7BA0-490E-9ADEF399C395}.wem		\Containers\Default Work Unit\SFX\Potion\SFX_052_Potion_Select\SFX_052_Potion_Select_06		195746
+	977486480	SFX_012_Player_Hit_Light_L1_03	.cache\E5\{E5DB5BA4-CEE1-135A-FAFD-E39E47444DB2}.wem		\Containers\Default Work Unit\SFX\Player\SFX_012_Player_Hit_Light\SFX_012_Player_Hit_Light_L1\SFX_012_Player_Hit_Light_L1_03		35504
+	980364303	SFX_053_Potion_Use_02	.cache\B7\{B7B51CF2-C991-D08B-CA15-7A4F5EC5C425}.wem		\Containers\Default Work Unit\SFX\Potion\SFX_053_Potion_Use\SFX_053_Potion_Use_02		163988
+	986971857	SFX_004_UI_Panel_Open_L2_01	.cache\73\{7307AB99-0E48-4B4C-9DAF-78F6791DC06D}.wem		\Containers\Default Work Unit\SFX\UI\SFX_004_UI_Panel_Open\SFX_004_UI_Panel_Open_L2\SFX_004_UI_Panel_Open_L2_01		82786
+	996167529	SFX_025_Foot_Wood_06	.cache\19\{19D93A23-EC65-FDEA-2B0D-FA55A2D43DE2}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_025_Foot_Wood\SFX_025_Foot_Wood_06		48096
+	1000423938	SFX_050_Relic_ChainTrigger_L2_01	.cache\4E\{4E1C1063-5B54-BDBF-52E7-E82D1196EB07}.wem		\Containers\Default Work Unit\SFX\Relic\SFX_050_Relic_ChainTrigger\SFX_050_Relic_ChainTrigger_L2\SFX_050_Relic_ChainTrigger_L2_01		153580
+	1002555882	SFX_009_Card_Shuffle_L1_03	.cache\45\{4594BDDC-E838-B6A0-555B-A13D81EC4910}.wem		\Containers\Default Work Unit\SFX\Card\SFX_009_Card_Shuffle\SFX_009_Card_Shuffle_L1\SFX_009_Card_Shuffle_L1_03		75882
+	1005899778	SFX_002_UI_Click_L2_03	.cache\92\{924FEBB9-A4D7-2D9F-6C0E-BC2FCA72112A}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L2\SFX_002_UI_Click_L2_03		6650
+	1010125237	SFX_014_Enemy_Hit_Light_L1_01	.cache\89\{8977A1CD-1B4D-0A21-24B4-81B04057938A}.wem		\Containers\Default Work Unit\SFX\Enemy\SFX_014_Enemy_Hit_Light\SFX_014_Enemy_Hit_Light_L1\SFX_014_Enemy_Hit_Light_L1_01		196692
+	1011451944	SFX_037_Battle_Block_L1_03	.cache\10\{10EAA7C3-8D02-E1C5-DD93-E3E67705D23D}.wem		\Containers\Default Work Unit\SFX\Battle\SFX_037_Battle_Block\SFX_037_Battle_Block_L1\SFX_037_Battle_Block_L1_03		72766
+	1013124170	SFX_002_UI_Click_L1_01	.cache\38\{38BD84DB-8257-84D5-15CC-97BD9D963ECA}.wem		\Containers\Default Work Unit\SFX\UI\SFX_002_UI_Click\SFX_002_UI_Click_L1\SFX_002_UI_Click_L1_01		20210
+	1018195882	SFX_008_Card_Draw_L1_02	.cache\BF\{BF7A999F-5577-ED11-72A0-CB32644C6BE9}.wem		\Containers\Default Work Unit\SFX\Card\SFX_008_Card_Draw\SFX_008_Card_Draw_L1\SFX_008_Card_Draw_L1_02		22770
+	1022545176	SFX_006_Card_Pickup_L2_03	.cache\35\{35C99E8F-92C1-4E30-8AD3-E48A8605660E}.wem		\Containers\Default Work Unit\SFX\Card\SFX_006_Card_Pickup\SFX_006_Card_Pickup_L2\SFX_006_Card_Pickup_L2_03		23852
+	1029120346	SFX_014_Enemy_Hit_Light_L1_03	.cache\4F\{4FCAC01A-D2C4-1CA2-C19B-0BFB855AC76B}.wem		\Containers\Default Work Unit\SFX\Enemy\SFX_014_Enemy_Hit_Light\SFX_014_Enemy_Hit_Light_L1\SFX_014_Enemy_Hit_Light_L1_03		159328
+	1032866144	SFX_027_Foot_Stone_03	.cache\20\{205502C6-01AB-CC57-1732-DD9E86FFD73D}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_027_Foot_Stone\SFX_027_Foot_Stone_03		48096
+	1040509769	SFX_007_Card_Play_L1_02	.cache\03\{03EB93B7-7042-415A-E682-32A16E60D5C4}.wem		\Containers\Default Work Unit\SFX\Card\SFX_007_Card_Play\SFX_007_Card_Play_L1\SFX_007_Card_Play_L1_02		66104
+	1047288667	SFX_025_Foot_Wood_01	.cache\AE\{AEFED7C1-601C-733D-071E-3942ECB10623}.wem		\Containers\Default Work Unit\SFX\Foot\SFX_Footsteps\SFX_025_Foot_Wood\SFX_025_Foot_Wood_01		48096
+	1047452364	SFX_022_Trans_EnterBattle_L1_01	.cache\E5\{E52D4148-CF01-FBE2-6043-2CF840E063C4}.wem		\Containers\Default Work Unit\SFX\Trans\SFX_022_Trans_EnterBattle\SFX_022_Trans_EnterBattle_L1\SFX_022_Trans_EnterBattle_L1_01		180088
+	1059766647	SFX_060_Player_AttackThrow_L2_02	.cache\EA\{EA0AFCBD-127E-F84F-6B59-6B0FF539CF53}.wem		\Containers\Default Work Unit\SFX\Player\SFX_060_Player_AttackThrow\SFX_060_Player_AttackThrow_L2\SFX_060_Player_AttackThrow_L2_02		129250
+	1064877578	SFX_005_UI_Panel_Close_L1_01	.cache\48\{48798857-43D6-216B-8032-7F2A48F1E1F8}.wem		\Containers\Default Work Unit\SFX\UI\SFX_005_UI_Panel_Close\SFX_005_UI_Panel_Close_L1\SFX_005_UI_Panel_Close_L1_01		47520
+	1069585064	SFX_006_Card_Pickup_L2_04	.cache\B8\{B85C6222-10DF-3AB7-F44C-50F8AF9EAE8C}.wem		\Containers\Default Work Unit\SFX\Card\SFX_006_Card_Pickup\SFX_006_Card_Pickup_L2\SFX_006_Card_Pickup_L2_04		21194
 

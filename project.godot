@@ -23,6 +23,8 @@ GlobalState="*res://state_machines/global/global_state_machine.gd"
 MapEvents="*res://core/signals/map_events.gd"
 SaveGateway="*res://autoload/save_gateway.gd"
 TextCatalog="*res://systems/text/text_catalog.gd"
+WwiseRuntimeManager="*uid://dwd3a80scqotq"
+AudioService="*res://autoload/audio_service.gd"
 
 [display]
 
@@ -32,6 +34,10 @@ window/size/window_width_override=1920
 window/size/window_height_override=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[dotnet]
+
+project/assembly_name="spotlight2026"
 
 [editor_plugins]
 
@@ -46,3 +52,9 @@ enabled=PackedStringArray("res://addons/card_preview/plugin.cfg")
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="mobile"
 anti_aliasing/quality/msaa_3d=3
+
+[wwise]
+
+common_user_settings/root_output_path="res://wwise_soundbanks"
+project_settings/windows_platform_info="res://Wwise/resources/Windows.tres"
+project_settings/android_platform_info="res://Wwise/resources/Android.tres"

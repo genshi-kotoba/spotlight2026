@@ -4,11 +4,25 @@
   "BasePlatform": "Android",
   "PluginLibs": [
    {
+    "LibName": "Wwise Parametric EQ",
+    "LibId": "6881283",
+    "Type": "Effect",
+    "DLL": "AkParametricEQ",
+    "StaticLib": "AkParametricEQFX"
+   },
+   {
     "LibName": "Wwise Compressor",
     "LibId": "7077891",
     "Type": "Effect",
     "DLL": "AkCompressor",
     "StaticLib": "AkCompressorFX"
+   },
+   {
+    "LibName": "Wwise Matrix Reverb",
+    "LibId": "7536643",
+    "Type": "Effect",
+    "DLL": "AkMatrixReverb",
+    "StaticLib": "AkMatrixReverbFX"
    },
    {
     "LibName": "Wwise RoomVerb",
@@ -35,6 +49,6 @@
     "StaticLib": "AkSidechainFX"
    }
   ],
-  "FileHash": "{243C6D5F-E552-3E00-FFCD-B01E4945D7BC}"
+  "FileHash": "{E867F658-DD3C-A23F-3E05-27DD6C3F658E}"
  }
 }

@@ -13,7 +13,6 @@ namespace AK
 {
     namespace EVENTS
     {
-        static const AkUniqueID PLAY_TESTCLICK = 83581882U;
         static const AkUniqueID SFX_001_UI_HOVER = 1904108632U;
         static const AkUniqueID SFX_002_UI_CLICK = 1091911267U;
         static const AkUniqueID SFX_003_UI_BACK = 2347086561U;
@@ -33,8 +32,6 @@ namespace AK
         static const AkUniqueID SFX_017_AMB_SLUM = 1324281690U;
         static const AkUniqueID SFX_018_AMB_CHURCH = 3279272161U;
         static const AkUniqueID SFX_019_AMB_CHURCHTOP = 1046402479U;
-        static const AkUniqueID SFX_020_TRANS_WORKSHOP_SLUM = 1902541742U;
-        static const AkUniqueID SFX_021_TRANS_SLUM_CHURCH = 3075558629U;
         static const AkUniqueID SFX_022_TRANS_ENTERBATTLE = 3308600789U;
         static const AkUniqueID SFX_023_TRANS_FLOORCHANGE = 336439554U;
         static const AkUniqueID SFX_024_TRANS_EXITBATTLE = 731281771U;
@@ -46,7 +43,7 @@ namespace AK
         static const AkUniqueID SFX_030_UI_RESULT_WIN = 377365198U;
         static const AkUniqueID SFX_031_UI_RESULT_LOSE = 2568482664U;
         static const AkUniqueID SFX_032_CARD_TRIGGER_ATTACK = 2373032523U;
-        static const AkUniqueID SFX_033_CARD_TURNCHANGE = 1653917388U;
+        static const AkUniqueID SFX_033_BATTLE_TURNCHANGE = 3490436888U;
         static const AkUniqueID SFX_034_CARD_TRANSFORM = 3945563550U;
         static const AkUniqueID SFX_035_PLAYER_HIT_HEAVY = 842323735U;
         static const AkUniqueID SFX_036_BATTLE_HITRESOLVE = 389873053U;
@@ -67,11 +64,12 @@ namespace AK
         static const AkUniqueID SFX_051_RELIC_GAIN = 1562498281U;
         static const AkUniqueID SFX_052_POTION_SELECT = 2510050715U;
         static const AkUniqueID SFX_053_POTION_USE = 1921734107U;
-        static const AkUniqueID SFX_054_MAP_MOVESTEP = 1612996235U;
         static const AkUniqueID SFX_055_MAP_FOGREVEAL = 1669113984U;
         static const AkUniqueID SFX_056_CUTSCENE_OPENING = 3387093548U;
-        static const AkUniqueID TEST_CLICK = 556472348U;
-        static const AkUniqueID TEST_EVENT = 4258653052U;
+        static const AkUniqueID SFX_057_VOICE_TALK = 3864440901U;
+        static const AkUniqueID SFX_058_VOICE_PENWRITE = 684639692U;
+        static const AkUniqueID SFX_059_BATTLE_HITBLOCKED = 770812252U;
+        static const AkUniqueID SFX_060_PLAYER_ATTACKTHROW = 3376797818U;
     } // namespace EVENTS
 
     namespace STATES

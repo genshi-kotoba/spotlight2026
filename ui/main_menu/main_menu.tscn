@@ -1,17 +1,20 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://d1eo6vl0u7jxt"]
 
-[ext_resource type="Script" path="res://ui/main_menu/main_menu.gd" id="1_menu"]
+[ext_resource type="Script" uid="uid://deykt7bion6l4" path="res://ui/main_menu/main_menu.gd" id="1_menu"]
 [ext_resource type="PackedScene" path="res://ui/main_menu/message_bar.tscn" id="2_bar"]
 [ext_resource type="PackedScene" path="res://ui/main_menu/confirm_dialog.tscn" id="3_dialog"]
 
-[node name="主菜单" type="Control"]
+[node name="主菜单" type="Control" unique_id=10436680]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_menu")
 
-[node name="背景" type="TextureRect" parent="."]
+[node name="背景" type="TextureRect" parent="." unique_id=403133895]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
@@ -20,51 +23,60 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="标题" type="Label" parent="."]
+[node name="标题" type="Label" parent="." unique_id=946314542]
+layout_mode = 0
 offset_left = 80.0
 offset_top = 48.0
 offset_right = 900.0
 offset_bottom = 168.0
-mouse_filter = 2
 theme_override_font_sizes/font_size = 76
 text = "这里是标题"
 
-[node name="按钮列" type="VBoxContainer" parent="."]
+[node name="按钮列" type="VBoxContainer" parent="." unique_id=1785208115]
+layout_mode = 0
 offset_left = 80.0
 offset_top = 220.0
 offset_right = 460.0
 offset_bottom = 900.0
 theme_override_constants/separation = 18
 
-[node name="继续游戏" type="Button" parent="按钮列"]
+[node name="继续游戏" type="Button" parent="按钮列" unique_id=1898619110]
 custom_minimum_size = Vector2(360, 76)
+layout_mode = 2
 text = "继续游戏"
 
-[node name="新游戏" type="Button" parent="按钮列"]
+[node name="新游戏" type="Button" parent="按钮列" unique_id=360731266]
 custom_minimum_size = Vector2(360, 76)
+layout_mode = 2
 text = "新游戏"
 
-[node name="设置" type="Button" parent="按钮列"]
+[node name="设置" type="Button" parent="按钮列" unique_id=1240905972]
 custom_minimum_size = Vector2(360, 76)
+layout_mode = 2
 text = "设置"
 
-[node name="成就" type="Button" parent="按钮列"]
+[node name="成就" type="Button" parent="按钮列" unique_id=725686030]
 custom_minimum_size = Vector2(360, 76)
+layout_mode = 2
 text = "成就"
 
-[node name="图鉴" type="Button" parent="按钮列"]
+[node name="图鉴" type="Button" parent="按钮列" unique_id=415225385]
 custom_minimum_size = Vector2(360, 76)
+layout_mode = 2
 text = "图鉴"
 
-[node name="感谢名单" type="Button" parent="按钮列"]
+[node name="感谢名单" type="Button" parent="按钮列" unique_id=697662123]
 custom_minimum_size = Vector2(360, 76)
+layout_mode = 2
 text = "感谢名单"
 
-[node name="退出游戏" type="Button" parent="按钮列"]
+[node name="退出游戏" type="Button" parent="按钮列" unique_id=1578851987]
 custom_minimum_size = Vector2(360, 76)
+layout_mode = 2
 text = "退出游戏"
 
-[node name="档案" type="Button" parent="."]
+[node name="档案" type="Button" parent="." unique_id=1957839211]
+layout_mode = 0
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -360.0
@@ -74,7 +86,8 @@ offset_bottom = 116.0
 grow_horizontal = 0
 text = "当前档案 1 ▾"
 
-[node name="版本" type="Label" parent="."]
+[node name="版本" type="Label" parent="." unique_id=2087022411]
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -85,11 +98,12 @@ offset_right = -80.0
 offset_bottom = -40.0
 grow_horizontal = 0
 grow_vertical = 0
-mouse_filter = 2
 theme_override_font_sizes/font_size = 20
 text = "v0.1.0"
 horizontal_alignment = 2
 
-[node name="提示条" parent="." instance=ExtResource("2_bar")]
+[node name="提示条" parent="." unique_id=9159116 instance=ExtResource("2_bar")]
+layout_mode = 0
 
-[node name="确认弹窗" parent="." instance=ExtResource("3_dialog")]
+[node name="确认弹窗" parent="." unique_id=253508925 instance=ExtResource("3_dialog")]
+anchors_preset = 0

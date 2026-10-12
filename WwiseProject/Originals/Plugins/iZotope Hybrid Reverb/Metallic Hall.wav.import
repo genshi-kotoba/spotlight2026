@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c1fpf53c06cdi"
+path="res://.godot/imported/Metallic Hall.wav-75e305fca3eca462687fee1ca7753de1.sample"
+
+[deps]
+
+source_file="res://WwiseProject/Originals/Plugins/iZotope Hybrid Reverb/Metallic Hall.wav"
+dest_files=["res://.godot/imported/Metallic Hall.wav-75e305fca3eca462687fee1ca7753de1.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
