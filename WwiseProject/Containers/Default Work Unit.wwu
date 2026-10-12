@@ -808,6 +808,120 @@
 														</ReferenceList>
 													</EffectSlot>
 												</ObjectList>
+												<ObjectList Name="RTPC">
+													<RTPC Name="" ID="{20B958C4-88B4-425B-8F2E-EEAD094A8024}" ShortID="282034843">
+														<PropertyList>
+															<Property Name="PropertyName" Type="string" Value="Volume"/>
+														</PropertyList>
+														<ReferenceList>
+															<Reference Name="ControlInput">
+																<ObjectRef Name="Combo_Count" ID="{162096D1-F035-434E-8639-BAEDFCC3FD00}" WorkUnitID="{C1317E2B-7418-4C64-A2FA-67AFA42E6ACF}"/>
+															</Reference>
+															<Reference Name="Curve">
+																<Custom>
+																	<Curve Name="" ID="{E2102A1E-434D-4E70-9C25-F70B3A1DE37D}">
+																		<PropertyList>
+																			<Property Name="Flags" Type="int32" Value="3"/>
+																		</PropertyList>
+																		<PointList>
+																			<Point>
+																				<XPos>0</XPos>
+																				<YPos>-9.98588</YPos>
+																				<Flags>5</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>5.6613</XPos>
+																				<YPos>-7.50929</YPos>
+																				<Flags>0</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>5.90323</XPos>
+																				<YPos>-6.08236</YPos>
+																				<Flags>0</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>8.69356</XPos>
+																				<YPos>-4.84905</YPos>
+																				<Flags>0</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>8.87097</XPos>
+																				<YPos>-3.23617</YPos>
+																				<Flags>0</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>12.80645</XPos>
+																				<YPos>0.02438</YPos>
+																				<Flags>0</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>15</XPos>
+																				<YPos>0</YPos>
+																				<Flags>37</Flags>
+																			</Point>
+																		</PointList>
+																	</Curve>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</RTPC>
+													<RTPC Name="" ID="{C521401B-4B2B-4757-AA41-8C54AB27D19A}" ShortID="318730045">
+														<PropertyList>
+															<Property Name="PropertyName" Type="string" Value="Lowpass"/>
+														</PropertyList>
+														<ReferenceList>
+															<Reference Name="ControlInput">
+																<ObjectRef Name="Combo_Count" ID="{162096D1-F035-434E-8639-BAEDFCC3FD00}" WorkUnitID="{C1317E2B-7418-4C64-A2FA-67AFA42E6ACF}"/>
+															</Reference>
+															<Reference Name="Curve">
+																<Custom>
+																	<Curve Name="" ID="{10615376-74A6-4A0D-BB59-0FA4F20FE999}">
+																		<PropertyList>
+																			<Property Name="Flags" Type="int32" Value="65537"/>
+																		</PropertyList>
+																		<PointList>
+																			<Point>
+																				<XPos>0</XPos>
+																				<YPos>85</YPos>
+																				<Flags>5</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>5.6045</XPos>
+																				<YPos>54</YPos>
+																				<Flags>0</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>5.93248</XPos>
+																				<YPos>37</YPos>
+																				<Flags>0</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>8.76527</XPos>
+																				<YPos>24</YPos>
+																				<Flags>0</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>8.87138</XPos>
+																				<YPos>5</YPos>
+																				<Flags>0</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>12</XPos>
+																				<YPos>0</YPos>
+																				<Flags>0</Flags>
+																			</Point>
+																			<Point>
+																				<XPos>15</XPos>
+																				<YPos>0</YPos>
+																				<Flags>37</Flags>
+																			</Point>
+																		</PointList>
+																	</Curve>
+																</Custom>
+															</Reference>
+														</ReferenceList>
+													</RTPC>
+												</ObjectList>
 											</ObjectLists>
 											<GroupingInfo>
 												<GroupingBehaviorList>
@@ -913,8 +1027,14 @@
 												<Reference Name="Conversion">
 													<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 												</Reference>
+												<Reference Name="DefaultSwitchOrState">
+													<ObjectRef Name="Pos_1" ID="{AFA18F15-2FE0-4562-95C5-B583E95BB720}" WorkUnitID="{A4FD52AD-35A3-4D4B-AED0-9127D8035F2D}"/>
+												</Reference>
 												<Reference Name="OutputBus">
 													<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+												</Reference>
+												<Reference Name="SwitchGroupOrStateGroup">
+													<ObjectRef Name="Pointer_Position" ID="{9582CF37-1912-413C-9985-3C76DC997143}" WorkUnitID="{A4FD52AD-35A3-4D4B-AED0-9127D8035F2D}"/>
 												</Reference>
 											</ReferenceList>
 											<ChildrenList>
@@ -1098,6 +1218,56 @@
 														<ItemRef Name="SFX_011_Battle_Pointer_Rewind_L1_07" ID="{6D0E04F3-0E1B-492A-852E-EE6D8CA1495F}"/>
 													</GroupingBehavior>
 												</GroupingBehaviorList>
+												<GroupingList>
+													<Grouping>
+														<SwitchRef Name="Pos_1" ID="{AFA18F15-2FE0-4562-95C5-B583E95BB720}"/>
+														<ItemList>
+															<ItemRef Name="SFX_011_Battle_Pointer_Rewind_L1_01" ID="{49FB81A1-C60E-42D5-BAB2-F786A2A85C5C}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_5" ID="{2C81C467-446C-4C85-9206-A922B0308459}"/>
+														<ItemList>
+															<ItemRef Name="SFX_011_Battle_Pointer_Rewind_L1_05" ID="{09D4DD35-C4F1-40A3-BF78-CF72EF0F0D46}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_2" ID="{D58AE568-3C76-4157-8262-CF3CE567E1CD}"/>
+														<ItemList>
+															<ItemRef Name="SFX_011_Battle_Pointer_Rewind_L1_02" ID="{4C43C307-1BE5-4118-9FD8-77C9913FDE4C}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_7" ID="{03427C76-D89B-4C9F-B01C-CEEF82E18661}"/>
+														<ItemList>
+															<ItemRef Name="SFX_011_Battle_Pointer_Rewind_L1_07" ID="{6D0E04F3-0E1B-492A-852E-EE6D8CA1495F}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_6" ID="{649C3C8F-C3C7-484C-B6CB-54FCF5EAAD48}"/>
+														<ItemList>
+															<ItemRef Name="SFX_011_Battle_Pointer_Rewind_L1_06" ID="{C0057F7D-35FC-4E1E-8577-D19B767E0538}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_8" ID="{FDF542BB-9228-408B-ACAB-5A837C410C73}"/>
+														<ItemList>
+															<ItemRef Name="SFX_011_Battle_Pointer_Rewind_L1_08" ID="{FF3F846B-730E-4C83-A37D-89C77EEF4CC3}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_4" ID="{21B987C2-0BA5-4D64-BA06-6BE0A23EA142}"/>
+														<ItemList>
+															<ItemRef Name="SFX_011_Battle_Pointer_Rewind_L1_04" ID="{84E38CC0-3DA3-4D83-9978-4E6E976D9684}"/>
+														</ItemList>
+													</Grouping>
+													<Grouping>
+														<SwitchRef Name="Pos_3" ID="{ED6AB7FB-4ABD-49A5-8948-F87BA3618B62}"/>
+														<ItemList>
+															<ItemRef Name="SFX_011_Battle_Pointer_Rewind_L1_03" ID="{34376BE2-EB8E-4AAB-BD03-0CCE53A01FD5}"/>
+														</ItemList>
+													</Grouping>
+												</GroupingList>
 											</GroupingInfo>
 										</SwitchContainer>
 									</ChildrenList>
@@ -3517,8 +3687,14 @@
 										<Reference Name="Conversion">
 											<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
 										</Reference>
+										<Reference Name="DefaultSwitchOrState">
+											<ObjectRef Name="Powder" ID="{F404C3EE-7381-47FC-AA0E-371F659FA9E7}" WorkUnitID="{A4FD52AD-35A3-4D4B-AED0-9127D8035F2D}"/>
+										</Reference>
 										<Reference Name="OutputBus">
 											<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+										</Reference>
+										<Reference Name="SwitchGroupOrStateGroup">
+											<ObjectRef Name="Card_Material" ID="{00D6956A-4FEC-4B10-A849-0F3251B73FCD}" WorkUnitID="{A4FD52AD-35A3-4D4B-AED0-9127D8035F2D}"/>
 										</Reference>
 									</ReferenceList>
 									<ChildrenList>
@@ -4265,6 +4441,32 @@
 												<ItemRef Name="SFX_032_Card_Trigger_Attack_L1" ID="{77508FE1-CBAD-47CC-BE14-11084DA29DC1}"/>
 											</GroupingBehavior>
 										</GroupingBehaviorList>
+										<GroupingList>
+											<Grouping>
+												<SwitchRef Name="Feather" ID="{A397940E-1FA9-41F1-9183-DC069C0C245E}"/>
+												<ItemList>
+													<ItemRef Name="SFX_032_Card_Trigger_Attack_L4" ID="{8A7EAEB1-2C43-4042-A5EF-C7E05CAE732F}"/>
+												</ItemList>
+											</Grouping>
+											<Grouping>
+												<SwitchRef Name="Mineral" ID="{F5C1873B-091D-4F49-B979-4D5B8E60EA5D}"/>
+												<ItemList>
+													<ItemRef Name="SFX_032_Card_Trigger_Attack_L2" ID="{B2FFDC77-4A4A-46A0-A3FA-D3D8EA824A34}"/>
+												</ItemList>
+											</Grouping>
+											<Grouping>
+												<SwitchRef Name="Plant" ID="{728C889E-9481-42E7-8B47-BFABE8D723DC}"/>
+												<ItemList>
+													<ItemRef Name="SFX_032_Card_Trigger_Attack_L3" ID="{18662786-A389-4DC2-82FB-E14DB289590D}"/>
+												</ItemList>
+											</Grouping>
+											<Grouping>
+												<SwitchRef Name="Powder" ID="{F404C3EE-7381-47FC-AA0E-371F659FA9E7}"/>
+												<ItemList>
+													<ItemRef Name="SFX_032_Card_Trigger_Attack_L1" ID="{77508FE1-CBAD-47CC-BE14-11084DA29DC1}"/>
+												</ItemList>
+											</Grouping>
+										</GroupingList>
 									</GroupingInfo>
 								</SwitchContainer>
 							</ChildrenList>
@@ -5306,144 +5508,34 @@
 														<ActiveSource Name="SFX_025_Foot_Wood_04" ID="{DE62B9ED-F29F-4D6C-9362-7050CA12A758}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
-												<Sound Name="SFX_025_Foot_Wood_05" ID="{FF64EFC5-FC43-4EEB-8D3D-63526169D4D2}" ShortID="403795445">
-													<PropertyList>
-														<Property Name="Color" Type="int16" Value="20"/>
-														<Property Name="OverrideColor" Type="bool" Value="True"/>
-													</PropertyList>
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_025_Foot_Wood_05" ID="{B69D69FB-0A95-4548-8905-28177C28CCE7}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_025_Foot_Wood_05.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="909848335"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_025_Foot_Wood_05" ID="{B69D69FB-0A95-4548-8905-28177C28CCE7}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
-												<Sound Name="SFX_025_Foot_Wood_06" ID="{19F8D871-F654-42E6-9362-95B8FBA81D2A}" ShortID="574407307">
-													<PropertyList>
-														<Property Name="Color" Type="int16" Value="20"/>
-														<Property Name="OverrideColor" Type="bool" Value="True"/>
-													</PropertyList>
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_025_Foot_Wood_06" ID="{00000661-4AA1-4ECF-B380-47CE7C128FB9}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_025_Foot_Wood_06.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="996167529"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_025_Foot_Wood_06" ID="{00000661-4AA1-4ECF-B380-47CE7C128FB9}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
-												<Sound Name="SFX_025_Foot_Wood_07" ID="{90C83A11-0A76-498C-836F-4B1C43B4BF32}" ShortID="351677747">
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_025_Foot_Wood_07" ID="{2EFF2646-2806-44BD-AD7E-DF30DEB35C84}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_025_Foot_Wood_07.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="391046826"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_025_Foot_Wood_07" ID="{2EFF2646-2806-44BD-AD7E-DF30DEB35C84}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
-												<Sound Name="SFX_025_Foot_Wood_08" ID="{26B77CA1-4681-46B3-B272-425603F5164A}" ShortID="639212734">
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_025_Foot_Wood_08" ID="{5FBE2CD7-271A-4B32-AD2F-CB4B2709F388}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_025_Foot_Wood_08.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="423263073"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_025_Foot_Wood_08" ID="{5FBE2CD7-271A-4B32-AD2F-CB4B2709F388}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
 											</ChildrenList>
 											<ObjectLists>
 												<ObjectList Name="Playlist">
-													<PluginInnerObject Name="" ID="{D6AA644B-C125-4597-A664-910835BEC4DA}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+													<PluginInnerObject Name="" ID="{4D148D99-2882-4165-BF59-105CEF6FF22D}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
 														<ReferenceList>
 															<Reference Name="PlaylistObject">
 																<ObjectRef Name="SFX_025_Foot_Wood_01" ID="{7107540F-3E17-4B59-872F-47C5AF7CA3DD}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
 															</Reference>
 														</ReferenceList>
 													</PluginInnerObject>
-													<PluginInnerObject Name="" ID="{A91965E0-F8F5-4459-8779-A76E147F8DBC}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+													<PluginInnerObject Name="" ID="{36591797-8EBE-4756-A131-22A44789E306}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
 														<ReferenceList>
 															<Reference Name="PlaylistObject">
 																<ObjectRef Name="SFX_025_Foot_Wood_02" ID="{91A938A2-CAA0-427E-8C23-46212C728178}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
 															</Reference>
 														</ReferenceList>
 													</PluginInnerObject>
-													<PluginInnerObject Name="" ID="{F744739E-82F7-4D8B-812A-56D0F441C977}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+													<PluginInnerObject Name="" ID="{B0A8B9AD-A3E9-4201-86C7-ABCC7F44679E}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
 														<ReferenceList>
 															<Reference Name="PlaylistObject">
 																<ObjectRef Name="SFX_025_Foot_Wood_03" ID="{E64E41BC-8F3F-40D3-92C2-FE3EE553C149}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
 															</Reference>
 														</ReferenceList>
 													</PluginInnerObject>
-													<PluginInnerObject Name="" ID="{778DB3AD-E385-48A4-860D-519D68B04C6F}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+													<PluginInnerObject Name="" ID="{B9D0E06E-F453-4C23-A553-8B47DA03DEC5}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
 														<ReferenceList>
 															<Reference Name="PlaylistObject">
 																<ObjectRef Name="SFX_025_Foot_Wood_04" ID="{FB7745CB-B29B-45B7-800E-90E82F37BF17}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-															</Reference>
-														</ReferenceList>
-													</PluginInnerObject>
-													<PluginInnerObject Name="" ID="{40E621C6-0CCA-4DBF-80CA-8299A07D433A}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
-														<ReferenceList>
-															<Reference Name="PlaylistObject">
-																<ObjectRef Name="SFX_025_Foot_Wood_05" ID="{FF64EFC5-FC43-4EEB-8D3D-63526169D4D2}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-															</Reference>
-														</ReferenceList>
-													</PluginInnerObject>
-													<PluginInnerObject Name="" ID="{B03FC683-4838-45E8-9ABA-20A03996124E}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
-														<ReferenceList>
-															<Reference Name="PlaylistObject">
-																<ObjectRef Name="SFX_025_Foot_Wood_06" ID="{19F8D871-F654-42E6-9362-95B8FBA81D2A}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
 															</Reference>
 														</ReferenceList>
 													</PluginInnerObject>
@@ -5576,95 +5668,39 @@
 														<ActiveSource Name="SFX_026_Foot_Mud_04" ID="{A029604F-57AE-43AA-BBB3-66A81F7478B9}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
-												<Sound Name="SFX_026_Foot_Mud_05" ID="{CC2166F5-D983-40D9-95D1-767054D2745A}" ShortID="595242095">
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_026_Foot_Mud_05" ID="{8CBF4921-938A-47C2-BA53-0F005B8849B0}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_026_Foot_Mud_05.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="813736228"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_026_Foot_Mud_05" ID="{8CBF4921-938A-47C2-BA53-0F005B8849B0}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
-												<Sound Name="SFX_026_Foot_Mud_06" ID="{18970E50-E9FD-459F-B216-275215F1F117}" ShortID="477036544">
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_026_Foot_Mud_06" ID="{BC089E00-D3B8-481D-A69E-0B54A12EF9BE}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_026_Foot_Mud_06.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="964626502"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_026_Foot_Mud_06" ID="{BC089E00-D3B8-481D-A69E-0B54A12EF9BE}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
-												<Sound Name="SFX_026_Foot_Mud_07" ID="{5D46FA8C-602A-48C8-A156-136EA49DE771}" ShortID="525403713">
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_026_Foot_Mud_07" ID="{533BAF97-8C89-435B-A587-25374F6ABB3A}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_026_Foot_Mud_07.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="531632278"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_026_Foot_Mud_07" ID="{533BAF97-8C89-435B-A587-25374F6ABB3A}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
-												<Sound Name="SFX_026_Foot_Mud_08" ID="{150A9E64-B987-45C3-9D7D-3421962B1C84}" ShortID="701888499">
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_026_Foot_Mud_08" ID="{EBD5BC7F-BA5D-4DA3-8912-C02697F8951C}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_026_Foot_Mud_08.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="383313521"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_026_Foot_Mud_08" ID="{EBD5BC7F-BA5D-4DA3-8912-C02697F8951C}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
 											</ChildrenList>
+											<ObjectLists>
+												<ObjectList Name="Playlist">
+													<PluginInnerObject Name="" ID="{CFA540F4-9DE3-4F50-98F8-644CE5A1BF87}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+														<ReferenceList>
+															<Reference Name="PlaylistObject">
+																<ObjectRef Name="SFX_026_Foot_Mud_01" ID="{05C46E79-192D-468C-B40C-B85D3188D4F0}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+															</Reference>
+														</ReferenceList>
+													</PluginInnerObject>
+													<PluginInnerObject Name="" ID="{C0941A70-0C2F-4A07-B84E-8F7FAE0A33EC}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+														<ReferenceList>
+															<Reference Name="PlaylistObject">
+																<ObjectRef Name="SFX_026_Foot_Mud_02" ID="{C7304D4B-D550-4A53-AF27-1D94305FD305}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+															</Reference>
+														</ReferenceList>
+													</PluginInnerObject>
+													<PluginInnerObject Name="" ID="{F57330C7-A5E7-4C7D-85B6-0DCE27B7936D}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+														<ReferenceList>
+															<Reference Name="PlaylistObject">
+																<ObjectRef Name="SFX_026_Foot_Mud_03" ID="{66F35BE0-58AF-4DED-8A2A-493ADAB6DFFD}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+															</Reference>
+														</ReferenceList>
+													</PluginInnerObject>
+													<PluginInnerObject Name="" ID="{CEE941BE-CA97-4CD4-9A97-09CD95D7D21A}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+														<ReferenceList>
+															<Reference Name="PlaylistObject">
+																<ObjectRef Name="SFX_026_Foot_Mud_04" ID="{145B898D-FAFB-4D81-A0D6-E5E52C5589CE}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+															</Reference>
+														</ReferenceList>
+													</PluginInnerObject>
+												</ObjectList>
+											</ObjectLists>
 										</RandomSequenceContainer>
 										<RandomSequenceContainer Name="SFX_027_Foot_Stone" ID="{4EE80252-4DC5-4834-84AD-E7115E9ED5B1}" ShortID="864176282">
 											<PropertyList>
@@ -5792,95 +5828,39 @@
 														<ActiveSource Name="SFX_027_Foot_Stone_04" ID="{7C56DF35-DF6B-44A6-8E82-3BEE18B93B50}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
-												<Sound Name="SFX_027_Foot_Stone_05" ID="{29CA42E0-67F0-48BD-9F20-91F11DDCFB84}" ShortID="888097298">
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_027_Foot_Stone_05" ID="{CCD8E134-588F-48D2-B700-7290F4F3DC99}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_027_Foot_Stone_05.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="542514356"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_027_Foot_Stone_05" ID="{CCD8E134-588F-48D2-B700-7290F4F3DC99}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
-												<Sound Name="SFX_027_Foot_Stone_06" ID="{F4C32F4D-EC52-4ED7-BFD4-DF157767AAC7}" ShortID="864168722">
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_027_Foot_Stone_06" ID="{FFDA6093-A313-4A77-BF5E-F17160CE0757}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_027_Foot_Stone_06.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="526359927"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_027_Foot_Stone_06" ID="{FFDA6093-A313-4A77-BF5E-F17160CE0757}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
-												<Sound Name="SFX_027_Foot_Stone_07" ID="{CEA85879-82BE-4473-89E9-A044A5C70235}" ShortID="857488110">
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_027_Foot_Stone_07" ID="{E63FA235-EDEB-48A2-BDEC-562A66E25172}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_027_Foot_Stone_07.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="722918172"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_027_Foot_Stone_07" ID="{E63FA235-EDEB-48A2-BDEC-562A66E25172}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
-												<Sound Name="SFX_027_Foot_Stone_08" ID="{07F9EEF0-D7D9-472F-A80E-ACD1713FD4D7}" ShortID="883713269">
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_027_Foot_Stone_08" ID="{18008C3C-F8FC-4304-BD17-68DE11C7C54B}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_027_Foot_Stone_08.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="690798510"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_027_Foot_Stone_08" ID="{18008C3C-F8FC-4304-BD17-68DE11C7C54B}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
 											</ChildrenList>
+											<ObjectLists>
+												<ObjectList Name="Playlist">
+													<PluginInnerObject Name="" ID="{CA7C2739-0AA0-4CF5-96B3-8058DEEC73A4}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+														<ReferenceList>
+															<Reference Name="PlaylistObject">
+																<ObjectRef Name="SFX_027_Foot_Stone_01" ID="{B500655A-D51B-41CB-BC54-93625FEC6FE2}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+															</Reference>
+														</ReferenceList>
+													</PluginInnerObject>
+													<PluginInnerObject Name="" ID="{27462B44-FB4B-4BAD-A476-C738450A591D}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+														<ReferenceList>
+															<Reference Name="PlaylistObject">
+																<ObjectRef Name="SFX_027_Foot_Stone_02" ID="{E47E68AF-7C97-45C4-8AD2-AA4FEA5629E9}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+															</Reference>
+														</ReferenceList>
+													</PluginInnerObject>
+													<PluginInnerObject Name="" ID="{CAB76C50-26B8-4045-99F4-CB3D0FA7AC50}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+														<ReferenceList>
+															<Reference Name="PlaylistObject">
+																<ObjectRef Name="SFX_027_Foot_Stone_03" ID="{7BDBB35B-139B-4F73-8A72-FB4CE6981C75}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+															</Reference>
+														</ReferenceList>
+													</PluginInnerObject>
+													<PluginInnerObject Name="" ID="{76CF618A-D11F-4253-8638-F2D2D0286809}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+														<ReferenceList>
+															<Reference Name="PlaylistObject">
+																<ObjectRef Name="SFX_027_Foot_Stone_04" ID="{0F5FBCDD-BAE3-4BDD-ACBA-E3A366E5EB05}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+															</Reference>
+														</ReferenceList>
+													</PluginInnerObject>
+												</ObjectList>
+											</ObjectLists>
 										</RandomSequenceContainer>
 									</ChildrenList>
 									<GroupingInfo>
@@ -8749,63 +8729,34 @@
 														<ActiveSource Name="SFX_051_Relic_Gain_L2_04" ID="{2C5EF0E2-6F11-48F5-806D-A50A0E718B55}" Platform="Linked"/>
 													</ActiveSourceList>
 												</Sound>
-												<Sound Name="SFX_051_Relic_Gain_L2_05" ID="{0C55C33B-0902-42F1-9E1C-4CCC3E327583}" ShortID="772369467">
-													<ReferenceList>
-														<Reference Name="Conversion">
-															<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{36B5A466-14A5-4BE2-9A60-56E8E506741A}"/>
-														</Reference>
-														<Reference Name="OutputBus">
-															<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
-														</Reference>
-													</ReferenceList>
-													<ChildrenList>
-														<AudioFileSource Name="SFX_051_Relic_Gain_L2_05" ID="{F126DE73-0E41-41C9-8D3F-F4F8F4C9258E}">
-															<Language>SFX</Language>
-															<AudioFile>SFX\SFX_051_Relic_Gain_L2_05.wav</AudioFile>
-															<MediaIDList>
-																<MediaID ID="397509052"/>
-															</MediaIDList>
-														</AudioFileSource>
-													</ChildrenList>
-													<ActiveSourceList>
-														<ActiveSource Name="SFX_051_Relic_Gain_L2_05" ID="{F126DE73-0E41-41C9-8D3F-F4F8F4C9258E}" Platform="Linked"/>
-													</ActiveSourceList>
-												</Sound>
 											</ChildrenList>
 											<ObjectLists>
 												<ObjectList Name="Playlist">
-													<PluginInnerObject Name="" ID="{E867409D-639A-4898-8904-47FCA33A5762}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+													<PluginInnerObject Name="" ID="{B9FC73EA-1E95-48DC-8248-EBC01BB81102}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
 														<ReferenceList>
 															<Reference Name="PlaylistObject">
 																<ObjectRef Name="SFX_051_Relic_Gain_L2_01" ID="{1B2D7FF6-6817-416E-BE70-B0A1FB1ABFAC}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
 															</Reference>
 														</ReferenceList>
 													</PluginInnerObject>
-													<PluginInnerObject Name="" ID="{388E0959-175A-48AE-9397-2556BBFB7F99}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+													<PluginInnerObject Name="" ID="{77C48FD5-5609-469E-9CF8-5CE1988249C2}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
 														<ReferenceList>
 															<Reference Name="PlaylistObject">
 																<ObjectRef Name="SFX_051_Relic_Gain_L2_02" ID="{4C4CF218-D02B-4960-B2EB-5E7415F10DFA}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
 															</Reference>
 														</ReferenceList>
 													</PluginInnerObject>
-													<PluginInnerObject Name="" ID="{006399C6-28F7-40E2-BDA0-23ABAF4F0A0A}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+													<PluginInnerObject Name="" ID="{ED374AD4-91E1-43A7-8154-3D6292F5FE77}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
 														<ReferenceList>
 															<Reference Name="PlaylistObject">
 																<ObjectRef Name="SFX_051_Relic_Gain_L2_03" ID="{19D71586-B1F3-460A-AC96-A59C71DE9759}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
 															</Reference>
 														</ReferenceList>
 													</PluginInnerObject>
-													<PluginInnerObject Name="" ID="{92FED267-385E-4FEF-994A-89D4256CB12D}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
+													<PluginInnerObject Name="" ID="{2607C02E-F65F-4416-94ED-14CE10F771C5}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
 														<ReferenceList>
 															<Reference Name="PlaylistObject">
 																<ObjectRef Name="SFX_051_Relic_Gain_L2_04" ID="{7D546A21-8E50-4F76-9613-9F6E4C253653}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-															</Reference>
-														</ReferenceList>
-													</PluginInnerObject>
-													<PluginInnerObject Name="" ID="{0B49250A-C09E-4088-ABFB-52D13DC3B2AD}" PluginName="PlaylistSlot" CompanyID="0" PluginID="86">
-														<ReferenceList>
-															<Reference Name="PlaylistObject">
-																<ObjectRef Name="SFX_051_Relic_Gain_L2_05" ID="{0C55C33B-0902-42F1-9E1C-4CCC3E327583}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
 															</Reference>
 														</ReferenceList>
 													</PluginInnerObject>

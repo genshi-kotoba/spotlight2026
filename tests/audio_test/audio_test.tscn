@@ -1,8 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://t5s8jygn3y4i"]
 
-[ext_resource type="Script" path="res://tests/audio_test/audio_test.gd" id="1"]
+[ext_resource type="Script" uid="uid://dtvhdojvoai5n" path="res://tests/audio_test/audio_test.gd" id="1"]
 
-[node name="AudioTest" type="Control"]
+[node name="AudioTest" type="Control" unique_id=909960685]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

@@ -12736,7 +12736,6 @@
 					<WorkUnit Name="Virtual Acoustics" ID="{32CD8547-A946-4547-BBB1-69F44E796139}" PersistMode="Standalone"/>
 				</PhysicalFolder>
 			</PhysicalFolderList>
-			<EnvironmentalCurves Name="Physically_Based" ID="{7AF96D5E-B0A7-4524-B96B-04F53DEAEC94}"/>
 		</Project>
 	</ProjectInfo>
 </WwiseDocument>

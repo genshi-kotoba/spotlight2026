@@ -35,9 +35,6 @@ namespace AK
         static const AkUniqueID SFX_022_TRANS_ENTERBATTLE = 3308600789U;
         static const AkUniqueID SFX_023_TRANS_FLOORCHANGE = 336439554U;
         static const AkUniqueID SFX_024_TRANS_EXITBATTLE = 731281771U;
-        static const AkUniqueID SFX_025_FOOT_WOOD = 1034180137U;
-        static const AkUniqueID SFX_026_FOOT_MUD = 818430349U;
-        static const AkUniqueID SFX_027_FOOT_STONE = 3987020771U;
         static const AkUniqueID SFX_028_UI_SLIDER = 1847505946U;
         static const AkUniqueID SFX_029_UI_ERROR = 3311595226U;
         static const AkUniqueID SFX_030_UI_RESULT_WIN = 377365198U;
@@ -70,6 +67,7 @@ namespace AK
         static const AkUniqueID SFX_058_VOICE_PENWRITE = 684639692U;
         static const AkUniqueID SFX_059_BATTLE_HITBLOCKED = 770812252U;
         static const AkUniqueID SFX_060_PLAYER_ATTACKTHROW = 3376797818U;
+        static const AkUniqueID SFX_FOOTSTEPS = 3364658470U;
     } // namespace EVENTS
 
     namespace STATES
@@ -104,6 +102,25 @@ namespace AK
 
     namespace SWITCHES
     {
+        namespace CARD_MATERIAL
+        {
+            static const AkUniqueID GROUP = 4230271261U;
+
+            namespace SWITCH
+            {
+                static const AkUniqueID ABSTRACT = 1758195831U;
+                static const AkUniqueID BONE = 1744723399U;
+                static const AkUniqueID FEATHER = 2659264082U;
+                static const AkUniqueID GLASS = 2449969375U;
+                static const AkUniqueID LIQUID = 4087983317U;
+                static const AkUniqueID METAL = 2473969246U;
+                static const AkUniqueID MINERAL = 206719813U;
+                static const AkUniqueID PLANT = 114672780U;
+                static const AkUniqueID POWDER = 2286829506U;
+                static const AkUniqueID SHELL = 3086965857U;
+            } // namespace SWITCH
+        } // namespace CARD_MATERIAL
+
         namespace ENEMY_TIER
         {
             static const AkUniqueID GROUP = 2495225258U;
@@ -128,10 +145,28 @@ namespace AK
             } // namespace SWITCH
         } // namespace FOOT_MATERIAL
 
+        namespace POINTER_POSITION
+        {
+            static const AkUniqueID GROUP = 2389746602U;
+
+            namespace SWITCH
+            {
+                static const AkUniqueID POS_1 = 2761190225U;
+                static const AkUniqueID POS_2 = 2761190226U;
+                static const AkUniqueID POS_3 = 2761190227U;
+                static const AkUniqueID POS_4 = 2761190228U;
+                static const AkUniqueID POS_5 = 2761190229U;
+                static const AkUniqueID POS_6 = 2761190230U;
+                static const AkUniqueID POS_7 = 2761190231U;
+                static const AkUniqueID POS_8 = 2761190232U;
+            } // namespace SWITCH
+        } // namespace POINTER_POSITION
+
     } // namespace SWITCHES
 
     namespace GAME_PARAMETERS
     {
+        static const AkUniqueID COMBO_COUNT = 1289759037U;
         static const AkUniqueID DECK_SIZE = 2312524586U;
         static const AkUniqueID PLAYER_HEALTH = 215992295U;
         static const AkUniqueID PLAYER_SPEED = 1062779386U;
@@ -149,7 +184,6 @@ namespace AK
         static const AkUniqueID VOLUME_AMBIENCE = 269715282U;
         static const AkUniqueID VOLUME_MUSIC = 3891337659U;
         static const AkUniqueID VOLUME_SFX = 3673881719U;
-        static const AkUniqueID VOLUME_UI = 4212040332U;
         static const AkUniqueID VOLUME_VOICE = 3676256460U;
     } // namespace GAME_PARAMETERS
 
@@ -158,7 +192,6 @@ namespace AK
         static const AkUniqueID INIT = 1355168291U;
         static const AkUniqueID MUSIC = 3991942870U;
         static const AkUniqueID SFX = 393239870U;
-        static const AkUniqueID TESTBANK = 3291379323U;
     } // namespace BANKS
 
     namespace BUSSES

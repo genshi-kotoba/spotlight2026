@@ -101,25 +101,32 @@ func stop_all(game_object: Node = null) -> void:
 
 
 ## Switch 是 game object 作用域：game_object 省略 = 全局对象。
-func set_switch(switch_group: StringName, value: StringName, game_object: Node = null) -> void:
+## 返回 Wwise SDK 的调用结果（false = 组/值名在已加载 bank 里没解析到）。
+func set_switch(switch_group: StringName, value: StringName, game_object: Node = null) -> bool:
 	if not is_ready:
-		return
+		return false
 	var target := game_object if game_object != null else default_game_object
-	Wwise.set_switch(String(switch_group), String(value), target)
+	var ok: bool = Wwise.set_switch(String(switch_group), String(value), target)
+	if not ok:
+		push_warning("AudioService: set_switch 失败 %s=%s（组/值不在已加载 bank 里？）" % [switch_group, value])
+	return ok
 
 
 ## State 是全局作用域（音乐/混音状态切换走这里）。
-func set_state(state_group: StringName, value: StringName) -> void:
+func set_state(state_group: StringName, value: StringName) -> bool:
 	if not is_ready:
-		return
-	Wwise.set_state(String(state_group), String(value))
+		return false
+	var ok: bool = Wwise.set_state(String(state_group), String(value))
+	if not ok:
+		push_warning("AudioService: set_state 失败 %s=%s" % [state_group, value])
+	return ok
 
 
 ## RTPC。game_object 省略 = 全局 RTPC（音量类参数 Volume_* 就这么用）。
-func set_rtpc(rtpc_name: StringName, value: float, game_object: Node = null) -> void:
+func set_rtpc(rtpc_name: StringName, value: float, game_object: Node = null) -> bool:
 	if not is_ready:
-		return
-	Wwise.set_rtpc_value(String(rtpc_name), value, game_object)
+		return false
+	return Wwise.set_rtpc_value(String(rtpc_name), value, game_object)
 
 
 func get_rtpc(rtpc_name: StringName, game_object: Node = null) -> float:

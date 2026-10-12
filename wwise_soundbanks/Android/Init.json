@@ -10,7 +10,7 @@
     "Type": "User",
     "GUID": "{701ECBBD-9C7B-4030-8CDB-749EE5D1C7B9}",
     "Language": "SFX",
-    "Hash": "{B2789B08-2EEC-0F42-44B0-26F2DB20B9FE}",
+    "Hash": "{8128083F-6829-3A82-FF8E-518BD42A2199}",
     "ObjectPath": "Init",
     "ShortName": "Init",
     "Path": "Init.bnk",
@@ -201,6 +201,12 @@
       "GUID": "{DBB5AC02-F9DD-4696-BA6C-B7955B7248ED}"
      },
      {
+      "Id": "1289759037",
+      "Name": "Combo_Count",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\Combo_Count",
+      "GUID": "{162096D1-F035-434E-8639-BAEDFCC3FD00}"
+     },
+     {
       "Id": "1351367891",
       "Name": "SS_Air_Fear",
       "ObjectPath": "\\Game Parameters\\Factory Soundseed Air Game Syncs\\SS_Air_Fear",
@@ -277,12 +283,6 @@
       "Name": "SS_Air_Turbulence",
       "ObjectPath": "\\Game Parameters\\Factory Soundseed Air Game Syncs\\SS_Air_Turbulence",
       "GUID": "{EDA87B19-73AA-40A0-9F19-2073606DB710}"
-     },
-     {
-      "Id": "4212040332",
-      "Name": "Volume_UI",
-      "ObjectPath": "\\Game Parameters\\Default Work Unit\\Volume_UI",
-      "GUID": "{143606D9-B48A-462D-953A-FB01F82544EE}"
      }
     ],
     "StateGroups": [
@@ -379,6 +379,62 @@
       ]
      },
      {
+      "Id": "2389746602",
+      "Name": "Pointer_Position",
+      "ObjectPath": "\\Switches\\Default Work Unit\\Pointer_Position",
+      "GUID": "{9582CF37-1912-413C-9985-3C76DC997143}",
+      "Switches": [
+       {
+        "Id": "2761190225",
+        "Name": "Pos_1",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Pointer_Position\\Pos_1",
+        "GUID": "{AFA18F15-2FE0-4562-95C5-B583E95BB720}"
+       },
+       {
+        "Id": "2761190226",
+        "Name": "Pos_2",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Pointer_Position\\Pos_2",
+        "GUID": "{D58AE568-3C76-4157-8262-CF3CE567E1CD}"
+       },
+       {
+        "Id": "2761190227",
+        "Name": "Pos_3",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Pointer_Position\\Pos_3",
+        "GUID": "{ED6AB7FB-4ABD-49A5-8948-F87BA3618B62}"
+       },
+       {
+        "Id": "2761190228",
+        "Name": "Pos_4",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Pointer_Position\\Pos_4",
+        "GUID": "{21B987C2-0BA5-4D64-BA06-6BE0A23EA142}"
+       },
+       {
+        "Id": "2761190229",
+        "Name": "Pos_5",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Pointer_Position\\Pos_5",
+        "GUID": "{2C81C467-446C-4C85-9206-A922B0308459}"
+       },
+       {
+        "Id": "2761190230",
+        "Name": "Pos_6",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Pointer_Position\\Pos_6",
+        "GUID": "{649C3C8F-C3C7-484C-B6CB-54FCF5EAAD48}"
+       },
+       {
+        "Id": "2761190231",
+        "Name": "Pos_7",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Pointer_Position\\Pos_7",
+        "GUID": "{03427C76-D89B-4C9F-B01C-CEEF82E18661}"
+       },
+       {
+        "Id": "2761190232",
+        "Name": "Pos_8",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Pointer_Position\\Pos_8",
+        "GUID": "{FDF542BB-9228-408B-ACAB-5A837C410C73}"
+       }
+      ]
+     },
+     {
       "Id": "2495225258",
       "Name": "Enemy_Tier",
       "ObjectPath": "\\Switches\\Default Work Unit\\Enemy_Tier",
@@ -401,6 +457,74 @@
         "Name": "Boss",
         "ObjectPath": "\\Switches\\Default Work Unit\\Enemy_Tier\\Boss",
         "GUID": "{082108FB-44C7-4235-9781-6F3E86273D52}"
+       }
+      ]
+     },
+     {
+      "Id": "4230271261",
+      "Name": "Card_Material",
+      "ObjectPath": "\\Switches\\Default Work Unit\\Card_Material",
+      "GUID": "{00D6956A-4FEC-4B10-A849-0F3251B73FCD}",
+      "Switches": [
+       {
+        "Id": "114672780",
+        "Name": "Plant",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Card_Material\\Plant",
+        "GUID": "{728C889E-9481-42E7-8B47-BFABE8D723DC}"
+       },
+       {
+        "Id": "206719813",
+        "Name": "Mineral",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Card_Material\\Mineral",
+        "GUID": "{F5C1873B-091D-4F49-B979-4D5B8E60EA5D}"
+       },
+       {
+        "Id": "1744723399",
+        "Name": "Bone",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Card_Material\\Bone",
+        "GUID": "{43CA3820-19B6-4418-A968-D543C1217DAB}"
+       },
+       {
+        "Id": "1758195831",
+        "Name": "Abstract",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Card_Material\\Abstract",
+        "GUID": "{87F7CB4D-5E50-4668-8A11-31EC83D93593}"
+       },
+       {
+        "Id": "2286829506",
+        "Name": "Powder",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Card_Material\\Powder",
+        "GUID": "{F404C3EE-7381-47FC-AA0E-371F659FA9E7}"
+       },
+       {
+        "Id": "2449969375",
+        "Name": "Glass",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Card_Material\\Glass",
+        "GUID": "{683115D1-76C5-4082-9A4C-40FD05B43338}"
+       },
+       {
+        "Id": "2473969246",
+        "Name": "Metal",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Card_Material\\Metal",
+        "GUID": "{22902AEE-4D2C-41B2-B3B5-CE23A5F9B444}"
+       },
+       {
+        "Id": "2659264082",
+        "Name": "Feather",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Card_Material\\Feather",
+        "GUID": "{A397940E-1FA9-41F1-9183-DC069C0C245E}"
+       },
+       {
+        "Id": "3086965857",
+        "Name": "Shell",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Card_Material\\Shell",
+        "GUID": "{CC7CD388-3818-4B30-A89F-AB8E471EB6FC}"
+       },
+       {
+        "Id": "4087983317",
+        "Name": "Liquid",
+        "ObjectPath": "\\Switches\\Default Work Unit\\Card_Material\\Liquid",
+        "GUID": "{BE6DADD6-5FDF-46E4-B78E-1655E41FFB31}"
        }
       ]
      }
@@ -884,6 +1008,6 @@
     ]
    }
   ],
-  "FileHash": "{9FC832D5-3A8B-75DE-DFC1-DD9D420F93C6}"
+  "FileHash": "{95F3F422-CC65-F7E3-641C-494E5CD9C80E}"
  }
 }

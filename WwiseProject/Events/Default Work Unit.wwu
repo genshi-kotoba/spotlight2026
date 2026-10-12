@@ -439,43 +439,9 @@
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
-								<Event Name="SFX_025_Foot_Wood" ID="{99B6A5C5-AF68-44F7-B611-AD3D81A59DE5}">
-									<PropertyList>
-										<Property Name="Color" Type="int16" Value="20"/>
-										<Property Name="OverrideColor" Type="bool" Value="True"/>
-									</PropertyList>
+								<Event Name="SFX_Footsteps" ID="{502CF05A-E77C-4463-8D3B-352BA486B3C6}">
 									<ChildrenList>
-										<Action Name="SFX-025_Foot_Wood" ID="{90D3193A-B31E-47B8-8BCA-94BD5EB9ABF3}" ShortID="288644029">
-											<ReferenceList>
-												<Reference Name="Target">
-													<ObjectRef Name="SFX_Footsteps" ID="{28902C75-FD5A-468D-A0FD-7055A6AB4AFE}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-												</Reference>
-											</ReferenceList>
-										</Action>
-									</ChildrenList>
-								</Event>
-								<Event Name="SFX_026_Foot_Mud" ID="{439C53F1-B4A4-454C-982B-ACB3BFA01FF2}">
-									<PropertyList>
-										<Property Name="Color" Type="int16" Value="20"/>
-										<Property Name="OverrideColor" Type="bool" Value="True"/>
-									</PropertyList>
-									<ChildrenList>
-										<Action Name="SFX-026_Foot_Mud" ID="{6206841D-1877-4BFE-A8BD-3F3E35884624}" ShortID="271896769">
-											<ReferenceList>
-												<Reference Name="Target">
-													<ObjectRef Name="SFX_Footsteps" ID="{28902C75-FD5A-468D-A0FD-7055A6AB4AFE}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-												</Reference>
-											</ReferenceList>
-										</Action>
-									</ChildrenList>
-								</Event>
-								<Event Name="SFX_027_Foot_Stone" ID="{D4575241-B787-479C-8D49-9CBF13093A14}">
-									<PropertyList>
-										<Property Name="Color" Type="int16" Value="20"/>
-										<Property Name="OverrideColor" Type="bool" Value="True"/>
-									</PropertyList>
-									<ChildrenList>
-										<Action Name="SFX-027_Foot_Stone" ID="{A24A2D02-F6E0-4435-8371-B98081207CB1}" ShortID="312557857">
+										<Action Name="SFX_Footsteps" ID="{8BB86459-7D56-40E1-BB7A-CC762C5820BE}" ShortID="288781651">
 											<ReferenceList>
 												<Reference Name="Target">
 													<ObjectRef Name="SFX_Footsteps" ID="{28902C75-FD5A-468D-A0FD-7055A6AB4AFE}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
