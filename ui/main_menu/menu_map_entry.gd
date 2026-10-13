@@ -34,10 +34,11 @@ func _ready() -> void:
 			_dialog.dialog_text = "节点 %s 的请求已恢复，请完成或取消以继续探索。" % session.pending.node_id
 			_dialog.popup_centered(Vector2i(570, 255))
 	_gateway.bind_map_view(self)
-	var actions := HBoxContainer.new()
-	actions.position = Vector2(18, 360)
-	_hud_root.add_child(actions)
-	actions.add_child(_button("保存并返回开始界面", _return_to_menu))
+	# 放弃本局的二次确认在设置面板里完成，这里只负责落地。
+	# 冒险菜单设置页里的三个动作：存档、回主菜单、退出都走存档网关。
+	_run_menu.abandon_requested.connect(_on_menu_abandon)
+	_run_menu.return_to_menu_requested.connect(_return_to_menu)
+	_run_menu.quit_requested.connect(_on_menu_quit)
 	# 第一张地图生成后即留下完整检查点；原 F6 地图 Demo 仍不受此装配层影响。
 	if map_run != null and map_run.current_floor > 0:
 		_save_run()
@@ -79,11 +80,21 @@ func _save_run() -> void:
 
 
 func _build_run_controls() -> void:
+	# 换层控件并入右下信息面板；档案存盘由存档网关负责。
 	super._build_run_controls()
-	# 这两个控件是 main Demo 的内存暂存入口；主菜单进局使用真正的档案存盘。
-	_restore_button.hide()
-	_restore_button.get_parent().get_child(0).text = "保存本局"
-	_restore_button.get_parent().get_child(2).text = "关闭程序后可从开始界面继续"
+
+
+func _on_menu_abandon() -> void:
+	var error: Error = _gateway.abandon_run()
+	if error != OK:
+		_show_toast("放弃本局失败：%d" % error)
+		return
+	_return_to_menu()
+
+
+func _on_menu_quit() -> void:
+	_gateway.save_current()
+	_gateway.quit_game()
 
 
 func _return_to_menu() -> void:
@@ -96,11 +107,6 @@ func _return_to_menu() -> void:
 	var error := get_tree().change_scene_to_file(MENU_SCENE)
 	if error != OK:
 		_show_toast("返回开始界面失败：%d" % error)
-
-
-func _new_run() -> void:
-	# main 的地图 Demo 自带的新局按钮不能绕过主菜单的覆盖确认/状态机。
-	_show_toast("请保存并返回开始界面，通过“新游戏”确认覆盖后开局。")
 
 
 func _change_floor(index: int) -> void:

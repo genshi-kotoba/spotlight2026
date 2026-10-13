@@ -167,6 +167,9 @@ class StaticCanvas extends Control:
 		draw_circle(center, radius * 0.78, Color("#83e3d0"), false, line_width * 1.4, true)
 
 
+## 放大倍率与镜头偏移：给"查看地图"用（放大后拖动镜头，不动角色）。
+var zoom := 1.0
+var pan_offset := Vector2.ZERO
 var _static_canvas: StaticCanvas
 var _map_data: Dictionary = {}
 var _map_bounds := Rect2()
@@ -206,6 +209,18 @@ func set_view(data: Dictionary, cell_radius_px: float = 60.0) -> void:
 	queue_redraw()
 
 
+func set_zoom(value: float) -> void:
+	zoom = clampf(value, 1.0, 4.0)
+	_refresh_layout()
+	queue_redraw()
+
+
+func set_pan(offset: Vector2) -> void:
+	pan_offset = offset
+	_refresh_layout()
+	queue_redraw()
+
+
 func set_player(plane: Vector2, view_rect: Rect2) -> void:
 	_player_plane = plane
 	_view_rect = view_rect
@@ -226,9 +241,9 @@ func _refresh_layout() -> void:
 		var available := size - Vector2(FIT_MARGIN * 2.0, FIT_MARGIN * 2.0)
 		var scale_x := available.x / _map_bounds.size.x
 		var scale_y := available.y / _map_bounds.size.y
-		_map_scale = minf(scale_x, scale_y)
+		_map_scale = minf(scale_x, scale_y) * zoom
 		var used_size := _map_bounds.size * _map_scale
-		_map_origin = Vector2(FIT_MARGIN, FIT_MARGIN) + (available - used_size) * 0.5 - _map_bounds.position * _map_scale
+		_map_origin = Vector2(FIT_MARGIN, FIT_MARGIN) + (available - used_size) * 0.5 			- _map_bounds.position * _map_scale + pan_offset
 	if _static_canvas != null:
 		_static_canvas.set_layout(_map_origin, _map_scale)
 

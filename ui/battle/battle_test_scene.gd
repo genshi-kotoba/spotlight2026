@@ -49,6 +49,11 @@ const RELIC_GRID_SEPARATION := Vector2(6, 4)
 const RELIC_RIGHT_PAGE_OFFSET := 127.0
 const RELIC_LOG_SIZE := Vector2(240, 72)
 const CARD_SCENE := preload("res://ui/components/card/card_view.tscn")
+const RUN_MENU := preload("res://ui/hud/run_menu_overlay.gd")
+const MAP_VIEWER := preload("res://ui/world_map/map_viewer.gd")
+## 战斗里查看地图用的快照；正式跑图时改成读跑图状态里的地图。
+const MAP_SNAPSHOT_PATH := "res://data/config/flat_2d/demo_map.json"
+const MENU_SCENE := "res://ui/main_menu/main_menu.tscn"
 const TEST_CARD_DIR := "res://data/cards/test"
 const TEST_DECK_CARD_IDS: Array[String] = [
 	"test_damage_enemy", "test_damage_self", "test_block", "test_heal",
@@ -101,6 +106,8 @@ var _hand_drag_origin := 0.0
 var _relic_edit_button: Button
 var _restart_button: Button
 var _battle_result := ""
+var _run_menu: RunMenuOverlay
+var _map_page_source: Control
 var _selected_ids: Array[String] = []
 var _selected_cards: Array[Dictionary] = []
 var _discard_selection_ids: Array[String] = []
@@ -118,6 +125,14 @@ func _ready() -> void:
 	discard_button.pressed.connect(_on_discard_pile_pressed)
 	cancel_button.pressed.connect(_on_cancel_pressed)
 	play_button.pressed.connect(_on_play_pressed)
+	_run_menu = RUN_MENU.new()
+	_run_menu.name = "RunMenuOverlay"
+	add_child(_run_menu)
+	$PlayerPortrait.gui_input.connect(_on_player_portrait_input)
+	# 冒险菜单设置页的三个动作：战斗里也能存档、回主菜单、退出。
+	_run_menu.abandon_requested.connect(_on_menu_abandon)
+	_run_menu.return_to_menu_requested.connect(_on_menu_return)
+	_run_menu.quit_requested.connect(_on_menu_quit)
 	hand_scroll.gui_input.connect(_on_hand_scroll_input)
 	%ClosePileButton.pressed.connect(_close_pile_modal)
 	%PileModalShade.gui_input.connect(_on_modal_shade_input)
@@ -851,6 +866,99 @@ func _set_pointer(instance_id: String) -> void:
 		if highlight != null:
 			highlight.visible = instance_id != "" \
 				and String(row.get_meta("instance_id", "")) == instance_id
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	# 与地图界面同一套：Esc 设置 / Tab 背包 / M 地图，再按一次退出。
+	if _run_menu == null:
+		return
+	var open := _run_menu.is_open()
+	var page := _run_menu.current_page()
+	if event.is_action_pressed("ui_cancel"):
+		if open:
+			_run_menu.close()
+		else:
+			_open_run_menu(2)
+	elif event.is_action_pressed("ui_focus_next"):
+		if open and page == 1:
+			_run_menu.close()
+		else:
+			_open_run_menu(1)
+	elif event.is_action_pressed("menu_map"):
+		if open and page == 0:
+			_run_menu.close()
+		else:
+			_open_run_menu(0)
+	else:
+		return
+	get_viewport().set_input_as_handled()
+
+
+func _on_player_portrait_input(event: InputEvent) -> void:
+	# 战斗里也能看：点头像打开冒险菜单，地图页只查看不移动角色。
+	if event is InputEventMouseButton and event.pressed \
+			and event.button_index == MOUSE_BUTTON_LEFT:
+		_open_run_menu()
+
+
+func _on_menu_abandon() -> void:
+	var gateway := get_node_or_null("/root/SaveGateway")
+	if gateway != null:
+		gateway.abandon_run()
+	get_tree().change_scene_to_file(MENU_SCENE)
+
+
+func _on_menu_return() -> void:
+	var gateway := get_node_or_null("/root/SaveGateway")
+	if gateway != null:
+		gateway.save_current()
+	get_tree().change_scene_to_file(MENU_SCENE)
+
+
+func _on_menu_quit() -> void:
+	var gateway := get_node_or_null("/root/SaveGateway")
+	if gateway != null:
+		gateway.quit_game()
+	else:
+		get_tree().quit()
+
+
+func _open_run_menu(page: int = 1) -> void:
+	if _run_menu == null:
+		return
+	if _map_page_source == null:
+		_map_page_source = _build_map_page_source()
+	_run_menu.open(page)
+
+
+func _build_map_page_source() -> Control:
+	# 只查看的地图：真实渲染 + 滚轮缩放 + 拖动平移，不带角色位置。
+	var data := _map_snapshot_data()
+	if data.is_empty():
+		return null
+	# 先挂进浮层再喂数据，查看器内部节点在 _ready 里才建好。
+	var viewer: Control = MAP_VIEWER.new()
+	_run_menu.set_map_viewer(viewer)
+	viewer.set_map(data, 60.0)
+	return viewer
+
+
+func _map_snapshot_data() -> Dictionary:
+	# 战斗里没有跑图会话，按"全图已知"喂给查看器：地形与全部节点都看得见，
+	# 方便战斗中规划路线。地图界面里改喂会话的已探索视图。
+	if not FileAccess.file_exists(MAP_SNAPSHOT_PATH):
+		return {}
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(MAP_SNAPSHOT_PATH))
+	if not parsed is Dictionary:
+		return {}
+	var data: Dictionary = parsed
+	for cell: Variant in data.get("cells", []):
+		if cell is Dictionary:
+			cell["known"] = true
+	for node: Variant in data.get("nodes", []):
+		if node is Dictionary:
+			node["known"] = true
+	return data
 
 
 func _on_hand_scroll_input(event: InputEvent) -> void:

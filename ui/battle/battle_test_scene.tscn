@@ -212,7 +212,7 @@ offset_left = 24.0
 offset_top = 20.0
 offset_right = 136.0
 offset_bottom = 132.0
-mouse_filter = 2
+mouse_default_cursor_shape = 2
 theme_override_styles/panel = SubResource("PlaceholderBox")
 
 [node name="Label" type="Label" parent="PlayerPortrait"]

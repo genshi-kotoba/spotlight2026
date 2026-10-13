@@ -4,6 +4,9 @@ const Session = preload("res://systems/map/flat_2d/planar_map_session.gd")
 const Hex = preload("res://systems/map/hex_coord.gd")
 const MapView = preload("res://ui/world_map/flat_2d/map_view.gd")
 const MiniMap = preload("res://ui/world_map/flat_2d/map_minimap.gd")
+const RunPanel = preload("res://ui/hud/run_status_panel.gd")
+const RunMenu = preload("res://ui/hud/run_menu_overlay.gd")
+const MapViewerScript = preload("res://ui/world_map/map_viewer.gd")
 const MAP_PATH := "res://data/config/flat_2d/demo_map.json"
 const SETTINGS_PATH := "res://data/config/flat_2d/demo_settings.json"
 const LABELS := {"battle": "普通战斗", "elite": "精英战斗", "shop": "商店", "boss": "Boss", "event": "随机事件"}
@@ -22,11 +25,9 @@ var _player: Node2D
 var _camera: Camera2D
 var _bus: Node
 var _header: Label
+var _seed_label: Label
 var _status: Label
 var _prompt: Label
-var _interaction: Button
-var _pause_button: Button
-var _zoom_label: Label
 var _speed_label: Label
 var _dialog: ConfirmationDialog
 var _dialog_request_id := ""
@@ -44,6 +45,12 @@ var _render_actor_plane := Vector2.ZERO
 var _render_path: Array[Vector2] = []
 var _render_path_length := 0.0
 var _hud_root: Control
+## 右下信息面板的内容列：子类（跑图落点）往这里加行。
+var _info_column: VBoxContainer
+var _run_panel: RunStatusPanel
+var _run_menu: RunMenuOverlay
+var _menu_paused_before := false
+var _menu_map: Control
 
 class CircleActor extends Node2D:
 	var radius := 10.8
@@ -104,12 +111,87 @@ func _ready() -> void:
 	set_physics_process(true)
 
 ## Run demo overrides the bootstrap; the shared view never resets SeedService.
+func _handle_menu_hotkeys(event: InputEvent) -> bool:
+	# Esc 设置 / Tab 背包 / M 地图；在对应页再按一次即退出，Esc 在任意页都能退出。
+	if _run_menu == null:
+		return false
+	var open := _run_menu.is_open()
+	var page := _run_menu.current_page()
+	if event.is_action_pressed("ui_cancel"):
+		if open:
+			_run_menu.close()
+		else:
+			_open_run_menu(2)
+	elif event.is_action_pressed("ui_focus_next"):
+		if open and page == 1:
+			_run_menu.close()
+		else:
+			_open_run_menu(1)
+	elif event.is_action_pressed("menu_map"):
+		if open and page == 0:
+			_run_menu.close()
+		else:
+			_open_run_menu(0)
+	else:
+		return false
+	get_viewport().set_input_as_handled()
+	return true
+
+
+func _on_minimap_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed \
+			and event.button_index == MOUSE_BUTTON_LEFT:
+		_open_run_menu(0)
+
+
+func _open_run_menu(page: int = 1) -> void:
+	if _run_menu == null:
+		return
+	if _menu_map == null:
+		# 地图页里是真正的 MapView 渲染：滚轮缩放、拖动平移，角色不动。
+		# 先挂进浮层再喂数据，查看器内部节点在 _ready 里才建好。
+		_menu_map = MapViewerScript.new()
+		_run_menu.set_map_viewer(_menu_map)
+	# 每次打开都重新喂一份"已探索视图"：地形、迷雾、已解锁节点和小地图同源。
+	_menu_map.set_map(session.get_view(), cell_radius_px)
+	_update_minimap()
+	if _menu_map != null and is_instance_valid(_menu_map):
+		_menu_map.set_actor(_render_actor_plane)
+	# 打开菜单即锁住外层地图：暂停会同时挡住移动、鼠标转向与滚轮缩放，
+	# 免得在菜单里缩放地图时外面的大地图跟着一起动。
+	_menu_paused_before = paused
+	_set_paused(true)
+	_run_menu.open(page)
+
+
+func _on_run_menu_closed() -> void:
+	_set_paused(_menu_paused_before)
+
+
+func _refresh_run_panel() -> void:
+	if _run_panel == null:
+		return
+	# 血量取跑图状态；还没开局时先用占位值。
+	if GlobalState != null and GlobalState.run_active and GlobalState.current_run != null:
+		var run: RunStateMachine = GlobalState.current_run
+		_run_panel.set_health(run.health, run.max_health, 0, [])
+	else:
+		_run_panel.set_health(60, 100, 0, [])
+	# 典籍残片与战斗界面读同一个存档文件。
+	var catalog := RelicCatalog.load_definitions()
+	var board := RelicBoard.new()
+	var error := board.load_from_file(catalog, RelicBoard.SAVE_PATH)
+	if error != OK and error != ERR_FILE_NOT_FOUND:
+		push_warning("地图界面读取典籍配置失败：%d" % error)
+	_run_panel.set_relic_board(catalog, board)
+
+
 func _initial_snapshot() -> Dictionary:
 	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
 	return data if data is Dictionary else {}
 
 func _register_input() -> void:
-	var actions := {"map2d_left": [KEY_A, KEY_LEFT], "map2d_right": [KEY_D, KEY_RIGHT], "map2d_up": [KEY_W, KEY_UP], "map2d_down": [KEY_S, KEY_DOWN], "map2d_interact": [KEY_E], "map2d_pause": [KEY_ESCAPE], "map2d_cycle": [KEY_TAB]}
+	var actions := {"map2d_left": [KEY_A, KEY_LEFT], "map2d_right": [KEY_D, KEY_RIGHT], "map2d_up": [KEY_W, KEY_UP], "map2d_down": [KEY_S, KEY_DOWN], "map2d_interact": [KEY_E], "map2d_pause": [KEY_ESCAPE], "map2d_cycle": [KEY_Q]}
 	for action in actions:
 		if not InputMap.has_action(action):
 			InputMap.add_action(action)
@@ -129,32 +211,51 @@ func _build_hud() -> void:
 	var font := SystemFont.new()
 	font.font_names = PackedStringArray(["PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "sans-serif"])
 	theme.default_font = font
-	theme.default_font_size = 19
+	theme.default_font_size = 16
 	root.theme = theme
 	layer.add_child(root)
+	# 与战斗界面同源的左上状态列：头像、血条、背包、典籍。
+	_run_panel = RunPanel.new()
+	_run_panel.name = "RunStatusPanel"
+	root.add_child(_run_panel)
+	_refresh_run_panel()
+	_run_panel.menu_requested.connect(_open_run_menu)
+	var bar_style := _bar_style()
+	# 冒险菜单：点头像打开，地图页里放的是同一份地图数据的放大版。
+	_run_menu = RunMenu.new()
+	_run_menu.name = "RunMenuOverlay"
+	root.add_child(_run_menu)
+	_run_menu.closed.connect(_on_run_menu_closed)
+	# 地图信息与调试控件放右下角，与左下的操作提示同高、左右对称。
 	var top := PanelContainer.new()
-	top.position = Vector2(18, 18)
-	top.size = Vector2(520, 100)
+	top.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	top.offset_left = -950
+	top.offset_right = -18
+	top.offset_top = -166
+	top.offset_bottom = -18
+	top.add_theme_stylebox_override("panel", bar_style)
 	root.add_child(top)
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 5)
+	box.add_theme_constant_override("separation", 6)
 	top.add_child(box)
+	_info_column = box
 	_header = Label.new()
-	_header.add_theme_font_size_override("font_size", 22)
+	_header.add_theme_font_size_override("font_size", 20)
+	_header.add_theme_color_override("font_color", Color(0.910, 0.706, 0.333))
 	box.add_child(_header)
+	_seed_label = Label.new()
+	_seed_label.add_theme_font_size_override("font_size", 16)
+	_seed_label.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
+	box.add_child(_seed_label)
 	var controls := HBoxContainer.new()
 	box.add_child(controls)
-	_pause_button = _button("暂停 Esc", func(): _set_paused(not paused))
-	controls.add_child(_pause_button)
 	controls.add_child(_button("重开本图", _reset_map))
-	controls.add_child(_button("恢复 400%", func(): map_scale = 4.0; _update_camera()))
-	_zoom_label = Label.new()
-	controls.add_child(_zoom_label)
 	var speed_row := HBoxContainer.new()
 	box.add_child(speed_row)
 	_speed_label = Label.new()
 	_speed_label.text = "移速 1.00×"
 	_speed_label.custom_minimum_size.x = 120
+	_speed_label.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
 	speed_row.add_child(_speed_label)
 	var slider := HSlider.new()
 	slider.min_value = 0.25
@@ -174,39 +275,42 @@ func _build_hud() -> void:
 	root.add_child(mini_box)
 	var mini_column := VBoxContainer.new()
 	mini_box.add_child(mini_column)
-	var mini_title := Label.new()
-	mini_title.text = "总地图 · 青色圆点为主角"
-	mini_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mini_column.add_child(mini_title)
 	_mini = MiniMap.new()
 	_mini.custom_minimum_size = Vector2(294, 230)
+	_mini.mouse_filter = Control.MOUSE_FILTER_STOP
+	_mini.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_mini.tooltip_text = "点开查看地图"
+	_mini.gui_input.connect(_on_minimap_input)
 	_mini.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	mini_column.add_child(_mini)
 	var footer := PanelContainer.new()
 	footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	footer.offset_left = 18
-	footer.offset_right = -18
-	footer.offset_top = -147
+	footer.offset_right = -970
+	footer.offset_top = -166
 	footer.offset_bottom = -18
+	footer.add_theme_stylebox_override("panel", bar_style)
 	root.add_child(footer)
 	var footer_box := VBoxContainer.new()
+	footer_box.add_theme_constant_override("separation", 6)
 	footer.add_child(footer_box)
 	var row := HBoxContainer.new()
 	footer_box.add_child(row)
 	_prompt = Label.new()
 	_prompt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_prompt.add_theme_font_size_override("font_size", 20)
+	_prompt.add_theme_color_override("font_color", Color(0.949, 0.890, 0.776))
 	row.add_child(_prompt)
-	_interaction = _button("交互 E", _interact)
-	row.add_child(_interaction)
 	var help := Label.new()
-	help.text = "WASD / 方向键，或按住左键朝鼠标移动 · E 交互 · Tab 切换 · 滚轮缩放 · Esc 暂停"
-	help.add_theme_color_override("font_color", Color("a9bbcc"))
+	help.text = "WASD / 方向键移动 · E 交互 · 滚轮缩放 · Q 切换目标 · Tab 背包 · M 地图 · Esc 设置"
+	help.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
 	footer_box.add_child(help)
 	var legend := Label.new()
 	legend.text = "节点：B 普通战斗 · E 精英 · $ 商店 · ? 随机事件 · BOSS 首领 · 橙色锁为路线关口"
-	legend.add_theme_color_override("font_color", Color("a9bbcc"))
+	legend.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
 	footer_box.add_child(legend)
 	_status = Label.new()
+	_status.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
 	footer_box.add_child(_status)
 	_dialog = ConfirmationDialog.new()
 	_dialog.title = "节点接入演示"
@@ -217,12 +321,50 @@ func _build_hud() -> void:
 	_dialog.canceled.connect(func(): _demo_result("cancelled"))
 	add_child(_dialog)
 
+func _bar_style() -> StyleBoxFlat:
+	# 左右两块底栏共用：不透明底，避免地图从面板下透上来显得发花。
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.102, 0.086, 0.070, 0.96)
+	style.set_border_width_all(1)
+	style.border_color = Color(0.910, 0.706, 0.333, 0.42)
+	style.set_corner_radius_all(6)
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
+	return style
+
+
 func _button(label: String, action: Callable) -> Button:
 	var button := Button.new()
 	button.text = label
 	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_font_size_override("font_size", 16)
+	button.add_theme_color_override("font_color", Color(0.949, 0.890, 0.776))
+	button.add_theme_color_override("font_disabled_color", Color(0.749, 0.682, 0.553, 0.65))
+	button.add_theme_stylebox_override("normal", _button_style(Color(0.141, 0.102, 0.075, 0.9),
+		Color(0.910, 0.706, 0.333, 0.45)))
+	button.add_theme_stylebox_override("hover", _button_style(Color(0.349, 0.220, 0.161, 1.0),
+		Color(0.949, 0.749, 0.361, 1.0)))
+	button.add_theme_stylebox_override("pressed", _button_style(Color(0.349, 0.220, 0.161, 1.0),
+		Color(0.949, 0.749, 0.361, 1.0)))
+	button.add_theme_stylebox_override("disabled", _button_style(Color(0.090, 0.070, 0.055, 0.85),
+		Color(0.550, 0.450, 0.250, 0.30)))
 	button.pressed.connect(action)
 	return button
+
+
+func _button_style(color: Color, edge: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = color
+	style.set_border_width_all(1)
+	style.border_color = edge
+	style.set_corner_radius_all(4)
+	style.content_margin_left = 12
+	style.content_margin_right = 12
+	style.content_margin_top = 4
+	style.content_margin_bottom = 4
+	return style
 
 ## Public assembly API. On failure, neither the live map nor its state changes.
 func load_map(snapshot: Dictionary, saved_state: Dictionary = {}) -> bool:
@@ -242,7 +384,8 @@ func load_map(snapshot: Dictionary, saved_state: Dictionary = {}) -> bool:
 	_sync_view()
 	_sync_actor(false)
 	_update_camera()
-	_header.text = "纯 2D 地图 · 第 %d 层\nSeed %s" % [session.floor_index, session.seed.left(32)]
+	_header.text = "第 %d 层" % session.floor_index
+	_seed_label.text = "Seed %s" % session.seed.left(32)
 	_bus.map_loaded.emit(session.map_id, session.seed)
 	if session != candidate:
 		return true
@@ -317,14 +460,16 @@ func _update_camera() -> void:
 	var fit := minf(viewport.x / (bounds.size.x + cell_radius_px * 2), viewport.y / (bounds.size.y + cell_radius_px * 2))
 	_camera.zoom = Vector2.ONE * fit * map_scale
 	_camera.force_update_scroll()
-	_zoom_label.text = "%d%%" % roundi(map_scale * 100)
 	_update_minimap()
 
 func _update_minimap() -> void:
 	if not is_inside_tree() or not is_instance_valid(_mini):
 		return
 	var half := get_viewport_rect().size / (_camera.zoom * cell_radius_px * 2.0)
-	_mini.set_player(_render_actor_plane, Rect2(_render_actor_plane - half, half * 2))
+	var window := Rect2(_render_actor_plane - half, half * 2)
+	_mini.set_player(_render_actor_plane, window)
+	if _menu_map != null and is_instance_valid(_menu_map):
+		_menu_map.set_actor(_render_actor_plane)
 
 func _physics_process(delta: float) -> void:
 	var direction := Vector2.ZERO
@@ -378,8 +523,6 @@ func _process(delta: float) -> void:
 	_toast_left = maxf(0, _toast_left - delta)
 	_status_elapsed += delta
 	_update_selection()
-	_interaction.text = "进入关口 E" if not _selected.is_empty() and session.nodes[_selected].is_route_gate else "交互 E"
-	_interaction.disabled = paused or not session.pending.is_empty() or _selected.is_empty()
 	if not session.pending.is_empty():
 		_prompt.text = "正在处理节点；等待结果回传"
 	elif paused:
@@ -403,6 +546,8 @@ func _input(event: InputEvent) -> void:
 		_mouse_steering_held = false
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _handle_menu_hotkeys(event):
+		return
 	if event.is_action_pressed("map2d_pause"):
 		if session.pending.is_empty():
 			_set_paused(not paused)
@@ -430,7 +575,7 @@ func _notification(what: int) -> void:
 	# already blocks movement, so do not leave the map paused on its return.
 	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT and is_inside_tree():
 		_mouse_steering_held = false
-		if is_instance_valid(_pause_button) and session.pending.is_empty():
+		if session.pending.is_empty():
 			_set_paused(true)
 
 func _set_paused(value: bool) -> void:
@@ -438,7 +583,6 @@ func _set_paused(value: bool) -> void:
 	_mouse_steering_held = false
 	if is_instance_valid(_player):
 		_sync_actor(false)
-	_pause_button.text = "继续 Esc" if paused else "暂停 Esc"
 
 func _interact() -> void:
 	_update_selection()
