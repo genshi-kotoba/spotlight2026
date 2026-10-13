@@ -8,15 +8,47 @@ extends Control
 @export_range(0.05, 3.0, 0.05) var resolution_delay := 0.5
 @export_range(0.05, 3.0, 0.05) var enemy_turn_delay := 0.75
 @export_range(1.0, 2.0, 0.05) var hand_hover_multiplier := 1.5
-@export_range(0.1, 1.0, 0.01) var hand_hover_duration := 0.42
+## 悬停放大与回正时长：照 reference/card-and-dice 的 CardView（放大 HoverDuration=0.01 秒，
+## 回正 ReturnDuration=0.18 秒，一快一慢）。
+@export_range(0.0, 1.0, 0.01) var hand_hover_duration := 0.01
+@export_range(0.0, 1.0, 0.01) var hand_hover_return_duration := 0.18
 @export var relic_board_path := RelicBoard.SAVE_PATH
 @export_range(1, 99999, 1) var enemy_starting_health := 3000
 
+## 手牌悬停扇开，规则与取值参考 reference/card-and-dice 的 HandUIController.Hover：
+## 距悬停卡 1/2/3 张分别外移大/中/小距离，手牌越多幅度越小（10 张时只剩 10%）。
+@export_range(0.0, 120.0, 1.0) var fan_offset_long := 50.0
+@export_range(0.0, 120.0, 1.0) var fan_offset_medium := 35.0
+@export_range(0.0, 120.0, 1.0) var fan_offset_short := 15.0
+@export_range(0.05, 1.0, 0.01) var fan_duration_in := 0.15
+@export_range(0.05, 1.0, 0.01) var fan_duration_out := 0.18
+## 按手牌张数缩放的扇开系数，下标即张数（1~10，0 位弃用）。
+@export var fan_factor_by_count: Array[float] = [
+	0.0, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
+]
+
 const HAND_CARD_SCALE := 0.27
-const PLAY_CARD_SCALE := HAND_CARD_SCALE * 0.5
+const PLAY_CARD_SCALE := 0.15
 const PILE_CARD_SCALE := 0.18
+const HAND_SLOT_COUNT := 10
+const HAND_CARD_SIZE := Vector2(480.0, 818.0) * HAND_CARD_SCALE
+## 手牌行的最小宽度：10 张卡（1426）两侧各留 34，正好容纳悬停放大时的横向生长。
+const HAND_AREA_WIDTH := 1490.0
+## 悬停放大时卡面向左右各生长 32.4，行首尾留出同样余量，避免贴边被视口裁掉。
+const HAND_HOVER_MARGIN := 34.0
+const HAND_AREA_HEIGHT := 332.0
+const HAND_GAP := 6.0
+const PLAYER_BAR_WIDTH := 240.0
+const ENEMY_BAR_WIDTH := 700.0
+const BLOCK_MARKER_WIDTH := 16.0
+const RELIC_PANEL_POSITION := Vector2(24, 268)
+const RELIC_PANEL_WIDTH := 240.0
+const RELIC_CELL_SIZE := Vector2(45, 44)
+const RELIC_GRID_ORIGIN := Vector2(21, 14)
+const RELIC_GRID_SEPARATION := Vector2(6, 4)
+const RELIC_RIGHT_PAGE_OFFSET := 127.0
+const RELIC_LOG_SIZE := Vector2(240, 72)
 const CARD_SCENE := preload("res://ui/components/card/card_view.tscn")
-const POINTER_TEXTURE := preload("res://assets/battle_test/UI-017.png")
 const TEST_CARD_DIR := "res://data/cards/test"
 const TEST_DECK_CARD_IDS: Array[String] = [
 	"test_damage_enemy", "test_damage_self", "test_block", "test_heal",
@@ -33,7 +65,8 @@ const TEST_DECK_CARD_IDS: Array[String] = [
 @onready var hint_label: Label = %HintLabel
 @onready var player_status: Label = %PlayerStatus
 @onready var enemy_status: Label = %EnemyStatus
-@onready var hand_cards: HBoxContainer = %HandCards
+@onready var hand_cards: Control = %HandCards
+@onready var hand_scroll: ScrollContainer = $HandScroll
 @onready var play_cards: VBoxContainer = %PlayCards
 @onready var draw_button: Button = %DrawPileButton
 @onready var discard_button: Button = %DiscardPileButton
@@ -42,6 +75,16 @@ const TEST_DECK_CARD_IDS: Array[String] = [
 @onready var pile_modal: Control = %PileModal
 @onready var pile_title: Label = %PileTitle
 @onready var pile_grid: GridContainer = %PileGrid
+@onready var play_count_label: Label = $PlayCountLabel
+@onready var hand_count_label: Label = $HandCountLabel
+@onready var player_hp_fill: ColorRect = $PlayerHPBar/Fill
+@onready var player_hp_block: ColorRect = $PlayerHPBar/Block
+@onready var player_hp_num: Label = $PlayerHPNum
+@onready var enemy_hp_fill: ColorRect = $EnemyHPBar/Fill
+@onready var enemy_hp_block: ColorRect = $EnemyHPBar/Block
+@onready var enemy_hp_num: Label = $EnemyHPNum
+@onready var player_buff_row: HBoxContainer = $PlayerBuffRow
+@onready var enemy_buff_row: HBoxContainer = $EnemyBuffRow
 
 var _battle: BattleStateMachine
 var _resolver: BattleEffectResolver
@@ -51,8 +94,11 @@ var _relic_catalog: Dictionary = {}
 var _relic_cells: Array[Label] = []
 var _relic_log: Label
 var _relic_events: Array[String] = []
+var _fan_target: Control
+var _fan_tween: Tween
+var _hand_dragging := false
+var _hand_drag_origin := 0.0
 var _relic_edit_button: Button
-var _relic_title: Label
 var _restart_button: Button
 var _battle_result := ""
 var _selected_ids: Array[String] = []
@@ -72,6 +118,7 @@ func _ready() -> void:
 	discard_button.pressed.connect(_on_discard_pile_pressed)
 	cancel_button.pressed.connect(_on_cancel_pressed)
 	play_button.pressed.connect(_on_play_pressed)
+	hand_scroll.gui_input.connect(_on_hand_scroll_input)
 	%ClosePileButton.pressed.connect(_close_pile_modal)
 	%PileModalShade.gui_input.connect(_on_modal_shade_input)
 	_build_relic_hud()
@@ -150,69 +197,108 @@ func _start_test_battle() -> void:
 
 
 func _build_relic_hud() -> void:
-	var panel := PanelContainer.new()
-	panel.position = Vector2(24, 222)
-	panel.size = Vector2(460, 350)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.07, 0.1, 0.95)
-	style.set_corner_radius_all(10)
-	style.content_margin_left = 12
-	style.content_margin_right = 12
-	style.content_margin_top = 12
-	style.content_margin_bottom = 12
-	panel.add_theme_stylebox_override("panel", style)
+	# 典籍是一整块 4 列 × 5 行共 20 格的面板，不分页。
+	# UI-020（石板底框）与 UI-021（撕纸模板）到位后替换这里的纸面与格子样式。
+	var book := Control.new()
+	book.name = "RelicBook"
+	book.position = RELIC_PANEL_POSITION
+	# 版高随板面行数走，避免行列数与面板尺寸两处各写一份。
+	var panel_height := RELIC_GRID_ORIGIN.y * 2.0 + RelicBoard.ROWS * RELIC_CELL_SIZE.y 		+ (RelicBoard.ROWS - 1) * RELIC_GRID_SEPARATION.y
+	var panel_size := Vector2(RELIC_PANEL_WIDTH, panel_height)
+	book.size = panel_size
+	book.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# 放在牌堆弹窗之前，保证弹窗仍遮挡战场 HUD。
-	add_child(panel)
-	move_child(panel, pile_modal.get_index())
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 8)
-	panel.add_child(column)
-	var row := HBoxContainer.new()
-	column.add_child(row)
-	_relic_title = Label.new()
-	_relic_title.text = "典籍 · 0 次生效"
-	_relic_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_relic_title.add_theme_font_size_override("font_size", 21)
-	row.add_child(_relic_title)
-	_relic_edit_button = Button.new()
-	_relic_edit_button.text = "典籍页面"
-	_relic_edit_button.pressed.connect(_return_to_relic_page)
-	row.add_child(_relic_edit_button)
-	_restart_button = Button.new()
-	_restart_button.text = "重开战斗"
-	_restart_button.pressed.connect(_restart_battle)
-	row.add_child(_restart_button)
+	add_child(book)
+	move_child(book, pile_modal.get_index())
+
+	var paper := Panel.new()
+	paper.position = Vector2.ZERO
+	paper.size = panel_size
+	paper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var paper_style := StyleBoxFlat.new()
+	paper_style.bg_color = Color(0.851, 0.788, 0.639)
+	paper_style.set_corner_radius_all(6)
+	paper.add_theme_stylebox_override("panel", paper_style)
+	book.add_child(paper)
+
+	# 一整块 4 列 × 5 行的格子，_relic_cells 下标即板面下标。
+	var cells: Array[Label] = []
+	cells.resize(RelicBoard.CELL_COUNT)
 	var grid := GridContainer.new()
 	grid.columns = RelicBoard.COLUMNS
-	grid.add_theme_constant_override("h_separation", 6)
-	grid.add_theme_constant_override("v_separation", 6)
-	column.add_child(grid)
+	grid.position = RELIC_GRID_ORIGIN
+	grid.add_theme_constant_override("h_separation", int(RELIC_GRID_SEPARATION.x))
+	grid.add_theme_constant_override("v_separation", int(RELIC_GRID_SEPARATION.y))
+	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	book.add_child(grid)
 	for index in RelicBoard.CELL_COUNT:
 		var label := Label.new()
 		label.text = "—"
-		label.custom_minimum_size = Vector2(102, 44)
+		label.custom_minimum_size = RELIC_CELL_SIZE
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", 18)
-		_relic_cells.append(label)
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.clip_text = true
+		label.add_theme_font_size_override("font_size", 16)
+		cells[index] = label
 		grid.add_child(label)
+	_relic_cells.assign(cells)
+
 	_relic_log = Label.new()
+	_relic_log.position = Vector2(RELIC_PANEL_POSITION.x,
+		RELIC_PANEL_POSITION.y + panel_size.y + 8.0)
+	_relic_log.size = RELIC_LOG_SIZE
 	_relic_log.text = "尚未配置残片，点击典籍页面进行编排。"
 	_relic_log.add_theme_font_size_override("font_size", 16)
+	_relic_log.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
 	_relic_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	column.add_child(_relic_log)
+	_relic_log.clip_text = true
+	add_child(_relic_log)
+	move_child(_relic_log, pile_modal.get_index())
+
+	# 测试台入口：典籍页面与重开战斗，移到玩家血条下方。
+	var button_style := StyleBoxFlat.new()
+	button_style.bg_color = Color(0.141, 0.102, 0.075, 0.9)
+	button_style.border_color = Color(0.909, 0.706, 0.333, 0.45)
+	button_style.set_border_width_all(1)
+	button_style.set_corner_radius_all(4)
+	_relic_edit_button = _make_test_button(
+		"典籍页面", button_style, Vector2(148, 94), _return_to_relic_page)
+	_restart_button = _make_test_button(
+		"重开战斗", button_style, Vector2(268, 94), _restart_battle)
+
+
+func _make_test_button(text: String, style: StyleBoxFlat, position: Vector2,
+		handler: Callable) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.position = position
+	button.size = Vector2(112, 32)
+	button.add_theme_font_size_override("font_size", 16)
+	button.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
+	button.add_theme_stylebox_override("normal", style)
+	button.add_theme_stylebox_override("hover", style)
+	button.add_theme_stylebox_override("pressed", style)
+	button.pressed.connect(handler)
+	add_child(button)
+	move_child(button, pile_modal.get_index())
+	return button
 
 
 func _refresh_relic_hud() -> void:
 	for index in _relic_cells.size():
 		var data: RelicFragmentData = _relic_catalog.get(_relic_board.cells[index])
 		var label := _relic_cells[index]
-		label.text = "—" if data == null else "%s\n%s" % [data.kind_name(), data.display_name]
-		label.tooltip_text = "空格" if data == null else data.description
-		label.add_theme_color_override("font_color", Color("737b8b") if data == null else data.tint())
+		label.text = "—" if data == null else data.display_name
+		label.tooltip_text = "空格" if data == null else "%s · %s" % [
+			data.kind_name(), data.description,
+		]
+		label.add_theme_color_override("font_color",
+			Color(0.66, 0.6, 0.49) if data == null else Color(0.165, 0.129, 0.094))
 		var style := StyleBoxFlat.new()
-		style.bg_color = Color("252936")
-		style.set_corner_radius_all(5)
+		# 撕纸质感前的占位：有残片的格子偏白，空格稍暗。
+		style.bg_color = Color(0.937, 0.886, 0.741) if data != null else Color(0.886, 0.831, 0.682)
+		style.set_corner_radius_all(3)
 		label.add_theme_stylebox_override("normal", style)
 
 
@@ -221,7 +307,6 @@ func _on_relic_activated(trigger: int, effect: int, description: String) -> void
 	if _relic_events.size() > 4:
 		_relic_events.pop_front()
 	_relic_log.text = "\n".join(_relic_events)
-	_relic_title.text = "典籍 · %d 次生效" % _relics.activation_count
 	for index: int in [trigger, effect]:
 		var label := _relic_cells[index]
 		var previous: Variant = label.get_meta("flash") if label.has_meta("flash") else null
@@ -459,13 +544,21 @@ func _refresh_zones() -> void:
 	_clear_children(hand_cards)
 	_clear_children(play_cards)
 
+	var hand_slots: Array[Control] = []
 	for card: Dictionary in _battle.hand:
 		var instance_id := String(card["instance_id"])
 		if not _selected_ids.has(instance_id) and not _discard_selection_ids.has(instance_id):
-			hand_cards.add_child(_make_card_slot(card, HAND_CARD_SCALE, true))
+			var slot := _make_card_slot(card, HAND_CARD_SCALE, true)
+			hand_cards.add_child(slot)
+			hand_slots.append(slot)
+	_layout_hand(hand_slots)
 
-	for card: Dictionary in _selected_cards:
-		play_cards.add_child(_make_play_row(card))
+	for index in _selected_cards.size():
+		var row: Control = _make_play_row(_selected_cards[index])
+		# 负 z：越靠前的牌层级越高，于是每张露出的是含名字带的下半张。
+		row.z_index = -index
+		play_cards.add_child(row)
+	hand_count_label.text = "%d/%d" % [hand_slots.size(), HAND_SLOT_COUNT]
 	_set_pointer(_display_pointer_id)
 
 	_refresh_header()
@@ -492,7 +585,8 @@ func _refresh_header() -> void:
 	cancel_button.disabled = _busy or _selected_ids.is_empty()
 	play_button.disabled = _busy or not _battle.active or _selected_ids.is_empty() \
 		or _battle.phase != BattleStateMachine.Phase.PLAYER_ACTION
-	play_button.text = "结算 %d 张" % _selected_ids.size()
+	play_button.text = "结算 %d" % _selected_ids.size()
+	play_count_label.text = "%d/%d" % [_selected_ids.size(), play_limit]
 	_relic_edit_button.disabled = _busy
 	_restart_button.disabled = _busy
 	for slot: Node in hand_cards.get_children():
@@ -508,6 +602,10 @@ func _refresh_combat_status() -> void:
 
 
 func _render_combat_snapshot(player_data: Dictionary, enemy_data: Dictionary) -> void:
+	_render_health(player_hp_fill, player_hp_block, player_hp_num, player_data, PLAYER_BAR_WIDTH)
+	_render_health(enemy_hp_fill, enemy_hp_block, enemy_hp_num, enemy_data, ENEMY_BAR_WIDTH)
+	_render_buffs(player_buff_row, player_data.get("buffs", []))
+	_render_buffs(enemy_buff_row, enemy_data.get("buffs", []))
 	player_status.text = "玩家  HP %d/%d  格挡 %d\nBuff：%s" % [
 		int(player_data.get("health", 0)), int(player_data.get("max_health", 0)),
 		int(player_data.get("block", 0)), _format_buffs(player_data.get("buffs", [])),
@@ -516,6 +614,44 @@ func _render_combat_snapshot(player_data: Dictionary, enemy_data: Dictionary) ->
 		int(enemy_data.get("health", 0)), int(enemy_data.get("max_health", 0)),
 		int(enemy_data.get("block", 0)), _format_buffs(enemy_data.get("buffs", [])),
 	]
+
+
+func _render_health(fill: ColorRect, block: ColorRect, number: Label,
+		data: Dictionary, bar_width: float) -> void:
+	var health := int(data.get("health", 0))
+	var max_health := maxi(int(data.get("max_health", 1)), 1)
+	var block_layers := int(data.get("block", 0))
+	var ratio := clampf(float(health) / float(max_health), 0.0, 1.0)
+	fill.offset_left = 1.0
+	fill.offset_right = 1.0 + (bar_width - 2.0) * ratio
+	block.visible = block_layers > 0
+	block.offset_left = fill.offset_right
+	block.offset_right = minf(fill.offset_right + BLOCK_MARKER_WIDTH, bar_width - 1.0)
+	number.text = "%d/%d" % [health, max_health]
+
+
+func _render_buffs(row: HBoxContainer, buffs: Array) -> void:
+	_clear_children(row)
+	for buff: Dictionary in buffs:
+		var buff_id := String(buff.get("buff_id", ""))
+		var debuff := buff_id in ["poison", "weak"]
+		var chip := Label.new()
+		chip.text = "%s %d" % [_buff_display_name(buff_id), int(buff.get("layers", 0))]
+		chip.add_theme_font_size_override("font_size", 16)
+		chip.add_theme_color_override("font_color",
+			Color(0.81, 0.89, 0.66) if debuff else Color(0.949, 0.89, 0.776))
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.11, 0.078, 0.051, 0.78)
+		style.set_corner_radius_all(13)
+		style.set_border_width_all(1)
+		style.border_color = Color(0.62, 0.75, 0.42, 0.6) if debuff \
+			else Color(0.91, 0.71, 0.33, 0.45)
+		style.content_margin_left = 9
+		style.content_margin_right = 9
+		style.content_margin_top = 3
+		style.content_margin_bottom = 3
+		chip.add_theme_stylebox_override("normal", style)
+		row.add_child(chip)
 
 
 func _can_click_hand() -> bool:
@@ -537,6 +673,11 @@ func _make_card_slot(card: Dictionary, card_scale: float, clickable: bool) -> Co
 
 	var view: CardView = CARD_SCENE.instantiate()
 	view.scale = Vector2.ONE * card_scale
+	# 轴心取卡面底边中点：放大时向上与左右生长。轴心在未缩放的局部坐标里，
+	# 所以按基准缩放补偿偏移，否则卡面会被推离卡槽。
+	view.pivot_offset = Vector2(view.custom_minimum_size.x * 0.5,
+		view.custom_minimum_size.y)
+	view.position = view.pivot_offset * (card_scale - 1.0)
 	var data := _card_data(String(card.get("card_id", "")))
 	if data != null:
 		view.set_card(data)
@@ -556,6 +697,84 @@ func _make_card_slot(card: Dictionary, card_scale: float, clickable: bool) -> Co
 	return slot
 
 
+func _layout_hand(slots: Array[Control]) -> void:
+	# 手牌按固定步长排在中轴上；扇开时在基准位置上加偏移，基准不随动画漂移。
+	var count := slots.size()
+	if count == 0:
+		hand_cards.custom_minimum_size = Vector2(HAND_AREA_WIDTH, 0.0)
+		hand_cards.size = Vector2(HAND_AREA_WIDTH, HAND_AREA_HEIGHT)
+		return
+	var step := HAND_CARD_SIZE.x + HAND_GAP
+	var total := step * (count - 1) + HAND_CARD_SIZE.x
+	var row_width := maxf(total + HAND_HOVER_MARGIN * 2.0, HAND_AREA_WIDTH)
+	if _fan_tween != null and _fan_tween.is_valid():
+		_fan_tween.kill()
+	hand_cards.custom_minimum_size = Vector2(row_width, 0.0)
+	hand_cards.size = Vector2(row_width, HAND_AREA_HEIGHT)
+	var start := (row_width - total) * 0.5
+	for index in count:
+		var slot := slots[index]
+		slot.size = HAND_CARD_SIZE
+		slot.position = Vector2(start + step * index, HAND_AREA_HEIGHT - HAND_CARD_SIZE.y)
+		slot.set_meta("hand_index", index)
+		slot.set_meta("base_x", slot.position.x)
+
+
+func _fan_factor(count: int) -> float:
+	if count >= 1 and count < fan_factor_by_count.size():
+		return fan_factor_by_count[count]
+	# 超过 10 张沿用最小幅度，保持有扇开动作但不会挤出牌区。
+	return fan_factor_by_count[fan_factor_by_count.size() - 1] if count > 10 else 0.0
+
+
+func _refresh_hand_fan() -> void:
+	# 以当前真正处于悬停态的卡为准；一张都没有时才收扇。
+	var target: Control = null
+	for child in hand_cards.get_children():
+		if bool(child.get_meta("hovered", false)):
+			target = child
+			break
+	if target == _fan_target:
+		return
+	_fan_target = target
+	_apply_hand_fan(target)
+
+
+func _apply_hand_fan(hovered_slot: Control) -> void:
+	# 参考 reference/card-and-dice 的 HandUIController.Hover：以悬停卡为中心，
+	# 左右两侧按距离 1/2/3 分别外移大/中/小距离，手牌越多幅度越小；
+	# 没有悬停卡时全部回基准位。
+	var slots := hand_cards.get_children()
+	var count := slots.size()
+	var factor := _fan_factor(count)
+	var hovered_index := -1
+	if hovered_slot != null and is_instance_valid(hovered_slot):
+		hovered_index = int(hovered_slot.get_meta("hand_index", -1))
+	var duration := fan_duration_in if hovered_index >= 0 else fan_duration_out
+	# 旧的扇开补间必须先杀掉：换卡时两条补间同时写 position:x 会互相打架，
+	# 表现出来就是扇开中途回缩。
+	if _fan_tween != null and _fan_tween.is_valid():
+		_fan_tween.kill()
+	var tween := create_tween()
+	_fan_tween = tween
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_CUBIC)
+	tween.set_ease(Tween.EASE_OUT)
+	for index in count:
+		var slot: Control = slots[index]
+		var base_x := float(slot.get_meta("base_x", slot.position.x))
+		var offset := 0.0
+		if hovered_index >= 0 and index != hovered_index:
+			var magnitude := 0.0
+			match absi(index - hovered_index):
+				1: magnitude = fan_offset_long
+				2: magnitude = fan_offset_medium
+				3: magnitude = fan_offset_short
+			if magnitude > 0.0:
+				offset = magnitude * factor * (1.0 if index > hovered_index else -1.0)
+		tween.tween_property(slot, "position:x", base_x + offset, duration)
+
+
 func _on_hand_card_hover_changed(slot: Control, view: CardView, expanded: bool) -> void:
 	if not is_instance_valid(slot) or not is_instance_valid(view):
 		return
@@ -564,48 +783,84 @@ func _on_hand_card_hover_changed(slot: Control, view: CardView, expanded: bool) 
 	if previous is Tween and previous.is_valid():
 		previous.kill()
 
-	var base_size: Vector2 = slot.get_meta("base_size", slot.custom_minimum_size)
 	var base_scale := float(slot.get_meta("base_scale", HAND_CARD_SCALE))
 	var multiplier := hand_hover_multiplier if expanded else 1.0
-	var target_size := base_size * multiplier
 	var target_scale := Vector2.ONE * base_scale * multiplier
 	slot.z_index = 100 if expanded else 0
 
-	# 卡槽与卡面使用同一弹簧曲线：卡槽真实变宽会驱动 HBoxContainer 每帧重排，
-	# 因而相邻卡牌会平滑让位，而不是仅视觉放大后互相覆盖。
+	# 悬停卡绕底边中点放大（向上生长，不挤出屏幕），左右相邻卡扇开让位。
 	var tween := slot.create_tween()
-	tween.set_parallel(true)
-	tween.set_trans(Tween.TRANS_SPRING)
+	tween.set_trans(Tween.TRANS_SPRING if expanded else Tween.TRANS_CUBIC)
 	tween.set_ease(Tween.EASE_OUT)
-	tween.tween_property(slot, "custom_minimum_size", target_size, hand_hover_duration)
-	tween.tween_property(view, "scale", target_scale, hand_hover_duration)
+	tween.tween_property(view, "scale", target_scale,
+		hand_hover_duration if expanded else hand_hover_return_duration)
 	slot.set_meta("hover_tween", tween)
+	# A→B 切换时 Godot 先派发 A 的离开、再派发 B 的进入；这里延后一拍统一判定，
+	# 避免中途先收扇再展开。
+	call_deferred("_refresh_hand_fan")
 
 
 func _make_play_row(card: Dictionary) -> Control:
-	var row := HBoxContainer.new()
-	row.custom_minimum_size = Vector2(122.0, 116.0)
+	# 半叠：PlayCards 的 separation 取负值，后一张盖住前一张的上半，
+	# 露出含名字带的下半。结算中的那张用金色高亮框标出，不再用箭头指针。
+	var row := Control.new()
+	var card_size := Vector2(480.0, 818.0) * PLAY_CARD_SCALE
+	row.custom_minimum_size = card_size
+	row.size = card_size
 	row.set_meta("instance_id", String(card["instance_id"]))
-
-	var pointer := TextureRect.new()
-	pointer.name = "Pointer"
-	pointer.custom_minimum_size = Vector2(46.0, 46.0)
-	pointer.texture = POINTER_TEXTURE
-	pointer.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	pointer.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	pointer.visible = false
-	row.add_child(pointer)
 	row.add_child(_make_card_slot(card, PLAY_CARD_SCALE, false))
+
+	var plate := Label.new()
+	plate.name = "NamePlate"
+	plate.text = _card_display_name(String(card["instance_id"]))
+	plate.position = Vector2(0.0, card_size.y * 0.585)
+	plate.size = Vector2(card_size.x, 20.0)
+	plate.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	plate.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	plate.clip_text = true
+	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plate.add_theme_font_size_override("font_size", 14)
+	plate.add_theme_color_override("font_color", Color(0.949, 0.89, 0.776))
+	# 只给字加投影，不铺底色，卡片保持原亮度。
+	plate.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.95))
+	plate.add_theme_constant_override("shadow_offset_x", 1)
+	plate.add_theme_constant_override("shadow_offset_y", 1)
+	row.add_child(plate)
+
+	var highlight := Panel.new()
+	highlight.name = "Highlight"
+	highlight.position = Vector2(-2.0, -2.0)
+	highlight.size = card_size + Vector2(4.0, 4.0)
+	highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	highlight.visible = false
+	var highlight_style := StyleBoxFlat.new()
+	highlight_style.draw_center = false
+	highlight_style.set_border_width_all(2)
+	highlight_style.border_color = Color(1.0, 0.85, 0.45, 0.95)
+	highlight_style.set_corner_radius_all(4)
+	highlight.add_theme_stylebox_override("panel", highlight_style)
+	row.add_child(highlight)
 	return row
 
 
 func _set_pointer(instance_id: String) -> void:
+	# 保留原方法名与调用点：现在只切换正在结算那张卡的高亮框。
 	_display_pointer_id = instance_id
 	for row: Node in play_cards.get_children():
-		var pointer := row.get_node_or_null("Pointer") as TextureRect
-		if pointer != null:
-			pointer.visible = instance_id != "" \
+		var highlight := row.get_node_or_null("Highlight") as Panel
+		if highlight != null:
+			highlight.visible = instance_id != "" \
 				and String(row.get_meta("instance_id", "")) == instance_id
+
+
+func _on_hand_scroll_input(event: InputEvent) -> void:
+	# 空白处按住左键横拖即可翻看后面的牌；卡片自身的点击不受影响。
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		_hand_dragging = event.pressed
+		if event.pressed:
+			_hand_drag_origin = event.position.x + float(hand_scroll.scroll_horizontal)
+	elif event is InputEventMouseMotion and _hand_dragging:
+		hand_scroll.scroll_horizontal = int(_hand_drag_origin - event.position.x)
 
 
 func _clear_children(container: Node) -> void:
@@ -629,16 +884,19 @@ static func _card_data(card_id: String) -> CardData:
 	return resource as CardData
 
 
+static func _buff_display_name(buff_id: String) -> String:
+	return String({
+		"poison": "中毒", "strength": "力量", "weak": "虚弱",
+	}.get(buff_id, buff_id))
+
+
 static func _format_buffs(buffs: Array) -> String:
 	if buffs.is_empty():
 		return "无"
 	var names: Array[String] = []
 	for buff: Dictionary in buffs:
 		var buff_id := String(buff.get("buff_id", ""))
-		var display := String({
-			"poison": "中毒", "strength": "力量", "weak": "虚弱",
-		}.get(buff_id, buff_id))
-		names.append("%s %d" % [display, int(buff.get("layers", 0))])
+		names.append("%s %d" % [_buff_display_name(buff_id), int(buff.get("layers", 0))])
 	return "、".join(names)
 
 
