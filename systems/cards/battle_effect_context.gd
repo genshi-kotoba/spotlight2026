@@ -17,6 +17,12 @@ func current_target() -> Variant:
 	return target
 
 
+func execute_card_program(instructions: Array[Dictionary], card: Dictionary) -> void:
+	for instruction: Dictionary in instructions:
+		battle.rules.publish("action.card_program", {"instruction": instruction,
+			"card": card, "target": target}, {"source_card": str(card.instance_id)})
+
+
 func enemy_ids() -> Array[String]:
 	var result: Array[String] = []
 	for enemy: Dictionary in battle.enemies:
@@ -73,8 +79,10 @@ func damage_all_enemies(amount: int, ignore_block: bool = false) -> void:
 
 
 func damage_player(amount: int, ignore_block: bool = false) -> void:
-	_submit("damage", {"side": "player", "target": "player", "amount": amount,
-		"ignore_block": ignore_block, "use_stats": false})
+	var current := battle.rules.queue.current
+	var self_source := current == null or not current.type.begins_with("buff.")
+	battle.rules.submit("action.damage", {"side": "player", "target": "player", "amount": amount,
+		"ignore_block": ignore_block, "use_stats": false}, {"self_source": self_source})
 
 
 func damage_player_from(source_id: String, amount: int, ignore_block: bool = false) -> void:
@@ -144,4 +152,8 @@ func repeat_next_card(extra_triggers: int) -> void:
 
 
 func _submit(type: String, data: Dictionary) -> void:
-	battle.rules.submit("action." + type, data)
+	var event := battle.rules.publish("action." + type, data)
+	var parent := battle.rules.queue.current
+	if type == "damage" and parent != null and parent.type == "effect.execute" and parent.payload.get("effect") is CardEffect:
+		event.metadata["damage_program_id"] = event.id
+	battle.rules.flush()

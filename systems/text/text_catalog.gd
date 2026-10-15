@@ -10,10 +10,12 @@ const DEFAULT_PATHS := {
 	"cards": "res://data/text/cards.csv", "fragments": "res://data/text/fragments.csv",
 	"monsters": "res://data/text/monsters.csv", "achievements": "res://data/text/achievements.csv",
 }
-const CARD_HEADERS := ["编号", "卡图资源路径", "卡名", "效果文本", "类型", "文本"]
+const FRAGMENT_HEADERS := ["编号", "卡图资源路径", "卡名", "效果文本", "类型", "文本"]
+const CARD_HEADERS := ["编号", "卡图资源路径", "卡名", "效果文本", "类型", "文本", "稀有度"]
 const MONSTER_HEADERS := ["编号", "怪物图资源路径", "怪物名", "能力文本", "类型与出现地", "文本"]
 const ACHIEVEMENT_HEADERS := ["编号", "成就名", "要求文本", "奖励"]
 const ENTRY_KEYS := ["id", "art_path", "name", "effect", "type", "text"]
+const CARD_KEYS := ["id", "art_path", "name", "effect", "type", "text", "rarity"]
 const ACHIEVEMENT_KEYS := ["id", "name", "requirement", "reward"]
 
 enum DisplayMode { ALL, UNLOCKED, LOCKED }
@@ -35,8 +37,8 @@ func reload() -> Error:
 	var first_error: Error = OK
 	for category: String in CATEGORIES:
 		var headers: Array = ACHIEVEMENT_HEADERS if category == "achievements" else (
-			MONSTER_HEADERS if category == "monsters" else CARD_HEADERS)
-		var keys: Array = ACHIEVEMENT_KEYS if category == "achievements" else ENTRY_KEYS
+			MONSTER_HEADERS if category == "monsters" else (CARD_HEADERS if category == "cards" else FRAGMENT_HEADERS))
+		var keys: Array = ACHIEVEMENT_KEYS if category == "achievements" else (CARD_KEYS if category == "cards" else ENTRY_KEYS)
 		var result := CsvTextTable.read(str(paths.get(category, "")), headers, keys)
 		_tables[category] = result.records
 		_errors[category] = result.message

@@ -11,6 +11,7 @@ func _ready() -> void:
 	_check("五种测试残片从 CSV 读取", _catalog.size() == 5)
 	_test_geometry_and_save()
 	_test_draw_four()
+	_test_natural_draws()
 	_test_damage_eight_and_repeat_events()
 	_test_presence_and_buff_interaction()
 	_test_cycle()
@@ -49,6 +50,8 @@ func _test_draw_four() -> void:
 	battle.start_battle()
 	battle.draw_cards(1)
 	_check("抽牌触发两个相邻格挡", int(battle.player.block) == 2)
+	battle.draw_cards(1)
+	_check("下一次效果抽牌仍可再次触发", int(battle.player.block) == 4)
 	_check("四格不激活对角伤害", int(battle.enemies[0].health) == 100)
 	_cleanup(setup)
 
@@ -77,10 +80,14 @@ func _test_presence_and_buff_interaction() -> void:
 	var battle: BattleStateMachine = setup.battle
 	battle.start_battle()
 	_check("存在类独立生效，首回合力量为 1", _strength(battle) == 1)
-	_check("抽牌触发的 2 点伤害受力量影响变为 3", int(battle.enemies[0].health) == 97)
+	_check("首抽不触发典籍伤害", int(battle.enemies[0].health) == 100)
+	var context := BattleEffectContext.new(battle, "enemy", setup.resolver.buff_catalog)
+	context.draw(1)
+	_check("效果抽牌仍触发典籍且受力量影响", int(battle.enemies[0].health) == 97)
 	var sequence: Array[String] = [String(battle.hand[0].instance_id)]
 	battle.commit_player_sequence(sequence)
 	_check("进入第二玩家回合重新获得力量且不跨回合累积", battle.turn_number == 2 and _strength(battle) == 1)
+	_check("第二回合自然抽牌也不触发典籍伤害", int(battle.enemies[0].health) == 97)
 	_check("格挡仍在敌方回合末清零", int(battle.player.block) == 0)
 	_cleanup(setup)
 
@@ -120,7 +127,23 @@ func _test_lethal_draw() -> void:
 	setup = _setup(_board({0: "on_card_gained", 1: "deal_damage"}), 1, 2)
 	battle = setup.battle
 	battle.start_battle()
-	_check("状态机首抽致死不会被后续回合阶段覆盖", not battle.active and battle.phase == BattleStateMachine.Phase.VICTORY and battle.hand.size() == 1)
+	_check("状态机首抽不触发致死典籍，完整抽两张后可出牌", battle.active and battle.phase == BattleStateMachine.Phase.PLAYER_ACTION and battle.hand.size() == 2 and int(battle.enemies[0].health) == 1)
+	_cleanup(setup)
+
+
+func _test_natural_draws() -> void:
+	var setup := _setup(_board({0: "on_card_gained", 1: "deal_damage", 4: "gain_block", 11: "turn_strength"}), 100, 2)
+	var battle: BattleStateMachine = setup.battle
+	var reasons: Array[int] = []
+	battle.rules.register_rule("test.draw_sources", "card.drawn", func(event: BattleEvent) -> void:
+		reasons.append(int(event.payload.draw_reason)))
+	battle.start_battle()
+	_check("多张首抽保留事实与来源，不漏标后续张数", reasons == [BattleStateMachine.DrawReason.BATTLE_START, BattleStateMachine.DrawReason.BATTLE_START] and battle.hand.size() == 2)
+	_check("自然首抽不触发伤害或格挡，存在类力量照常生效", int(battle.enemies[0].health) == 100 and int(battle.player.block) == 0 and _strength(battle) == 1 and setup.relics.activation_count == 1)
+	var sequence: Array[String] = [str(battle.hand[0].instance_id)]
+	battle.commit_player_sequence(sequence)
+	_check("次回合洗回弃牌后仍标记为自然抽牌", battle.turn_number == 2 and reasons.size() == 3 and reasons.back() == BattleStateMachine.DrawReason.TURN_START)
+	_check("回合抽牌无典籍连锁，存在类每回合只生效一次", int(battle.enemies[0].health) == 100 and int(battle.player.block) == 0 and _strength(battle) == 1 and setup.relics.activation_count == 2)
 	_cleanup(setup)
 
 

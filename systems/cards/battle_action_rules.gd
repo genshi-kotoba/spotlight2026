@@ -29,7 +29,7 @@ func _execute(event: BattleEvent) -> void:
 			if side == "player":
 				battle.apply_damage_to_player(int(data.amount), bool(data.ignore_block))
 			else:
-				battle.apply_damage_to_enemy(id, int(data.amount), bool(data.ignore_block))
+				battle.apply_damage_to_enemy(id, int(data.amount), bool(data.ignore_block), bool(data.get("block_double", false)))
 		"action.block":
 			battle.add_block(StringName(data.side), String(data.target), int(data.amount))
 		"action.heal":

@@ -42,6 +42,9 @@ func _exit_tree() -> void:
 
 
 func _on_card_gained(event: BattleEvent) -> void:
+	# 只过滤典籍的抽牌触发，不丢弃事实或关闭独立的回合开始存在类效果。
+	if int(event.payload.get("draw_reason", BattleStateMachine.DrawReason.EFFECT)) != BattleStateMachine.DrawReason.EFFECT:
+		return
 	_trigger("card_gained", "", event)
 
 

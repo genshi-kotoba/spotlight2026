@@ -217,7 +217,7 @@ func save_current() -> Error:
 		return _fail(ERR_BUSY, "战斗结算中暂不能保存，请先完成操作。")
 	var view: Node = _map_view.get_ref() if _map_view != null else null
 	var checkpoint := _map_checkpoint.duplicate(true)
-	if is_instance_valid(view):
+	if is_instance_valid(view) and run != null:
 		checkpoint = view.capture_menu_checkpoint()
 		if checkpoint.is_empty():
 			return _fail(ERR_INVALID_DATA, "地图检查点捕获失败，未覆盖存档。")

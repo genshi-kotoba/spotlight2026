@@ -18,12 +18,17 @@ func _run() -> void:
 	var packed := load("res://ui/battle/battle_test_scene.tscn") as PackedScene
 	var ended := packed.instantiate() as BattleTestScene
 	ended.relic_board_path = FIXTURE_PATH
-	ended.enemy_starting_health = 300
+	ended.enemy_starting_health = 1
 	add_child(ended)
 	await get_tree().process_frame
 	await get_tree().process_frame
-	_check("复现首抽残片伤害在出牌前击杀 300 血敌人", not ended._battle.active and int(ended._battle.enemies[0].health) == 0)
-	_check("首抽胜利明确显示终局与重开入口", ended.hint_label.text.contains("战斗胜利") and not ended._restart_button.disabled and ended.play_button.disabled)
+	_check("自然首抽不触发残片，1血敌人仍存活", ended._battle.active and int(ended._battle.enemies[0].health) == 1 and ended._battle.hand.size() == ended.initial_draw_count)
+	var context := BattleEffectContext.new(ended._battle, str(ended._battle.enemies[0].enemy_id), ended._resolver.buff_catalog)
+	context.draw(1)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_check("效果抽牌仍可触发残片击败敌人", not ended._battle.active and int(ended._battle.enemies[0].health) == 0)
+	_check("效果胜利明确显示终局与重开入口", ended.hint_label.text.contains("战斗胜利") and not ended._restart_button.disabled and ended.play_button.disabled)
 	ended.free()
 
 	var scene := packed.instantiate() as BattleTestScene
@@ -31,7 +36,7 @@ func _run() -> void:
 	add_child(scene)
 	await get_tree().process_frame
 	await get_tree().process_frame
-	_check("提高测试生命后同样构筑可正常进入编排", scene._battle.active and scene._battle.hand.size() == scene.initial_draw_count)
+	_check("同样构筑可正常进入编排", scene._battle.active and scene._battle.hand.size() == scene.initial_draw_count)
 
 	for index: int in [0, 3, 6]:
 		var slot := scene.hand_cards.get_child(index) as Control

@@ -130,11 +130,12 @@ func open_detail(id: String) -> void:
 	CatalogUi.clear(_detail_card)
 	CatalogUi.clear(_detail_fields)
 	CatalogUi.preview(_detail_card, record, category, 0.8)
-	var labels: Array = TextCatalogService.MONSTER_HEADERS if category == "monsters" else TextCatalogService.CARD_HEADERS
-	for i: int in TextCatalogService.ENTRY_KEYS.size():
-		var value := str(record.get(TextCatalogService.ENTRY_KEYS[i], ""))
+	var labels: Array = TextCatalogService.MONSTER_HEADERS if category == "monsters" else (TextCatalogService.CARD_HEADERS if category == "cards" else TextCatalogService.FRAGMENT_HEADERS)
+	var keys: Array = TextCatalogService.CARD_KEYS if category == "cards" else TextCatalogService.ENTRY_KEYS
+	for i: int in keys.size():
+		var value := str(record.get(keys[i], ""))
 		var field := CatalogUi.label(str(labels[i]) + "\n" + (value if not value.is_empty() else "（未填写）"), 26)
-		field.name = TextCatalogService.ENTRY_KEYS[i]
+		field.name = keys[i]
 		field.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 		_detail_fields.add_child(field)
 	var state := CatalogUi.label("解锁状态\n" + ("已解锁" if TextCatalog.is_unlocked(category, id) else "未解锁"), 26)

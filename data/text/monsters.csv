@@ -1,1 +1,24 @@
 编号,怪物图资源路径,怪物名,能力文本,类型与出现地,文本
+1,res://assets/chr/CHR-003.png,“后巷骑士”,暂无,普通 · 第2层,暂无
+2,res://assets/chr/CHR-004.png,窃贼与骗子,暂无,普通 · 第2层,暂无
+3,res://assets/chr/CHR-005.png,鼠王,暂无,BOSS · 第2层,暂无
+4,res://assets/chr/CHR-006.png,壹叁伍零年,暂无,BOSS · 第2层,暂无
+5,res://assets/chr/CHR-007.png,后巷公爵·无底坑之王,暂无,BOSS · 第2层,暂无
+6,res://assets/chr/CHR-008.png,腐化圣骑士,暂无,精英 · 第2层,暂无
+7,res://assets/chr/CHR-009.png,彩衣笛手,暂无,精英 · 第2层,暂无
+8,res://assets/chr/CHR-010.png,史莱姆,暂无,普通 · 第1层,暂无
+9,res://assets/chr/CHR-011.png,腐化学徒,暂无,普通 · 第1层,暂无
+10,res://assets/chr/CHR-012.png,实验耗材,暂无,普通 · 第1层,暂无
+11,res://assets/chr/CHR-013.png,强化恶犬,暂无,普通 · 第1层,暂无
+12,res://assets/chr/CHR-014.png,解刨者,暂无,精英 · 第1层,暂无
+13,res://assets/chr/CHR-015.png,遗言,暂无,普通 · 第1层,暂无
+14,res://assets/chr/CHR-016.png,躯壳,暂无,精英 · 第1层,暂无
+15,res://assets/chr/CHR-017.png,炼金术士·贤者之石,暂无,BOSS · 第1层,暂无
+16,res://assets/chr/CHR-018.png,福音唱诗班,暂无,BOSS · 第3层,暂无
+17,res://assets/chr/CHR-019.png,三位一体,暂无,BOSS · 第3层,暂无
+18,res://assets/chr/CHR-020.png,哀悼圣母,暂无,精英 · 第3层,暂无
+19,res://assets/chr/CHR-021.png,代为赎罪,暂无,精英 · 第3层,暂无
+20,res://assets/chr/CHR-022.png,修女,暂无,普通 · 第3层,暂无
+21,res://assets/chr/CHR-023.png,苦修士,暂无,普通 · 第3层,暂无
+22,res://assets/chr/CHR-024.png,虔诚匍匐,暂无,普通 · 第3层,暂无
+23,res://assets/chr/CHR-025.png,人造之神，方舟缔造者,暂无,BOSS · 第4层,暂无

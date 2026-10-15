@@ -101,6 +101,9 @@ static func preview(parent: Control, entry: Dictionary, category: String, factor
 		var card: CardView = CARD_SCENE.instantiate()
 		holder.add_child(card)
 		card.scale = Vector2.ONE * factor
+		if category == "cards":
+			card.set_face(CardData.Rarity.RARE if str(entry.get("rarity", "")) == "稀有" else CardData.Rarity.COMMON,
+				CardData.face_tint_for_type(str(entry.get("type", ""))))
 		card.set_texts(str(entry.get("name", "")), str(entry.get("effect", "")), "")
 		card.set_art_texture(TextCatalogService.art_texture(str(entry.get("art_path", ""))))
 	else:

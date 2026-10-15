@@ -22,8 +22,13 @@ var max_health := 0
 var health := 0
 var gold := 0
 var deck: Array[String] = []
+## 与 deck 同序的永久副本；deck 保留编号接口以兼容地图、历史与旧存档。
+var deck_cards: Array[Dictionary] = []
+var next_card_serial := 0
 var card_pool: Array[String] = []
 var items: Array = []
+## 本局物资/典籍/待领奖；旧存档缺此字段时由物资系统兼容迁移。
+var inventory_state: Dictionary = {}
 
 var map_ids: Array[String] = []
 var current_map_id := ""
@@ -59,8 +64,11 @@ func initialize_new(seed_text: String, config: Dictionary,
 	health = prepared["health"]
 	gold = prepared["gold"]
 	deck.assign(prepared["deck"])
+	ensure_deck_cards()
 	card_pool.assign(prepared["card_pool"])
 	items = prepared["items"].duplicate(true)
+	inventory_state = {"version": 1, "elixir": 0, "relic_board": RelicBoard.new().to_dictionary(),
+		"pending_rewards": {}, "rewarded_battles": {}, "next_item": 0}
 	map_ids.assign(prepared["map_ids"])
 	current_map_id = map_ids[0]
 
@@ -115,6 +123,7 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 	var saved_defeated: Variant = data.get("defeated_enemy_ids")
 	var saved_indices: Variant = data.get("battle_index_by_node")
 	var saved_battle: Variant = data.get("current_battle")
+	var saved_inventory: Variant = data.get("inventory_state", {})
 
 	if not saved_run_id is String or saved_run_id.strip_edges().is_empty() \
 			or not saved_seed is String or saved_seed.is_empty() \
@@ -125,6 +134,7 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 			or not saved_map_states is Dictionary or not _string_array_valid(saved_rewards) \
 			or not _string_array_valid(saved_shops) or not _string_array_valid(saved_events) \
 			or not _string_array_valid(saved_defeated) or not saved_indices is Dictionary \
+			or not saved_inventory is Dictionary or not _json_safe(saved_inventory) or not _valid_inventory_state(saved_inventory) \
 			or (saved_battle != null and not saved_battle is Dictionary):
 		return _fail(ERR_INVALID_DATA, "Run snapshot fields are invalid")
 
@@ -155,8 +165,15 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 	health = saved_health
 	gold = saved_gold
 	deck.assign(saved_deck)
+	if data.has("deck_cards"):
+		if not _valid_deck_cards(data.deck_cards, saved_deck) or _integer_value(data.get("next_card_serial")) == null or int(data.next_card_serial) < 0:
+			return _fail(ERR_INVALID_DATA, "Permanent card copies are invalid")
+		deck_cards.assign(data.deck_cards.duplicate(true))
+		next_card_serial = int(data.next_card_serial)
+	ensure_deck_cards()
 	card_pool.assign(saved_cards)
 	items = saved_items.duplicate(true)
+	inventory_state = saved_inventory.duplicate(true)
 	map_ids.assign(saved_maps)
 	current_map_id = saved_current_map
 	map_states = saved_map_states.duplicate(true)
@@ -187,6 +204,7 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 
 
 func to_dictionary() -> Dictionary:
+	ensure_deck_cards()
 	return {
 		"snapshot_version": SNAPSHOT_VERSION,
 		"run_id": run_id,
@@ -197,8 +215,11 @@ func to_dictionary() -> Dictionary:
 		"health": health,
 		"gold": gold,
 		"deck": deck.duplicate(),
+		"deck_cards": deck_cards.duplicate(true),
+		"next_card_serial": next_card_serial,
 		"card_pool": card_pool.duplicate(),
 		"items": items.duplicate(true),
+		"inventory_state": inventory_state.duplicate(true),
 		"map_ids": map_ids.duplicate(),
 		"current_map_id": current_map_id,
 		"map_states": map_states.duplicate(true),
@@ -235,18 +256,23 @@ func change_gold(delta: int) -> Error:
 	return OK
 
 
-func add_card(card_id: String) -> Error:
+func add_card(card_id: String, notify: bool = true) -> Error:
 	if not active or not card_pool.has(card_id):
 		return _fail(ERR_INVALID_PARAMETER, "Card is not in this run's unlocked pool")
+	ensure_deck_cards()
 	deck.append(card_id)
-	_emit_stat(&"deck_size", deck.size())
+	deck_cards.append(_new_deck_card(card_id))
+	if notify:
+		_emit_stat(&"deck_size", deck.size())
 	return OK
 
 
 func remove_card_at(index: int) -> Error:
 	if not active or index < 0 or index >= deck.size():
 		return _fail(ERR_INVALID_PARAMETER, "Deck index is invalid")
+	ensure_deck_cards()
 	deck.remove_at(index)
+	deck_cards.remove_at(index)
 	_emit_stat(&"deck_size", deck.size())
 	return OK
 
@@ -323,18 +349,23 @@ func record_enemy_defeated(enemy_id: String) -> Error:
 
 
 func start_battle(node_id: String, enemies: Array, draw_count: int = 5,
-		discard_hand_at_turn_end: bool = false) -> Error:
+		discard_hand_at_turn_end: bool = false, play_limit: int = 10,
+		auto_start: bool = true, temporary_deck: Array = []) -> Error:
 	if not active or current_battle != null or node_id.strip_edges().is_empty() \
-			or enemies.is_empty() or draw_count < 0:
+			or enemies.is_empty() or draw_count < 0 or play_limit <= 0:
 		return _fail(ERR_INVALID_PARAMETER, "Battle start parameters are invalid")
 	var key := "%s/%s" % [current_map_id, node_id]
 	var battle_index: int = battle_index_by_node.get(key, 0)
 	var deck_instances: Array = []
-	for index in deck.size():
-		deck_instances.append({
+	var battle_deck: Array = deck if temporary_deck.is_empty() else temporary_deck
+	ensure_deck_cards()
+	for index in battle_deck.size():
+		var copy: Dictionary = deck_cards[index].duplicate(true) if temporary_deck.is_empty() else {}
+		copy.merge({
 			"instance_id": "%s:%s:%d:%d" % [run_id, node_id, battle_index, index],
-			"card_id": deck[index],
-		})
+			"card_id": battle_deck[index],
+		}, true)
+		deck_instances.append(copy)
 	var battle := BattleStateMachine.new()
 	add_child(battle)
 	var error := battle.initialize_battle({
@@ -343,7 +374,7 @@ func start_battle(node_id: String, enemies: Array, draw_count: int = 5,
 		"battle_index": battle_index,
 		"draw_count": draw_count,
 		"discard_hand_at_turn_end": discard_hand_at_turn_end,
-		"player": {"health": health, "max_health": max_health, "block": 0},
+		"player": {"health": health, "max_health": max_health, "block": 0, "silver": gold, "base_play_limit": play_limit},
 		"enemies": enemies,
 		"deck_instances": deck_instances,
 	})
@@ -360,7 +391,7 @@ func start_battle(node_id: String, enemies: Array, draw_count: int = 5,
 	_connect_battle(battle)
 	_emit_stat(&"battles_fought", battles_fought)
 	battle_started.emit(battle)
-	return battle.start_battle()
+	return battle.start_battle() if auto_start else OK
 
 
 func finish_victory() -> Error:
@@ -397,6 +428,7 @@ func _prepare_new_config(config: Dictionary, unlocked_cards: Array) -> Dictionar
 	var configured_gold: Variant = _integer_value(config.get("initial_gold", 0))
 	var catalog: Variant = config.get("card_catalog", [])
 	var initial_deck: Variant = config.get("initial_deck", [])
+	var starters: Variant = config.get("starter_cards", [])
 	var configured_items: Variant = config.get("initial_items", [])
 	var configured_maps: Variant = config.get("map_ids", [])
 	var rewards: Variant = config.get("reward_pool", [])
@@ -406,7 +438,7 @@ func _prepare_new_config(config: Dictionary, unlocked_cards: Array) -> Dictionar
 			or configured_max == null or configured_health == null or configured_gold == null \
 			or configured_max <= 0 or configured_health <= 0 or configured_health > configured_max \
 			or configured_gold < 0 or not _string_array_valid(catalog) \
-			or not _string_array_valid(initial_deck) or not configured_items is Array \
+			or not _string_array_valid(initial_deck) or not _string_array_valid(starters) or not configured_items is Array \
 			or not _json_safe(configured_items) or not _unique_string_array_valid(configured_maps) \
 			or configured_maps.size() != 3 or not _string_array_valid(rewards) \
 			or not _string_array_valid(shops) or not _string_array_valid(events) \
@@ -419,7 +451,8 @@ func _prepare_new_config(config: Dictionary, unlocked_cards: Array) -> Dictionar
 		unlocked[card_id] = true
 	var eligible: Array[String] = []
 	for card_id: String in catalog:
-		if unlocked.has(card_id):
+		# 显式新局赠牌仅授予本局可用性，不清空/伪造局外解锁进度。
+		if unlocked.has(card_id) or starters.has(card_id):
 			eligible.append(card_id)
 	for card_id: String in initial_deck:
 		if not eligible.has(card_id):
@@ -438,6 +471,42 @@ func _prepare_new_config(config: Dictionary, unlocked_cards: Array) -> Dictionar
 		"shop_pool": shops.duplicate(),
 		"event_pool": events.duplicate(),
 	}
+
+
+func _new_deck_card(card_id: String) -> Dictionary:
+	next_card_serial += 1
+	while deck_cards.any(func(card: Dictionary): return str(card.copy_id) == "%s/card/%d" % [run_id, next_card_serial]):
+		next_card_serial += 1
+	return {"copy_id": "%s/card/%d" % [run_id, next_card_serial], "card_id": card_id, "enchantments": []}
+
+
+func ensure_deck_cards() -> void:
+	# 旧档与旧测试可能直接改 deck。按出现次序迁移，正式增删使用上面的副本感知入口。
+	var remaining := deck_cards.duplicate(true)
+	var synced: Array[Dictionary] = []
+	for id: String in deck:
+		var found := -1
+		for index in remaining.size():
+			if str(remaining[index].card_id) == id:
+				found = index
+				break
+		if found >= 0:
+			synced.append(remaining.pop_at(found))
+		else:
+			synced.append(_new_deck_card(id))
+	deck_cards = synced
+
+
+static func _valid_deck_cards(values: Variant, ids: Array) -> bool:
+	if not values is Array or values.size() != ids.size():
+		return false
+	var seen := {}
+	for index in values.size():
+		var card: Variant = values[index]
+		if not card is Dictionary or card.get("card_id") != ids[index] or not card.get("copy_id") is String or card.copy_id.is_empty() or seen.has(card.copy_id) or not CardEnchantments.valid(card.get("enchantments")):
+			return false
+		seen[card.copy_id] = true
+	return true
 
 
 func _seeded_pool(domain: StringName, source: Array) -> Variant:
@@ -469,14 +538,21 @@ func _on_battle_ended(battle_result: Dictionary) -> void:
 	if current_battle == null:
 		return
 	var ended := current_battle
+	# 已结束的节点战斗交给界面播完动画；活动战斗仍由本局持有并保存。
+	var presentation: Node = ended.get_meta("presentation_owner", null)
+	if is_instance_valid(presentation):
+		ended.reparent(presentation)
 	var player_state := ended.player
 	health = int(player_state.get("health", health))
+	gold = maxi(0, int(player_state.get("silver", gold)))
 	for enemy_id: String in battle_result.get("defeated_enemy_ids", []):
 		record_enemy_defeated(enemy_id)
 	current_battle = null
 	_emit_stat(&"health", health)
+	_emit_stat(&"gold", gold)
 	battle_finished.emit(battle_result.duplicate(true))
-	ended.queue_free()
+	if not is_instance_valid(presentation):
+		ended.queue_free()
 	if battle_result.get("status") == "defeat" and active:
 		finish_defeat(str(battle_result.get("node_id", current_map_id)))
 
@@ -519,6 +595,41 @@ static func _integer_value(value: Variant) -> Variant:
 			or not is_finite(float(value)) or float(value) != floorf(float(value)):
 		return null
 	return int(value)
+
+
+static func _valid_inventory_state(data: Dictionary) -> bool:
+	if data.is_empty():
+		return true # 兼容无物资扩展的老存档。
+	var elixir: Variant = _integer_value(data.get("elixir"))
+	var serial: Variant = _integer_value(data.get("next_item"))
+	if not _integer_equals(data.get("version"), 1) or elixir == null or elixir < 0 \
+			or serial == null or serial < 0 or not data.get("relic_board") is Dictionary \
+			or not data.get("pending_rewards") is Dictionary or not data.get("rewarded_battles") is Dictionary:
+		return false
+	if data.has("shops") and not RunShop.valid_shops(data.shops):
+		return false
+	var board := RelicBoard.new()
+	if board.restore(data.relic_board, RelicCatalog.load_definitions()) != OK:
+		return false
+	for key: Variant in data.rewarded_battles:
+		if not key is String or data.rewarded_battles[key] != true:
+			return false
+	var pending: Dictionary = data.pending_rewards
+	if pending.is_empty():
+		return true
+	if not pending.get("battle_key") is String or not data.rewarded_battles.has(pending.battle_key) \
+			or pending.get("grade") not in ["普通", "精英", "BOSS"] or not pending.get("entries") is Array:
+		return false
+	var kinds: Array = ["silver", "fragment_pack", "common_pack"] if pending.grade == "普通" else ["silver", "elixir", "fragment_pack", "common_pack", "rare_pack"]
+	if pending.entries.size() != kinds.size():
+		return false
+	for index in kinds.size():
+		var entry: Variant = pending.entries[index]
+		var amount := (100 if pending.grade == "普通" else 200) if index == 0 else 1
+		if not entry is Dictionary or entry.get("id") != kinds[index] or entry.get("kind") != kinds[index] \
+				or not _integer_equals(entry.get("amount"), amount) or not entry.get("claimed") is bool:
+			return false
+	return true
 
 
 static func _integer_equals(value: Variant, expected: int) -> bool:
