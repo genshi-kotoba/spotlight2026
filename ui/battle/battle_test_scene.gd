@@ -946,10 +946,16 @@ func _update_drag_preview(at: Vector2) -> void:
 				_resolve_preview.visible = false
 			return
 		var drop := _play_drop_index(at)
-		if drop < _selected_ids.size():
-			var under := _find_selected_card(String(_selected_ids[drop]))
-			if not under.is_empty():
-				_show_resolve_preview(String(under.get("card_id", "")))
+		# 显示「插进去之后紧挨着它的上一张」：插到第 drop 格时，它前面那张是 drop-1；
+		# 插到最顶上（drop 0）没有上一张，就显示手牌里这张自己。
+		var above_id := _drag_card_id
+		if drop >= 1 and drop - 1 < _selected_ids.size():
+			above_id = String(_selected_ids[drop - 1])
+		var above := _find_selected_card(above_id)
+		if above.is_empty():
+			above = _find_hand_card(above_id)
+		if not above.is_empty():
+			_show_resolve_preview(String(above.get("card_id", "")))
 		return
 	if _drag_source != "play":
 		return
