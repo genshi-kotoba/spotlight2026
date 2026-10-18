@@ -3,8 +3,10 @@ extends Control
 
 ## 背包页典籍区的一格。装上的残片还要能继续搬，所以这一格本身也能起拖：
 ## 只负责报「这里有一份残片，被按下了」，落点判定和存盘由宿主决定。
+## 按住 Shift 点一下是「退回背包」，不走进拖拽。
 
 signal drag_requested(source: Control, fragment_id: String)
+signal remove_requested(index: int)
 
 var index := 0
 var fragment_id := ""
@@ -37,5 +39,8 @@ func _gui_input(event: InputEvent) -> void:
 	if fragment_id.is_empty():
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		drag_requested.emit(self, fragment_id)
+		if event.shift_pressed:
+			remove_requested.emit(index)
+		else:
+			drag_requested.emit(self, fragment_id)
 		accept_event()

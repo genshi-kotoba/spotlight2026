@@ -24,6 +24,8 @@ const DECK_CARD_SIZE := Vector2(140, 240)
 const DECK_GAP := 6.0
 const ITEM_COLUMNS := 7
 const ITEM_VISIBLE_ROWS := 3
+## 背包栏位一屏就是它的容量：道具和未装配的残片共用这 21 格，满了就塞不进新的。
+const ITEM_CAPACITY := ITEM_COLUMNS * ITEM_VISIBLE_ROWS
 const ITEM_SLOT_SIZE := Vector2(78, 78)
 const ITEM_GAP := 8.0
 ## 立绘比内容区更大，允许越出背包边框；右侧栏位后绘制，不会被压住。
@@ -77,6 +79,7 @@ var _peek_view: CardView
 var _deck_title: Label
 var _item_tip: Control
 var _item_grid: GridContainer
+var _item_scroll: ScrollContainer
 var _item_title: Label
 var _relic_title: Label
 var _relic_cells: Array[Label] = []
@@ -87,6 +90,7 @@ var _drag_source: Control
 var _drag_fragment := ""
 var _drag_origin := -1
 var _highlighted_cell: RelicDropCell
+var _bag_highlight: Panel
 var _abandon_button: Button
 var _abandon_confirm_row: HBoxContainer
 var _current_page := 1
@@ -195,16 +199,27 @@ func set_map_viewer(viewer: Control) -> void:
 
 
 func _refresh_data() -> void:
-	var run: RunStateMachine = run_override
-	if run == null and GlobalState != null and GlobalState.run_active and GlobalState.current_run != null:
-		run = GlobalState.current_run
+	var run := _active_run()
 	_deck_title.text = "卡组 %d" % (run.deck.size() if run != null else 0)
-	_item_title.text = "背包 %d / %d" % [
-		run.items.size() if run != null else 0,
-		ITEM_COLUMNS * ITEM_VISIBLE_ROWS]
+	# 背包栏位里道具和未装配的残片一起占格，标题按两者之和算。
+	_item_title.text = "背包 %d / %d" % [_bag_used(run), ITEM_CAPACITY]
 	_reload_deck(run)
 	_reload_relics()
 	_reload_items(run)
+
+
+func _active_run() -> RunStateMachine:
+	if run_override != null:
+		return run_override
+	if GlobalState != null and GlobalState.run_active and GlobalState.current_run != null:
+		return GlobalState.current_run
+	return null
+
+
+## 背包栏位已经被占掉多少格：道具 + 还没装进典籍的残片。
+func _bag_used(run: RunStateMachine) -> int:
+	var items := run.items.size() if run != null else 0
+	return items + _available_relics().size()
 
 
 func _reload_deck(run: RunStateMachine) -> void:
@@ -300,8 +315,8 @@ func _reload_items(run: RunStateMachine) -> void:
 	# 还没装进典籍的残片排在道具后面：先道具、再残片、最后填空。
 	var relics := _available_relics()
 	var used := relics.size() + item_count
-	# 无限背包：至少铺满三排，装得更多就继续往下长。
-	var slot_count := maxi(ITEM_COLUMNS * ITEM_VISIBLE_ROWS, used)
+	# 一屏 21 格就是上限，装满了不再往下长。
+	var slot_count := maxi(ITEM_CAPACITY, used)
 	for index in slot_count:
 		var child: Control
 		if index < item_count:
@@ -461,6 +476,7 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		_drag_ghost.position = event.position - _drag_ghost.size * 0.5
 		_highlight_relic_cell(_relic_cell_at(event.position))
+		_highlight_bag_slot(event.position)
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 		_drop_relic_at(event.position)
 
@@ -472,6 +488,108 @@ func _drop_relic_at(screen_position: Vector2) -> void:
 	_end_relic_drag(true)
 	if target >= 0:
 		_apply_relic_drop(origin, target, fragment_id)
+	elif origin >= 0 and _in_item_zone(screen_position):
+		# 拖回背包区域不用对准格子：从书上摘下来就行，排到背包里由 _reload_items 接手。
+		_unmount_relic(origin)
+
+
+## 松手点是不是落在背包栏位那块区域里。
+func _in_item_zone(screen_position: Vector2) -> bool:
+	if _item_scroll == null or not is_instance_valid(_item_scroll):
+		return false
+	return _item_scroll.get_global_rect().has_point(screen_position)
+
+
+## 拖着典籍上的残片划过背包区域时，把「会落到这一格」的格子圈出来。
+## 残片在背包里是接在道具后面的，所以落点就是当前已用格数那一格；
+## 背包满了就圈最后一格并示警，说明松手也放不下。
+func _highlight_bag_slot(screen_position: Vector2) -> void:
+	if _drag_origin < 0 or not _in_item_zone(screen_position):
+		_hide_bag_highlight()
+		return
+	var slot_count := _item_grid.get_child_count()
+	if slot_count == 0:
+		_hide_bag_highlight()
+		return
+	var used := _bag_used(_active_run())
+	var full := used >= ITEM_CAPACITY
+	var index := mini(used, slot_count - 1)
+	var slot := _item_grid.get_child(index) as Control
+	if slot == null:
+		_hide_bag_highlight()
+		return
+	var panel := _ensure_bag_highlight()
+	var rect := slot.get_global_rect()
+	panel.global_position = rect.position
+	panel.size = rect.size
+	panel.add_theme_stylebox_override("panel", _bag_highlight_style(full))
+	panel.visible = true
+
+
+func _hide_bag_highlight() -> void:
+	if _bag_highlight != null and is_instance_valid(_bag_highlight):
+		_bag_highlight.visible = false
+
+
+func _ensure_bag_highlight() -> Panel:
+	if _bag_highlight != null and is_instance_valid(_bag_highlight):
+		return _bag_highlight
+	_bag_highlight = Panel.new()
+	_bag_highlight.name = "BagHighlight"
+	_bag_highlight.z_index = 130
+	_bag_highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bag_highlight.visible = false
+	add_child(_bag_highlight)
+	return _bag_highlight
+
+
+func _bag_highlight_style(full: bool) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(4)
+	style.set_border_width_all(3)
+	if full:
+		style.bg_color = Color(0.88, 0.42, 0.32, 0.22)
+		style.border_color = Color(0.88, 0.42, 0.32, 0.95)
+	else:
+		style.bg_color = Color(1.0, 0.87, 0.55, 0.20)
+		style.border_color = Color(1.0, 0.87, 0.55, 0.95)
+	return style
+
+
+## 把某格的残片退回背包（摘下来）。Shift+点击和拖回背包都走这里。
+func _on_relic_remove_requested(index: int) -> void:
+	_unmount_relic(index)
+
+
+func _unmount_relic(index: int) -> void:
+	if index < 0 or index >= RelicBoard.CELL_COUNT:
+		return
+	var catalog := RelicCatalog.load_definitions()
+	var board := _load_relic_board(catalog)
+	if board.cells[index].is_empty():
+		return
+	# 背包满了就摘不下来：宁可不动，也不能凭空多出一个没地方放的残片。
+	if _bag_used(_active_run()) >= ITEM_CAPACITY:
+		_flash_bag_full()
+		return
+	board.place(index, "", catalog)
+	var error := board.save_to_file(RelicBoard.SAVE_PATH)
+	if error != OK:
+		push_warning("典籍装配保存失败：%d" % error)
+	_refresh_data()
+	relic_board_updated.emit()
+
+
+## 背包塞不下时把标题染红一下，比默默不动好。
+func _flash_bag_full() -> void:
+	if _item_title == null or not is_instance_valid(_item_title):
+		return
+	_item_title.add_theme_color_override("font_color", Color(0.88, 0.42, 0.32))
+	var tween := create_tween()
+	tween.tween_interval(0.7)
+	tween.tween_callback(func() -> void:
+		if is_instance_valid(_item_title):
+			_item_title.remove_theme_color_override("font_color"))
 
 
 func _relic_cell_at(screen_position: Vector2) -> int:
@@ -495,6 +613,7 @@ func _highlight_relic_cell(index: int) -> void:
 
 func _end_relic_drag(restore: bool) -> void:
 	_highlight_relic_cell(-1)
+	_hide_bag_highlight()
 	if _drag_ghost != null and is_instance_valid(_drag_ghost):
 		_drag_ghost.queue_free()
 	_drag_ghost = null
@@ -712,21 +831,21 @@ func _build_item_zone(page: Control) -> void:
 	_zone_rule(page, BAG_ITEM_RECT.position.x, BAG_ITEM_RECT.size.x,
 		BAG_ITEM_RECT.position.y)
 
-	var scroll := ScrollContainer.new()
-	scroll.position = Vector2(BAG_ITEM_RECT.position.x + 4.0,
+	_item_scroll = ScrollContainer.new()
+	_item_scroll.position = Vector2(BAG_ITEM_RECT.position.x + 4.0,
 		BAG_ITEM_RECT.position.y + ZONE_TITLE_HEIGHT)
-	scroll.size = Vector2(BAG_ITEM_RECT.size.x - 12.0,
+	_item_scroll.size = Vector2(BAG_ITEM_RECT.size.x - 12.0,
 		BAG_ITEM_RECT.size.y - ZONE_TITLE_HEIGHT)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	page.add_child(scroll)
+	_item_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_item_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	page.add_child(_item_scroll)
 
 	_item_grid = GridContainer.new()
 	_item_grid.columns = ITEM_COLUMNS
 	_item_grid.add_theme_constant_override("h_separation", int(ITEM_GAP))
 	_item_grid.add_theme_constant_override("v_separation", int(ITEM_GAP))
 	_item_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	scroll.add_child(_item_grid)
+	_item_scroll.add_child(_item_grid)
 
 
 func _build_relic_zone(page: Control) -> void:
@@ -757,6 +876,7 @@ func _build_relic_zone(page: Control) -> void:
 		cell.mouse_entered.connect(_show_relic_tip.bind(cell))
 		cell.mouse_exited.connect(_hide_item_tip)
 		cell.drag_requested.connect(_begin_relic_drag)
+		cell.remove_requested.connect(_on_relic_remove_requested)
 		cell.add_child(_texture_rect(_relic_scrap(index + 1), Vector2.ZERO, RELIC_CELL_SIZE))
 		var label := Label.new()
 		label.text = "—"
