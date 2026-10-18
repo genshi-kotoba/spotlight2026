@@ -11,8 +11,8 @@ amount = 6
 [resource]
 script = ExtResource("3_card")
 card_id = &"test_heal"
-card_name = "测试·治疗"
-description = "恢复 6 点生命值，但不会超过最大生命值。"
+card_name = "治疗"
+description = "恢复 6 点生命值。"
 kind = 1
 face_tint = 2
 effects = Array[ExtResource("1_base")]([SubResource("Effect")])

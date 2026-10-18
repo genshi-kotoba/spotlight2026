@@ -14,8 +14,8 @@ duration = 1
 [resource]
 script = ExtResource("3_card")
 card_id = &"test_weak"
-card_name = "测试·虚弱"
-description = "给予目标 3 层虚弱。本回合每次造成伤害时减少 3 点，最低为 0。"
+card_name = "虚弱"
+description = "给予目标 3 层虚弱。"
 kind = 1
 face_tint = 2
 effects = Array[ExtResource("1_base")]([SubResource("Effect")])

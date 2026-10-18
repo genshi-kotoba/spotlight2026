@@ -1379,7 +1379,10 @@ func _layout_hand(slots: Array[Control]) -> void:
 		var slot := slots[index]
 		slot.size = HAND_CARD_SIZE
 		# 绕底边中点旋转，越靠边角度越大；同时沿弧线略微下沉，形成扇形。
-		var angle := (index - center) * HAND_ARC_SPREAD
+		# 悬停的那张立正（角度归零、不再下沉），否则扇形会把字也转歪。
+		var hovered := bool(slot.get_meta("hovered", false))
+		var angle := 0.0 if hovered else (index - center) * HAND_ARC_SPREAD
+		slot.set_meta("fan_rotation", angle)
 		slot.pivot_offset = Vector2(HAND_CARD_SIZE.x * 0.5, HAND_CARD_SIZE.y)
 		slot.rotation = angle
 		slot.position = Vector2(start + step * index,
@@ -1463,6 +1466,18 @@ func _on_hand_card_hover_changed(slot: Control, view: CardView, expanded: bool) 
 	tween.tween_property(view, "scale", target_scale,
 		hand_hover_duration if expanded else hand_hover_return_duration)
 	slot.set_meta("hover_tween", tween)
+
+	# 立正：悬停时把扇形角度收回到 0，离开时回到该位置原本的角度。
+	var previous_rotate: Variant = slot.get_meta("hover_rotate_tween") if slot.has_meta("hover_rotate_tween") else null
+	if previous_rotate is Tween and previous_rotate.is_valid():
+		previous_rotate.kill()
+	var target_rotation := 0.0 if expanded else float(slot.get_meta("fan_rotation", 0.0))
+	var rotate_tween := slot.create_tween()
+	rotate_tween.set_trans(Tween.TRANS_CUBIC)
+	rotate_tween.set_ease(Tween.EASE_OUT)
+	rotate_tween.tween_property(slot, "rotation", target_rotation,
+		hand_hover_duration if expanded else hand_hover_return_duration)
+	slot.set_meta("hover_rotate_tween", rotate_tween)
 	# A→B 切换时 Godot 先派发 A 的离开、再派发 B 的进入；这里延后一拍统一判定，
 	# 避免中途先收扇再展开。
 	call_deferred("_refresh_hand_fan")

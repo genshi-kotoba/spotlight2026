@@ -11,8 +11,8 @@ count = 2
 [resource]
 script = ExtResource("3_card")
 card_id = &"test_discard_choice"
-card_name = "测试·选择弃牌"
-description = "结算暂停；点击手牌选择 2 张弃置，随后从当前指针继续。"
+card_name = "选择弃牌"
+description = "选择 2 张手牌弃置。"
 kind = 3
 face_tint = 3
 effects = Array[ExtResource("1_base")]([SubResource("Effect")])

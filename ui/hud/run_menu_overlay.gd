@@ -500,26 +500,35 @@ func _in_item_zone(screen_position: Vector2) -> bool:
 	return _item_scroll.get_global_rect().has_point(screen_position)
 
 
-## 拖着典籍上的残片划过背包区域时，把「会落到这一格」的格子圈出来。
-## 残片在背包里是接在道具后面的，所以落点就是当前已用格数那一格；
-## 背包满了就圈最后一格并示警，说明松手也放不下。
+## 拖拽时给背包区域一个落点提示。
+## 从典籍上拖出来的：残片在背包里接在道具后面，圈当前已用格数那一格；
+## 从背包里拿起来的：圈它自己原来那一格，松手就回原位。
+## 背包满了（只在典籍→背包时可能）就圈最后一格并示警。
 func _highlight_bag_slot(screen_position: Vector2) -> void:
-	if _drag_origin < 0 or not _in_item_zone(screen_position):
+	if not _in_item_zone(screen_position):
 		_hide_bag_highlight()
 		return
-	var slot_count := _item_grid.get_child_count()
-	if slot_count == 0:
-		_hide_bag_highlight()
+	if _drag_origin >= 0:
+		var slot_count := _item_grid.get_child_count()
+		if slot_count == 0:
+			_hide_bag_highlight()
+			return
+		var used := _bag_used(_active_run())
+		var slot := _item_grid.get_child(mini(used, slot_count - 1)) as Control
+		if slot == null:
+			_hide_bag_highlight()
+			return
+		_show_bag_highlight(slot.get_global_rect(), used >= ITEM_CAPACITY)
 		return
-	var used := _bag_used(_active_run())
-	var full := used >= ITEM_CAPACITY
-	var index := mini(used, slot_count - 1)
-	var slot := _item_grid.get_child(index) as Control
-	if slot == null:
-		_hide_bag_highlight()
+	# 背包里拿起来的：位置不变，圈原格。
+	if _drag_source != null and is_instance_valid(_drag_source) and _drag_source is RelicDragItem:
+		_show_bag_highlight((_drag_source as Control).get_global_rect(), false)
 		return
+	_hide_bag_highlight()
+
+
+func _show_bag_highlight(rect: Rect2, full: bool) -> void:
 	var panel := _ensure_bag_highlight()
-	var rect := slot.get_global_rect()
 	panel.global_position = rect.position
 	panel.size = rect.size
 	panel.add_theme_stylebox_override("panel", _bag_highlight_style(full))
@@ -566,7 +575,8 @@ func _unmount_relic(index: int) -> void:
 		return
 	var catalog := RelicCatalog.load_definitions()
 	var board := _load_relic_board(catalog)
-	if board.cells[index].is_empty():
+	var unmounted := board.cells[index]
+	if unmounted.is_empty():
 		return
 	# 背包满了就摘不下来：宁可不动，也不能凭空多出一个没地方放的残片。
 	if _bag_used(_active_run()) >= ITEM_CAPACITY:
@@ -576,6 +586,12 @@ func _unmount_relic(index: int) -> void:
 	var error := board.save_to_file(RelicBoard.SAVE_PATH)
 	if error != OK:
 		push_warning("典籍装配保存失败：%d" % error)
+	# 退回背包的接在最后，不按目录顺序插回去。
+	var bag := _load_relic_bag(catalog)
+	bag.add(unmounted)
+	error = bag.save_to_file()
+	if error != OK:
+		push_warning("背包残片顺序保存失败：%d" % error)
 	_refresh_data()
 	relic_board_updated.emit()
 
@@ -659,30 +675,50 @@ func _apply_relic_drop(origin: int, target: int, fragment_id: String) -> void:
 		return
 	var catalog := RelicCatalog.load_definitions()
 	var board := _load_relic_board(catalog)
+	var bag := _load_relic_bag(catalog)
 	if origin >= 0:
 		if origin == target:
 			return
+		# 对调时被顶下来的那个回到背包末尾。
+		var displaced := board.cells[target]
 		board.swap_cells(origin, target)
+		if not displaced.is_empty():
+			bag.add(displaced)
 	elif target < board.cells.size():
 		board.place(target, fragment_id, catalog)
+		bag.remove(fragment_id)
 	var error := board.save_to_file(RelicBoard.SAVE_PATH)
 	if error != OK:
 		push_warning("典籍装配保存失败：%d" % error)
+	error = bag.save_to_file()
+	if error != OK:
+		push_warning("背包残片顺序保存失败：%d" % error)
 	_refresh_data()
 	relic_board_updated.emit()
 
 
+## 背包里还没装进典籍的残片，按进包顺序。
 func _available_relics() -> Array[RelicFragmentData]:
 	var catalog := RelicCatalog.load_definitions()
-	var placed := {}
-	for fragment_id in _load_relic_board(catalog).cells:
-		if not fragment_id.is_empty():
-			placed[fragment_id] = true
 	var result: Array[RelicFragmentData] = []
-	for fragment: RelicFragmentData in catalog.values():
-		if not placed.has(fragment.fragment_id):
+	for fragment_id in _load_relic_bag(catalog).fragment_ids:
+		var fragment: RelicFragmentData = catalog.get(fragment_id)
+		if fragment != null:
 			result.append(fragment)
 	return result
+
+
+## 背包用单独一份顺序文件，和典籍板面各自存各自的。
+func _load_relic_bag(catalog: Dictionary) -> RelicBag:
+	var placed: Array[String] = []
+	for fragment_id in _load_relic_board(catalog).cells:
+		if not fragment_id.is_empty():
+			placed.append(fragment_id)
+	var bag := RelicBag.new()
+	var error := bag.load_from_file(catalog, placed)
+	if error != OK:
+		push_warning("读取背包残片顺序失败：%d" % error)
+	return bag
 
 
 func _load_relic_board(catalog: Dictionary) -> RelicBoard:
