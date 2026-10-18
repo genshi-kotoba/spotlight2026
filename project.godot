@@ -24,6 +24,7 @@ MapEvents="*res://core/signals/map_events.gd"
 SaveGateway="*res://autoload/save_gateway.gd"
 TextCatalog="*res://systems/text/text_catalog.gd"
 EncounterFlow="*res://systems/map/encounter_flow.gd"
+MapPresentation="*res://autoload/map_presentation.gd"
 
 [display]
 

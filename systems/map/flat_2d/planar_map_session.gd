@@ -1,6 +1,7 @@
 extends RefCounted
 ## Pure planar map state. Unit radius = 1; rendering pixels and height are absent.
 const Hex = preload("res://systems/map/hex_coord.gd")
+const HeightRecipe = preload("res://systems/map/flat_2d/height_recipe.gd")
 const TYPES := ["battle", "elite", "shop", "boss", "event"]
 const FOOT_RADIUS := 0.18
 var map_id := ""
@@ -109,6 +110,10 @@ func _parse(data: Dictionary) -> bool:
 	clean_nodes.sort_custom(func(a, b): return a.id < b.id)
 	_snapshot = {"schema_version": 1, "map_id": map_id, "seed": seed, "floor_index": floor_index, "spawn": [spawn.x, spawn.y], "cells": clean_cells, "nodes": clean_nodes}
 	fingerprint = JSON.stringify(_snapshot).sha256_text()
+	if data.has("height_recipe"):
+		var parsed: Dictionary = HeightRecipe.parse(data.height_recipe, cells, nodes, spawn)
+		if parsed.has("error"): return _fail(parsed.error)
+		_snapshot.height_recipe = parsed.recipe
 	actor_plane = Hex.to_plane(spawn, 1.0)
 	_discover()
 	return true
@@ -181,8 +186,13 @@ func _rebuild_boundaries() -> void:
 			var a := center + Vector2.from_angle(TAU * vertex / 6.0)
 			var b := center + Vector2.from_angle(TAU * (vertex + 1) / 6.0)
 			var inward := (center - Hex.to_plane(neighbor, 1.0)).normalized()
-			edges.append({"a": a, "b": b, "normal": inward})
+			edges.append({"a": a, "b": b, "normal": inward, "direction": i, "neighbor_key": key(neighbor)})
 		_boundaries[k] = edges
+
+func collision_boundaries() -> Dictionary:
+	# Read-only copy of the SAME segments used by circle sweeps. Presentation
+	# must not invent a second footprint or move these by the actor radius.
+	return _boundaries.duplicate(true)
 
 func _node_visible(node: Dictionary) -> bool:
 	var visible := known.has(key(coord(node.coord)))

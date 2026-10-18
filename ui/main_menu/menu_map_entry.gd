@@ -1,6 +1,6 @@
-extends "res://ui/world_map/flat_2d/map_run_demo.gd"
+extends "res://ui/world_map/relief_2d/map_exploration.gd"
 
-## 主菜单落点：只覆盖装配/持久化入口，地图算法、交互和视图全部继承 main。
+## 正式业务入口；2.5D 只负责显示，战斗、奖励、商店和存档保持同一接线。
 const MENU_SCENE := "res://ui/main_menu/main_menu.tscn"
 var _gateway: Node
 var _saved_entry_state: Dictionary = {}
@@ -74,7 +74,7 @@ func _ensure_active_run() -> bool:
 	if _gateway.has_continuable_run():
 		return _gateway.continue_saved_run() == OK
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
-	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(RUN_CONFIG_PATH))
+	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(_run_settings_path()))
 	if not parsed is Dictionary or not settings is Dictionary:
 		push_error("地图入口的新局配置无法读取")
 		return false
@@ -84,7 +84,7 @@ func _ensure_active_run() -> bool:
 
 
 func _initial_snapshot() -> Dictionary:
-	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(RUN_CONFIG_PATH))
+	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(_run_settings_path()))
 	if not settings is Dictionary or not settings.get("floors") is Array:
 		return {}
 	_floor_configs = settings.floors.duplicate(true)
