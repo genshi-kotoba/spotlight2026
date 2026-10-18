@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://ui/components/card/card_view.gd" id="1_view"]
 [ext_resource type="Texture2D" uid="uid://brgcj8p7jy1rw" path="res://assets/ui/UI-001/日灰.png" id="2_frame_default"]
@@ -6,6 +6,13 @@
 
 [sub_resource type="SystemFont" id="SystemFont_cjk"]
 font_names = PackedStringArray("Microsoft YaHei", "SimHei", "Noto Sans CJK SC")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_art_back"]
+bg_color = Color(0.945098, 0.933333, 0.905882, 1)
+corner_radius_top_left = 56
+corner_radius_top_right = 56
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
 
 [node name="CardView" type="Control"]
 custom_minimum_size = Vector2(480, 818)
@@ -16,6 +23,16 @@ script = ExtResource("1_view")
 "底图集" = ExtResource("3_face_set")
 "稀有度" = 0
 "颜色" = 0
+
+[node name="插画底" type="Panel" parent="."]
+anchor_left = 0.1192
+anchor_top = 0.2087
+anchor_right = 0.8727
+anchor_bottom = 0.5668
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_art_back")
 
 [node name="插画位" type="TextureRect" parent="."]
 unique_name_in_owner = true
@@ -55,18 +72,19 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.94902, 0.929412, 0.858824, 1)
 theme_override_fonts/font = SubResource("SystemFont_cjk")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 46
 text = "卡牌名"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
+clip_text = true
 
 [node name="效果文本" type="Label" parent="."]
 unique_name_in_owner = true
 anchor_left = 0.1223
-anchor_top = 0.719
+anchor_top = 0.7
 anchor_right = 0.8696
-anchor_bottom = 0.819
+anchor_bottom = 0.975
 offset_left = 10.0
 offset_top = 6.0
 offset_right = -10.0
@@ -76,11 +94,12 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.94902, 0.929412, 0.858824, 1)
 theme_override_fonts/font = SubResource("SystemFont_cjk")
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 30
 text = "卡牌效果"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
+clip_text = true
 
 [node name="介绍文本" type="Label" parent="."]
 unique_name_in_owner = true
@@ -98,7 +117,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.760784, 0.741176, 0.694118, 1)
 theme_override_fonts/font = SubResource("SystemFont_cjk")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 24
 text = "卡牌介绍"
 horizontal_alignment = 1
 vertical_alignment = 1

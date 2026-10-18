@@ -5,14 +5,17 @@ extends Node
 signal catalog_changed
 signal progress_changed
 
-const CATEGORIES := ["cards", "fragments", "monsters", "achievements"]
+const CATEGORIES := ["cards", "fragments", "monsters", "achievements", "items"]
 const DEFAULT_PATHS := {
 	"cards": "res://data/text/cards.csv", "fragments": "res://data/text/fragments.csv",
 	"monsters": "res://data/text/monsters.csv", "achievements": "res://data/text/achievements.csv",
+	"items": "res://data/text/items.csv",
 }
 const CARD_HEADERS := ["编号", "卡图资源路径", "卡名", "效果文本", "类型", "文本"]
 const MONSTER_HEADERS := ["编号", "怪物图资源路径", "怪物名", "能力文本", "类型与出现地", "文本"]
 const ACHIEVEMENT_HEADERS := ["编号", "成就名", "要求文本", "奖励"]
+const ITEM_HEADERS := ["编号", "物品名", "图标路径", "效果文本"]
+const ITEM_KEYS := ["id", "name", "icon_path", "effect"]
 const ENTRY_KEYS := ["id", "art_path", "name", "effect", "type", "text"]
 const ACHIEVEMENT_KEYS := ["id", "name", "requirement", "reward"]
 
@@ -34,9 +37,15 @@ func _ready() -> void:
 func reload() -> Error:
 	var first_error: Error = OK
 	for category: String in CATEGORIES:
-		var headers: Array = ACHIEVEMENT_HEADERS if category == "achievements" else (
-			MONSTER_HEADERS if category == "monsters" else CARD_HEADERS)
-		var keys: Array = ACHIEVEMENT_KEYS if category == "achievements" else ENTRY_KEYS
+		var headers: Array = CARD_HEADERS
+		if category == "achievements":
+			headers = ACHIEVEMENT_HEADERS
+		elif category == "monsters":
+			headers = MONSTER_HEADERS
+		elif category == "items":
+			headers = ITEM_HEADERS
+		var keys: Array = ACHIEVEMENT_KEYS if category == "achievements" else (
+			ITEM_KEYS if category == "items" else ENTRY_KEYS)
 		var result := CsvTextTable.read(str(paths.get(category, "")), headers, keys)
 		_tables[category] = result.records
 		_errors[category] = result.message

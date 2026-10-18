@@ -23,7 +23,7 @@ func _ready() -> void:
 
 func _test_geometry_and_save() -> void:
 	var board := RelicBoard.new()
-	_check("页面固定 12 格", board.cells.size() == 12)
+	_check("页面固定 20 格", board.cells.size() == 20)
 	_check("四格角落不越界", board.neighbors(0, RelicFragmentData.Reach.FOUR) == [1, 4])
 	_check("四格中心只包含上下左右", board.neighbors(5, RelicFragmentData.Reach.FOUR) == [1, 4, 6, 9])
 	_check("八格中心包含四个对角", board.neighbors(5, RelicFragmentData.Reach.EIGHT) == [0, 1, 2, 4, 6, 8, 9, 10])

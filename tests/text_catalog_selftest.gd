@@ -25,8 +25,10 @@ func _run() -> void:
 	_check("使用隔离档案，不写玩家存档", gateway._load_slot(1) == OK)
 	original_paths = TextCatalog.paths.duplicate()
 	_check("四份正式空 CSV 都可导入", TextCatalog.reload() == OK)
-	for category: String in TextCatalogService.CATEGORIES:
+	# 物品表是真实数据表（背包图标与悬停详情），不是待策划填写的空模板。
+	for category: String in ["cards", "fragments", "monsters", "achievements"]:
 		_check(category + " 正式模板只有表头", TextCatalog.entries(category).is_empty())
+	_check("物品表读到 7 条", TextCatalog.entries("items").size() == 7)
 	_parser_checks()
 	_fixture_tables()
 	_check("测试表导入", TextCatalog.reload() == OK)

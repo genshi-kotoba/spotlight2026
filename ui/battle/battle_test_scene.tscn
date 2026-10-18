@@ -1,20 +1,61 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=28 format=3]
 
 [ext_resource type="Script" path="res://ui/battle/battle_test_scene.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/battle_test/battle_background_1920x1080.png" id="2_bg"]
-[ext_resource type="Texture2D" path="res://assets/battle_test/CHR-025.png" id="3_enemy"]
+[ext_resource type="Texture2D" path="res://assets/env/ENV-003/ENV-003.JPG" id="2_bg"]
+[ext_resource type="Texture2D" path="res://assets/chr/CHR-018/CHR-018.png" id="3_enemy"]
+[ext_resource type="Texture2D" path="res://assets/chr/CHR-002/IMG_20261012_225512.png" id="4_hero"]
+[ext_resource type="Texture2D" path="res://assets/ui/UI-015/金-主角血条-主角血条底图.png" id="5_player_base"]
+[ext_resource type="Texture2D" path="res://assets/ui/UI-015/金-主角血条-金-主角血条底框.png" id="6_player_frame"]
+[ext_resource type="Texture2D" path="res://assets/ui/UI-015/金-主角血条-主角头像.png" id="7_player_avatar"]
+[ext_resource type="Texture2D" path="res://assets/ui/UI-015/超长血条底图.png" id="8_boss_base"]
+[ext_resource type="Texture2D" path="res://assets/ui/UI-015/超长-boss血条框.png" id="9_boss_frame"]
+[ext_resource type="Texture2D" path="res://assets/ui/UI-016/攻击.png" id="10_intent"]
+[ext_resource type="Texture2D" path="res://assets/ui/UI-016/意图角标.png" id="17_intent_ring"]
+[ext_resource type="Texture2D" path="res://assets/ui/UI-023/UI-023.png" id="11_coin"]
+[ext_resource type="Texture2D" path="res://assets/ui/UI-028/UI-028.png" id="16_elixir"]
+[ext_resource type="Script" path="res://ui/battle/health_fill.gd" id="15_hpfill"]
+[ext_resource type="Script" path="res://ui/battle/damage_preview.gd" id="18_dmgpreview"]
+[ext_resource type="Texture2D" path="res://assets/ui/UI-013/卡背-灰.png" id="12_back"]
+[ext_resource type="Texture2D" path="res://assets/ui/UI-003/大按钮-初始.png" id="13_btn"]
+[ext_resource type="Texture2D" path="res://assets/ui/UI-003/大按钮-悬停.png" id="14_btn_hover"]
 
-[sub_resource type="StyleBoxFlat" id="BarBoard"]
-bg_color = Color(0.0862745, 0.0588235, 0.0392157, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.909804, 0.705882, 0.333333, 0.5)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
+[sub_resource type="AtlasTexture" id="Atlas_intent"]
+atlas = ExtResource("10_intent")
+region = Rect2(104, 125, 847, 863)
+
+[sub_resource type="AtlasTexture" id="Atlas_coin"]
+atlas = ExtResource("11_coin")
+region = Rect2(119, 90, 722, 678)
+
+[sub_resource type="AtlasTexture" id="Atlas_elixir"]
+atlas = ExtResource("16_elixir")
+region = Rect2(119, 90, 722, 678)
+
+[sub_resource type="AtlasTexture" id="Atlas_back"]
+atlas = ExtResource("12_back")
+region = Rect2(35, 2, 1885, 3327)
+
+[sub_resource type="AtlasTexture" id="Atlas_btn"]
+atlas = ExtResource("13_btn")
+region = Rect2(40, 46, 841, 305)
+
+[sub_resource type="AtlasTexture" id="Atlas_btn_hover"]
+atlas = ExtResource("14_btn_hover")
+region = Rect2(40, 45, 841, 307)
+
+[sub_resource type="StyleBoxTexture" id="StyleBtn"]
+texture = SubResource("Atlas_btn")
+texture_margin_left = 10.0
+texture_margin_top = 8.0
+texture_margin_right = 10.0
+texture_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBtnHover"]
+texture = SubResource("Atlas_btn_hover")
+texture_margin_left = 10.0
+texture_margin_top = 8.0
+texture_margin_right = 10.0
+texture_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="SlotBox"]
 bg_color = Color(0.101961, 0.0745098, 0.0470588, 0.62)
@@ -40,26 +81,6 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[sub_resource type="StyleBoxFlat" id="PlaceholderBox"]
-bg_color = Color(0.129412, 0.101961, 0.0627451, 0.38)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.788235, 0.72549, 0.560784, 0.6)
-
-[sub_resource type="StyleBoxFlat" id="IntentCircle"]
-bg_color = Color(0.470588, 0.156863, 0.12549, 0.92)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.784314, 0.321569, 0.290196, 0.8)
-corner_radius_top_left = 42
-corner_radius_top_right = 42
-corner_radius_bottom_right = 42
-corner_radius_bottom_left = 42
-
 [sub_resource type="StyleBoxFlat" id="ButtonNormal"]
 bg_color = Color(0.141176, 0.101961, 0.0745098, 0.96)
 border_width_left = 1
@@ -67,18 +88,6 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.909804, 0.705882, 0.333333, 0.55)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-
-[sub_resource type="StyleBoxFlat" id="ButtonPrimary"]
-bg_color = Color(0.290196, 0.203922, 0.0862745, 0.98)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.909804, 0.705882, 0.333333, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
@@ -108,17 +117,17 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
-[sub_resource type="StyleBoxFlat" id="ButtonSmall"]
-bg_color = Color(0.141176, 0.101961, 0.0745098, 0.9)
+[sub_resource type="StyleBoxFlat" id="SoftPlate"]
+bg_color = Color(0.055, 0.046, 0.038, 0.55)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.909804, 0.705882, 0.333333, 0.45)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
+border_color = Color(0.91, 0.706, 0.333, 0.14)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="ModalPanel"]
 bg_color = Color(0.0901961, 0.0745098, 0.0627451, 0.985)
@@ -146,7 +155,6 @@ grow_vertical = 2
 script = ExtResource("1_script")
 
 [node name="Background" type="TextureRect" parent="."]
-modulate = Color(1, 1, 1, 0.3)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -166,16 +174,19 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.0235294, 0.0156863, 0.0117647, 0.8)
+color = Color(0.0235294, 0.0156863, 0.0117647, 0.46)
 
 [node name="TurnLabel" type="Label" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 22.0
+offset_top = 4.0
 offset_right = 1920.0
-offset_bottom = 56.0
+offset_bottom = 38.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.909804, 0.705882, 0.333333, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 26
 text = "回合 1"
 horizontal_alignment = 1
@@ -206,76 +217,93 @@ theme_override_colors/font_color = Color(1, 1, 1, 0.7)
 theme_override_font_sizes/font_size = 16
 text = "首抽 12  |  每回合抽 2  |  出牌上限 10"
 
-[node name="PlayerPortrait" type="Panel" parent="."]
+[node name="PlayerPortrait" type="Control" parent="."]
 layout_mode = 0
-offset_left = 24.0
-offset_top = 20.0
-offset_right = 136.0
-offset_bottom = 132.0
+offset_left = 37.0
+offset_top = 11.0
+offset_right = 137.0
+offset_bottom = 126.0
 mouse_default_cursor_shape = 2
-theme_override_styles/panel = SubResource("PlaceholderBox")
 
-[node name="Label" type="Label" parent="PlayerPortrait"]
+[node name="PlayerHPBar" type="Control" parent="."]
 layout_mode = 0
-offset_left = 6.0
-offset_top = 30.0
-offset_right = 106.0
-offset_bottom = 82.0
+offset_left = -16.0
+offset_top = 7.0
+offset_right = 428.44
+offset_bottom = 147.62
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.788235, 0.72549, 0.560784, 1)
-theme_override_font_sizes/font_size = 12
-text = "CHR-002
-头像占位"
-horizontal_alignment = 1
-vertical_alignment = 1
 
-[node name="PlayerHPBar" type="Panel" parent="."]
+[node name="Base" type="TextureRect" parent="PlayerHPBar"]
 layout_mode = 0
-offset_left = 148.0
-offset_top = 36.0
-offset_right = 388.0
-offset_bottom = 56.0
+offset_right = 444.44
+offset_bottom = 140.62
 mouse_filter = 2
-theme_override_styles/panel = SubResource("BarBoard")
+texture = ExtResource("5_player_base")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="Fill" type="ColorRect" parent="PlayerHPBar"]
+[node name="Fill" type="Control" parent="PlayerHPBar"]
+script = ExtResource("15_hpfill")
 layout_mode = 0
-offset_left = 1.0
-offset_top = 1.0
-offset_right = 217.0
-offset_bottom = 19.0
+offset_left = 94
+offset_top = 30
+offset_right = 810
+offset_bottom = 62
 mouse_filter = 2
-color = Color(0.556863, 0.184314, 0.14902, 1)
+slant = 13.0
+fill_color = Color(0.756863, 0.239216, 0.262745, 1)
 
 [node name="Block" type="ColorRect" parent="PlayerHPBar"]
 visible = false
 layout_mode = 0
-offset_left = 217.0
-offset_top = 1.0
-offset_right = 233.0
-offset_bottom = 19.0
+offset_left = 810
+offset_top = 30
+offset_right = 826
+offset_bottom = 62
 mouse_filter = 2
 color = Color(0.352941, 0.439216, 0.54902, 1)
 
+[node name="Frame" type="TextureRect" parent="PlayerHPBar"]
+layout_mode = 0
+offset_right = 444.44
+offset_bottom = 140.62
+mouse_filter = 2
+texture = ExtResource("6_player_frame")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Avatar" type="TextureRect" parent="PlayerHPBar"]
+layout_mode = 0
+offset_right = 444.44
+offset_bottom = 140.62
+mouse_filter = 2
+texture = ExtResource("7_player_avatar")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="PlayerHPNum" type="Label" parent="."]
 layout_mode = 0
-offset_left = 148.0
-offset_top = 60.0
-offset_right = 288.0
-offset_bottom = 86.0
+offset_left = 150.0
+offset_top = 47.0
+offset_right = 300.0
+offset_bottom = 75.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.811765, 0.890196, 1, 1)
+theme_override_colors/font_color = Color(1, 0.878431, 0.847059, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 18
 text = "60/100"
 
 [node name="PlayerBuffRow" type="HBoxContainer" parent="."]
+z_index = 12
 layout_mode = 0
-offset_left = 236.0
-offset_top = 60.0
-offset_right = 636.0
-offset_bottom = 86.0
+offset_left = 150.0
+offset_top = 86.0
+offset_right = 530.0
+offset_bottom = 122.0
 mouse_filter = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 8
 
 [node name="PlayerStatus" type="Label" parent="."]
 unique_name_in_owner = true
@@ -288,176 +316,208 @@ offset_bottom = 136.0
 theme_override_font_sizes/font_size = 16
 text = "玩家  HP 60/100  格挡 0"
 
+[node name="背包底板" type="Panel" parent="."]
+offset_left = 14.0
+offset_top = 142.0
+offset_right = 324.0
+offset_bottom = 282.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("SoftPlate")
+
 [node name="BackpackSlots" type="Control" parent="."]
 layout_mode = 0
 offset_left = 24.0
-offset_top = 152.0
-offset_right = 376.0
-offset_bottom = 240.0
+offset_top = 150.0
+offset_right = 314.0
+offset_bottom = 272.0
 mouse_filter = 2
 
 [node name="Slot01" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 0
+offset_top = 0
+offset_right = 38
+offset_bottom = 38
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBoxFilled")
 
 [node name="Slot02" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 44.0
-offset_right = 84.0
-offset_bottom = 40.0
+offset_left = 42
+offset_top = 0
+offset_right = 80
+offset_bottom = 38
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBoxFilled")
 
 [node name="Slot03" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 88.0
-offset_right = 128.0
-offset_bottom = 40.0
+offset_left = 84
+offset_top = 0
+offset_right = 122
+offset_bottom = 38
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
 [node name="Slot04" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 132.0
-offset_right = 172.0
-offset_bottom = 40.0
+offset_left = 126
+offset_top = 0
+offset_right = 164
+offset_bottom = 38
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
 [node name="Slot05" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 176.0
-offset_right = 216.0
-offset_bottom = 40.0
+offset_left = 168
+offset_top = 0
+offset_right = 206
+offset_bottom = 38
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
 [node name="Slot06" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 220.0
-offset_right = 260.0
-offset_bottom = 40.0
+offset_left = 210
+offset_top = 0
+offset_right = 248
+offset_bottom = 38
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
 [node name="Slot07" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 264.0
-offset_right = 304.0
-offset_bottom = 40.0
+offset_left = 252
+offset_top = 0
+offset_right = 290
+offset_bottom = 38
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
 [node name="Slot08" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 308.0
-offset_right = 348.0
-offset_bottom = 40.0
+offset_left = 0
+offset_top = 42
+offset_right = 38
+offset_bottom = 80
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
 [node name="Slot09" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_top = 44.0
-offset_right = 40.0
-offset_bottom = 84.0
+offset_left = 42
+offset_top = 42
+offset_right = 80
+offset_bottom = 80
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBoxFilled")
 
 [node name="Slot10" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 44.0
-offset_top = 44.0
-offset_right = 84.0
-offset_bottom = 84.0
+offset_left = 84
+offset_top = 42
+offset_right = 122
+offset_bottom = 80
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
 [node name="Slot11" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 88.0
-offset_top = 44.0
-offset_right = 128.0
-offset_bottom = 84.0
+offset_left = 126
+offset_top = 42
+offset_right = 164
+offset_bottom = 80
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
 [node name="Slot12" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 132.0
-offset_top = 44.0
-offset_right = 172.0
-offset_bottom = 84.0
+offset_left = 168
+offset_top = 42
+offset_right = 206
+offset_bottom = 80
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
 [node name="Slot13" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 176.0
-offset_top = 44.0
-offset_right = 216.0
-offset_bottom = 84.0
+offset_left = 210
+offset_top = 42
+offset_right = 248
+offset_bottom = 80
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
 [node name="Slot14" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 220.0
-offset_top = 44.0
-offset_right = 260.0
-offset_bottom = 84.0
+offset_left = 252
+offset_top = 42
+offset_right = 290
+offset_bottom = 80
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
 [node name="Slot15" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 264.0
-offset_top = 44.0
-offset_right = 304.0
-offset_bottom = 84.0
+offset_left = 0
+offset_top = 84
+offset_right = 38
+offset_bottom = 122
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
 [node name="Slot16" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 308.0
-offset_top = 44.0
-offset_right = 348.0
-offset_bottom = 84.0
+offset_left = 42
+offset_top = 84
+offset_right = 80
+offset_bottom = 122
 mouse_filter = 2
-theme_override_styles/panel = SubResource("SlotBox")
 
-[node name="HeroPortrait" type="Panel" parent="."]
+[node name="Slot17" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 20.0
-offset_top = 648.0
-offset_right = 136.0
-offset_bottom = 1060.0
+offset_left = 84
+offset_top = 84
+offset_right = 122
+offset_bottom = 122
 mouse_filter = 2
-theme_override_styles/panel = SubResource("PlaceholderBox")
 
-[node name="Label" type="Label" parent="HeroPortrait"]
+[node name="Slot18" type="Panel" parent="BackpackSlots"]
 layout_mode = 0
-offset_left = 4.0
-offset_top = 372.0
-offset_right = 112.0
-offset_bottom = 404.0
+offset_left = 126
+offset_top = 84
+offset_right = 164
+offset_bottom = 122
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.788235, 0.72549, 0.560784, 1)
-theme_override_font_sizes/font_size = 12
-text = "CHR-002 背身"
-horizontal_alignment = 1
-vertical_alignment = 1
+
+[node name="Slot19" type="Panel" parent="BackpackSlots"]
+layout_mode = 0
+offset_left = 168
+offset_top = 84
+offset_right = 206
+offset_bottom = 122
+mouse_filter = 2
+
+[node name="Slot20" type="Panel" parent="BackpackSlots"]
+layout_mode = 0
+offset_left = 210
+offset_top = 84
+offset_right = 248
+offset_bottom = 122
+mouse_filter = 2
+
+[node name="Slot21" type="Panel" parent="BackpackSlots"]
+layout_mode = 0
+offset_left = 252
+offset_top = 84
+offset_right = 290
+offset_bottom = 122
+mouse_filter = 2
+
+[node name="HeroPortrait" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = -180
+offset_top = 300
+offset_right = 424.7
+offset_bottom = 1319.2
+mouse_filter = 2
+texture = ExtResource("4_hero")
+expand_mode = 1
+stretch_mode = 5
+flip_h = true
 
 [node name="EnemyPortrait" type="TextureRect" parent="."]
 layout_mode = 0
-offset_left = 430.0
-offset_top = 90.0
-offset_right = 1490.0
-offset_bottom = 748.0
+offset_left = 562.0
+offset_top = 116.0
+offset_right = 1434.2
+offset_bottom = 933.2
 mouse_filter = 2
 texture = ExtResource("3_enemy")
 expand_mode = 1
@@ -465,167 +525,244 @@ stretch_mode = 5
 
 [node name="EnemyName" type="Label" parent="."]
 layout_mode = 0
-offset_top = 120.0
-offset_right = 1920.0
-offset_bottom = 150.0
+offset_left = 650.0
+offset_top = 78.0
+offset_right = 1450.0
+offset_bottom = 110.0
 mouse_filter = 2
+horizontal_alignment = 0
 theme_override_colors/font_color = Color(1, 0.768627, 0.690196, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 22
-text = "CHR-025 · 人造之神，方舟缔造者"
-horizontal_alignment = 1
+text = "人造之神，方舟缔造者"
 
-[node name="EnemyHPBar" type="Panel" parent="."]
+[node name="EnemyHPBar" type="Control" parent="."]
 layout_mode = 0
-offset_left = 610.0
-offset_top = 156.0
-offset_right = 1310.0
-offset_bottom = 182.0
+offset_left = 530.0
+offset_top = 78.0
+offset_right = 1489.5
+offset_bottom = 166.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("BarBoard")
 
-[node name="Fill" type="ColorRect" parent="EnemyHPBar"]
+[node name="Base" type="TextureRect" parent="EnemyHPBar"]
+visible = false
 layout_mode = 0
-offset_left = 1.0
-offset_top = 1.0
-offset_right = 495.0
-offset_bottom = 25.0
+offset_right = 959.5
+offset_bottom = 88.0
 mouse_filter = 2
-color = Color(0.556863, 0.184314, 0.14902, 1)
+texture = ExtResource("8_boss_base")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fill" type="Control" parent="EnemyHPBar"]
+script = ExtResource("15_hpfill")
+layout_mode = 0
+offset_left = 99.0
+offset_top = 30.0
+offset_right = 880.0
+offset_bottom = 62.0
+mouse_filter = 2
+slant = 21.8
+fill_color = Color(0.756863, 0.239216, 0.262745, 1)
 
 [node name="Block" type="ColorRect" parent="EnemyHPBar"]
 visible = false
 layout_mode = 0
-offset_left = 495.0
-offset_top = 1.0
-offset_right = 511.0
-offset_bottom = 25.0
+offset_left = 880.0
+offset_top = 30.0
+offset_right = 896.0
+offset_bottom = 62.0
 mouse_filter = 2
 color = Color(0.352941, 0.439216, 0.54902, 1)
 
+[node name="Frame" type="TextureRect" parent="EnemyHPBar"]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 1.0
+offset_right = 959.1
+offset_bottom = 87.0
+mouse_filter = 2
+texture = ExtResource("9_boss_frame")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="EnemyHPNum" type="Label" parent="."]
 layout_mode = 0
-offset_left = 1152.0
-offset_top = 156.0
-offset_right = 1302.0
-offset_bottom = 182.0
+offset_left = 650.0
+offset_top = 112.0
+offset_right = 860.0
+offset_bottom = 140.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 0.768627, 0.690196, 1)
+theme_override_colors/font_color = Color(1, 0.878431, 0.847059, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 16
-text = "300/300"
-horizontal_alignment = 2
+theme_override_font_sizes/font_size = 18
+text = "3000/3000"
 
 [node name="EnemyBuffRow" type="HBoxContainer" parent="."]
+z_index = 12
 layout_mode = 0
-offset_top = 190.0
-offset_right = 1920.0
-offset_bottom = 216.0
+offset_left = 650.0
+offset_top = 156.0
+offset_right = 1400.0
+offset_bottom = 178.0
 mouse_filter = 2
-alignment = 1
-theme_override_constants/separation = 6
+theme_override_constants/separation = 8
 
 [node name="EnemyStatus" type="Label" parent="."]
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
 offset_left = 610.0
-offset_top = 190.0
+offset_top = 216.0
 offset_right = 1310.0
-offset_bottom = 216.0
+offset_bottom = 240.0
 theme_override_font_sizes/font_size = 16
 text = "CHR-025  HP 300/300  格挡 0"
 
-[node name="IntentBadge" type="Panel" parent="."]
+[node name="IntentBadge" type="TextureRect" parent="."]
 layout_mode = 0
-offset_left = 1330.0
-offset_top = 127.0
-offset_right = 1414.0
-offset_bottom = 211.0
+offset_left = 1438
+offset_top = 82
+offset_right = 1549
+offset_bottom = 195
 mouse_filter = 2
-theme_override_styles/panel = SubResource("IntentCircle")
+texture = SubResource("Atlas_intent")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="Value" type="Label" parent="IntentBadge"]
+[node name="IntentRing" type="TextureRect" parent="."]
 layout_mode = 0
-offset_top = 26.0
-offset_right = 84.0
-offset_bottom = 58.0
+offset_left = 1502
+offset_top = 158
+offset_right = 1562
+offset_bottom = 218
+mouse_filter = 2
+texture = ExtResource("17_intent_ring")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="IntentValue" type="Label" parent="."]
+layout_mode = 0
+offset_left = 1502
+offset_top = 158
+offset_right = 1562
+offset_bottom = 218
 mouse_filter = 2
 theme_override_colors/font_color = Color(1, 0.768627, 0.690196, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 26
 text = "6"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="IntentKind" type="Label" parent="."]
+[node name="Elixir" type="Control" parent="."]
 layout_mode = 0
-offset_left = 1330.0
-offset_top = 215.0
-offset_right = 1414.0
-offset_bottom = 235.0
+offset_left = 560.0
+offset_top = 36.0
+offset_right = 660.0
+offset_bottom = 66.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 0.768627, 0.690196, 1)
-theme_override_font_sizes/font_size = 16
-text = "攻"
-horizontal_alignment = 1
 
-[node name="ForecastBox" type="Panel" parent="."]
+[node name="Icon" type="TextureRect" parent="Elixir"]
 layout_mode = 0
-offset_left = 1782.0
-offset_top = 16.0
-offset_right = 1854.0
-offset_bottom = 156.0
+offset_right = 30.0
+offset_bottom = 28.2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("PlaceholderBox")
+texture = SubResource("Atlas_elixir")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="Sample" type="Label" parent="ForecastBox"]
+[node name="Count" type="Label" parent="Elixir"]
 layout_mode = 0
-offset_left = 15.0
-offset_top = 30.0
-offset_right = 63.0
-offset_bottom = 78.0
+offset_left = 36.0
+offset_top = 1.0
+offset_right = 100.0
+offset_bottom = 29.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 0.62, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 19
+text = "0"
+
+[node name="Coin" type="Control" parent="."]
+layout_mode = 0
+offset_left = 448.0
+offset_top = 36.0
+offset_right = 548.0
+offset_bottom = 66.0
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="Coin"]
+layout_mode = 0
+offset_right = 30.0
+offset_bottom = 28.2
+mouse_filter = 2
+texture = SubResource("Atlas_coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Count" type="Label" parent="Coin"]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 1.0
+offset_right = 100.0
+offset_bottom = 29.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.909804, 0.705882, 0.333333, 1)
-theme_override_font_sizes/font_size = 40
-text = "87"
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 19
+text = "128"
 
-[node name="Note" type="Label" parent="ForecastBox"]
-layout_mode = 0
-offset_top = 110.0
-offset_right = 72.0
-offset_bottom = 124.0
+[node name="出牌计数底板" type="Panel" parent="."]
+offset_left = 1746.0
+offset_top = 78.0
+offset_right = 1866.0
+offset_bottom = 116.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.788235, 0.72549, 0.560784, 1)
-theme_override_font_sizes/font_size = 12
-text = "形式待定"
-horizontal_alignment = 1
+theme_override_styles/panel = SubResource("SoftPlate")
 
 [node name="PlayCountLabel" type="Label" parent="."]
 layout_mode = 0
-offset_left = 1782.0
-offset_top = 164.0
-offset_right = 1862.0
-offset_bottom = 190.0
+offset_left = 1760.0
+offset_top = 84.0
+offset_right = 1850.0
+offset_bottom = 112.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.909804, 0.705882, 0.333333, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 20
 text = "0/10"
 
-[node name="PlayCards" type="VBoxContainer" parent="."]
-unique_name_in_owner = true
+[node name="PlayScroll" type="ScrollContainer" parent="."]
 layout_mode = 0
-offset_left = 1782.0
-offset_top = 202.0
-offset_right = 1854.0
-offset_bottom = 885.0
+offset_left = 1765
+offset_top = 112
+offset_right = 1856
+offset_bottom = 866
+mouse_filter = 1
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+
+[node name="PlayCards" type="Control" parent="PlayScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(229, 724)
 mouse_filter = 2
-theme_override_constants/separation = -61
 
 [node name="HandCountLabel" type="Label" parent="."]
+visible = false
 layout_mode = 0
 offset_left = 248.0
 offset_top = 812.0
@@ -638,12 +775,12 @@ text = "0/10"
 
 [node name="HandScroll" type="ScrollContainer" parent="."]
 layout_mode = 0
-offset_left = 216.0
+offset_left = 352.0
 offset_top = 732.0
-offset_right = 1706.0
+offset_right = 1490.0
 offset_bottom = 1064.0
 mouse_filter = 1
-horizontal_scroll_mode = 2
+horizontal_scroll_mode = 3
 vertical_scroll_mode = 0
 
 [node name="HandCards" type="Control" parent="HandScroll"]
@@ -653,91 +790,173 @@ offset_right = 1490.0
 offset_bottom = 332.0
 mouse_filter = 2
 
-[node name="DrawPileButton" type="Button" parent="."]
-unique_name_in_owner = true
+[node name="DrawPile" type="Control" parent="."]
 layout_mode = 0
-offset_left = 140.0
-offset_top = 954.0
-offset_right = 212.0
-offset_bottom = 1064.0
-mouse_default_cursor_shape = 2
-theme_override_colors/font_color = Color(0.94902, 0.890196, 0.776471, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.5, 0.42, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("ButtonNormal")
-theme_override_styles/hover = SubResource("ButtonHover")
-theme_override_styles/disabled = SubResource("ButtonDisabled")
-text = "抽牌堆
-15"
+offset_left = 372
+offset_top = 942
+offset_right = 424
+offset_bottom = 1036
+mouse_filter = 2
 
-[node name="DiscardPileButton" type="Button" parent="."]
+[node name="CardBack" type="TextureRect" parent="DrawPile"]
+layout_mode = 0
+offset_right = 52.0
+offset_bottom = 94.0
+mouse_filter = 2
+texture = SubResource("Atlas_back")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Count" type="Label" parent="DrawPile"]
+layout_mode = 0
+offset_top = 96.0
+offset_right = 52.0
+offset_bottom = 118.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.909804, 0.705882, 0.333333, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 18
+text = "0"
+horizontal_alignment = 1
+
+[node name="Name" type="Label" parent="DrawPile"]
+layout_mode = 0
+offset_top = 118.0
+offset_right = 52.0
+offset_bottom = 136.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.74902, 0.682353, 0.552941, 1)
+theme_override_font_sizes/font_size = 12
+text = "抽牌"
+horizontal_alignment = 1
+
+[node name="DrawPileButton" type="Button" parent="DrawPile"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 1708.0
-offset_top = 954.0
-offset_right = 1780.0
-offset_bottom = 1064.0
+offset_right = 52.0
+offset_bottom = 94.0
 mouse_default_cursor_shape = 2
-theme_override_colors/font_color = Color(0.94902, 0.890196, 0.776471, 1)
-theme_override_colors/font_disabled_color = Color(0.55, 0.5, 0.42, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("ButtonNormal")
-theme_override_styles/hover = SubResource("ButtonHover")
-theme_override_styles/disabled = SubResource("ButtonDisabled")
-text = "弃牌堆
-0"
+flat = true
+
+
+[node name="DiscardPile" type="Control" parent="."]
+layout_mode = 0
+offset_left = 1486
+offset_top = 942
+offset_right = 1538
+offset_bottom = 1036
+mouse_filter = 2
+
+[node name="CardBack" type="TextureRect" parent="DiscardPile"]
+layout_mode = 0
+offset_right = 52.0
+offset_bottom = 94.0
+mouse_filter = 2
+texture = SubResource("Atlas_back")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Count" type="Label" parent="DiscardPile"]
+layout_mode = 0
+offset_top = 96.0
+offset_right = 52.0
+offset_bottom = 118.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.909804, 0.705882, 0.333333, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 18
+text = "0"
+horizontal_alignment = 1
+
+[node name="Name" type="Label" parent="DiscardPile"]
+layout_mode = 0
+offset_top = 118.0
+offset_right = 52.0
+offset_bottom = 136.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.74902, 0.682353, 0.552941, 1)
+theme_override_font_sizes/font_size = 12
+text = "弃牌"
+horizontal_alignment = 1
+
+[node name="DiscardPileButton" type="Button" parent="DiscardPile"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 52.0
+offset_bottom = 94.0
+mouse_default_cursor_shape = 2
+flat = true
+
+
+[node name="DamagePreview" type="Control" parent="."]
+layout_mode = 0
+offset_left = 1745
+offset_top = 936
+offset_right = 1915
+offset_bottom = 1040
+mouse_filter = 2
+script = ExtResource("18_dmgpreview")
 
 [node name="PlayButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 1782.0
-offset_top = 900.0
-offset_right = 1894.0
-offset_bottom = 970.0
+offset_left = 1600
+offset_top = 940
+offset_right = 1730
+offset_bottom = 987
 mouse_default_cursor_shape = 2
-theme_override_colors/font_color = Color(1, 0.913725, 0.721569, 1)
-theme_override_colors/font_disabled_color = Color(0.62, 0.55, 0.36, 1)
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("ButtonPrimary")
-theme_override_styles/hover = SubResource("ButtonHover")
+theme_override_colors/font_color = Color(0.129412, 0.121569, 0.113725, 1)
+theme_override_colors/font_hover_color = Color(0.129412, 0.121569, 0.113725, 1)
+theme_override_colors/font_disabled_color = Color(0.5, 0.45, 0.36, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBtnHover")
+theme_override_styles/hover = SubResource("StyleBtnHover")
+theme_override_styles/pressed = SubResource("StyleBtn")
 theme_override_styles/disabled = SubResource("ButtonDisabled")
 text = "结算 0"
 
 [node name="CancelButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 1782.0
-offset_top = 978.0
-offset_right = 1894.0
-offset_bottom = 1050.0
+offset_left = 1600
+offset_top = 993
+offset_right = 1730
+offset_bottom = 1040
 mouse_default_cursor_shape = 2
-theme_override_colors/font_color = Color(0.94902, 0.890196, 0.776471, 1)
+theme_override_colors/font_color = Color(1, 0.960784, 0.878431, 1)
+theme_override_colors/font_hover_color = Color(1, 0.960784, 0.878431, 1)
 theme_override_colors/font_disabled_color = Color(0.58, 0.53, 0.45, 1)
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("ButtonNormal")
-theme_override_styles/hover = SubResource("ButtonHover")
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBtn")
+theme_override_styles/hover = SubResource("StyleBtnHover")
+theme_override_styles/pressed = SubResource("StyleBtnHover")
 theme_override_styles/disabled = SubResource("ButtonDisabled")
 text = "取消"
 
 [node name="HintLabel" type="Label" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 248.0
-offset_top = 786.0
-offset_right = 1674.0
-offset_bottom = 814.0
+offset_left = 560.0
+offset_top = 690.0
+offset_right = 1360.0
+offset_bottom = 735.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.94902, 0.890196, 0.776471, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 16
-text = "玩家回合开始：请选择手牌编排到出牌区"
+theme_override_colors/font_color = Color(0.980392, 0.878431, 0.647059, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 22
+text = ""
 horizontal_alignment = 1
 
 [node name="PileModal" type="Control" parent="."]
 unique_name_in_owner = true
 visible = false
+z_index = 50
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -754,7 +973,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-color = Color(0, 0, 0, 0.72)
+color = Color(0, 0, 0, 0.85)
 
 [node name="Window" type="PanelContainer" parent="PileModal"]
 layout_mode = 0
@@ -798,6 +1017,6 @@ horizontal_scroll_mode = 0
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/h_separation = 22
+theme_override_constants/h_separation = 20
 theme_override_constants/v_separation = 18
 columns = 5

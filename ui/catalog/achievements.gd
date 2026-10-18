@@ -6,7 +6,7 @@ var _status: Label
 
 
 func _ready() -> void:
-	var body := CatalogUi.shell(self, "成就", "当前档案的成就 · 要求与奖励由 CSV 提供")
+	var body := CatalogUi.shell(self, "成就", "当前档案的成就")
 	_status = CatalogUi.label("")
 	_status.name = "Status"
 	body.add_child(_status)
@@ -53,6 +53,7 @@ func refresh() -> void:
 	var error := TextCatalog.error_message("achievements")
 	_status.text = "已完成 %d / %d（绿色底色表示已完成）" % [completed, visible_entries.size()]
 	if not error.is_empty():
-		_status.text = "数据读取失败：" + error
+		_status.text = "暂时无法读取成就。"
+		push_warning("成就读取失败：" + error)
 	elif visible_entries.is_empty():
-		_status.text = "暂无成就。请在成就 CSV 中填写条目。"
+		_status.text = "暂无成就。"

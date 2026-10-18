@@ -2,11 +2,14 @@ class_name CatalogUi
 extends RefCounted
 
 const CARD_SCENE := preload("res://ui/components/card/card_view.tscn")
+const BACKGROUND_TEXTURE := "res://assets/env/ENV-003/ENV-003.JPG"
+const GOLD := Color(0.910, 0.706, 0.333)
 const INK := Color("eae2d1")
 const MUTED := Color("aaa395")
 
 
 static func install_theme(root: Control) -> void:
+	# 图鉴/成就与战斗、开始界面共用同一套暗金皮：深棕底 + 金边 + 奶油字。
 	var skin := Theme.new()
 	var font := SystemFont.new()
 	font.font_names = PackedStringArray(["Microsoft YaHei", "Noto Sans CJK SC", "SimHei"])
@@ -14,13 +17,23 @@ static func install_theme(root: Control) -> void:
 	skin.default_font_size = 24
 	skin.set_color("font_color", "Label", INK)
 	for style_name: String in ["normal", "hover", "pressed", "focus", "disabled"]:
-		var style := panel_style(Color("2d3342") if style_name == "normal" else Color("414b60"))
+		var style := StyleBoxFlat.new()
+		var normal := style_name == "normal"
+		style.bg_color = Color(0.078, 0.065, 0.055, 0.92) if normal \
+			else Color(0.165, 0.132, 0.098, 0.98)
+		if style_name == "disabled":
+			style.bg_color = Color(0.062, 0.052, 0.044, 0.85)
+		style.border_color = Color(GOLD, 0.30 if style_name == "disabled" else (0.45 if normal else 0.95))
+		style.set_border_width_all(1)
+		style.set_corner_radius_all(6)
 		style.content_margin_left = 24
 		style.content_margin_right = 24
 		style.content_margin_top = 12
 		style.content_margin_bottom = 12
 		skin.set_stylebox(style_name, "Button", style)
-		skin.set_color("font_color", "Button", INK)
+		skin.set_color("font_color", "Button",
+			Color(0.52, 0.49, 0.44) if style_name == "disabled" else INK)
+		skin.set_color("font_hover_color", "Button", Color(1.0, 0.933, 0.749))
 	root.theme = skin
 
 
@@ -33,11 +46,33 @@ static func panel_style(color: Color = Color("252b37")) -> StyleBoxFlat:
 
 static func shell(root: Control, title_text: String, subtitle: String) -> VBoxContainer:
 	install_theme(root)
+	var art := TextureRect.new()
+	art.texture = load(BACKGROUND_TEXTURE) as Texture2D
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(art)
+	art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var background := ColorRect.new()
-	background.color = Color("151923")
+	background.color = Color(0.035, 0.03, 0.028, 0.42)
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(background)
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var sheet := Panel.new()
+	sheet.name = "Sheet"
+	sheet.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var sheet_style := StyleBoxFlat.new()
+	sheet_style.bg_color = Color(0.035, 0.03, 0.026, 0.62)
+	sheet_style.border_color = Color(GOLD, 0.14)
+	sheet_style.set_border_width_all(1)
+	sheet_style.set_corner_radius_all(12)
+	sheet.add_theme_stylebox_override("panel", sheet_style)
+	root.add_child(sheet)
+	sheet.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sheet.offset_left = 24.0
+	sheet.offset_top = 24.0
+	sheet.offset_right = -24.0
+	sheet.offset_bottom = -24.0
 	var margin := MarginContainer.new()
 	margin.name = "Page"
 	root.add_child(margin)
@@ -52,6 +87,7 @@ static func shell(root: Control, title_text: String, subtitle: String) -> VBoxCo
 	body.add_child(heading)
 	var title := label(title_text, 46)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title.add_theme_color_override("font_color", Color(0.941, 0.902, 0.804))
 	heading.add_child(title)
 	var back := button("返回开始界面", "Back")
 	heading.add_child(back)

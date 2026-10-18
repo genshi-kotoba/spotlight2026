@@ -38,7 +38,7 @@ func _build_ui() -> void:
 	page.add_theme_constant_override("separation", 22)
 	margin.add_child(page)
 	page.add_child(_label("典籍残片 · 试验编排", 38, Color("ecd2a1")))
-	page.add_child(_label("4 列 × 3 行  /  选择残片后点击格子，或直接拖放  /  格子之间拖动换位  /  右键移除", 22))
+	page.add_child(_label("4 列 × 5 行  /  选择残片后点击格子，或直接拖放  /  格子之间拖动换位  /  右键移除", 22))
 	var body := HBoxContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_theme_constant_override("separation", 32)
@@ -71,12 +71,12 @@ func _build_ui() -> void:
 	grid.columns = RelicBoard.COLUMNS
 	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	grid.add_theme_constant_override("h_separation", 12)
-	grid.add_theme_constant_override("v_separation", 12)
+	grid.add_theme_constant_override("v_separation", 10)
 	center.add_child(grid)
 	for index in RelicBoard.CELL_COUNT:
 		var button := RelicSlotButton.new()
 		button.cell_index = index
-		button.custom_minimum_size = Vector2(215, 145)
+		button.custom_minimum_size = Vector2(215, 140)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

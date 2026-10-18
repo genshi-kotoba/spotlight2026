@@ -2,9 +2,12 @@ class_name RelicBoard
 extends RefCounted
 
 const COLUMNS := 4
-const ROWS := 3
+const ROWS := 5
 const CELL_COUNT := COLUMNS * ROWS
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
+## 1 版板面为 4 列 × 3 行 12 格；载入时把旧格平移到前 12 格，其余留空。
+const LEGACY_COLUMNS := 4
+const LEGACY_ROWS := 3
 const SAVE_PATH := "user://relic_test_board.json"
 
 var cells: Array[String] = []
@@ -53,15 +56,24 @@ func to_dictionary() -> Dictionary:
 
 
 func restore(data: Dictionary, catalog: Dictionary) -> Error:
-	if data.get("version") != SAVE_VERSION or data.get("columns") != COLUMNS or data.get("rows") != ROWS:
-		return ERR_INVALID_DATA
+	var version := int(data.get("version", 0))
 	var values: Variant = data.get("cells")
-	if not values is Array or values.size() != CELL_COUNT:
+	if not values is Array:
+		return ERR_INVALID_DATA
+	if version == 1:
+		if int(data.get("columns", 0)) != LEGACY_COLUMNS 				or int(data.get("rows", 0)) != LEGACY_ROWS 				or values.size() != LEGACY_COLUMNS * LEGACY_ROWS:
+			return ERR_INVALID_DATA
+	elif version == SAVE_VERSION:
+		if int(data.get("columns", 0)) != COLUMNS or int(data.get("rows", 0)) != ROWS 				or values.size() != CELL_COUNT:
+			return ERR_INVALID_DATA
+	else:
 		return ERR_INVALID_DATA
 	for value: Variant in values:
 		if not value is String or (not value.is_empty() and not catalog.has(value)):
 			return ERR_INVALID_DATA
-	cells.assign(values)
+	cells.fill("")
+	for index in mini(values.size(), CELL_COUNT):
+		cells[index] = values[index]
 	return OK
 
 

@@ -21,6 +21,7 @@ var result: Dictionary = {}
 var max_health := 0
 var health := 0
 var gold := 0
+var elixir := 0
 var deck: Array[String] = []
 var card_pool: Array[String] = []
 var items: Array = []
@@ -131,10 +132,13 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 	var saved_max: Variant = _integer_value(data.get("max_health"))
 	var saved_health: Variant = _integer_value(data.get("health"))
 	var saved_gold: Variant = _integer_value(data.get("gold"))
+	# 万灵药是后加的字段：旧档没有这一项时按 0 处理，不算损坏。
+	var saved_elixir: Variant = _integer_value(data.get("elixir", 0))
 	var saved_battles: Variant = _integer_value(data.get("battles_fought"))
 	var saved_stages: Variant = _integer_value(data.get("stages_completed"))
 	if saved_max == null or saved_health == null or saved_gold == null \
 			or saved_battles == null or saved_stages == null or saved_max <= 0 \
+			or saved_elixir == null or saved_elixir < 0 \
 			or saved_health < 0 or saved_health > saved_max or saved_gold < 0 \
 			or saved_battles < 0 or saved_stages < 0 or not saved_maps.has(saved_current_map) \
 			or not _json_safe(saved_result) or not _json_safe(saved_items) \
@@ -154,6 +158,7 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 	max_health = saved_max
 	health = saved_health
 	gold = saved_gold
+	elixir = saved_elixir
 	deck.assign(saved_deck)
 	card_pool.assign(saved_cards)
 	items = saved_items.duplicate(true)
@@ -196,6 +201,7 @@ func to_dictionary() -> Dictionary:
 		"max_health": max_health,
 		"health": health,
 		"gold": gold,
+		"elixir": elixir,
 		"deck": deck.duplicate(),
 		"card_pool": card_pool.duplicate(),
 		"items": items.duplicate(true),
@@ -225,6 +231,14 @@ func set_health(value: int) -> Error:
 
 func change_health(delta: int) -> Error:
 	return set_health(clampi(health + delta, 0, max_health))
+
+
+func change_elixir(delta: int) -> Error:
+	if not active or elixir + delta < 0:
+		return _fail(ERR_INVALID_PARAMETER, "Elixir cannot become negative")
+	elixir += delta
+	_emit_stat(&"elixir", elixir)
+	return OK
 
 
 func change_gold(delta: int) -> Error:

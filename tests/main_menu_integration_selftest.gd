@@ -36,7 +36,7 @@ func _run() -> void:
 		_finish()
 		return
 	_check("真实状态机开局且三张地图配置合法", GlobalState.run_active and GlobalState.current_run.map_ids.size() == 3)
-	_check("不绕过 main 的解锁/初始牌组规则", GlobalState.current_run.deck.is_empty() and GlobalState.unlocked_cards.is_empty())
+	_check("新局按配置带初始牌组且不改解锁表", GlobalState.current_run.deck.size() == 16 and GlobalState.unlocked_cards.is_empty())
 	var run_id: String = GlobalState.current_run.run_id
 	var map_before: String = _json(view._map_snapshot)
 	var movement: Vector2 = view.session.actor_plane

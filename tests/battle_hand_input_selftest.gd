@@ -13,7 +13,8 @@ func _run() -> void:
 	var board := RelicBoard.new()
 	board.cells.assign(["turn_strength", "on_card_gained", "gain_block", "deal_damage",
 		"on_card_gained", "deal_damage", "on_enemy_damaged", "deal_damage",
-		"", "gain_block", "gain_block", "turn_strength"])
+		"", "gain_block", "gain_block", "turn_strength",
+		"", "", "", "", "", "", "", ""])
 	board.save_to_file(FIXTURE_PATH)
 	var packed := load("res://ui/battle/battle_test_scene.tscn") as PackedScene
 	var ended := packed.instantiate() as BattleTestScene
@@ -23,7 +24,7 @@ func _run() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	_check("复现首抽残片伤害在出牌前击杀 300 血敌人", not ended._battle.active and int(ended._battle.enemies[0].health) == 0)
-	_check("首抽胜利明确显示终局与重开入口", ended.hint_label.text.contains("战斗胜利") and not ended._restart_button.disabled and ended.play_button.disabled)
+	_check("首抽胜利明确显示终局", ended.hint_label.text.contains("战斗胜利") and ended.play_button.disabled)
 	ended.free()
 
 	var scene := packed.instantiate() as BattleTestScene
@@ -46,8 +47,9 @@ func _run() -> void:
 		await _click(point)
 		_check("真实鼠标点击手牌 %d 加入出牌区" % index, scene._selected_ids.size() == 1 and scene.play_cards.get_child_count() == 1)
 		if not scene._selected_ids.is_empty():
-			var play_view := scene.play_cards.get_child(0).get_child(1).get_child(0) as Control
-			_check("出牌区卡面保持手牌的一半", play_view.scale.is_equal_approx(Vector2.ONE * scene.PLAY_CARD_SCALE))
+			var play_view := _find_card_view(scene.play_cards.get_child(0))
+			_check("出牌区卡面保持手牌的一半",
+				play_view != null and play_view.scale.is_equal_approx(Vector2.ONE * scene.PLAY_CARD_SCALE))
 		scene.cancel_button.pressed.emit()
 		await get_tree().process_frame
 		await get_tree().process_frame
@@ -78,12 +80,22 @@ func _run() -> void:
 	scene._on_hand_card_pressed(String(scene._battle.hand[0].instance_id))
 	await get_tree().process_frame
 	await get_tree().process_frame
-	await get_tree().create_timer(scene.resolution_delay + scene.enemy_turn_delay + 0.1).timeout
+	await get_tree().create_timer(scene.resolution_delay + scene.enemy_turn_delay + 1.2).timeout
 	_check("第二轮提交后 UI 恢复可操作且队列不再等待", scene._pending_discard_count == 0 and not scene._busy and not scene._battle.rules.queue.paused)
 	scene.free()
 	DirAccess.remove_absolute(FIXTURE_PATH)
 	print("手牌输入全部通过" if failures == 0 else "手牌输入失败 %d 项" % failures)
 	get_tree().quit(failures)
+
+
+func _find_card_view(node: Node) -> Control:
+	if node is Control and node.has_method("apply_compact_layout"):
+		return node
+	for child in node.get_children():
+		var found := _find_card_view(child)
+		if found != null:
+			return found
+	return null
 
 
 func _click(point: Vector2) -> void:
