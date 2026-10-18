@@ -32,14 +32,26 @@ func _run() -> void:
 	print("DIAG after E: scene=%s current_battle=%s completed=%s" % [scene.scene_file_path, SaveGateway.current_run().current_battle, EncounterFlow.session.completed.has(target)])
 	_check("原秒杀棋盘仍正常进入战斗界面", scene.scene_file_path == EncounterFlow.BATTLE_SCENE)
 	if scene.scene_file_path == EncounterFlow.BATTLE_SCENE:
-		_check("首抽12张不触发伤害格挡，玩家仍可出牌", scene._battle.active and scene._battle.hand.size() == 12 and int(scene._battle.enemies[0].health) == 30 and int(scene._battle.player.block) == 0 and not scene._busy)
+		var initial_health := int(scene._battle.enemies[0].max_health)
+		_check("首抽受10张上限约束且不触发伤害格挡，玩家仍可出牌", scene._battle.active and scene._battle.hand.size() == 10 and int(scene._battle.enemies[0].health) == initial_health and int(scene._battle.player.block) == 0 and not scene._busy)
 		_check("仅两个存在类力量生效，不弹胜利窗口", scene._relics.activation_count == 2 and scene.get_node_or_null("OpeningBattleResult") == null)
 		_check("首抽结束后提示已切换到玩家编排", scene.hint_label.text.contains("请选择手牌"))
 		await _frames(30)
 		_check("停留战场，节点尚未错误结算", get_tree().current_scene == scene and not EncounterFlow.session.completed.has(target) and SaveGateway.current_run().current_battle == scene._battle)
 		await _capture_battle()
+		# 预留自然补牌与效果抽牌空间，不再依赖旧版无限手牌。
+		for index in 3: scene._battle.discard_from_hand(str(scene._battle.hand[0].instance_id))
+		var natural_draws := [0]
+		scene._battle.rules.register_rule("test.natural_count", "card.drawn", func(event: BattleEvent):
+			if int(event.payload.get("draw_reason", 0)) == BattleStateMachine.DrawReason.TURN_START: natural_draws[0] += 1)
 		_check("正常切换到次回合", scene._battle.end_player_action() == OK)
-		_check("回合抽牌2张不触发典籍伤害格挡", scene._battle.turn_number == 2 and scene._battle.hand.size() == 14 and int(scene._battle.enemies[0].health) == 30 and int(scene._battle.player.block) == 0 and scene._relics.activation_count == 4)
+		while scene._battle.rules.queue.paused and not scene._battle.player.get("battle_choice", {}).is_empty():
+			var candidates: Array = scene._battle.player.battle_choice.candidates
+			var ids: Array[String] = [str(candidates[0].instance_id)]
+			scene._battle.submit_battle_choice(ids)
+		_check("回合抽牌2张不触发典籍伤害格挡", scene._battle.turn_number == 2 and int(natural_draws[0]) == 2 and int(scene._battle.enemies[0].health) == initial_health and int(scene._battle.player.block) == 0 and scene._relics.activation_count == 4)
+		# 此用例只测首抽/自然补牌隔离与效果抽牌致死，不绑死正式怪物血量。
+		scene._battle.enemies[0].health = 3
 		var context := BattleEffectContext.new(scene._battle, str(scene._battle.enemies[0].enemy_id), scene._resolver.buff_catalog)
 		context.draw(1)
 		_check("效果抽牌仍正常触发连锁并击败敌人", not scene._battle.active and scene._battle_result == "victory" and scene._relics.activation_count > 4)

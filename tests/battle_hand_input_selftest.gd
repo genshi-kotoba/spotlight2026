@@ -41,17 +41,19 @@ func _run() -> void:
 	for index: int in [0, 3, 6]:
 		var slot := scene.hand_cards.get_child(index) as Control
 		var button := slot.get_child(1) as Button
-		var before := slot.get_global_rect()
+		var before := slot.get_global_transform() * slot.pivot_offset
 		var point := button.get_global_rect().get_center()
 		var motion := InputEventMouseMotion.new()
 		motion.position = point
 		get_viewport().push_input(motion, true)
 		await get_tree().create_timer(0.6).timeout
-		_check("悬停放大保持底边固定 %d" % index, absf(slot.get_global_rect().end.y - before.end.y) < 1.0)
+		var bottom := slot.get_global_transform() * slot.pivot_offset
+		var view := slot.get_child(0) as CardView
+		_check("扇形悬停放大保持底边中点固定 %d" % index, absf(bottom.y - before.y) < 1.0 and view.scale.is_equal_approx(Vector2.ONE * scene.HAND_CARD_SCALE * scene.hand_hover_multiplier))
 		await _click(point)
 		_check("真实鼠标点击手牌 %d 加入出牌区" % index, scene._selected_ids.size() == 1 and scene.play_cards.get_child_count() == 1)
 		if not scene._selected_ids.is_empty():
-			var play_view := scene.play_cards.get_child(0).get_child(1).get_child(0) as Control
+			var play_view := scene.play_cards.get_child(0).get_child(0).get_child(0) as CardView
 			_check("出牌区卡面保持手牌的一半", play_view.scale.is_equal_approx(Vector2.ONE * scene.PLAY_CARD_SCALE))
 		scene.cancel_button.pressed.emit()
 		await get_tree().process_frame
@@ -84,6 +86,7 @@ func _run() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	await get_tree().create_timer(scene.resolution_delay + scene.enemy_turn_delay + 0.1).timeout
+	await preload("res://tests/support/presentation_test_helper.gd").battle_settled(scene)
 	_check("第二轮提交后 UI 恢复可操作且队列不再等待", scene._pending_discard_count == 0 and not scene._busy and not scene._battle.rules.queue.paused)
 	scene.free()
 	DirAccess.remove_absolute(FIXTURE_PATH)

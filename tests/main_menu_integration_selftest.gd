@@ -136,6 +136,7 @@ func _frames() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	await get_tree().process_frame
+	await preload("res://tests/support/presentation_test_helper.gd").map_ready(get_tree())
 
 
 func _json(value: Variant) -> String:

@@ -51,5 +51,5 @@ static func summary_text(info: Dictionary) -> String:
 			lines.append("进度 %d" % int(info.get("progress", 0)))
 	var updated := String(info.get("updated_at", ""))
 	if not updated.is_empty():
-		lines.append("上次 %s" % updated)
+		lines.append("上次 %s" % updated.replace("T", " ").left(16))
 	return "\n".join(lines)

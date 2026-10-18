@@ -110,8 +110,12 @@ func _render_rewards() -> void:
 	_refresh_button.hide()
 	_continue_button.text = "继续探索"
 	_continue_button.disabled = false
-	for entry: Dictionary in rewards.get("entries", []):
+	var entries: Array = rewards.get("entries", []).duplicate()
+	entries.append_array(rewards.get("bonus_entries", []))
+	for entry: Dictionary in entries:
 		var button := _button(("已领取 · " if entry.claimed else "领取 · ") + str(RunRewards.NAMES[entry.kind]) + " × %d" % int(entry.amount))
+		if entry.id == "stolen_silver": button.text += "（追回被盗银币）"
+		elif entry.id == "conch_rare": button.text += "（海螺额外奖励）"
 		button.name = "Reward_" + str(entry.id)
 		button.disabled = bool(entry.claimed)
 		button.pressed.connect(_claim.bind(str(entry.id)))
@@ -124,7 +128,7 @@ func _render_pack() -> void:
 	if pack.is_empty():
 		_finish()
 		return
-	_heading.text = str(RunRewards.NAMES[pack.kind]) + (" · 2 选 1" if pack.kind == "fragment_pack" else " · 3 选 1")
+	_heading.text = str(RunRewards.NAMES[pack.kind]) + " · %d 选 1" % pack.options.size()
 	_description.text = "选中的卡牌加入牌组；残片收入背包。关闭后选项与刷新次数会保留。"
 	_refresh_button.visible = pack.kind in ["fragment_pack", "common_pack"]
 	_refresh_button.disabled = bool(pack.rerolled)

@@ -49,6 +49,7 @@ func _run() -> void:
 			await _frames(5)
 			continue
 		_check("战斗使用已分配的怪物", not scene._battle.enemies.is_empty() and TextCatalog.entry("monsters", str(scene._battle.enemies[0].enemy_id)).size() > 0)
+		_check("开局已完成且玩家可编排，不停留在IDLE", scene._battle.active and scene._battle.phase == BattleStateMachine.Phase.PLAYER_ACTION and not scene._busy and scene._battle.hand.size() > 0)
 		var identity: String = SaveGateway.current_run().run_id
 		scene._on_menu_return()
 		await _frames(5)
@@ -101,6 +102,7 @@ func _approach(view: Node) -> String:
 	return ""
 
 func _press_e() -> void:
+	await preload("res://tests/support/presentation_test_helper.gd").map_ready(get_tree())
 	var key := InputEventKey.new()
 	key.keycode = KEY_E
 	key.physical_keycode = KEY_E
@@ -115,6 +117,7 @@ func _press_e() -> void:
 func _frames(count: int) -> void:
 	for index in count:
 		await get_tree().process_frame
+	await preload("res://tests/support/presentation_test_helper.gd").map_ready(get_tree())
 
 func _check(label: String, passed: bool) -> void:
 	if not passed:

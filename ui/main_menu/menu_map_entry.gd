@@ -1,6 +1,6 @@
-extends "res://ui/world_map/flat_2d/map_run_demo.gd"
+extends "res://ui/world_map/relief_2d/map_exploration.gd"
 
-## 主菜单落点：只覆盖装配/持久化入口，地图算法、交互和视图全部继承 main。
+## 正式业务入口；2.5D 只负责显示，战斗、奖励、商店和存档保持同一接线。
 const MENU_SCENE := "res://ui/main_menu/main_menu.tscn"
 var _gateway: Node
 var _saved_entry_state: Dictionary = {}
@@ -34,7 +34,7 @@ func _ready() -> void:
 		set_physics_process(false)
 		set_process_input(false)
 		set_process_unhandled_input(false)
-		get_tree().call_deferred("change_scene_to_file", MENU_SCENE)
+		SceneTransition.call_deferred("change_scene_to_file", MENU_SCENE)
 		return
 	MapEvents.node_interaction_requested.connect(_on_world_node_requested)
 	super._ready()
@@ -57,6 +57,8 @@ func _ready() -> void:
 		call_deferred("_show_pending_rewards")
 	elif session.pending.get("type") == "shop":
 		call_deferred("_show_shop", session.pending.duplicate(true))
+	elif session.pending.get("type") == "event":
+		call_deferred("_show_random_event")
 	elif EncounterFlow.waiting_for_fourth_floor():
 		_show_fourth_floor_notice()
 	# 放弃本局的二次确认在设置面板里完成，这里只负责落地。
@@ -74,7 +76,7 @@ func _ensure_active_run() -> bool:
 	if _gateway.has_continuable_run():
 		return _gateway.continue_saved_run() == OK
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
-	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(RUN_CONFIG_PATH))
+	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(_run_settings_path()))
 	if not parsed is Dictionary or not settings is Dictionary:
 		push_error("地图入口的新局配置无法读取")
 		return false
@@ -84,7 +86,7 @@ func _ensure_active_run() -> bool:
 
 
 func _initial_snapshot() -> Dictionary:
-	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(RUN_CONFIG_PATH))
+	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(_run_settings_path()))
 	if not settings is Dictionary or not settings.get("floors") is Array:
 		return {}
 	_floor_configs = settings.floors.duplicate(true)
@@ -119,13 +121,17 @@ func _enable_monster_assignments() -> bool:
 	return true
 
 func _uses_demo_dialog(request: Dictionary) -> bool:
-	return request.get("type") not in ["battle", "elite", "boss", "shop"]
+	return request.get("type") not in ["battle", "elite", "boss", "shop", "event"]
 
 func _on_world_node_requested(request: Dictionary) -> void:
 	if request.get("map_id") != session.map_id or _uses_demo_dialog(request):
 		return
 	# 不在地图提示或确认框中展示 content_id、名称、头像。
 	EncounterFlow.session = session
+	ScenePreloader.prioritize_node(session.map_id, str(request.node_id))
+	if request.get("type") == "event":
+		_show_random_event()
+		return
 	if request.get("type") == "shop":
 		_show_shop(request)
 		return
@@ -145,6 +151,11 @@ func _interact() -> void:
 		return
 	super._interact()
 
+func _update_selection() -> void:
+	super._update_selection()
+	if not _selected.is_empty():
+		ScenePreloader.prioritize_node(session.map_id, _selected)
+
 func _show_shop(request: Dictionary) -> void:
 	if is_instance_valid(_shop_popup):
 		return
@@ -153,6 +164,13 @@ func _show_shop(request: Dictionary) -> void:
 	add_child(_shop_popup)
 	_shop_popup.close_handler = _close_shop
 	_shop_popup.show_shop(request)
+
+func _show_random_event() -> void:
+	if _gateway.save_current() != OK:
+		_show_toast("事件进入前保存失败，请重试")
+		return
+	var error := SceneTransition.change_scene_to_file(RandomEventCatalog.SCENE)
+	if error != OK: _show_toast("打开随机事件失败：%d" % error)
 
 func _close_shop() -> Error:
 	var old_state: Dictionary = session.capture_state()
@@ -247,7 +265,7 @@ func _return_to_menu() -> void:
 	if _gateway.save_current() != OK:
 		_show_toast("保存失败，仍留在当前地图")
 		return
-	var error := get_tree().change_scene_to_file(MENU_SCENE)
+	var error := SceneTransition.change_scene_to_file(MENU_SCENE)
 	if error != OK:
 		_show_toast("返回开始界面失败：%d" % error)
 

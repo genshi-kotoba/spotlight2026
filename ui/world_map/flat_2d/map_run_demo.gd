@@ -14,8 +14,11 @@ func _ready() -> void:
 	_build_run_controls()
 	_refresh_run_controls()
 
+func _run_settings_path() -> String:
+	return RUN_CONFIG_PATH
+
 func _initial_snapshot() -> Dictionary:
-	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(RUN_CONFIG_PATH))
+	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(_run_settings_path()))
 	if not settings is Dictionary or not settings.get("floors") is Array or not settings.get("seed") is String:
 		push_error("Invalid demo_run.json")
 		return {}

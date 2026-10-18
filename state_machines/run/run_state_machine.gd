@@ -526,6 +526,11 @@ func _seeded_pool(domain: StringName, source: Array) -> Variant:
 
 func _connect_battle(battle: BattleStateMachine) -> void:
 	battle.battle_ended.connect(_on_battle_ended)
+	battle.potion_consumed.connect(_on_potion_consumed)
+
+func _on_potion_consumed(item_id: String) -> void:
+	items = items.filter(func(item: Variant): return not (item is Dictionary and str(item.get("item_id", "")) == item_id))
+	state_changed.emit()
 
 
 func _attach_effect_resolver(battle: BattleStateMachine) -> Error:
@@ -545,6 +550,17 @@ func _on_battle_ended(battle_result: Dictionary) -> void:
 	var player_state := ended.player
 	health = int(player_state.get("health", health))
 	gold = maxi(0, int(player_state.get("silver", gold)))
+	ensure_deck_cards()
+	for owned: Dictionary in deck_cards:
+		if player_state.get("enchantment_updates", {}).has(str(owned.copy_id)):
+			owned.enchantments = player_state.enchantment_updates[str(owned.copy_id)].duplicate()
+	for zone: Array in [ended.hand, ended.draw_pile, ended.discard_pile, ended.play_zone]:
+		for card: Dictionary in zone:
+			for owned: Dictionary in deck_cards:
+				if not str(card.get("copy_id", "")).is_empty() and str(owned.copy_id) == str(card.copy_id):
+					owned.enchantments = card.get("enchantments", []).duplicate()
+	items = items.filter(func(item: Variant): return not (item is Dictionary and str(item.get("item_id", "")) in player_state.get("used_potions", [])))
+	inventory_state.erase("conch_bound")
 	for enemy_id: String in battle_result.get("defeated_enemy_ids", []):
 		record_enemy_defeated(enemy_id)
 	current_battle = null
@@ -608,6 +624,7 @@ static func _valid_inventory_state(data: Dictionary) -> bool:
 		return false
 	if data.has("shops") and not RunShop.valid_shops(data.shops):
 		return false
+	if data.has("events") and not RunRandomEvents.valid_events(data.events): return false
 	var board := RelicBoard.new()
 	if board.restore(data.relic_board, RelicCatalog.load_definitions()) != OK:
 		return false
@@ -617,6 +634,13 @@ static func _valid_inventory_state(data: Dictionary) -> bool:
 	var pending: Dictionary = data.pending_rewards
 	if pending.is_empty():
 		return true
+	if not pending.get("bonus_entries", []) is Array: return false
+	var bonus_ids := {}
+	for entry: Variant in pending.get("bonus_entries", []):
+		if not entry is Dictionary or entry.get("id") not in ["stolen_silver", "conch_rare"] or bonus_ids.has(entry.id) or not entry.get("claimed") is bool: return false
+		bonus_ids[entry.id] = true
+		var amount: Variant = _integer_value(entry.get("amount"))
+		if amount == null or amount <= 0 or entry.get("kind") != ("silver" if entry.id == "stolen_silver" else "rare_pack"): return false
 	if not pending.get("battle_key") is String or not data.rewarded_battles.has(pending.battle_key) \
 			or pending.get("grade") not in ["普通", "精英", "BOSS"] or not pending.get("entries") is Array:
 		return false

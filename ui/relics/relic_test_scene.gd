@@ -43,12 +43,17 @@ func _build_ui() -> void:
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_theme_constant_override("separation", 32)
 	page.add_child(body)
+	var library := ScrollContainer.new()
+	library.custom_minimum_size.x = 460
+	library.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_child(library)
 	var left := VBoxContainer.new()
 	left.custom_minimum_size.x = 420
 	left.add_theme_constant_override("separation", 12)
-	body.add_child(left)
+	library.add_child(left)
 	left.add_child(_label("测试残片库 · 可放置多个副本", 23))
 	for id: String in _catalog:
+		if id.contains("~"): continue # 组合负面由事件生成，避免铺满全部笛卡尔积。
 		var data: RelicFragmentData = _catalog[id]
 		var button := RelicSlotButton.new()
 		button.fragment_id = id
@@ -208,7 +213,7 @@ func _enter_battle() -> void:
 	_battle_button.disabled = true
 	var error := _board.save_to_file()
 	if error == OK:
-		error = get_tree().change_scene_to_file(BATTLE_SCENE)
+		error = SceneTransition.change_scene_to_file(BATTLE_SCENE)
 	if error != OK:
 		_status.text = "保存配置或进入战斗失败：%d" % error
 		_battle_button.disabled = false

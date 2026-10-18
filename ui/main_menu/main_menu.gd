@@ -44,6 +44,7 @@ func _ready() -> void:
 		_gateway.active_slot_changed.connect(_on_gateway_changed)
 		_gateway.slots_refreshed.connect(_on_gateway_changed)
 	refresh()
+	ScenePreloader.warm_menu(game_scene)
 
 
 ## 把网关的状态铺到屏上。当前档与「继续游戏」的可用性都只问网关。
@@ -132,7 +133,7 @@ func _enter_game() -> void:
 
 
 func _change_scene(path: String) -> void:
-	var error := get_tree().change_scene_to_file(path)
+	var error := SceneTransition.change_scene_to_file(path)
 	if error != OK:
 		_message_bar.show_message("打开场景失败：%s（%d）" % [path, error])
 

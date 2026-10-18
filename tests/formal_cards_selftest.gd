@@ -12,8 +12,9 @@ func _ready() -> void:
 func _run() -> void:
 	SeedService.begin_run("formal-card-regression")
 	var loaded := FormalCardCatalog.load_definitions()
-	_check("81 条定义与 CSV 一一对应", loaded.error == OK and loaded.cards.size() == 81)
-	_check("61 明确部分实现，71–81 为占位，62 不占牌位", loaded.cards["61"].implementation_status == "partial" and loaded.cards["81"].implementation_status == "placeholder" and not loaded.cards["62"].occupies_slot)
+	_check("70 条有效定义与新版 CSV 一一对应", loaded.error == OK and loaded.cards.size() == 70)
+	_check("61 保留部分实现，已清空的71–81不再进入目录，62不占牌位", loaded.cards["61"].implementation_status == "partial" and not loaded.cards.has("71") and not loaded.cards.has("81") and not loaded.cards["62"].occupies_slot)
+	_check("新版卡名同步到正式战斗数据", loaded.cards["3"].card_name == "衔尾蛇" and loaded.cards["50"].card_name == "灰吹银" and loaded.cards["70"].card_name == "逆行土星")
 	for number in range(1, 71):
 		_test_one(number)
 	_combinations()
@@ -40,6 +41,7 @@ func _make(ids: Array[String], enemy_health: int = 1000, enemy_damage: int = 0, 
 		"enemies": enemies, "deck_instances": deck}) == OK)
 	var resolver := BattleEffectResolver.new()
 	add_child(resolver)
+	_add_empty_fixtures(resolver)
 	_check("接入既有规则引擎", resolver.attach_to_battle(battle) == OK)
 	_check("开始战斗", battle.start_battle() == OK)
 	# 显式布置每条用例的手牌顺序，抽牌事实另有专门覆盖，避免 RNG 掩盖左右语义。
@@ -50,6 +52,17 @@ func _make(ids: Array[String], enemy_health: int = 1000, enemy_damage: int = 0, 
 		battle.hand.append(card)
 	battle.rules.register_rule("test.capture", "flow.enemy.begin", _capture.bind(battle), -10)
 	return {"battle": battle, "resolver": resolver}
+
+
+func _add_empty_fixtures(resolver: BattleEffectResolver) -> void:
+	# 旧用例用71–73作为无效果配牌；改为仅存在于测试解析器的夹具，
+	# 不再要求正式CSV收录用户已从Excel清空的占位行。
+	for fixture_id: String in ["71", "72", "73"]:
+		var empty_card := CardData.new()
+		empty_card.card_id = StringName(fixture_id)
+		empty_card.kind = CardData.Kind.SPECIAL
+		empty_card.effects.append(CardEffectProgram.new())
+		resolver.card_catalog[fixture_id] = empty_card
 
 
 func _capture(_event: BattleEvent, battle: BattleStateMachine) -> void:
@@ -194,6 +207,7 @@ func _combinations() -> void:
 	_check("锁牌和规则状态可以恢复", restored.restore_from_dictionary(b.to_dictionary()) == OK)
 	var restored_resolver := BattleEffectResolver.new()
 	add_child(restored_resolver)
+	_add_empty_fixtures(restored_resolver)
 	_check("恢复后重新接规则", restored_resolver.attach_to_battle(restored) == OK)
 	_check("锁牌无需手牌自动再次参与且本回合后入弃", restored.end_player_action() == OK and int(restored.enemies[0].health) == 990 and restored.play_zone.is_empty())
 	restored_resolver.queue_free()

@@ -8,7 +8,7 @@ var _battle_index := 400
 func _ready() -> void:
 	SeedService.begin_run("relic-system-selftest")
 	_catalog = RelicCatalog.load_definitions()
-	_check("五种测试残片从 CSV 读取", _catalog.size() == 5)
+	_check("五种原型残片与33条正式残片均可读取", _catalog.keys().filter(func(id: String): return not id.contains("~")).size() == 38 and _catalog.has("on_card_gained") and _catalog.has("FRG-033"))
 	_test_geometry_and_save()
 	_test_draw_four()
 	_test_natural_draws()

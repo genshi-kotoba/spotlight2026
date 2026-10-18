@@ -21,7 +21,7 @@ func _ready() -> void:
 			chooser.select(group)
 			return
 		get_tree().root.set_meta("formal_card_test_group", index)
-		get_tree().change_scene_to_file(scene_file_path))
+		SceneTransition.change_scene_to_file(scene_file_path))
 	add_child(chooser)
 	super._ready()
 	move_child(chooser, pile_modal.get_index())
