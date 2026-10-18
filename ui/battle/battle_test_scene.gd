@@ -938,6 +938,19 @@ func _update_drag_preview(at: Vector2) -> void:
 	# 拖到最顶上是自己，往下压住哪张就显示哪张，和结算指针用的是同一张大图。
 	if _resolve_preview == null:
 		return
+	if _drag_source == "hand":
+		# 手牌拖到出牌区上方时，同样在左侧显示「松手会插在这一格之前」的那张牌：
+		# 插入位置 index 上原本的牌会被顶下去，所以显示 _selected_ids[index]。
+		if not _play_area_rect().has_point(at):
+			if _resolve_preview != null:
+				_resolve_preview.visible = false
+			return
+		var drop := _play_drop_index(at)
+		if drop < _selected_ids.size():
+			var under := _find_selected_card(String(_selected_ids[drop]))
+			if not under.is_empty():
+				_show_resolve_preview(String(under.get("card_id", "")))
+		return
 	if _drag_source != "play":
 		return
 	var index := _play_drop_index(at)
