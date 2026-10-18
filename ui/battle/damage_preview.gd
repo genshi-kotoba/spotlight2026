@@ -29,18 +29,18 @@ func _ready() -> void:
 	plate.add_theme_stylebox_override("panel", style)
 	add_child(plate)
 
-	add_child(_make_title("预计伤害", Vector2(16, 4)))
-	add_child(_make_title("预计格挡", Vector2(16, 52)))
+	add_child(_make_title("预计伤害", Vector2(0, 6)))
+	add_child(_make_title("预计格挡", Vector2(0, 56)))
 	_damage = _make_value(DAMAGE_COLOR)
-	_damage.position = Vector2(14, 20)
+	_damage.position = Vector2(0, 24)
 	add_child(_damage)
 	_block = _make_value(BLOCK_COLOR)
-	_block.position = Vector2(14, 68)
+	_block.position = Vector2(0, 74)
 	add_child(_block)
 
 	_lethal = Label.new()
 	_lethal.text = "击杀"
-	_lethal.position = Vector2(84, 26)
+	_lethal.position = Vector2(112, 26)
 	_lethal.size = Vector2(80, 28)
 	_lethal.add_theme_font_size_override("font_size", 17)
 	_lethal.add_theme_color_override("font_color", LETHAL_COLOR)
@@ -63,7 +63,8 @@ func _make_title(text: String, at: Vector2) -> Label:
 	var title := Label.new()
 	title.text = text
 	title.position = at
-	title.size = Vector2(120, 24)
+	title.size = Vector2(170, 24)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 15)
 	title.add_theme_color_override("font_color", TITLE_COLOR)
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -73,7 +74,8 @@ func _make_title(text: String, at: Vector2) -> Label:
 func _make_value(color: Color) -> Label:
 	var value := Label.new()
 	value.text = "0"
-	value.size = Vector2(80, 34)
+	value.size = Vector2(170, 34)
+	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	value.add_theme_font_size_override("font_size", 28)
 	value.add_theme_color_override("font_color", color)
 	value.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))

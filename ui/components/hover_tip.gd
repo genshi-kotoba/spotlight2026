@@ -31,6 +31,12 @@ func _ready() -> void:
 func show_for(anchor: Control, text: String) -> void:
 	if not is_instance_valid(anchor):
 		return
+	show_at_rect(Rect2(anchor.global_position, anchor.size), text)
+
+
+## 按一块全局矩形定位，浮层贴在它下沿；下方放不下就翻到上沿。
+## 典籍格子是斜的四边形，没有对应的 Control 可当锚点，走这个。
+func show_at_rect(rect: Rect2, text: String) -> void:
 	var label := get_node_or_null("TipLabel") as Label
 	if label == null:
 		return
@@ -38,10 +44,10 @@ func show_for(anchor: Control, text: String) -> void:
 	visible = true
 	reset_size()
 	var view := get_viewport_rect().size
-	var x := clampf(anchor.global_position.x, 8.0, maxf(8.0, view.x - 8.0 - size.x))
-	var y := anchor.global_position.y + anchor.size.y + 6.0
+	var x := clampf(rect.position.x, 8.0, maxf(8.0, view.x - 8.0 - size.x))
+	var y := rect.position.y + rect.size.y + 6.0
 	if y + size.y > view.y - 8.0:
-		y = maxf(8.0, anchor.global_position.y - size.y - 6.0)
+		y = maxf(8.0, rect.position.y - size.y - 6.0)
 	global_position = Vector2(x, y)
 
 

@@ -231,6 +231,7 @@ func _build_relics() -> void:
 	_relic_book = RelicBookView.new()
 	_relic_book.position = RELIC_POSITION
 	add_child(_relic_book)
+	_relic_book.attach_tip(self, 120)
 
 	_relic_log = _label("", 16, Color(0.749, 0.682, 0.553))
 	_relic_log.position = Vector2(RELIC_POSITION.x,

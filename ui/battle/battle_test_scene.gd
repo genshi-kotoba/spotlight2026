@@ -51,12 +51,12 @@ const HAND_GAP := 6.0
 ## 牌多时压缩间距，最多 10 张也压在一屏里。
 const HAND_ARC_SPREAD := 0.045
 const HAND_ARC_RADIUS := 900.0
-const HAND_MAX_WIDTH := 720.0
+const HAND_MAX_WIDTH := 880.0
 ## 条内可填充宽度与左端起算位置：玩家条从 144 起、宽 250；Boss 条从 99 起、宽 781。
 const PLAYER_BAR_LEFT := 144.0
 const PLAYER_BAR_WIDTH := 250.0
-const ENEMY_BAR_LEFT := 94.0
-const ENEMY_BAR_WIDTH := 716.0
+const ENEMY_BAR_LEFT := 89.5
+const ENEMY_BAR_WIDTH := 726.5
 const BLOCK_MARKER_WIDTH := 16.0
 const BUFF_ICON_REGION := Rect2(59, 62, 754, 754)
 const BUFF_ICON_PATHS := {
@@ -201,6 +201,8 @@ func _ready() -> void:
 	_run_menu.abandon_requested.connect(_on_menu_abandon)
 	_run_menu.return_to_menu_requested.connect(_on_menu_return)
 	_run_menu.quit_requested.connect(_on_menu_quit)
+	# 背包页里装配过典籍，书页要跟着变。
+	_run_menu.relic_board_updated.connect(_on_relic_board_updated)
 	_build_settings_button()
 	hand_scroll.gui_input.connect(_on_hand_scroll_input)
 	%ClosePileButton.pressed.connect(_close_pile_modal)
@@ -346,6 +348,9 @@ func _build_relic_hud() -> void:
 	# 书在主角立绘后面，避免盖住人物。
 	move_child(_relic_book, $HeroPortrait.get_index())
 
+	# 残片格是斜的四边形，没有 Control 可当锚点，浮层单独一个。
+	_relic_book.attach_tip(self, 120)
+
 	_relic_log = Label.new()
 	_relic_log.position = RELIC_BOOK_POSITION + Vector2(0, RelicBookView.BOOK_SIZE.y + 8.0)
 	_relic_log.size = RELIC_LOG_SIZE
@@ -365,14 +370,15 @@ func _build_block_shields() -> void:
 	var script := load(BLOCK_SHIELD_SCRIPT)
 	player_block_shield = script.new()
 	player_block_shield.name = "PlayerBlockShield"
-	player_block_shield.position = Vector2(352, 28)
+	player_block_shield.position = Vector2(362, 28)
 	player_block_shield.size = Vector2(58, 64)
 	player_block_shield.set("number_px", 19)
 	add_child(player_block_shield)
 	enemy_block_shield = script.new()
 	enemy_block_shield.name = "EnemyBlockShield"
-	enemy_block_shield.position = Vector2(1420, 72)
+	enemy_block_shield.position = Vector2(1344, 84)
 	enemy_block_shield.size = Vector2(74, 82)
+	enemy_block_shield.z_index = 13
 	enemy_block_shield.set("number_px", 24)
 	add_child(enemy_block_shield)
 
@@ -482,6 +488,15 @@ func _atlas_texture(path: String, region: Rect2) -> AtlasTexture:
 func _refresh_relic_hud() -> void:
 	if _relic_book != null:
 		_relic_book.set_board(_relic_catalog, _relic_board)
+
+
+## 背包页装配过典籍：就地重读棋盘，再刷书页。
+## 实例不能换 —— RelicBattleSystem 拿着同一个 board 做邻接结算。
+func _on_relic_board_updated() -> void:
+	if _relic_board == null:
+		return
+	_relic_board.load_from_file(_relic_catalog, relic_board_path)
+	_refresh_relic_hud()
 
 
 func _on_relic_activated(trigger: int, effect: int, description: String) -> void:
@@ -729,6 +744,10 @@ func _queue_refresh() -> void:
 func _input(event: InputEvent) -> void:
 	if _busy or _battle == null or not _battle.active:
 		return
+	# 菜单开着的时候外面一律不接输入。浮层那层遮罩只挡得住 _gui_input，
+	# 牌桌拖拽走的是 _input，不在这儿拦住就会隔着菜单把外面的手牌抓走。
+	if _run_menu != null and _run_menu.is_open():
+		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			# 手牌可以拖进出牌列，出牌列里的牌可以拖动改顺序。
@@ -760,12 +779,23 @@ func _input(event: InputEvent) -> void:
 			_begin_drag()
 		_move_drag_ghost(event.position)
 		_update_drop_hint(event.position)
+		_update_drag_preview(event.position)
 
 
-func _on_play_card_hover(slot: Control, entered: bool) -> void:
-	if not is_instance_valid(slot):
+func _on_play_card_hover(slot: Control, entered: bool, instance_id := "") -> void:
+	# 拖拽期间不响应悬停：手里还抓着牌时不该有大图跟着鼠标跳。
+	if not is_instance_valid(slot) or _drag_active:
 		return
 	slot.modulate = Color(1.18, 1.18, 1.18) if entered else Color.WHITE
+	if entered:
+		var card := _find_selected_card(instance_id)
+		if not card.is_empty():
+			_show_resolve_preview(String(card.get("card_id", "")))
+	elif not _busy:
+		_resolve_preview.visible = false
+	else:
+		# 结算中把大图交还给指针，避免悬停移开后结算大图消失。
+		_refresh_resolve_preview(_display_pointer_id)
 
 
 func _play_card_at(at: Vector2) -> String:
@@ -794,11 +824,12 @@ func _set_drag_source_alpha(instance_id: String, alpha: float) -> void:
 	for slot: Node in hand_cards.get_children():
 		if slot is CanvasItem and String(slot.get_meta("instance_id", "")) == instance_id:
 			(slot as CanvasItem).modulate.a = alpha
+	# 出牌列整行一起压：只压卡槽会被悬停提亮盖掉，看着就没有虚影。
 	var index := _play_row_index(instance_id)
 	if index >= 0:
-		var row_slot := play_cards.get_child(index).get_child(0) as CanvasItem
-		if row_slot != null:
-			row_slot.modulate.a = alpha
+		var row := play_cards.get_child(index) as CanvasItem
+		if row != null:
+			row.modulate.a = alpha
 
 
 func _move_play_card(from_index: int, insert_index: int) -> void:
@@ -894,10 +925,31 @@ func _update_drop_hint(at: Vector2) -> void:
 func _finish_drag() -> void:
 	_drag_active = false
 	_set_drag_source_alpha(_drag_card_id, 1.0)
+	if not _busy and _resolve_preview != null:
+		_resolve_preview.visible = false
 	if _drag_ghost != null:
 		_drag_ghost.visible = false
 	if _drop_hint != null:
 		_drop_hint.visible = false
+
+
+func _update_drag_preview(at: Vector2) -> void:
+	# 拖动出牌列的牌时，左侧大图改成「松手后会压在谁的下面就显示谁」：
+	# 拖到最顶上是自己，往下压住哪张就显示哪张，和结算指针用的是同一张大图。
+	if _resolve_preview == null:
+		return
+	if _drag_source != "play":
+		return
+	var index := _play_drop_index(at)
+	var show_id := _drag_card_id
+	if index >= 1 and index <= _selected_ids.size():
+		var under := String(_selected_ids[clampi(index - 1, 0, _selected_ids.size() - 1)])
+		if under != _drag_card_id:
+			show_id = under
+	var card := _find_selected_card(show_id)
+	if card.is_empty():
+		return
+	_show_resolve_preview(String(card.get("card_id", "")))
 
 
 func _play_area_rect() -> Rect2:
@@ -1069,9 +1121,15 @@ func _pop_turn_label() -> void:
 	tween.tween_property(turn_label, "modulate", Color.WHITE, 0.3)
 
 
+## 调试用：给怪物挂一层常驻格挡，方便在编辑器里看盾的位置。改成 0 即可关掉。
+const DEBUG_ENEMY_BLOCK := 10
+
+
 func _refresh_combat_status() -> void:
 	if _battle == null or _battle.enemies.is_empty():
 		return
+	if DEBUG_ENEMY_BLOCK > 0 and int(_battle.enemies[0].get("block", 0)) == 0:
+		_battle.enemies[0]["block"] = DEBUG_ENEMY_BLOCK
 	_render_combat_snapshot(_battle.player, _battle.enemies[0])
 
 
@@ -1452,8 +1510,8 @@ func _make_play_row(card: Dictionary) -> Control:
 	button.size = card_size
 	button.pressed.connect(_on_play_card_pressed.bind(String(card["instance_id"])))
 	# 悬停提亮：出牌区的牌子小，不给点提示很难看出能拖动、能点回。
-	button.mouse_entered.connect(_on_play_card_hover.bind(slot, true))
-	button.mouse_exited.connect(_on_play_card_hover.bind(slot, false))
+	button.mouse_entered.connect(_on_play_card_hover.bind(slot, true, String(card["instance_id"])))
+	button.mouse_exited.connect(_on_play_card_hover.bind(slot, false, String(card["instance_id"])))
 	row.add_child(button)
 
 	var highlight := Panel.new()
@@ -1649,11 +1707,22 @@ func _refresh_resolve_preview(instance_id: String) -> void:
 	if card.is_empty() or not _busy:
 		_resolve_preview.visible = false
 		return
-	var data := _card_data(String(card.get("card_id", "")))
-	if data != null:
-		_resolve_view.set_card(data)
-		var resolve_px := CardView.text_px_for(RESOLVE_PREVIEW_SCALE)
-		_resolve_view.apply_compact_layout(RESOLVE_PREVIEW_SCALE, resolve_px.x, resolve_px.y)
+	_show_resolve_preview(String(card.get("card_id", "")))
+
+
+## 把某张卡按结算大图的规格摆到左侧。结算指针与出牌列悬停共用这一份。
+func _show_resolve_preview(card_id: String) -> void:
+	if _resolve_preview == null or _resolve_view == null or card_id.is_empty():
+		return
+	var data := _card_data(card_id)
+	if data == null:
+		return
+	_resolve_view.set_card(data)
+	var resolve_px := CardView.text_px_for(RESOLVE_PREVIEW_SCALE)
+	_resolve_view.apply_compact_layout(RESOLVE_PREVIEW_SCALE, resolve_px.x, resolve_px.y)
+	if _resolve_preview.visible:
+		_resolve_preview.modulate.a = 1.0
+		return
 	_resolve_preview.visible = true
 	_resolve_preview.modulate.a = 0.0
 	var tween := _resolve_preview.create_tween()
@@ -1731,6 +1800,11 @@ func _on_menu_quit() -> void:
 func _open_run_menu(page: int = 1) -> void:
 	if _run_menu == null:
 		return
+	# 手里还捏着一张牌就先把这次拖拽收掉，不然菜单关掉之后它还跟着鼠标。
+	if _drag_active:
+		_finish_drag()
+	_drag_card_id = ""
+	_drag_source = ""
 	if _map_page_source == null:
 		_map_page_source = _build_map_page_source()
 	_run_menu.open(page)
@@ -1850,4 +1924,3 @@ func _refresh_damage_preview() -> void:
 	if not _battle.enemies.is_empty():
 		lethal = damage >= int(_battle.enemies[0].get("health", 0))
 	damage_preview.show_values(damage, block, lethal)
-

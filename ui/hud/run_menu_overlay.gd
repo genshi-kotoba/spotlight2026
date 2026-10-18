@@ -7,6 +7,8 @@ extends Control
 ## 背包页与设置页先占位，卡组与物品的数量取跑图状态里的真值。
 
 signal closed
+## 典籍装配改过了，宿主要重读棋盘（战斗里那本典籍书得跟着变）。
+signal relic_board_updated
 ## 设置页里的三个跑图级动作，由宿主场景决定怎么落地（存档、回主菜单、退出）。
 signal abandon_requested
 signal return_to_menu_requested
@@ -43,6 +45,8 @@ const PORTRAIT_REGION := Rect2(164, 48, 742, 1856)
 const RELIC_SCRAP_DIR := "res://assets/ui/UI-020"
 const ITEM_ICON_SCRIPT := "res://ui/components/item_icon.gd"
 const HOVER_TIP_SCRIPT := "res://ui/components/hover_tip.gd"
+const RELIC_DRAG_ITEM_SCRIPT := "res://ui/hud/relic_drag_item.gd"
+const RELIC_DROP_CELL_SCRIPT := "res://ui/hud/relic_drop_cell.gd"
 ## 立绘越出面板左/下边框，是刻意的出血。
 ## 每张 UI-020 都画在同一张 773×951 画布上，内容只占一个格子；按各自墨迹裁切。
 ## 画布本身是 4 列×5 行，拼回去必须按 4 列排，否则接缝错位。
@@ -76,6 +80,13 @@ var _item_grid: GridContainer
 var _item_title: Label
 var _relic_title: Label
 var _relic_cells: Array[Label] = []
+var _relic_drop_cells: Array[RelicDropCell] = []
+## 拖拽中的残片：幽灵块跟手，原格先空出来，松手时按落点决定装配还是换位。
+var _drag_ghost: Panel
+var _drag_source: Control
+var _drag_fragment := ""
+var _drag_origin := -1
+var _highlighted_cell: RelicDropCell
 var _abandon_button: Button
 var _abandon_confirm_row: HBoxContainer
 var _current_page := 1
@@ -138,6 +149,8 @@ func current_page() -> int:
 
 
 func close() -> void:
+	# 拖到一半就关菜单的话，把被藏起来的格子还回来。
+	_end_relic_drag(true)
 	if _peek_layer != null:
 		_peek_layer.visible = false
 	visible = false
@@ -284,34 +297,80 @@ func _reload_items(run: RunStateMachine) -> void:
 		_item_grid.remove_child(child)
 		child.queue_free()
 	var item_count := run.items.size() if run != null else 0
-	# 无限背包：至少铺满两排 10 列，装得更多就继续往下长。
-	var slot_count := maxi(ITEM_COLUMNS * ITEM_VISIBLE_ROWS, item_count)
+	# 还没装进典籍的残片排在道具后面：先道具、再残片、最后填空。
+	var relics := _available_relics()
+	var used := relics.size() + item_count
+	# 无限背包：至少铺满三排，装得更多就继续往下长。
+	var slot_count := maxi(ITEM_COLUMNS * ITEM_VISIBLE_ROWS, used)
 	for index in slot_count:
-		var slot := Control.new()
-		slot.custom_minimum_size = ITEM_SLOT_SIZE
-		slot.size = ITEM_SLOT_SIZE
-		slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var frame := _texture_rect(
-			_slot_frame(index % 2 == 0), Vector2.ZERO, ITEM_SLOT_SIZE)
-		slot.add_child(_slot_plate())
-		slot.add_child(frame)
-		if run != null and index < item_count:
-			var item: Variant = run.items[index]
-			var item_id := str(item.get("item_id", "")) if item is Dictionary else str(item)
-			var record: Dictionary = _item_record(item_id, str(item.get("name", "")) if item is Dictionary else item_id)
-			var icon_script := load(ITEM_ICON_SCRIPT)
-			var icon: Control = icon_script.make(str(record.get("icon_path", "")), 46.0)
-			icon.position = Vector2(16, 16)
-			slot.add_child(icon)
-			# 图标占格子，名字与效果走和战斗 HUD 同一个悬停浮层。
-			slot.mouse_filter = Control.MOUSE_FILTER_STOP
-			var tip := _item_tooltip(item_id, record)
-			slot.mouse_entered.connect(_show_item_tip.bind(slot, tip))
-			slot.mouse_exited.connect(_hide_item_tip)
-		_item_grid.add_child(slot)
+		var child: Control
+		if index < item_count:
+			child = _item_slot(run, index, index)
+		elif index < used:
+			child = _relic_slot_item(relics[index - item_count], index)
+		else:
+			child = _item_slot_empty(index)
+		_item_grid.add_child(child)
+
+
+## 残片格：和空物品格用同一套底板与边框，只多一个名字，按下去就能拖。
+func _relic_slot_item(fragment: RelicFragmentData, index: int) -> Control:
+	var slot: RelicDragItem = load(RELIC_DRAG_ITEM_SCRIPT).new()
+	slot.fragment_id = fragment.fragment_id
+	slot.custom_minimum_size = ITEM_SLOT_SIZE
+	slot.size = ITEM_SLOT_SIZE
+	slot.mouse_filter = Control.MOUSE_FILTER_STOP
+	slot.mouse_default_cursor_shape = Control.CURSOR_DRAG
+	slot.drag_requested.connect(_begin_relic_drag)
+	slot.add_child(_slot_plate())
+	slot.add_child(_texture_rect(_slot_frame(index % 2 == 0), Vector2.ZERO, ITEM_SLOT_SIZE))
+	var name_label := _label(fragment.display_name, 17, Color(0.945, 0.867, 0.706))
+	name_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_label.clip_text = true
+	slot.set_name_label(name_label)
+	slot.add_child(name_label)
+	return slot
+
+
+func _item_slot(run: RunStateMachine, item_index: int, slot_index: int) -> Control:
+	var slot := Control.new()
+	slot.custom_minimum_size = ITEM_SLOT_SIZE
+	slot.size = ITEM_SLOT_SIZE
+	slot.add_child(_slot_plate())
+	slot.add_child(_texture_rect(
+		_slot_frame(slot_index % 2 == 0), Vector2.ZERO, ITEM_SLOT_SIZE))
+	var item: Variant = run.items[item_index]
+	var item_id := str(item.get("item_id", "")) if item is Dictionary else str(item)
+	var record: Dictionary = _item_record(item_id, str(item.get("name", "")) if item is Dictionary else item_id)
+	var icon_script := load(ITEM_ICON_SCRIPT)
+	var icon: Control = icon_script.make(str(record.get("icon_path", "")), 46.0)
+	icon.position = Vector2(16, 16)
+	slot.add_child(icon)
+	# 图标占格子，名字与效果走和战斗 HUD 同一个悬停浮层。
+	slot.mouse_filter = Control.MOUSE_FILTER_STOP
+	var tip := _item_tooltip(item_id, record)
+	slot.mouse_entered.connect(_show_item_tip.bind(slot, tip))
+	slot.mouse_exited.connect(_hide_item_tip)
+	return slot
+
+
+func _item_slot_empty(index: int) -> Control:
+	var slot := Control.new()
+	slot.custom_minimum_size = ITEM_SLOT_SIZE
+	slot.size = ITEM_SLOT_SIZE
+	slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot.add_child(_slot_plate())
+	slot.add_child(_texture_rect(_slot_frame(index % 2 == 0), Vector2.ZERO, ITEM_SLOT_SIZE))
+	return slot
 
 
 func _show_item_tip(anchor: Control, text: String) -> void:
+	# 拖着东西的时候不弹浮层，否则它糊在鼠标旁边挡住落点。
+	if _drag_ghost != null:
+		return
 	if _item_tip == null:
 		var tip_script := load(HOVER_TIP_SCRIPT)
 		_item_tip = tip_script.new()
@@ -324,6 +383,14 @@ func _show_item_tip(anchor: Control, text: String) -> void:
 func _hide_item_tip() -> void:
 	if _item_tip != null:
 		_item_tip.hide_tip()
+
+
+## 典籍格子的悬停文案存在格子的 meta 上，跟着 _reload_relics 变。
+func _show_relic_tip(cell: Control) -> void:
+	var text := str(cell.get_meta("relic_tip", ""))
+	if text.is_empty():
+		return
+	_show_item_tip(cell, text)
 
 
 func _item_record(item_id: String, display: String = "") -> Dictionary:
@@ -346,21 +413,165 @@ func _item_tooltip(item_id: String, record: Dictionary) -> String:
 
 func _reload_relics() -> void:
 	var catalog := RelicCatalog.load_definitions()
-	var board := RelicBoard.new()
-	var error := board.load_from_file(catalog, RelicBoard.SAVE_PATH)
-	if error != OK and error != ERR_FILE_NOT_FOUND:
-		push_warning("冒险菜单读取典籍配置失败：%d" % error)
+	var board := _load_relic_board(catalog)
 	var filled := 0
 	for index in _relic_cells.size():
 		var data: RelicFragmentData = catalog.get(board.cells[index]) if index < board.cells.size() else null
 		var label := _relic_cells[index]
 		label.text = "" if data == null else data.display_name
-		label.tooltip_text = "空格" if data == null else "%s · %s" % [data.kind_name(), data.description]
+		# 悬停文案挂在格子上，格子建的时候已经连好浮层，这里只换内容。
+		var cell := label.get_parent() as RelicDropCell
+		if cell != null:
+			cell.fragment_id = "" if data == null else data.fragment_id
+			cell.set_meta("relic_tip", "" if data == null else "%s（%s）\n%s" % [
+				data.display_name, data.kind_name(), data.description,
+			])
 		if data != null:
 			filled += 1
 		label.add_theme_color_override("font_color",
 			Color(0.23, 0.17, 0.10, 0.82) if data == null else Color(0.165, 0.129, 0.094))
 	_relic_title.text = "典籍 %d / %d" % [filled, RelicBoard.CELL_COUNT]
+
+
+## 拖拽中的残片：幽灵块跟手、落点高亮、松手落格。全部按屏幕坐标算，
+## 因为幽灵块挂在浮层上，而格子挂在面板里的 GridContainer 上。
+func _begin_relic_drag(source: Control, fragment_id: String) -> void:
+	if not fragment_id.is_empty() and not _drag_fragment.is_empty():
+		_end_relic_drag(true)
+	_drag_source = source
+	_drag_fragment = fragment_id
+	_drag_origin = -1
+	if source is RelicDropCell:
+		# 从典籍格上拿起来的：原格先空出来，但格子本身还在。
+		_drag_origin = (source as RelicDropCell).index
+		var label := _relic_cells[_drag_origin]
+		label.set_meta("relic_tip_saved", label.text)
+		label.text = ""
+	elif source is RelicDragItem:
+		(source as RelicDragItem).set_lifted(true)
+	_drag_ghost = _relic_drag_ghost(fragment_id)
+	add_child(_drag_ghost)
+	_drag_ghost.position = get_local_mouse_position() - _drag_ghost.size * 0.5
+	_hide_item_tip()
+
+
+func _input(event: InputEvent) -> void:
+	if _drag_ghost == null:
+		return
+	if event is InputEventMouseMotion:
+		_drag_ghost.position = event.position - _drag_ghost.size * 0.5
+		_highlight_relic_cell(_relic_cell_at(event.position))
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		_drop_relic_at(event.position)
+
+
+func _drop_relic_at(screen_position: Vector2) -> void:
+	var target := _relic_cell_at(screen_position)
+	var fragment_id := _drag_fragment
+	var origin := _drag_origin
+	_end_relic_drag(true)
+	if target >= 0:
+		_apply_relic_drop(origin, target, fragment_id)
+
+
+func _relic_cell_at(screen_position: Vector2) -> int:
+	for cell in _relic_drop_cells:
+		if cell != null and is_instance_valid(cell) and cell.is_visible_in_tree() \
+			and cell.get_global_rect().has_point(screen_position):
+			return cell.index
+	return -1
+
+
+func _highlight_relic_cell(index: int) -> void:
+	var cell: RelicDropCell = _relic_drop_cells[index] if index >= 0 and index < _relic_drop_cells.size() else null
+	if cell == _highlighted_cell:
+		return
+	if _highlighted_cell != null and is_instance_valid(_highlighted_cell):
+		_highlighted_cell.set_highlight(false)
+	_highlighted_cell = cell
+	if _highlighted_cell != null:
+		_highlighted_cell.set_highlight(true)
+
+
+func _end_relic_drag(restore: bool) -> void:
+	_highlight_relic_cell(-1)
+	if _drag_ghost != null and is_instance_valid(_drag_ghost):
+		_drag_ghost.queue_free()
+	_drag_ghost = null
+	if restore:
+		if _drag_origin >= 0 and _drag_origin < _relic_cells.size():
+			var label := _relic_cells[_drag_origin]
+			label.text = str(label.get_meta("relic_tip_saved", label.text))
+			label.set_meta("relic_tip_saved", "")
+		elif _drag_source != null and is_instance_valid(_drag_source) and _drag_source is RelicDragItem:
+			(_drag_source as RelicDragItem).set_lifted(false)
+	_drag_source = null
+	_drag_fragment = ""
+	_drag_origin = -1
+
+
+## 跟手的幽灵块：只写残片名字，块的大小跟着字走。
+func _relic_drag_ghost(fragment_id: String) -> Panel:
+	var catalog := RelicCatalog.load_definitions()
+	var data: RelicFragmentData = catalog.get(fragment_id)
+	var title := data.display_name if data != null else fragment_id
+	var font := ThemeDB.fallback_font
+	var text_width := font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 17).x
+	var ghost := Panel.new()
+	ghost.z_index = 160
+	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ghost.size = Vector2(maxf(76.0, text_width + 28.0), 40)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.11, 0.09, 0.07, 0.94)
+	style.border_color = Color(0.945, 0.867, 0.706, 0.85)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(4)
+	ghost.add_theme_stylebox_override("panel", style)
+	var label := _label(title, 17, Color(0.945, 0.867, 0.706))
+	label.position = Vector2(14, 8)
+	label.size = Vector2(ghost.size.x - 28.0, 24)
+	ghost.add_child(label)
+	return ghost
+
+
+## 落格：从典籍格里拖来的走换位，从背包拖来的直接装。
+func _apply_relic_drop(origin: int, target: int, fragment_id: String) -> void:
+	if fragment_id.is_empty() or target < 0:
+		return
+	var catalog := RelicCatalog.load_definitions()
+	var board := _load_relic_board(catalog)
+	if origin >= 0:
+		if origin == target:
+			return
+		board.swap_cells(origin, target)
+	elif target < board.cells.size():
+		board.place(target, fragment_id, catalog)
+	var error := board.save_to_file(RelicBoard.SAVE_PATH)
+	if error != OK:
+		push_warning("典籍装配保存失败：%d" % error)
+	_refresh_data()
+	relic_board_updated.emit()
+
+
+func _available_relics() -> Array[RelicFragmentData]:
+	var catalog := RelicCatalog.load_definitions()
+	var placed := {}
+	for fragment_id in _load_relic_board(catalog).cells:
+		if not fragment_id.is_empty():
+			placed[fragment_id] = true
+	var result: Array[RelicFragmentData] = []
+	for fragment: RelicFragmentData in catalog.values():
+		if not placed.has(fragment.fragment_id):
+			result.append(fragment)
+	return result
+
+
+func _load_relic_board(catalog: Dictionary) -> RelicBoard:
+	var board := RelicBoard.new()
+	var error := board.load_from_file(catalog, RelicBoard.SAVE_PATH)
+	if error != OK and error != ERR_FILE_NOT_FOUND:
+		push_warning("冒险菜单读取典籍配置失败：%d" % error)
+	return board
 
 
 func _card_data(card_id: String) -> CardData:
@@ -535,11 +746,17 @@ func _build_relic_zone(page: Control) -> void:
 	grid.add_theme_constant_override("v_separation", int(RELIC_GAP.y))
 	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	page.add_child(grid)
+	var drop_script := load(RELIC_DROP_CELL_SCRIPT)
 	for index in RelicBoard.CELL_COUNT:
-		var cell := Control.new()
+		var cell: RelicDropCell = drop_script.new()
+		cell.index = index
 		cell.custom_minimum_size = RELIC_CELL_SIZE
 		cell.size = RELIC_CELL_SIZE
-		cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# 格子只有图和名字，名字和效果走和战斗 HUD 同一个悬停浮层。
+		cell.mouse_filter = Control.MOUSE_FILTER_STOP
+		cell.mouse_entered.connect(_show_relic_tip.bind(cell))
+		cell.mouse_exited.connect(_hide_item_tip)
+		cell.drag_requested.connect(_begin_relic_drag)
 		cell.add_child(_texture_rect(_relic_scrap(index + 1), Vector2.ZERO, RELIC_CELL_SIZE))
 		var label := Label.new()
 		label.text = "—"
@@ -552,6 +769,7 @@ func _build_relic_zone(page: Control) -> void:
 		label.add_theme_font_size_override("font_size", 21)
 		_relic_cells.append(label)
 		cell.add_child(label)
+		_relic_drop_cells.append(cell)
 		grid.add_child(cell)
 
 
