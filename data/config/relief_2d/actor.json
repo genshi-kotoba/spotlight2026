@@ -1,0 +1,723 @@
+{
+  "schema_version": 1,
+  "source_url": "https://ordinary-bumblebee.itch.io/8-direction-walk-cycle",
+  "author": "Ordinary Bumblebee",
+  "license": "CC0-1.0",
+  "license_path": "res://assets/characters/preview_actor/License_CC0.txt",
+  "variant": "Blue",
+  "frame_size": [
+    32,
+    48
+  ],
+  "foot_anchor": [
+    16,
+    47
+  ],
+  "body_content_height_px": 44,
+  "animations": {
+    "walk_n": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-Sheet.png",
+        "region": [
+          0,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-Sheet.png",
+        "region": [
+          32,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-Sheet.png",
+        "region": [
+          64,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-Sheet.png",
+        "region": [
+          96,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-Sheet.png",
+        "region": [
+          128,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-Sheet.png",
+        "region": [
+          160,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-Sheet.png",
+        "region": [
+          192,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-Sheet.png",
+        "region": [
+          224,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "walk_ne": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-EAST-Sheet.png",
+        "region": [
+          0,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-EAST-Sheet.png",
+        "region": [
+          32,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-EAST-Sheet.png",
+        "region": [
+          64,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-EAST-Sheet.png",
+        "region": [
+          96,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-EAST-Sheet.png",
+        "region": [
+          128,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-EAST-Sheet.png",
+        "region": [
+          160,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-EAST-Sheet.png",
+        "region": [
+          192,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-EAST-Sheet.png",
+        "region": [
+          224,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "walk_e": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_EAST-Sheet.png",
+        "region": [
+          0,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_EAST-Sheet.png",
+        "region": [
+          32,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_EAST-Sheet.png",
+        "region": [
+          64,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_EAST-Sheet.png",
+        "region": [
+          96,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_EAST-Sheet.png",
+        "region": [
+          128,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_EAST-Sheet.png",
+        "region": [
+          160,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_EAST-Sheet.png",
+        "region": [
+          192,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_EAST-Sheet.png",
+        "region": [
+          224,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "walk_se": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-EAST-Sheet.png",
+        "region": [
+          0,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-EAST-Sheet.png",
+        "region": [
+          32,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-EAST-Sheet.png",
+        "region": [
+          64,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-EAST-Sheet.png",
+        "region": [
+          96,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-EAST-Sheet.png",
+        "region": [
+          128,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-EAST-Sheet.png",
+        "region": [
+          160,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-EAST-Sheet.png",
+        "region": [
+          192,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-EAST-Sheet.png",
+        "region": [
+          224,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "walk_s": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-Sheet.png",
+        "region": [
+          0,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-Sheet.png",
+        "region": [
+          32,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-Sheet.png",
+        "region": [
+          64,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-Sheet.png",
+        "region": [
+          96,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-Sheet.png",
+        "region": [
+          128,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-Sheet.png",
+        "region": [
+          160,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-Sheet.png",
+        "region": [
+          192,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-Sheet.png",
+        "region": [
+          224,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "walk_sw": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-WEST-Sheet.png",
+        "region": [
+          0,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-WEST-Sheet.png",
+        "region": [
+          32,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-WEST-Sheet.png",
+        "region": [
+          64,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-WEST-Sheet.png",
+        "region": [
+          96,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-WEST-Sheet.png",
+        "region": [
+          128,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-WEST-Sheet.png",
+        "region": [
+          160,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-WEST-Sheet.png",
+        "region": [
+          192,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_SOUTH-WEST-Sheet.png",
+        "region": [
+          224,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "walk_w": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_WEST-Sheet.png",
+        "region": [
+          0,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_WEST-Sheet.png",
+        "region": [
+          32,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_WEST-Sheet.png",
+        "region": [
+          64,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_WEST-Sheet.png",
+        "region": [
+          96,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_WEST-Sheet.png",
+        "region": [
+          128,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_WEST-Sheet.png",
+        "region": [
+          160,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_WEST-Sheet.png",
+        "region": [
+          192,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_WEST-Sheet.png",
+        "region": [
+          224,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "walk_nw": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-WEST-Sheet.png",
+        "region": [
+          0,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-WEST-Sheet.png",
+        "region": [
+          32,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-WEST-Sheet.png",
+        "region": [
+          64,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-WEST-Sheet.png",
+        "region": [
+          96,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-WEST-Sheet.png",
+        "region": [
+          128,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-WEST-Sheet.png",
+        "region": [
+          160,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-WEST-Sheet.png",
+        "region": [
+          192,
+          0,
+          32,
+          48
+        ]
+      },
+      {
+        "path": "res://assets/characters/preview_actor/blue_walk_NORTH-WEST-Sheet.png",
+        "region": [
+          224,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "idle_se": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_8direction_standing-Sheet.png",
+        "region": [
+          0,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "idle_s": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_8direction_standing-Sheet.png",
+        "region": [
+          32,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "idle_sw": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_8direction_standing-Sheet.png",
+        "region": [
+          64,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "idle_w": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_8direction_standing-Sheet.png",
+        "region": [
+          96,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "idle_nw": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_8direction_standing-Sheet.png",
+        "region": [
+          128,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "idle_n": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_8direction_standing-Sheet.png",
+        "region": [
+          160,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "idle_ne": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_8direction_standing-Sheet.png",
+        "region": [
+          192,
+          0,
+          32,
+          48
+        ]
+      }
+    ],
+    "idle_e": [
+      {
+        "path": "res://assets/characters/preview_actor/blue_8direction_standing-Sheet.png",
+        "region": [
+          224,
+          0,
+          32,
+          48
+        ]
+      }
+    ]
+  },
+  "suggested_fps": {
+    "walk": 12,
+    "idle": 1
+  },
+  "suggested_loop": {
+    "walk": true,
+    "idle": false
+  },
+  "alpha_union_bbox": [
+    5,
+    1,
+    27,
+    47
+  ],
+  "max_body_height_px": 46,
+  "cutaway_mask": {
+    "path": "res://assets/characters/preview_actor/body_cutaway_mask.png",
+    "padding": 24,
+    "frame_size": [
+      32,
+      48
+    ],
+    "description": "All animation texel union; 2px clear margin, 12px outer feather. Re-bake when sheets change."
+  }
+}

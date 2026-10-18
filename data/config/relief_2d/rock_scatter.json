@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "enabled": true,
+  "rubble": {
+    "probability": 0.2,
+    "min_width_ratio": 0.65,
+    "max_width_ratio": 0.95,
+    "min_wall_gap_ratio": 0.025,
+    "max_wall_gap_ratio": 0.055,
+    "wall_endpoint_margin_ratio": 0.02,
+    "minimum_separation_ratio": 1.85,
+    "min_ground_neighbors": 3,
+    "placement_attempts": 3
+  },
+  "pebble": {
+    "min_width_ratio": 0.2,
+    "max_width_ratio": 0.36,
+    "foot_radius_fraction": 0.38,
+    "support_margin_ratio": 0.005,
+    "candidate_density_per_cell": 0.6,
+    "minimum_separation_ratio": 0.3,
+    "background_density_factor": 0.18,
+    "patch_density_factor": 1.64,
+    "min_patch_span_cells": 2.0,
+    "max_patch_span_cells": 4.0,
+    "patch_low": 0.28,
+    "patch_high": 0.72,
+    "rubble_clearance_ratio": 0.12
+  },
+  "protection": {
+    "node_center_radius_ratio": 0.48,
+    "protected_hex_radius_ratio": 0.78,
+    "gate_center_radius_ratio": 1.0,
+    "gate_protected_hex_radius_ratio": 0.96,
+    "clearance_ratio": 0.025
+  },
+  "limits": {
+    "max_input_cells": 100000,
+    "max_candidates": 250000,
+    "max_candidates_per_cell": 6,
+    "max_entries": 60000,
+    "max_reservations": 10000,
+    "max_protected_per_reservation": 512,
+    "max_total_protected": 100000
+  }
+}

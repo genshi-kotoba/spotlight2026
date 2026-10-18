@@ -79,15 +79,15 @@ func _ready() -> void:
 		move_speed = clampf(float(config.get("move_speed", 2.1)), 0.1, 10)
 	# Render interpolation is local to this assembly; logical state stays fixed-step.
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
-	_view = MapView.new()
-	add_child(_view)
+	_view = _create_map_view()
+	if _view.get_parent() == null:
+		add_child(_view)
 	_target_marker = TargetMarker.new()
 	_target_marker.radius = cell_radius_px * 0.6
 	_target_marker.z_index = 10
 	_target_marker.hide()
 	add_child(_target_marker)
-	_player = CircleActor.new()
-	_player.radius = Session.FOOT_RADIUS * cell_radius_px
+	_player = _create_actor()
 	_player.z_index = 20
 	add_child(_player)
 	_camera = Camera2D.new()
@@ -110,6 +110,28 @@ func _ready() -> void:
 		push_error(_toast)
 	set_process(true)
 	set_physics_process(true)
+
+## Presentation hooks keep movement, discovery and business requests in this
+## shared assembly. Height is never used to invent new routes or encounters.
+func _create_map_view() -> Node2D:
+	return MapView.new()
+
+func _create_actor() -> Node2D:
+	var actor := CircleActor.new()
+	actor.radius = Session.FOOT_RADIUS * cell_radius_px
+	return actor
+
+func _prepare_presentation(_candidate: RefCounted) -> bool:
+	return true
+
+func _plane_to_display(point: Vector2) -> Vector2:
+	return point * cell_radius_px
+
+func _place_actor(point: Vector2) -> void:
+	_player.position = _plane_to_display(point)
+
+func _direction_to_plane(direction: Vector2) -> Vector2:
+	return direction
 
 ## Run demo overrides the bootstrap; the shared view never resets SeedService.
 func _handle_menu_hotkeys(event: InputEvent) -> bool:
@@ -236,6 +258,7 @@ func _build_hud() -> void:
 	# 地图信息与调试控件放右下角，与左下的操作提示同高、左右对称。
 	var top := PanelContainer.new()
 	top.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	top.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	top.offset_left = -950
 	top.offset_right = -18
 	top.offset_top = -166
@@ -260,7 +283,7 @@ func _build_hud() -> void:
 	var speed_row := HBoxContainer.new()
 	box.add_child(speed_row)
 	_speed_label = Label.new()
-	_speed_label.text = "移速 1.00×"
+	_speed_label.text = "移速 %.2f×" % speed_multiplier
 	_speed_label.custom_minimum_size.x = 120
 	_speed_label.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
 	speed_row.add_child(_speed_label)
@@ -268,7 +291,7 @@ func _build_hud() -> void:
 	slider.min_value = 0.25
 	slider.max_value = 4.0
 	slider.step = 0.25
-	slider.value = 1.0
+	slider.value = speed_multiplier
 	slider.custom_minimum_size = Vector2(230, 24)
 	slider.focus_mode = Control.FOCUS_NONE
 	slider.value_changed.connect(func(value): speed_multiplier = value; _speed_label.text = "移速 %.2f×" % value)
@@ -379,6 +402,8 @@ func load_map(snapshot: Dictionary, saved_state: Dictionary = {}) -> bool:
 	if not candidate.load_map(snapshot) or (not saved_state.is_empty() and not candidate.restore_state(saved_state)):
 		_show_toast("加载拒绝：" + candidate.last_error)
 		return false
+	if not _prepare_presentation(candidate):
+		return false
 	session = candidate
 	_map_snapshot = candidate.get_snapshot()
 	_selected = ""
@@ -453,7 +478,7 @@ func _render_motion(fraction: float) -> void:
 			_render_actor_plane = _render_path[i - 1].lerp(_render_path[i], distance / length)
 			break
 		distance -= length
-	_player.position = _render_actor_plane * cell_radius_px
+	_place_actor(_render_actor_plane)
 	_camera.force_update_scroll()
 	_update_minimap()
 
@@ -497,7 +522,7 @@ func _movement_direction() -> Vector2:
 		return Vector2.ZERO
 	var keyboard := Input.get_vector("map2d_left", "map2d_right", "map2d_up", "map2d_down")
 	if not keyboard.is_zero_approx():
-		return keyboard
+		return _direction_to_plane(keyboard)
 	if not _mouse_steering_held or not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		return Vector2.ZERO
 	var cursor := _mouse_cursor
@@ -506,7 +531,7 @@ func _movement_direction() -> Vector2:
 	# Camera stays centered: this is continuous steering, not a world-space
 	# click destination. A small screen deadzone avoids jitter near the actor.
 	var offset := cursor - get_viewport_rect().get_center()
-	return offset.normalized() if offset.length() > 12.0 else Vector2.ZERO
+	return _direction_to_plane(offset.normalized()) if offset.length() > 12.0 else Vector2.ZERO
 
 func _update_selection() -> void:
 	var nearby: Array[String] = session.nearby_nodes()
@@ -523,7 +548,7 @@ func _update_selection() -> void:
 				if session.known.has(Session.key(Session.coord(value))):
 					point = Session.coord(value)
 					break
-		_target_marker.position = Hex.to_plane(point, cell_radius_px)
+		_target_marker.position = _plane_to_display(Hex.to_plane(point, 1.0))
 
 func _process(delta: float) -> void:
 	_render_motion(Engine.get_physics_interpolation_fraction())
