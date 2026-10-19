@@ -1,0 +1,41 @@
+extends "res://tests/battle_animation_selftest.gd"
+
+func _run() -> void:
+	get_window().size = Vector2i(1280, 720)
+	fixture_root = "res://.godot/content-ui-%d" % Time.get_ticks_usec()
+	DirAccess.make_dir_recursive_absolute(fixture_root)
+	SaveGateway.profile_path = fixture_root.path_join("profile.json")
+	SaveGateway.slot_paths.assign([fixture_root.path_join("1.json"), fixture_root.path_join("2.json"), fixture_root.path_join("3.json")])
+	SaveGateway._active_slot = 1
+	_check("界面测试独立存档", SaveGateway._load_slot(1) == OK)
+	var config: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
+	config.run_id = "content-ui-fixture"
+	_check("界面测试独立新局", SaveGateway.start_new_run("content-ui-fixture", config) == OK)
+	var scene: BattleTestScene = load("res://ui/battle/battle_test_scene.tscn").instantiate()
+	scene.relic_board_path = fixture_root.path_join("empty-board.json")
+	scene.deck_card_ids.assign(["1", "50", "66", "33", "10", "16", "70", "45"])
+	scene.initial_draw_count = 8
+	add_child(scene)
+	await _frames(6)
+	scene._battle.enemies.assign([MonsterCatalog.create("11", 2), MonsterCatalog.create("14", 2, "knight"), MonsterCatalog.create("15", 2, "thief")])
+	scene._battle.player["potions"] = [{"item_id": "fixture-potion", "potion": 1}]
+	scene._queue_refresh()
+	await _frames(8)
+	_check("多敌人目标列表与药水均可见", scene._enemy_selector.get_child_count() == 4)
+	scene._enemy_selector.get_child(1).pressed.emit()
+	await _frames(5)
+	_check("点击随从可切换伤害目标", scene._chosen_enemy_id() == "knight")
+	await _capture("multi-enemy.png")
+	scene._battle.request_battle_choice("nullify", scene._battle.hand.duplicate(true), 1)
+	await _frames(5)
+	_check("无效化选择有全屏模态遮挡", is_instance_valid(scene._battle_choice_layer) and scene._battle.rules.queue.paused)
+	await _capture("nullify-choice.png")
+	var root: Control = scene._battle_choice_layer.get_child(0)
+	var list: VBoxContainer = root.get_child(1).get_child(0).get_child(1).get_child(0)
+	list.get_child(0).pressed.emit()
+	await _frames(5)
+	_check("实际点击无效化后恢复队列并关闭弹窗", not scene._battle.rules.queue.paused and scene._battle_choice_layer == null and scene._battle.hand.any(func(c: Dictionary): return bool(c.get("nullified", false))))
+	scene.queue_free()
+	await _frames(3)
+	print("新增战斗界面交互：全部通过" if failures == 0 else "新增战斗界面交互：失败%d项" % failures)
+	get_tree().quit(failures)

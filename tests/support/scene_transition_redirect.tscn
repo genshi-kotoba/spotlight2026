@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://tests/support/scene_transition_target.tscn" id="1"]
+
+[node name="RedirectTarget" instance=ExtResource("1")]
+prepare_frames = 2
+redirect_path = "res://tests/support/scene_transition_target.tscn"

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_base"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_damage_self.gd" id="2_effect"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_card"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("2_effect")
+amount = 4
+
+[resource]
+script = ExtResource("3_card")
+card_id = &"test_damage_self"
+card_name = "测试·自伤"
+description = "对自己造成 4 点伤害。该伤害会消耗格挡，不受力量或虚弱修正。"
+face_tint = 1
+effects = Array[ExtResource("1_base")]([SubResource("Effect")])

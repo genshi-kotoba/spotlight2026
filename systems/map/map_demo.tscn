@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://systems/map/map_scene.gd" id="1_scene"]
 [ext_resource type="Script" path="res://systems/map/map_builder.gd" id="2_builder"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://systems/map/player_mover.gd" id="4_mover"]
 [ext_resource type="Script" path="res://systems/map/map_input.gd" id="5_input"]
 [ext_resource type="Script" path="res://systems/map/map_camera.gd" id="6_camera"]
+[ext_resource type="Script" path="res://systems/map/map_node_view.gd" id="7_nodeview"]
 
 [sub_resource type="StandardMaterial3D" id="Mat_Player"]
 albedo_color = Color(0.95, 0.78, 0.35, 1)
@@ -31,6 +32,9 @@ script = ExtResource("2_builder")
 
 [node name="PathView" type="Node3D" parent="."]
 script = ExtResource("3_pathview")
+
+[node name="NodeView" type="Node3D" parent="."]
+script = ExtResource("7_nodeview")
 
 [node name="Player" type="Node3D" parent="."]
 script = ExtResource("4_mover")

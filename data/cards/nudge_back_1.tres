@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_fmd1u"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_move_pointer.gd" id="2_mntlu"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_1kvrj"]
+
+[sub_resource type="Resource" id="Resource_sbbo0"]
+script = ExtResource("2_mntlu")
+
+[resource]
+script = ExtResource("3_1kvrj")
+card_id = &"nudge_back"
+card_name = "再来一次"
+description = "再来一次（原型卡第 1 份，同名两份用于验证实例区分）"
+kind = 2
+face_tint = 2
+effects = Array[ExtResource("1_fmd1u")]([SubResource("Resource_sbbo0")])

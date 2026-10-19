@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BuffData" format=3]
+
+[ext_resource type="Script" path="res://systems/buffs/buff_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="2"]
+[ext_resource type="Script" path="res://systems/buffs/effects/buff_effect_stat.gd" id="3"]
+
+[sub_resource type="Resource" id="Stat"]
+script = ExtResource("3")
+buff_id = &"weak"
+amount_per_layer = -1
+
+[resource]
+script = ExtResource("1")
+buff_id = &"weak"
+display_name = "虚弱"
+description = "本回合每次触发造成伤害效果时，伤害减少等于虚弱层数的数值，最低为 0。"
+duration = 1
+effects = Array[ExtResource("2")]([SubResource("Stat")])
