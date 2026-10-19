@@ -20,6 +20,8 @@ var _pending_delete := false
 
 
 func _ready() -> void:
+	for button: Button in [$按钮行/切换档案, $按钮行/删除存档, $按钮行/返回]:
+		CommonUiSkin.style_button(button)
 	_gateway = get_node_or_null("/root/SaveGateway")
 	for index in _cards.size():
 		var slot := index + 1

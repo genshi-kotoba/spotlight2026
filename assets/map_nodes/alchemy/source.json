@@ -1,0 +1,84 @@
+{
+  "asset_id": "UI-018",
+  "record_id": "reczz28Ial4LO7a1",
+  "source_package_sha256": "f0253b0a2910cf31950753f388da2579077264e511a2fb3c91476ac846d69b5c",
+  "processing": "Trim transparent margins and resample to max 512px; original art unchanged. Elite/pile stay outside first-floor pool.",
+  "files": [
+    {
+      "id": "battle",
+      "source_file": "普通战斗.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1511,
+        1461,
+        2556,
+        2731
+      ],
+      "runtime_size": [
+        421,
+        512
+      ],
+      "source_sha256": "860abb78492a620145d6e7823a39a95e8aed6e7adfff2a7792501a4bd3c8c783"
+    },
+    {
+      "id": "boss",
+      "source_file": "BOSS.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1061,
+        1073,
+        2982,
+        3169
+      ],
+      "runtime_size": [
+        469,
+        512
+      ],
+      "source_sha256": "a0ef6055159b1fa378e43e87c3ce91c3ed72fb5fa8658f7ec965746af942ca60"
+    },
+    {
+      "id": "shop",
+      "source_file": "商店.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1390,
+        1939,
+        2687,
+        2967
+      ],
+      "runtime_size": [
+        512,
+        406
+      ],
+      "source_sha256": "a57e1562647f3161b86902611b4f62ad8c0e9046f50fe1ef11e6385405507eb0"
+    },
+    {
+      "id": "chest",
+      "source_file": "宝箱.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1294,
+        1543,
+        2759,
+        2869
+      ],
+      "runtime_size": [
+        512,
+        463
+      ],
+      "source_sha256": "9782d23f96c348838f80790b22a67fb859f0e01e6231cf30f22da37ebaf78d81"
+    }
+  ]
+}

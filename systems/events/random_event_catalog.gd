@@ -7,6 +7,18 @@ const NAMES := ["伟大炼成", "医疗", "空置赌桌", "死亡与赋税", "�
 const BACKGROUNDS := ["EVBG-001.png", "EVBG-002.jpg", "EVBG-003.png", "EVBG-004.png",
 	"EVBG-005.png", "EVBG-006.jpg", "EVBG-007.png", "EVBG-008.jpg", "EVBG-009.png",
 	"EVBG-010.jpg", "EVBG-011.jpg", "EVBG-012.png"]
+const MapEventIds = preload("res://systems/map/flat_2d/alchemy_event_catalog.gd")
+
+## 显式地图身份优先；旧地图仍沿用原来的独立事件种子。
+## 仅用于尚未打开的事件，已提交的 RunRandomEvents 状态不重新解析。
+static func index_for_map_node(seed_text: String, map_id: String, node: Dictionary) -> int:
+	var content_id := str(node.get("content_id", ""))
+	if content_id.begins_with("alchemy/events/"):
+		var id := content_id.trim_prefix("alchemy/events/")
+		var index: int = MapEventIds.ids().find(id)
+		if index >= 0:
+			return index
+	return index_for_node(seed_text, map_id, str(node.get("node_id", node.get("id", ""))))
 
 static func stream(seed_text: String, map_id: String, node_id: String, purpose := "identity") -> RandomStream:
 	var source := SeedRegistry.new(str(ProjectSettings.get_setting("application/config/seed_content_version", "")))

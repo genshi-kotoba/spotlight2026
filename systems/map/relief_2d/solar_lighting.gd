@@ -102,7 +102,7 @@ func bake(snapshot: Dictionary, known: Dictionary, faces: Array, basis: Basis, p
 		var face: Dictionary = faces[face_index]
 		face["solar_factor"] = 1.0
 		face["solar_shadows"] = []
-		if not _enabled or not bool(face.get("known", false)):
+		if not _enabled or not bool(face.get("known", false)) or face.get("node_marker", false):
 			continue
 		var world: Variant = face.get("world")
 		var polygon: Variant = face.get("polygon")
@@ -234,7 +234,7 @@ func project_actor_shadow(center: Vector2, feet_height: float, actor_height: flo
 		for i in faces.size(): candidates.append(i)
 	for face_index in candidates:
 		var face: Dictionary = faces[face_index]
-		if not bool(face.get("known", false)): continue
+		if not bool(face.get("known", false)) or face.get("node_marker", false): continue
 		var world: Variant = face.get("world")
 		var normal: Variant = face.get("normal")
 		var polygon: Variant = face.get("polygon")

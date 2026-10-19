@@ -421,11 +421,7 @@ func _build() -> void:
 	_panel.position = PANEL_RECT.position
 	_panel.size = PANEL_RECT.size
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.09, 0.075, 0.063, 0.985)
-	style.set_border_width_all(2)
-	style.border_color = Color(0.910, 0.706, 0.333, 0.9)
-	style.set_corner_radius_all(12)
+	var style := CommonUiSkin.panel("panel")
 	_panel.add_theme_stylebox_override("panel", style)
 	add_child(_panel)
 
@@ -685,12 +681,7 @@ func _build_settings_page(page: Control) -> void:
 		button.add_theme_font_size_override("font_size", 20)
 		button.add_theme_color_override("font_color", Color(0.949, 0.890, 0.776))
 		button.add_theme_color_override("font_hover_color", Color(1.0, 0.914, 0.722))
-		button.add_theme_stylebox_override("normal", _button_style(
-			Color(0.141, 0.102, 0.075, 0.92), Color(0.910, 0.706, 0.333, 0.50)))
-		button.add_theme_stylebox_override("hover", _button_style(
-			Color(0.349, 0.220, 0.161, 1.0), Color(0.949, 0.749, 0.361, 1.0)))
-		button.add_theme_stylebox_override("pressed", _button_style(
-			Color(0.349, 0.220, 0.161, 1.0), Color(0.949, 0.749, 0.361, 1.0)))
+		CommonUiSkin.style_button(button, Vector4.ZERO)
 		var requested: Signal = actions[index][1]
 		button.pressed.connect(func() -> void:
 			close()
@@ -749,12 +740,8 @@ func _build_abandon_row(page: Control) -> void:
 	_abandon_button.add_theme_font_size_override("font_size", 20)
 	_abandon_button.add_theme_color_override("font_color", Color(1.0, 0.769, 0.690))
 	_abandon_button.add_theme_color_override("font_hover_color", Color(1.0, 0.85, 0.8))
-	_abandon_button.add_theme_stylebox_override("normal", _button_style(
-		Color(0.141, 0.102, 0.075, 0.92), Color(0.910, 0.706, 0.333, 0.50)))
-	_abandon_button.add_theme_stylebox_override("hover", _button_style(
-		Color(0.349, 0.220, 0.161, 1.0), Color(0.949, 0.749, 0.361, 1.0)))
-	_abandon_button.add_theme_stylebox_override("pressed", _button_style(
-		Color(0.349, 0.220, 0.161, 1.0), Color(0.949, 0.749, 0.361, 1.0)))
+	CommonUiSkin.style_button(_abandon_button, Vector4.ZERO)
+	_abandon_button.add_theme_color_override("font_color", Color(1.0, 0.769, 0.690))
 	_abandon_button.pressed.connect(_on_abandon_pressed)
 	page.add_child(_abandon_button)
 
@@ -770,10 +757,8 @@ func _build_abandon_row(page: Control) -> void:
 	confirm.focus_mode = Control.FOCUS_NONE
 	confirm.add_theme_font_size_override("font_size", 20)
 	confirm.add_theme_color_override("font_color", Color(1.0, 0.769, 0.690))
-	confirm.add_theme_stylebox_override("normal", _button_style(
-		Color(0.290, 0.102, 0.086, 0.95), Color(0.949, 0.749, 0.361, 0.8)))
-	confirm.add_theme_stylebox_override("hover", _button_style(
-		Color(0.420, 0.145, 0.125, 1.0), Color(0.949, 0.749, 0.361, 1.0)))
+	CommonUiSkin.style_button(confirm, Vector4.ZERO)
+	confirm.add_theme_color_override("font_color", Color(1.0, 0.769, 0.690))
 	confirm.pressed.connect(func() -> void:
 		close()
 		abandon_requested.emit())
@@ -784,10 +769,7 @@ func _build_abandon_row(page: Control) -> void:
 	cancel.focus_mode = Control.FOCUS_NONE
 	cancel.add_theme_font_size_override("font_size", 20)
 	cancel.add_theme_color_override("font_color", Color(0.949, 0.890, 0.776))
-	cancel.add_theme_stylebox_override("normal", _button_style(
-		Color(0.141, 0.102, 0.075, 0.92), Color(0.910, 0.706, 0.333, 0.50)))
-	cancel.add_theme_stylebox_override("hover", _button_style(
-		Color(0.349, 0.220, 0.161, 1.0), Color(0.949, 0.749, 0.361, 1.0)))
+	CommonUiSkin.style_button(cancel, Vector4.ZERO)
 	cancel.pressed.connect(_reset_abandon_confirm)
 	_abandon_confirm_row.add_child(cancel)
 
@@ -812,15 +794,6 @@ func _setting(key: String, fallback: float) -> float:
 func _on_volume_changed(value: float, key: String) -> void:
 	if GlobalState != null:
 		GlobalState.set_setting(key, value)
-
-
-func _button_style(color: Color, edge: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = color
-	style.set_border_width_all(1)
-	style.border_color = edge
-	style.set_corner_radius_all(6)
-	return style
 
 
 func _label(text: String, size: int, color: Color) -> Label:

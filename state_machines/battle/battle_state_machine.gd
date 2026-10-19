@@ -1062,6 +1062,21 @@ func _step_buff_resolved(event: BattleEvent) -> void:
 	_finish_if_needed()
 
 
+## Explicit preview opt-in only. Do not run monster damage/death reactions:
+## reflection or a new phase must not turn a debug victory into a real defeat.
+func debug_finish_victory() -> Error:
+	var enabled: Variant = ProjectSettings.get_setting("debug/map_battle/enable_instant_victory", false)
+	if not enabled is bool or not enabled:
+		return ERR_UNAVAILABLE
+	if not active or phase != Phase.PLAYER_ACTION or int(player.health) <= 0 \
+			or rules.queue.processing or rules.queue.paused or rules.queue.pending_count() != 0:
+		return ERR_BUSY
+	for enemy: Dictionary in enemies:
+		enemy.health = 0
+	_finish_battle("victory")
+	return OK
+
+
 func _finish_if_needed() -> bool:
 	if not active:
 		return true

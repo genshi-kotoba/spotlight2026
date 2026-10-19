@@ -37,15 +37,7 @@ func _ready() -> void:
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var panel := PanelContainer.new()
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("211c16")
-	style.border_color = Color("b6924d")
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(10)
-	style.content_margin_left = 48
-	style.content_margin_right = 48
-	style.content_margin_top = 28
-	style.content_margin_bottom = 28
+	var style := CommonUiSkin.panel("strip", Vector4(48, 28, 48, 28))
 	panel.add_theme_stylebox_override("panel", style)
 	center.add_child(panel)
 	_label = Label.new()
@@ -62,6 +54,7 @@ func _ready() -> void:
 	panel.add_child(_label)
 	_blocker.hide()
 	_failure_dialog = AcceptDialog.new()
+	CommonUiSkin.style_dialog(_failure_dialog)
 	_failure_dialog.name = "SceneLoadingError"
 	_failure_dialog.title = "加载失败"
 	_failure_dialog.ok_button_text = "确定"

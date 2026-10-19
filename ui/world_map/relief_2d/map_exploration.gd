@@ -7,6 +7,7 @@ const Support = preload("res://systems/map/relief_2d/support_sampler.gd")
 const Envelope = preload("res://systems/map/relief_2d/scene_envelope.gd")
 const FogVeil = preload("res://systems/map/relief_2d/fog_veil_2d.gd")
 const Discovery = preload("res://systems/map/relief_2d/discovery_presentations.gd")
+const NodeHint = preload("res://systems/map/relief_2d/node_interaction_hint.gd")
 const SETTINGS := "res://data/config/relief_2d/exploration.json"
 const SUN := "res://data/config/relief_2d/sunlight.json"
 const ATMOSPHERE := "res://data/config/relief_2d/atmosphere.json"
@@ -18,6 +19,7 @@ var _sun_settings: Dictionary = {}
 var _atmosphere_settings: Dictionary = {}
 var _envelope: Dictionary = {}
 var _fog_veil: Node2D
+var _node_hint: Node2D
 var _animated_plane := Vector2.ZERO
 var _discovery_prepare_queued := false
 var _prepare_error := ""
@@ -58,6 +60,12 @@ func _create_map_view() -> Node2D:
 		_fog_veil = FogVeil.new()
 		_fog_veil.name = "ExplorationVeil"
 		view.add_child(_fog_veil)
+	_node_hint = view.get_node_or_null("NodeInteractionHint")
+	if _node_hint == null:
+		_node_hint = NodeHint.new()
+		_node_hint.name = "NodeInteractionHint"
+		view.add_child(_node_hint)
+	_node_hint.clear()
 	view.presentation_committed.connect(_presentation_committed)
 	return view
 
@@ -145,6 +153,7 @@ func _presentation_layer() -> Dictionary:
 	return layer
 
 func _sync_view() -> void:
+	if is_instance_valid(_node_hint): _node_hint.clear()
 	var data: Dictionary = session.get_view()
 	var layer := _presentation_layer().duplicate()
 	var visible_ids: Dictionary = {}
@@ -162,6 +171,7 @@ func _sync_view() -> void:
 	_view.set_atmosphere_config(atmosphere, false)
 	_view.set_wall_cutaway_context(session.map_id, session.seed, session.floor_index, session.reachable(), true, session.collision_boundaries())
 	_view.set_layer(layer, session.known, session.completed, _binding_presentation)
+	_view.set_node_presentations(data.nodes)
 	if not _view.is_rebuilding():
 		support.set_visibility(session.known, true)
 		_sync_veil()
@@ -169,6 +179,25 @@ func _sync_view() -> void:
 	RenderingServer.set_default_clear_color(_view.get_atmosphere_background())
 	_view.flush_dynamic()
 	_queue_discovery()
+
+func _update_selection() -> void:
+	super._update_selection()
+	_target_marker.hide() # Ground marker cannot draw over a high wall.
+	if not is_instance_valid(_node_hint): return
+	if not MapPresentation.owns(self) or not is_map_ready() or paused or not session.pending.is_empty() or _selected not in session.nearby_nodes():
+		_node_hint.clear()
+		return
+	# _node_presentations contains only Session.get_view() known entries, never
+	# the generation snapshot. The hint cannot reveal a hidden event identity.
+	var node: Dictionary = _view._node_presentations.get(_selected, {})
+	var anchor: Vector2 = _target_marker.position
+	# A partly discovered multi-cell gate can use an entrance marker instead
+	# of its center. Anchor to that published marker, not another footprint cell.
+	for batch in _view._node_batches.get(_selected, []):
+		for face: Dictionary in batch.faces:
+			if face.get("node_marker", false):
+				anchor = Vector2(face.bounds.get_center().x, face.bounds.end.y)
+	_node_hint.set_gate(node, anchor, _player.position, _camera.zoom.x)
 
 func _sync_actor(emit_notifications: bool = true) -> void:
 	super._sync_actor(emit_notifications)
@@ -210,6 +239,7 @@ func _sync_veil() -> void:
 
 func _presentation_committed() -> void:
 	if not MapPresentation.owns(self): return
+	_view.set_node_presentations(session.get_view().nodes)
 	support.set_visibility(session.known, true)
 	_sync_actor(false)
 	_sync_veil()
@@ -259,10 +289,6 @@ func _update_minimap() -> void:
 	for point in corners: rectangle = rectangle.expand(_view.unproject_plane(point))
 	_mini.set_player(_render_actor_plane, rectangle)
 	if is_instance_valid(_menu_map): _menu_map.set_actor(_render_actor_plane)
-
-func _update_selection() -> void:
-	super._update_selection()
-	_target_marker.hide() # Ground marker cannot draw over a high wall.
 
 func _process(delta: float) -> void:
 	super._process(delta)

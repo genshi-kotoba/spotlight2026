@@ -42,9 +42,7 @@ func _ready() -> void:
 		load_map(_map_snapshot, _saved_entry_state)
 		if not session.pending.is_empty() and demo_interactions_enabled and _uses_demo_dialog(session.pending):
 			_dialog_request_id = str(session.pending.request_id)
-			_dialog.title = "已恢复待结算节点"
-			_dialog.dialog_text = "节点 %s 的请求已恢复，请完成或取消以继续探索。" % session.pending.node_id
-			_dialog.popup_centered(Vector2i(570, 255))
+			_configure_node_dialog(session.pending)
 	if not EncounterFlow.bind_map(self):
 		_show_toast(EncounterFlow.last_error)
 		return
@@ -225,6 +223,7 @@ func _show_fourth_floor_notice() -> void:
 	notice.title = "前三层已完成"
 	notice.dialog_text = "已击败第三层 BOSS。\n第四层暂未制作，本局进度已保留；这还不是全游戏通关。"
 	notice.ok_button_text = "留在地图"
+	CommonUiSkin.style_dialog(notice)
 	add_child(notice)
 	notice.popup_centered(Vector2i(660, 220))
 

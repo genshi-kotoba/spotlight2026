@@ -34,7 +34,7 @@ func _build() -> void:
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", CatalogUi.panel_style(Color(0.078, 0.065, 0.055, 0.92)))
+	panel.add_theme_stylebox_override("panel", CommonUiSkin.panel("event"))
 	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	panel.offset_left = 150; panel.offset_right = -150; panel.offset_top = 85; panel.offset_bottom = -85
 	add_child(panel)
@@ -99,6 +99,7 @@ func _refresh() -> void:
 
 func _button(label: String, callback: Callable) -> Button:
 	var button := Button.new()
+	CommonUiSkin.style_button(button)
 	button.text = label
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.custom_minimum_size.y = 68

@@ -27,7 +27,7 @@ static func open(run: Node, request: Dictionary) -> Error:
 	if not state(run, request).is_empty(): return OK
 	var before := capture(run)
 	if not run.inventory_state.has("events"): run.inventory_state.events = {}
-	run.inventory_state.events[key(request)] = {"index": RandomEventCatalog.index_for_node(str(run.main_seed), str(request.map_id), str(request.node_id)),
+	run.inventory_state.events[key(request)] = {"index": RandomEventCatalog.index_for_map_node(str(run.main_seed), str(request.map_id), request),
 		"stage": "choice", "plays": 0, "inputs": [], "offers": [], "result": "", "finished": false}
 	return commit(run, before)
 

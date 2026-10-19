@@ -5,6 +5,8 @@ var _opening := false
 var _opening_resolved := false
 var _opening_result: AcceptDialog
 var _reward_popup: LootPopup
+var _debug_victory_button: Button
+var _debug_victory_requested := false
 
 func _battle_environment_floor() -> int:
 	return BATTLE_ENVIRONMENT.floor_for_battle(_battle.player, _battle.map_id)
@@ -16,6 +18,38 @@ func _ready() -> void:
 		SceneTransition.call_deferred("change_scene_to_file", MENU_SCENE)
 		return
 	super._ready()
+	if EncounterFlow.debug_victory_enabled():
+		_debug_victory_button = Button.new()
+		_debug_victory_button.name = "DebugInstantVictory"
+		_debug_victory_button.text = "调试：立即胜利"
+		_debug_victory_button.tooltip_text = "仅调试预览：结束当前真实战斗，经正常奖励结算后返回地图并开放通路。"
+		_debug_victory_button.position = Vector2(148, 94)
+		_debug_victory_button.size = Vector2(232, 34)
+		_debug_victory_button.add_theme_font_size_override("font_size", 18)
+		CommonUiSkin.style_button(_debug_victory_button, Vector4.ZERO)
+		_debug_victory_button.pressed.connect(_on_debug_victory_pressed)
+		add_child(_debug_victory_button)
+		move_child(_debug_victory_button, pile_modal.get_index())
+		_refresh_debug_victory_button()
+
+func _refresh_debug_victory_button() -> void:
+	if not is_instance_valid(_debug_victory_button): return
+	_debug_victory_button.visible = EncounterFlow.debug_victory_enabled()
+	_debug_victory_button.disabled = _debug_victory_requested or _leaving or _opening \
+		or _busy or _animating or not EncounterFlow.can_debug_finish_battle(_battle)
+
+func _on_debug_victory_pressed() -> void:
+	if not is_inside_tree() or _debug_victory_requested or _leaving or _opening or _busy or _animating \
+		or not EncounterFlow.can_debug_finish_battle(_battle): return
+	# Settlement is synchronous. Latch before it emits battle_ended so another
+	# click or a queued UI callback cannot settle/reward the same battle twice.
+	_debug_victory_requested = true
+	_refresh_debug_victory_button()
+	var error := EncounterFlow.debug_finish_battle(_battle)
+	if error != OK and is_instance_valid(_battle) and _battle.active:
+		_debug_victory_requested = false
+		hint_label.text = "调试胜利未执行：%d，请等待当前战斗操作完成后重试。" % error
+	_refresh_debug_victory_button()
 
 func _start_test_battle() -> void:
 	var run := SaveGateway.current_run()
@@ -100,6 +134,7 @@ func _begin_opening() -> void:
 
 func _on_battle_ended(result: Dictionary) -> void:
 	super._on_battle_ended(result)
+	_refresh_debug_victory_button()
 	if _opening:
 		_opening_resolved = true
 		return
@@ -122,6 +157,7 @@ func _show_opening_result() -> void:
 	_opening_result.dialog_close_on_escape = false
 	_opening_result.confirmed.connect(_leave_after_resolution, CONNECT_DEFERRED)
 	_opening_result.canceled.connect(_leave_after_resolution, CONNECT_DEFERRED)
+	CommonUiSkin.style_dialog(_opening_result)
 	add_child(_opening_result)
 	_opening_result.popup_centered(Vector2i(640, 240))
 
@@ -159,6 +195,7 @@ func _map_snapshot_data() -> Dictionary:
 
 func _refresh_header() -> void:
 	super._refresh_header()
+	_refresh_debug_victory_button()
 	_relic_edit_button.hide()
 	_restart_button.hide()
 	if is_instance_valid(_reward_popup):

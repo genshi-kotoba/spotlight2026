@@ -1,6 +1,7 @@
 extends Node2D
 ## Retained 2D triangles preserve face/shadow/label painter order. Preparation
 ## uses private CPU arrays; meshes and CanvasItem commands are main-thread only.
+const NodeArt = preload("res://systems/map/relief_2d/node_art.gd")
 const Env005Material = preload("res://systems/map/relief_2d/env005_material.gd")
 const ArtShader = preload("res://systems/map/relief_2d/env005_canvas.gdshader")
 # Default-only material for hidden/prepared batches. Runtime cutaway replaces
@@ -18,6 +19,7 @@ var _dynamic_commands: Array = []
 var _dynamic_override := false
 var dynamic_triangles := 0
 var static_face_packets: Array = []
+var node_marker_only := false
 
 class Buffer extends RefCounted:
 	var atlas := false
@@ -158,19 +160,19 @@ static func prepare(source, next_faces: Array) -> Array:
 	var buffer := Buffer.new()
 	buffer.atlas=source.is_art_enabled()
 	var packets: Array = []
-	var has_wall := false
+	var has_receiver := false
 	for face: Dictionary in next_faces:
 		if source.is_exploration_fog_enabled() and not face.known:
 			packets.append([]);continue
 		var packet: Array = _static_face_packet(source,face)
 		packets.append(packet)
-		has_wall = has_wall or source._is_cutaway_wall(face)
+		has_receiver = has_receiver or source._is_actor_shadow_receiver(face)
 		buffer.append_commands(packet)
 	buffer.flush_mesh()
 	# Keep immutable packet references, without the cache signatures. Otherwise
 	# a first actor shadow after FloorRenderData trims its temporary cache would
 	# regenerate all unchanged faces in this group on the movement frame.
-	if has_wall and not buffer.commands.is_empty(): buffer.commands[0]["face_packets"]=packets
+	if has_receiver and not buffer.commands.is_empty(): buffer.commands[0]["face_packets"]=packets
 	return buffer.commands
 
 static func _static_face_packet(source, face: Dictionary) -> Array:
@@ -244,6 +246,13 @@ static func _prepare_uncached(source, next_faces: Array) -> Array:
 		# its packet here, shared by static and moving-shadow preparation.
 		if _is_buried_wall_cap(source,face):
 			continue
+		if face.get("node_marker", false):
+			buffer.flush_mesh()
+			var visual: Dictionary = face.get("node_display", {"label":"?", "texture":"", "completed":false})
+			var tint := Color(.93, .85, .73)
+			if visual.get("completed", false) and face.node_type in ["battle", "elite", "boss", "chest"]: tint.a = .42
+			buffer.commands.append({"node_marker":true, "rect":face.bounds, "visual":visual, "tint":tint, "contact":face.get("node_contact", PackedVector2Array())})
+			continue
 		buffer.begin_face(source, face)
 		var polygon: PackedVector2Array = face.polygon
 		var factor := float(face.get("solar_factor",1.0))
@@ -311,18 +320,21 @@ func apply_prepared(next_faces: Array, prepared: Array) -> void:
 	var start := Time.get_ticks_usec()
 	clear_dynamic_prepared()
 	faces = next_faces
+	node_marker_only = not faces.is_empty() and faces.all(func(face): return face.get("node_marker", false))
 	static_face_packets=prepared[0].get("face_packets",[]) if not prepared.is_empty() else []
 	commands.clear();triangles=0
 	_atlas_texture=null;material=null
 	texture_filter=CanvasItem.TEXTURE_FILTER_PARENT_NODE
 	var built := _mesh_commands(prepared)
 	commands=built.commands;triangles=built.triangles
-	if built.atlas:
+	if built.atlas and not node_marker_only:
 		_atlas_texture=Env005Material.atlas_texture()
 		if _default_art_material==null:
 			_default_art_material=ShaderMaterial.new()
 			_default_art_material.shader=ArtShader
 		material=_default_art_material
+		texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	if next_faces.any(func(face): return face.get("node_marker", false)):
 		texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	build_usec=Time.get_ticks_usec()-start
 	queue_redraw()
@@ -355,7 +367,7 @@ func set_dynamic_prepared(prepared: Array) -> void:
 	var built := _mesh_commands(prepared)
 	_dynamic_commands=built.commands;dynamic_triangles=built.triangles
 	_dynamic_override=true
-	# A wall override has the current group's same art mode/material. Keep
+	# A surface override has the current group's same art mode/material. Keep
 	# shared cutaway uniforms, texture filtering and original draw order intact.
 	if built.atlas and _atlas_texture==null: _atlas_texture=Env005Material.atlas_texture()
 	queue_redraw()
@@ -379,7 +391,39 @@ func _draw() -> void:
 	var active: Array = _dynamic_commands if _dynamic_override else commands
 	for command in active:
 		if command.has("mesh"): draw_mesh(command.mesh,_atlas_texture)
+		elif command.has("node_marker"): _draw_node_marker(command)
 		else:
 			var font := ThemeDB.fallback_font
 			var size := font.get_string_size(command.label,HORIZONTAL_ALIGNMENT_LEFT,-1,13)
 			draw_string(font,command.point+Vector2(-size.x*.5,4),command.label,HORIZONTAL_ALIGNMENT_LEFT,-1,13,command.get("color",Color(.2235,.2549,.2392,command.alpha)))
+
+
+func _draw_node_marker(command: Dictionary) -> void:
+	var rect: Rect2 = command.rect
+	var visual: Dictionary = command.visual
+	var tex: Texture2D = NodeArt.texture(str(visual.get("texture", "")))
+	var tint: Color = command.tint
+	var contact: PackedVector2Array = command.get("contact", PackedVector2Array())
+	if visual.get("type", "") != "event" and float(visual.get("body_radius", 0.0)) > 0 and contact.size() >= 3:
+		# The contact patch uses the same planar radius as Session collision.
+		# It grounds the drawing without turning transparent PNG corners solid.
+		draw_colored_polygon(contact, Color(.10, .08, .055, .32))
+		var rim := contact.duplicate(); rim.append(contact[0])
+		draw_polyline(rim, Color(.53, .43, .28, .42), .8, true)
+	if tex != null:
+		var target: Rect2 = NodeArt.target_rect(rect, tex.get_size())
+		draw_texture_rect(tex, target, false, tint)
+	else:
+		var font: Font = NodeArt.font()
+		var layout := NodeArt.label_layout(str(visual.get("label", "?")), rect)
+		for line: Dictionary in layout:
+			draw_string_outline(font,line.point,line.text,HORIZONTAL_ALIGNMENT_LEFT,-1,line.size,2,Color(.10,.075,.055,.92))
+			draw_string(font,line.point,line.text,HORIZONTAL_ALIGNMENT_LEFT,-1,line.size,Color(1.0,.88,.62))
+		# A thin contact edge belongs to the upright paper marker. It is not
+		# a cast shadow or a circular floor stamp, and matches its solid width.
+		if not visual.get("body_capsule", {}).is_empty():
+			draw_line(Vector2(rect.position.x,rect.end.y),rect.end,Color(.61,.47,.28,.8),1.0,true)
+	if visual.get("gate_closed", false):
+		var foot := Vector2(rect.get_center().x, rect.end.y-2.0)
+		draw_line(foot+Vector2(-14,0),foot+Vector2(14,0),Color(.96,.61,.27,.95),2.0,true)
+		for x in [-8.0,0.0,8.0]: draw_line(foot+Vector2(x,-3),foot+Vector2(x,3),Color(.96,.61,.27,.95),1.6,true)

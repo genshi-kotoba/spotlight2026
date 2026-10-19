@@ -212,6 +212,10 @@ var _display_cards: Array[Dictionary] = []
 
 
 func _ready() -> void:
+	$背包底板.add_theme_stylebox_override("panel", CommonUiSkin.panel("strip"))
+	$出牌计数底板.add_theme_stylebox_override("panel", CommonUiSkin.panel("tiny"))
+	$PileModal/Window.add_theme_stylebox_override("panel", CommonUiSkin.panel("panel", Vector4(24, 20, 24, 20)))
+	CommonUiSkin.style_button($PileModal/Window/Column/Header/ClosePileButton, Vector4(8, 4, 8, 4))
 	pile_modal.z_index = 300
 	draw_button.pressed.connect(_on_draw_pile_pressed)
 	discard_button.pressed.connect(_on_discard_pile_pressed)
@@ -2176,15 +2180,7 @@ func _show_enchantment_hover(slot: Control, card: Dictionary) -> void:
 		_enchantment_hover.name = "EnchantmentHover"
 		_enchantment_hover.z_index = 2000
 		_enchantment_hover.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color("211b16")
-		style.border_color = Color("cba24d")
-		style.set_border_width_all(2)
-		style.set_corner_radius_all(8)
-		style.content_margin_left = 16
-		style.content_margin_right = 16
-		style.content_margin_top = 12
-		style.content_margin_bottom = 12
+		var style := CommonUiSkin.panel("tooltip", Vector4(16, 12, 16, 12))
 		_enchantment_hover.add_theme_stylebox_override("panel", style)
 		var label := Label.new()
 		label.custom_minimum_size.x = 420
@@ -2374,6 +2370,7 @@ func _refresh_damage_preview() -> void:
 
 func _build_battle_actions() -> void:
 	_manual_discard_button = Button.new()
+	CommonUiSkin.style_button(_manual_discard_button, Vector4(8, 4, 8, 4))
 	_manual_discard_button.name = "ManualDiscard"
 	_manual_discard_button.position = Vector2(24, 430)
 	_manual_discard_button.size = Vector2(240, 48)
@@ -2417,6 +2414,7 @@ func _refresh_enemy_selector() -> void:
 	for enemy: Dictionary in _battle.enemies:
 		if int(enemy.health) <= 0 or _battle.enemies.size() < 2: continue
 		var button := Button.new()
+		CommonUiSkin.style_button(button, Vector4(8, 6, 8, 6))
 		button.custom_minimum_size = Vector2(185, 115)
 		button.icon = TextCatalogService.art_texture(str(enemy.get("art_path", "")))
 		button.expand_icon = true
@@ -2429,6 +2427,7 @@ func _refresh_enemy_selector() -> void:
 		for item: Dictionary in _battle.player.get("potions", []):
 			if str(item.item_id) in _battle.player.get("used_potions", []): continue
 			var button := Button.new()
+			CommonUiSkin.style_button(button, Vector4(8, 6, 8, 6))
 			button.text = "使用药水\n" + str(RunRandomEvents.POTIONS[int(item.potion)])
 			button.custom_minimum_size = Vector2(180, 90)
 			button.pressed.connect(_use_potion.bind(str(item.item_id)), CONNECT_DEFERRED)
@@ -2456,6 +2455,7 @@ func _show_battle_choice(mode: String, _count: int, candidates: Array) -> void:
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.add_child(shade)
 	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", CommonUiSkin.panel("panel", Vector4(24, 20, 24, 20)))
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	panel.offset_left = -520; panel.offset_right = 520; panel.offset_top = -330; panel.offset_bottom = 330
 	root.add_child(panel)
@@ -2475,6 +2475,7 @@ func _show_battle_choice(mode: String, _count: int, candidates: Array) -> void:
 	for card: Dictionary in candidates:
 		var data := _card_data(str(card.card_id))
 		var button := Button.new()
+		CommonUiSkin.style_button(button)
 		button.text = "%s · %s" % [data.card_name if data != null else str(card.card_id), data.description if data != null else "暂无"]
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.custom_minimum_size.y = 60

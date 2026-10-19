@@ -32,15 +32,7 @@ func _ready() -> void:
 	panel.offset_right = 620
 	panel.offset_top = -380
 	panel.offset_bottom = 380
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("211b16")
-	style.border_color = Color("cba24d")
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(12)
-	style.content_margin_left = 36
-	style.content_margin_right = 36
-	style.content_margin_top = 28
-	style.content_margin_bottom = 28
+	var style := CommonUiSkin.panel("panel", Vector4(36, 28, 36, 28))
 	panel.add_theme_stylebox_override("panel", style)
 	_root.add_child(panel)
 	_body = VBoxContainer.new()
@@ -232,6 +224,7 @@ func _label(value: String, font_size: int) -> Label:
 
 func _button(value: String) -> Button:
 	var button := Button.new()
+	CommonUiSkin.style_button(button)
 	button.text = value
 	button.custom_minimum_size = Vector2(220, 60)
 	button.add_theme_font_size_override("font_size", 22)

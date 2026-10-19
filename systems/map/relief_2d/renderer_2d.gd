@@ -1,5 +1,7 @@
 extends Node2D
 
+const NodeArt = preload("res://systems/map/relief_2d/node_art.gd")
+var _node_presentations: Dictionary = {}
 const RockScatter = preload("res://systems/map/relief_2d/rock_scatter.gd")
 var _rock_layout: Dictionary = {}
 ## Fixed-camera, planar Node2D prototype. Basis/Vector3 are projection math only.
@@ -358,7 +360,7 @@ func set_exploration_fog_visual_mode(mode: String) -> bool:
 func get_exploration_visibility_polygons() -> Array[PackedVector2Array]:
 	var polygons: Array[PackedVector2Array] = []
 	for face: Dictionary in _sorted_faces:
-		if face.has("rock"): continue
+		if face.has("rock") or face.get("node_marker", false): continue
 		if not face.known: continue
 		polygons.append_array(_fog_surface_regions(face,face.polygon))
 	return polygons
@@ -706,7 +708,30 @@ func _update_completed(completed: Dictionary, refresh_actor: bool = true) -> voi
 	if refresh_actor: _refresh_actor()
 
 
+func set_node_presentations(nodes: Array) -> void:
+	# Live event state never changes height geometry or discovery cache identity.
+	_node_presentations.clear()
+	for node: Dictionary in nodes:
+		if node.get("known", false): _node_presentations[node.id] = node
+	var dirty: Dictionary = {}
+	for face: Dictionary in _faces:
+		if not face.get("node_marker", false): continue
+		var before: Dictionary = face.get("node_display", {})
+		_style_node_face(face)
+		if before != face.node_display:
+			for batch in _node_batches.get(face.node_id, []): dirty[batch] = true
+	for batch in dirty: batch.build(self, batch.faces)
+	# A presentation change can add/remove an opaque PNG without moving the
+	# actor. Refresh its clipping at the normal dynamic flush, not terrain warmup.
+	if not dirty.is_empty(): _dynamic_dirty = true
+
+
 func _style_node_face(face: Dictionary) -> void:
+	if face.get("node_marker", false):
+		var node: Dictionary = _node_presentations.get(face.node_id, {"type":face.node_type})
+		face.node_display = NodeArt.describe(node)
+		face.node_display["gate_closed"] = bool(face.get("node_gate", false)) and not _completed.has(face.node_id)
+		return
 	var color: Color = face.node_color
 	if _completed.has(face.node_id): color = color.lerp(GROUND, .7)
 	face.color = GROUND.lerp(color, .66)
@@ -797,6 +822,10 @@ func get_report() -> Dictionary:
 	result["static_render_backend"] = "vector_mesh"
 	result["uses_raster_fallback"] = false
 	result["static_mesh_batches"] = _vector_batches.size()
+	var node_body_count := 0
+	for node: Dictionary in _node_presentations.values():
+		if float(node.get("body_radius", 0.0)) > 0.0 or not node.get("body_capsule", {}).is_empty(): node_body_count += 1
+	result["node_body_count"] = node_body_count
 	result["static_mesh_refresh_count"] = _mesh_refresh_count
 	result["static_mesh_refresh_ms"] = _mesh_refresh_usec / 1000.0
 	result["material_update_count"] = _material_update_count
@@ -866,6 +895,11 @@ func _refresh_wall_cutaway() -> void:
 	_wall_cutaway.refresh(self)
 	# Current presentation only. Cached/warming presentations are rebound when published.
 	for batch in _vector_batches:
+		# Sprite/contact drawing has no terrain CUSTOM0/CUSTOM1 vertex channels.
+		# Its tint is already prepared, and it must not inherit wall cutaway.
+		if batch.node_marker_only:
+			batch.material = null
+			continue
 		if batch.material != _wall_cutaway.material: batch.material = _wall_cutaway.material
 
 func _refresh_actor_cutaway_restore() -> void:
@@ -1342,6 +1376,9 @@ func _face_indices(rect: Rect2) -> Array:
 
 
 func _make_node(node: Dictionary) -> void:
+	if int(_source_snapshot.get("floor_index", 0)) == 1:
+		_make_node_marker(node)
+		return
 	# These are traversable node floor stamps, not physical props. A future art
 	# adapter must declare physical footprints in the shared planar model.
 	var id := str(node.id)
@@ -1379,6 +1416,54 @@ func _make_node(node: Dictionary) -> void:
 			face.label_base = {"shop": "$", "event": "?", "battle": "B", "elite": "E", "boss": "BOSS"}.get(kind, "?")
 			face.label_point = project_plane(plane, height + 0.006)
 		_style_node_face(face)
+
+
+func _make_node_marker(node: Dictionary) -> void:
+	var anchor := _pair(node.coord)
+	var key := _key(anchor)
+	# A closed gate can be discovered at its entrance before its center.
+	# Match Session._node_visible without revealing the remaining footprint.
+	if not bool(_known.get(key, false)) and bool(node.get("is_route_gate", false)):
+		var nearest := INF
+		for point in node.footprint:
+			var candidate := _pair(point)
+			var candidate_key := _key(candidate)
+			if not _cells.has(candidate_key) or not bool(_known.get(candidate_key, false)): continue
+			var distance := hex_plane(candidate).distance_squared_to(hex_plane(_pair(node.coord)))
+			if distance < nearest:
+				nearest = distance
+				anchor = candidate
+				key = candidate_key
+	if not _cells.has(key) or not bool(_known.get(key, false)): return
+	var plane := hex_plane(anchor)
+	var height := _cell_height(key) + 0.006
+	var width := _radius * (1.85 if node.type == "boss" else 1.45)
+	var capsule: Dictionary = node.get("body_capsule", {})
+	var body_radius := float(node.get("body_radius", 0.0))
+	if not capsule.is_empty():
+		width = 2.0 * (float(capsule.half_length) + float(capsule.radius))
+	# A sprite's lowest painted pixel represents its front ground contact,
+	# not the centre of its footprint. Keep physics at the declared centre.
+	var front := Vector2(_basis.z.x, _basis.z.z).normalized()
+	var front_extent := float(capsule.get("radius", body_radius))
+	var art_plane := plane + front * front_extent
+	var rise := (maxf(width, 1.20) if node.type == "event" else width) / _basis.y.y
+	# Upright pre-painted sprite: retain the authored perspective. This quad
+	# participates in terrain painter order, but adds no collision or FOV area.
+	var right := Vector2(_basis.x.x, _basis.x.z).normalized() * width * .5
+	var face := _add_face(PackedVector2Array([art_plane-right,art_plane+right,art_plane+right,art_plane-right]), PackedFloat32Array([height,height,height+rise,height+rise]), Color.WHITE, "node_marker", "node:"+str(node.id), key, true, art_plane, height, false)
+	face.node_id = str(node.id)
+	face.node_type = str(node.type)
+	face.node_gate = bool(node.get("is_route_gate", false))
+	face.node_marker = true
+	face.node_base = project_plane(art_plane, height)
+	var contact := PackedVector2Array()
+	if node.type != "event":
+		for i in 24:
+			contact.append(project_plane(plane + Vector2.from_angle(TAU * i / 24.0) * body_radius, height))
+	face.node_contact = contact
+	face.draw_edges = false
+	_style_node_face(face)
 
 
 func _make_scene_envelope(base_height: float) -> void:
@@ -1719,7 +1804,7 @@ func _refresh_actor() -> void:
 	if is_sun_enabled():
 		for shadow: Dictionary in _solar.project_actor_shadow(_actor_plane, _actor_height, ACTOR_HEIGHT, Profile.FOOT_RADIUS, _faces):
 			var receiver: Dictionary = _faces[int(shadow.face_index)]
-			if receiver.has("rock") and not is_art_enabled(): continue
+			if receiver.get("node_marker", false) or (receiver.has("rock") and not is_art_enabled()): continue
 			for visible in _visible_surface_regions(shadow.polygon, receiver):
 				_actor_solar_shadows.append({"polygon": visible, "factor": float(receiver.get("solar_factor", 1.0)), "receiver":receiver, "face_index":int(shadow.face_index)})
 	var feet := project_plane(_actor_plane, _actor_height)
@@ -1730,6 +1815,7 @@ func _refresh_actor() -> void:
 	_actor_aperture = silhouette.merge(shadow).grow(1.0)
 	_actor_shape = _rect_polygon(_actor_aperture)
 	var actor_coefficient := _upright_depth_coefficient(_actor_plane, _actor_height)
+	var node_masks: Array[Dictionary] = []
 	var blockers: Dictionary = {}
 	var body_samples: Array[Dictionary] = []
 	for fraction in [0.08, 0.50, 0.98]:
@@ -1741,21 +1827,37 @@ func _refresh_actor() -> void:
 	for index in _face_indices(_actor_aperture):
 		var face: Dictionary = _sorted_faces[index]
 		if is_exploration_fog_enabled() and not face.known: continue
-		# Cosmetic fragments never punch an opaque sprite rectangle into the actor.
 		if face.has("rock"): continue
 		if not face.bounds.intersects(_actor_aperture):
 			continue
-		for surface in _fog_surface_regions(face,face.polygon):
-			var foreground := _clip_depth(surface, face.coefficient, actor_coefficient)
+		var coefficient: Vector3 = face.coefficient
+		var surfaces: Array[PackedVector2Array] = []
+		var node_marker: bool = face.get("node_marker", false)
+		if node_marker:
+			# Markers use their actual foot plane, with only cached opaque image
+			# pixels as blockers. Text, the contact circle and PNG corners stay open.
+			coefficient = _upright_depth_coefficient(face.support, face.support_height)
+			# Both upright planes share XY coefficients, so their depth difference
+			# is constant across the PNG. Classify the whole node once.
+			if coefficient.z - actor_coefficient.z < DEPTH_EPSILON: continue
+			surfaces = _node_actor_surfaces(face)
+			if not surfaces.is_empty(): node_masks.append(face)
+		else:
+			surfaces = _fog_surface_regions(face,face.polygon)
+		for surface in surfaces:
+			# Node rectangles are already clipped to the aperture and classified
+			# as a whole upright plane; avoid clipping every strip a second time.
+			var foreground := surface if node_marker else _clip_depth(surface, coefficient, actor_coefficient)
 			if foreground.size() < 3 or absf(_signed_area(foreground)) < 0.1:
 				continue
 			# Convex rectangular clipping is enough; avoid polygon-with-hole output.
-			foreground = _clip_to_rect(foreground, _actor_aperture)
+			if not node_marker: foreground = _clip_to_rect(foreground, _actor_aperture)
 			var area := absf(_signed_area(foreground))
 			if area < 0.20:
 				continue
 			var item := face.duplicate(false)
 			item["foreground"] = foreground
+			item["foreground_bounds"] = _polygon_bounds(foreground)
 			item["cutaway"] = false
 			_front_faces.append(item)
 			var id := String(face.id)
@@ -1769,8 +1871,12 @@ func _refresh_actor() -> void:
 					sample.blockers.append(id)
 	_visible_actor_regions.append(_actor_shape)
 	for face in _front_faces:
+		if face.get("node_marker", false): continue
 		var remaining: Array[PackedVector2Array] = []
 		for region in _visible_actor_regions:
+			if not _polygon_bounds(region).intersects(face.foreground_bounds):
+				remaining.append(region)
+				continue
 			var hidden := _intersect_convex(region, face.foreground)
 			if hidden.size() >= 3 and absf(_signed_area(hidden)) >= 0.0001:
 				_hidden_actor_regions.append(hidden)
@@ -1781,11 +1887,22 @@ func _refresh_actor() -> void:
 	# retain their true occlusion even inside the local display aperture.
 	_wall_restore_regions.assign(_hidden_actor_regions)
 	for face in _front_faces:
+		if face.get("node_marker", false): continue
 		if _is_cutaway_wall(face): continue
 		var remaining: Array[PackedVector2Array] = []
-		for region in _wall_restore_regions: remaining.append_array(_subtract_convex(region, face.foreground))
+		for region in _wall_restore_regions:
+			if _polygon_bounds(region).intersects(face.foreground_bounds): remaining.append_array(_subtract_convex(region, face.foreground))
+			else: remaining.append(region)
 		_wall_restore_regions = remaining
 		if remaining.is_empty(): break
+	# Terrain is settled before PNG masks. Intersect with the cached disjoint
+	# alpha partition once per node instead of repeatedly subtracting opaque
+	# strips from an ever-growing set of actor and restore fragments.
+	var node_clip_start := Time.get_ticks_usec()
+	for face in node_masks:
+		_visible_actor_regions = _node_transparent_regions(_visible_actor_regions, face, true)
+		_wall_restore_regions = _node_transparent_regions(_wall_restore_regions, face, false)
+	var node_clip_ms := (Time.get_ticks_usec() - node_clip_start) / 1000.0
 	_report = {
 		"renderer": "pure Node2D convex-face painter with affine foreground clipping",
 		"projection": "orthographic", "pitch_degrees": PITCH_DEGREES, "yaw_degrees": YAW_DEGREES,
@@ -1803,10 +1920,10 @@ func _refresh_actor() -> void:
 		"static_ordering_fallbacks": _ordering_cycles, "front_face_count": _front_faces.size(),
 		"static_ambiguous_overlap_pairs": _ambiguous_overlap_pairs,
 		"front_occluders": blockers.values(), "body_samples": body_samples,
+		"node_actor_clip": {"nodes": node_masks.size(), "build_ms": node_clip_ms, "method": "cached 64px opaque/transparent partition; one target split per input region"},
 		"cutaway_enabled": is_wall_cutaway_enabled(),
 		"cutaway_method": "local wall alpha with known reachable ground targets; geometry clipping unchanged",
 		"duplicate_cell_keys": _duplicate_cells.duplicate(), "skipped_nodes": _skipped_nodes.duplicate(),
-		"node_centers_remain_open": true,
 		"limits": ["Scoped convex extruded hex/footprint geometry, not general intersecting art", "Static painter cycles use a reported deterministic fallback", "No general pixel-perfect sprite alpha/depth reconstruction", "Movement/collision/fog discovery are controller responsibilities"]
 	}
 	_refresh_wall_shadow_overrides()
@@ -1815,6 +1932,62 @@ func _refresh_actor() -> void:
 	_refresh_actor_occlusion_hint()
 	_refresh_actor_cutaway_restore()
 	queue_redraw()
+
+
+func _node_actor_surfaces(face: Dictionary) -> Array[PackedVector2Array]:
+	var result: Array[PackedVector2Array] = []
+	# Only published, known, sanitized presentations can block the actor. This
+	# does not add marker rectangles to any fog or surface-visibility authority.
+	if not face.get("known", false) or not _node_presentations.has(face.node_id): return result
+	var visual: Dictionary = face.get("node_display", {})
+	if not NodeArt.is_actor_occluder(visual): return result
+	var path: String = str(visual.get("texture", ""))
+	var bounds: Rect2 = face.bounds
+	if face.get("actor_alpha_path", "") != path or face.get("actor_alpha_bounds", Rect2()) != bounds or not face.has("actor_alpha_transparent"):
+		var rectangles: Array[Rect2] = []
+		var transparent: Array[Rect2] = []
+		var texture: Texture2D = NodeArt.texture(path)
+		var target := Rect2()
+		if texture != null:
+			target = NodeArt.target_rect(bounds, texture.get_size())
+			for rect: Rect2 in NodeArt.opaque_rects(path):
+				rectangles.append(Rect2(target.position + rect.position * target.size, rect.size * target.size))
+			for rect: Rect2 in NodeArt.transparent_rects(path):
+				transparent.append(Rect2(target.position + rect.position * target.size, rect.size * target.size))
+		face.actor_alpha_path = path
+		face.actor_alpha_bounds = bounds
+		face.actor_alpha_rects = rectangles
+		face.actor_alpha_transparent = transparent
+		face.actor_alpha_target = target
+	# World-space rectangles are cached with the static marker; per frame only
+	# rectangles intersecting the actor become convex clipping pieces.
+	for rect: Rect2 in face.get("actor_alpha_rects", []):
+		if rect.intersects(_actor_aperture): result.append(_rect_polygon(rect.intersection(_actor_aperture)))
+	return result
+
+
+func _node_transparent_regions(regions: Array[PackedVector2Array], face: Dictionary, collect_hidden: bool) -> Array[PackedVector2Array]:
+	var result: Array[PackedVector2Array] = []
+	var target: Rect2 = face.actor_alpha_target
+	var target_polygon := _rect_polygon(target)
+	for region in regions:
+		var bounds := _polygon_bounds(region)
+		if not bounds.intersects(target):
+			result.append(region)
+			continue
+		# The aspect-fitted image can leave open space inside marker.bounds.
+		# Split only its actual draw target, retaining all four outside sides.
+		result.append_array(_subtract_convex(region, target_polygon))
+		for rect: Rect2 in face.actor_alpha_transparent:
+			if not bounds.intersects(rect): continue
+			var visible := _clip_to_rect(region, rect)
+			if visible.size() >= 3 and absf(_signed_area(visible)) > 0.0001: result.append(visible)
+		if not collect_hidden: continue
+		for rect: Rect2 in face.actor_alpha_rects:
+			if not bounds.intersects(rect): continue
+			var hidden := _clip_to_rect(region, rect)
+			if hidden.size() >= 3 and absf(_signed_area(hidden)) > 0.0001: _hidden_actor_regions.append(hidden)
+	return result
 
 
 func _refresh_actor_occlusion_hint() -> void:
@@ -1870,15 +2043,20 @@ func _index_wall_shadow_batches() -> void:
 	for batch in _vector_batches: batch.clear_dynamic_prepared()
 	_wall_shadow_batches=_build_wall_shadow_batch_index(self,_vector_batches)
 
+func _is_actor_shadow_receiver(face: Dictionary) -> bool:
+	# A PNG billboard is not an opaque surface. Ground and scenery receive
+	# moving shadows in their own painter slot, just as walls already do.
+	return bool(face.get("known", false)) and not face.get("node_marker", false)
+
 func _build_wall_shadow_batch_index(source, batches: Array) -> Dictionary:
 	var bindings: Dictionary = {}
 	# Face ids repeat across wall height bands. Solar's original face index is
 	# unique only within this presentation and its matching batch collection.
 	for index in source._faces.size():
-		if source._is_cutaway_wall(source._faces[index]): source._faces[index]["_wall_shadow_index"]=index
+		if source._is_actor_shadow_receiver(source._faces[index]): source._faces[index]["_wall_shadow_index"]=index
 	for batch in batches:
 		for face: Dictionary in batch.faces:
-			if source._is_cutaway_wall(face): bindings[int(face._wall_shadow_index)]=batch
+			if source._is_actor_shadow_receiver(face): bindings[int(face._wall_shadow_index)]=batch
 	return bindings
 
 func _refresh_wall_shadow_overrides() -> void:
@@ -1887,7 +2065,7 @@ func _refresh_wall_shadow_overrides() -> void:
 	_wall_shadow_stats.updates+=1
 	var by_batch: Dictionary = {}
 	for shadow: Dictionary in _actor_solar_shadows:
-		if not _is_cutaway_wall(shadow.receiver): continue
+		if not _is_actor_shadow_receiver(shadow.receiver): continue
 		var index := int(shadow.face_index)
 		var batch = _wall_shadow_batches.get(index)
 		# A missing binding keeps the existing overlay path, rather than dropping
@@ -1918,9 +2096,9 @@ func _refresh_art_actor_shadow() -> void:
 	var buffer=VectorBatch.Buffer.new()
 	buffer.atlas=is_art_enabled()
 	for shadow: Dictionary in _actor_solar_shadows:
-		# Wall shadow already belongs to that surface's final-color packet.
-		# Nonwall ground/scenery retain the original dynamic overlay unchanged.
-		if _wall_shadow_applied.has(int(shadow.face_index)): continue
+		# All published terrain shadows belong to their original painter slot.
+		# This fallback is only for a temporarily unbound receiver, never a PNG.
+		if shadow.receiver.get("node_marker", false) or _wall_shadow_applied.has(int(shadow.face_index)): continue
 		buffer.begin_face(self,shadow.receiver)
 		var map: Dictionary = _art.mapping(shadow.receiver) if is_art_enabled() else {}
 		if not map.is_empty():
@@ -2045,7 +2223,7 @@ func _visible_surface_regions(polygon: PackedVector2Array, receiver: Dictionary)
 	for index in _face_indices(bounds):
 		var face: Dictionary = _sorted_faces[index]
 		if is_exploration_fog_enabled() and not face.known: continue
-		if face.has("rock") and not is_art_enabled(): continue
+		if face.get("node_marker", false) or (face.has("rock") and not is_art_enabled()): continue
 		if is_same(face, receiver) or not face.bounds.intersects(bounds, true): continue
 		var record: Dictionary = {}
 		var surfaces: Array[PackedVector2Array]

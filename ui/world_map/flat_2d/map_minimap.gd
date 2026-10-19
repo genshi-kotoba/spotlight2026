@@ -153,6 +153,8 @@ class StaticCanvas extends Control:
 				return Color("#d77872")
 			"elite":
 				return Color("#c987d2")
+			"chest":
+				return Color("#dfb970")
 			"shop":
 				return Color("#e5c36d")
 			"boss":

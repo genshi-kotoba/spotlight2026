@@ -102,7 +102,7 @@ func prepare_map(snapshot: Dictionary, run_id: String, monsters: Dictionary = {}
 				# 不提前抽取/保存货架，缓存候选卡图也覆盖未来开包和附魔选牌。
 				paths.append_array(card_art)
 			"event":
-				var index := RandomEventCatalog.index_for_node(SeedService.get_main_seed(), _map_id, str(node.id))
+				var index := RandomEventCatalog.index_for_map_node(SeedService.get_main_seed(), _map_id, node)
 				paths.append_array([RandomEventCatalog.SCENE, RandomEventCatalog.background(index), CARD_SCENE])
 			_:
 				# 当前事件/休息节点是地图内已有的弹窗，不存在额外独立场景。

@@ -104,6 +104,9 @@ func refresh() -> void:
 		tile.add_child(id_label)
 		var hit := Button.new()
 		hit.name = "OpenDetail"
+		hit.flat = true
+		for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
+			hit.add_theme_stylebox_override(state, StyleBoxEmpty.new())
 		hit.custom_minimum_size = Vector2(264, 429)
 		hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		hit.tooltip_text = "查看详情"
@@ -157,7 +160,7 @@ func _build_detail() -> void:
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var panel := PanelContainer.new()
 	panel.name = "Panel"
-	var style := CatalogUi.panel_style()
+	var style := CommonUiSkin.panel("panel")
 	style.content_margin_left = 24
 	style.content_margin_right = 24
 	style.content_margin_top = 24
