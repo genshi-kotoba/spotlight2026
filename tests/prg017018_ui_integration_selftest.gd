@@ -13,10 +13,8 @@ func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(fixture_root))
 	# 所有档案与典籍夹具使用独立目录，不修改玩家存档或默认牌组。
 	var gateway := get_node("/root/SaveGateway")
-	gateway.profile_path = fixture_root.path_join("profile.json")
-	gateway.slot_paths.assign([fixture_root.path_join("slot1.json"), fixture_root.path_join("slot2.json"), fixture_root.path_join("slot3.json")])
-	gateway._active_slot = 1
-	_check("独立测试档案加载", gateway._load_slot(1) == OK)
+	gateway.save_path = fixture_root.path_join("game.json")
+	_check("独立测试档案加载", gateway.load_current() == OK)
 	SeedService.begin_run("prg017018-ui-integration")
 	var battle: BattleTestScene = load("res://ui/battle/formal_card_test_scene.tscn").instantiate()
 	battle.relic_board_path = fixture_root.path_join("empty-relic.json")

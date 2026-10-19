@@ -2,14 +2,16 @@
   "seed": "4f83161b8668fbff07fd66135092c255",
   "floors": [
     {
-      "normal": 5,
-      "elite": 2,
-      "events": 12,
+      "normal": 3,
+      "elite": 0,
+      "events": 5,
       "cell_space": 3,
       "space_jitter": true,
       "layout_candidates": 2,
       "layout_profile": "compact",
-      "route_profile": "switchback"
+      "route_profile": "switchback",
+      "content_profile": "alchemy_floor1_pile",
+      "min_boss_content_nodes": 4
     },
     {
       "normal": 6,

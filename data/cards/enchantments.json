@@ -1,0 +1,178 @@
+{
+  "enchant_001": {
+    "number": 1,
+    "name": "弃牌入队",
+    "text": "这张牌被丢弃时，改为加入出牌队列最后方",
+    "type": "全部",
+    "symbol": "☉",
+    "price": 100
+  },
+  "repeat_2": {
+    "number": 2,
+    "name": "回响",
+    "text": "重复两次",
+    "type": "全部",
+    "symbol": "☽",
+    "price": 100
+  },
+  "damage_30": {
+    "number": 3,
+    "name": "锋锐",
+    "text": "伤害＋30%",
+    "type": "攻击",
+    "symbol": "♂",
+    "price": 100
+  },
+  "enchant_004": {
+    "number": 4,
+    "name": "轻灵",
+    "text": "不占牌位",
+    "type": "全部",
+    "symbol": "♀",
+    "price": 100
+  },
+  "enchant_005": {
+    "number": 5,
+    "name": "残响",
+    "text": "触发时，获得一张50%效果的一次性卡牌回到手牌",
+    "type": "全部",
+    "symbol": "♃",
+    "price": 100
+  },
+  "enchant_006": {
+    "number": 6,
+    "name": "血偿",
+    "text": "这张牌会对自己造成等额伤害，然后对敌人造成双倍伤害",
+    "type": "攻击",
+    "symbol": "♄",
+    "price": 100
+  },
+  "enchant_007": {
+    "number": 7,
+    "name": "弃牌冲击",
+    "text": "这张卡被丢弃时，对敌方全体造成5点伤害",
+    "type": "全部",
+    "symbol": "♅",
+    "price": 100
+  },
+  "enchant_008": {
+    "number": 8,
+    "name": "弃牌抽取",
+    "text": "这张卡被丢弃时，抽三张牌",
+    "type": "全部",
+    "symbol": "♆",
+    "price": 100
+  },
+  "enchant_009": {
+    "number": 9,
+    "name": "弃牌护盾",
+    "text": "这张卡被丢弃时，获得5点格挡值",
+    "type": "全部",
+    "symbol": "♇",
+    "price": 100
+  },
+  "enchant_010": {
+    "number": 10,
+    "name": "指针回响",
+    "text": "这张卡被丢弃时，指针下次移动时，所处的卡牌重复触发",
+    "type": "全部",
+    "symbol": "☿",
+    "price": 100
+  },
+  "enchant_011": {
+    "number": 11,
+    "name": "指针回溯",
+    "text": "这张卡被丢弃时，指针下次移动时，前移一位。如指针已经在第一张，则抽一张牌",
+    "type": "全部",
+    "symbol": "🝒",
+    "price": 100
+  },
+  "enchant_012": {
+    "number": 12,
+    "name": "奋勇",
+    "text": "这张卡被丢弃时，获得1层力量，为敌方全体附加1层易伤",
+    "type": "全部",
+    "symbol": "🝋",
+    "price": 100
+  },
+  "enchant_013": {
+    "number": 13,
+    "name": "破盾",
+    "text": "这张牌对敌方格挡值所造成的伤害翻倍",
+    "type": "攻击",
+    "symbol": "🝍",
+    "price": 100
+  },
+  "enchant_014": {
+    "number": 14,
+    "name": "伤害护盾",
+    "text": "获得这张牌造成伤害50%的格挡值",
+    "type": "攻击",
+    "symbol": "🜒",
+    "price": 100
+  },
+  "enchant_015": {
+    "number": 15,
+    "name": "汲取",
+    "text": "恢复这张牌造成伤害25%的生命值",
+    "type": "攻击",
+    "symbol": "🜊",
+    "price": 100
+  },
+  "enchant_016": {
+    "number": 16,
+    "name": "抽取",
+    "text": "触发时，抽一张牌",
+    "type": "全部",
+    "symbol": "🝎",
+    "price": 100
+  },
+  "enchant_017": {
+    "number": 17,
+    "name": "易伤",
+    "text": "造成伤害前，目标获得易伤",
+    "type": "攻击",
+    "symbol": "⚚",
+    "price": 100
+  },
+  "enchant_018": {
+    "number": 18,
+    "name": "淬毒",
+    "text": "造成伤害前，目标获得一层毒",
+    "type": "攻击",
+    "symbol": "⚕",
+    "price": 100
+  },
+  "enchant_019": {
+    "number": 19,
+    "name": "虚弱",
+    "text": "造成伤害后，目标获得虚弱",
+    "type": "攻击",
+    "symbol": "🝆",
+    "price": 100
+  },
+  "enchant_020": {
+    "number": 20,
+    "name": "弃牌增伤",
+    "text": "可以丢弃一张手牌，本次伤害+50%",
+    "type": "攻击",
+    "symbol": "🝊",
+    "price": 100
+  },
+  "enchant_021": {
+    "number": 21,
+    "name": "弃牌增盾",
+    "text": "可以丢弃一张手牌，本次格挡值+50%",
+    "type": "格挡，和存在格挡的攻击",
+    "symbol": "🝉",
+    "price": 100
+  },
+  "enchant_022": {
+    "number": 22,
+    "name": "斩杀恢复",
+    "text": "本张牌击杀时回复2点血量",
+    "type": "攻击",
+    "symbol": "🝪",
+    "price": 100
+  }
+}

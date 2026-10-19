@@ -102,6 +102,12 @@ func _click(button: Button) -> void:
 func _frames(count: int) -> void:
 	for i in count:
 		await get_tree().process_frame
+	# 抽牌/指针表现按真实时间播放；固定帧数不代表已经可以点击。
+	for child: Node in get_children():
+		if child is BattleTestScene:
+			var deadline := Time.get_ticks_msec() + 15000
+			while is_instance_valid(child) and child._animating and Time.get_ticks_msec() < deadline:
+				await get_tree().create_timer(0.01).timeout
 
 
 func _capture(name: String) -> void:

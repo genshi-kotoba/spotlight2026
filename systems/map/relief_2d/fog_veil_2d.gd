@@ -66,7 +66,7 @@ func sync(source, animate: bool = true) -> void:
  var vertices:=PackedVector2Array();var indices:=PackedInt32Array()
  var bounds:=Rect2();var have_bounds:=false;polygon_count=0
  for face: Dictionary in source._faces:
-  if not face.get("known",false) or face.has("rock"): continue
+  if not face.get("known",false) or face.has("rock") or face.get("node_marker",false): continue
   # Internal steps are visible known surfaces, not discovery holes. Keep
   # exterior/unknown-facing cliffs out so the deep slab still fades away.
   if face.get("category","")=="terrain_side" and not _known_step(source,face): continue

@@ -11,10 +11,8 @@ func _ready() -> void:
 func _run() -> void:
 	fixture_root = "res://.godot/ui-optimization-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(fixture_root)
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("1.json"), fixture_root.path_join("2.json"), fixture_root.path_join("3.json")])
-	SaveGateway._active_slot = 1
-	_check("独立档案加载", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture_root.path_join("game.json")
+	_check("独立档案加载", SaveGateway.load_current() == OK)
 	var config: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
 	config.run_id = "ui-optimization"
 	_check("正式新局", SaveGateway.start_new_run("ui-optimization", config) == OK)
@@ -88,6 +86,7 @@ func _run() -> void:
 	battle.relic_board_path = fixture_root.path_join("empty.json")
 	add_child(battle)
 	await _frames(5)
+	await preload("res://tests/support/presentation_test_helper.gd").battle_settled(battle)
 	menu = battle._run_menu
 	battle._open_run_menu(1)
 	await _settle()

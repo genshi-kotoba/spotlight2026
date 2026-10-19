@@ -4,10 +4,8 @@ var _config: Dictionary
 
 func _run() -> void:
 	fixture_root = "res://.godot/battle-rewards-%d" % Time.get_ticks_usec()
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("slot1.json"), fixture_root.path_join("slot2.json"), fixture_root.path_join("slot3.json")])
-	SaveGateway._active_slot = 1
-	_check("隔离玩家档案", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture_root.path_join("game.json")
+	_check("隔离玩家档案", SaveGateway.load_current() == OK)
 	DirAccess.make_dir_recursive_absolute(fixture_root)
 	EncounterFlow.relic_board_path = fixture_root.path_join("old-test-board.json")
 	var legacy_board := RelicBoard.new()
@@ -17,7 +15,18 @@ func _run() -> void:
 	_config.run_id = "rewards-test"
 	_check("无需旧解锁也能建立指定初始构筑", SaveGateway.start_new_run("rewards-fixed-seed", _config) == OK)
 	var run := SaveGateway.current_run()
-	_check("新局八张牌准确且没有继承测试残片", run.deck == ["1", "1", "1", "50", "50", "50", "40", "40"] and RunRewards.board_for_run(run).cells.count("") == 12 and run.items.is_empty() and run.gold == 0 and int(run.inventory_state.elixir) == 0)
+	_check("移除额外选项残片，不再显示于图鉴和奖励池", TextCatalog.entry("fragments", "FRG-021").is_empty() and "FRG-021" not in RelicCatalog.reward_ids())
+	var retired := RelicCatalog.resolve("FRG-021")
+	var legacy_id := "RF1/FRG-001/FRG-002/0/FRG-021"
+	var retired_composite := RelicCatalog.resolve(legacy_id)
+	_check("旧单体与组合残片可读但额外选项已失效", retired != null and retired.action_id.is_empty() and retired.amount == 0 and retired_composite != null and retired_composite.presence_action.is_empty())
+	var legacy_cursed := RelicCatalog.resolve("FRG-021~FRG-024")
+	_check("旧负面附着版本仍可恢复且不增加选项", legacy_cursed != null and legacy_cursed.action_id.is_empty() and legacy_cursed.negative_action == "loss_on_play")
+	var legacy_board_state := RelicBoard.new()
+	legacy_board_state.cells[0] = "FRG-021"
+	legacy_board_state.cells[1] = legacy_id
+	_check("含退役残片的旧棋盘仍可恢复", RelicBoard.new().restore(legacy_board_state.to_dictionary(), RelicCatalog.load_definitions()) == OK)
+	_check("新局八张牌准确且没有继承测试残片", run.deck == ["1", "1", "1", "50", "50", "50", "40", "40"] and RunRewards.board_for_run(run).cells.count("") == RelicBoard.CELL_COUNT and run.items.is_empty() and run.gold == 0 and int(run.inventory_state.elixir) == 0)
 	var view: Node = load(EncounterFlow.MAP_SCENE).instantiate()
 	get_tree().root.add_child(view)
 	get_tree().current_scene = view
@@ -58,20 +67,24 @@ func _run() -> void:
 	var bag: RunMenuOverlay = view._run_menu
 	_check("背包显示真实资源及21格空位，不注入额外物品", bag._resources.text.contains("100") and bag._item_grid.get_child_count() == 21 and run.items.size() == 2 and bag._relic_cells[0].text.is_empty())
 	var fragment_pack_id := _pack_id(run, "fragment_pack")
+	run.inventory_state.relic_board.cells[0] = "FRG-021"
 	await _click(bag._item_grid.get_child(0))
 	popup = bag._pack_popup
 	var first: Array = RunRewards.item(run, fragment_pack_id).options
 	_check("残片包恰为两个不同选项", first.size() == 2 and first[0] != first[1])
+	run.inventory_state.relic_board.cells[0] = ""
 	await _capture("fragment-pack.png")
 	await _click(popup._refresh_button)
 	var refreshed: Array = RunRewards.item(run, fragment_pack_id).options
 	_check("残片刷新整组选项替换且只限一次", refreshed.size() == 2 and refreshed[0] != refreshed[1] and refreshed[0] not in first and refreshed[1] not in first and RunRewards.refresh_pack(run, fragment_pack_id) == ERR_UNAVAILABLE)
 	await _click(popup._continue_button)
+	_check("悬置仍保留同一个选择与包", popup.is_suspended() and not RunRewards.item(run, fragment_pack_id).is_empty())
 	bag._on_item_pressed(fragment_pack_id)
 	await _frames(3)
 	popup = bag._pack_popup
-	_check("关包重开不重抽且刷新次数保留", RunRewards.item(run, fragment_pack_id).options == refreshed and popup._refresh_button.disabled)
-	await _click(popup._options.find_child("Choose_" + str(refreshed[0]), true, false))
+	_check("悬置不重抽且刷新次数保留", RunRewards.item(run, fragment_pack_id).options == refreshed and popup._refresh_button.disabled)
+	await _click(popup._continue_button)
+	await _click(popup._options.find_child(("Choose_" + str(refreshed[0])).validate_node_name(), true, false))
 	var fragment_item: Dictionary = RunRewards.item(run, fragment_pack_id + "/fragment")
 	_check("选中残片收入背包，包不可二次选择", fragment_item.get("fragment_id") == refreshed[0] and RunRewards.choose(run, fragment_pack_id, str(refreshed[0])) == ERR_DOES_NOT_EXIST)
 	bag._on_item_pressed(str(fragment_item.item_id))
@@ -80,11 +93,13 @@ func _run() -> void:
 	_check("卸下返回背包，不丢失残片", RunRewards.unequip_fragment(run, 0) == OK and RunRewards.board_for_run(run).cells[0].is_empty())
 	bag._refresh_data()
 	var common_id := _pack_id(run, "common_pack")
+	run.inventory_state.relic_board.cells[0] = legacy_id
 	bag._on_item_pressed(common_id)
 	await _frames(3)
 	popup = bag._pack_popup
 	var common_first: Array = RunRewards.item(run, common_id).options
 	_check("普通包三个不同普通卡", _unique(common_first, 3) and _rarity(common_first, "普通"))
+	run.inventory_state.relic_board.cells[0] = ""
 	await _capture("common-pack.png")
 	await _click(popup._refresh_button)
 	var common_new: Array = RunRewards.item(run, common_id).options
@@ -101,7 +116,7 @@ func _run() -> void:
 	await _frames(3)
 	popup = bag._pack_popup
 	_check("伪造包外选项不能领奖", RunRewards.choose(run, common_id, "not-an-option") == ERR_INVALID_PARAMETER)
-	await _click(popup._options.find_child("CardChoice_" + str(common_new[0]), true, false))
+	await _click(popup._options.find_child("Choose_" + str(common_new[0]), true, false))
 	_check("直接点击普通卡面仅加入一张到牌组", run.deck.size() == 9 and RunRewards.item(run, common_id).is_empty())
 	bag.close()
 	for grade: String in ["精英", "BOSS"]:
@@ -109,7 +124,7 @@ func _run() -> void:
 		view._show_pending_rewards()
 		await _frames(3)
 		popup = view._reward_popup
-		_check(grade + "奖励五项且有200银币与万灵药", RunRewards.pending(run).entries.size() == 5 and RunRewards.pending(run).entries[0].amount == 200)
+		_check(grade + "奖励六项且有200银币、万灵药与附魔书", RunRewards.pending(run).entries.size() == 6 and RunRewards.pending(run).entries[0].amount == 200 and RunRewards.pending(run).entries[5].kind == "enchantment_book")
 		await _capture("elite-rewards.png" if grade == "精英" else "boss-rewards.png")
 		for entry: Dictionary in RunRewards.pending(run).entries:
 			await _click(popup._options.get_node("Reward_" + str(entry.id)))
@@ -148,12 +163,18 @@ func _run() -> void:
 	_check("战斗中不能开包编辑构筑", RunRewards.open_pack(run, next_common) == ERR_BUSY)
 	var defeat := BattleEffectContext.new(battle_ui._battle, "player", battle_ui._resolver.buff_catalog)
 	defeat.damage_player(999, true)
-	await _frames(10)
-	_check("失败回主菜单不生成战利品", get_tree().current_scene.scene_file_path == MENU and not GlobalState.run_active)
+	var deadline := Time.get_ticks_msec() + 18000
+	while (not is_instance_valid(RunResults.view) or not RunResults.view.detail_ready) and Time.get_ticks_msec() < deadline:
+		await get_tree().process_frame
+	_check("失败先显示结算且不生成战利品", is_instance_valid(RunResults.view) and RunResults.view.detail_ready and not GlobalState.run_active and GlobalState.run_history.back().final_inventory.inventory_state.pending_rewards.is_empty())
+	if is_instance_valid(RunResults.view): RunResults.view.confirm_button.pressed.emit()
+	deadline = Time.get_ticks_msec() + 8000
+	while (is_instance_valid(RunResults.view) or SceneTransition.is_loading()) and Time.get_ticks_msec() < deadline: await get_tree().process_frame
+	_check("确认结算后回主菜单", get_tree().current_scene.scene_file_path == MENU)
 	_config.run_id = "rewards-second-run"
 	_check("下一次新局正常建立", SaveGateway.start_new_run("rewards-fixed-seed", _config) == OK)
 	run = SaveGateway.current_run()
-	_check("新局不继承上局银币万灵药卡包残片", run.gold == 0 and int(run.inventory_state.elixir) == 0 and run.items.is_empty() and RunRewards.board_for_run(run).cells.count("") == 12 and run.deck.size() == 8)
+	_check("新局不继承上局银币万灵药卡包残片", run.gold == 0 and int(run.inventory_state.elixir) == 0 and run.items.is_empty() and RunRewards.board_for_run(run).cells.count("") == RelicBoard.CELL_COUNT and run.deck.size() == 8)
 	var address := first_battle_key.split("/")
 	RunRewards.stage_victory(run, address[0], address[1], "普通", int(address[2]))
 	RunRewards.claim(run, "fragment_pack")
@@ -168,7 +189,7 @@ func _run() -> void:
 func _cold_continue() -> void:
 	get_tree().change_scene_to_file(MENU)
 	await _frames(4)
-	_check("隔离档案冷载入", SaveGateway._load_slot(1) == OK)
+	_check("隔离档案冷载入", SaveGateway.load_current() == OK)
 	get_tree().current_scene._on_continue_pressed()
 	await _frames(12)
 
@@ -176,6 +197,12 @@ func _click(button: Control) -> void:
 	if button == null:
 		_check("需要点击的控件存在", false)
 		return
+	var ancestor := button.get_parent()
+	while ancestor != null:
+		if ancestor is LootPopup:
+			await _settle_pack(ancestor)
+			break
+		ancestor = ancestor.get_parent()
 	var point := button.get_global_rect().get_center()
 	var motion := InputEventMouseMotion.new()
 	motion.position = point
@@ -190,6 +217,14 @@ func _click(button: Control) -> void:
 	click.pressed = false
 	get_viewport().push_input(click, true)
 	await _frames(5)
+
+func _settle_pack(popup: LootPopup) -> void:
+	var deadline := Time.get_ticks_msec() + 3000
+	while is_instance_valid(popup) and popup.is_selection_locked() and not popup.is_suspended() and not popup._choice_fan.is_settled():
+		if Time.get_ticks_msec() > deadline:
+			_check("开包动画按时完成", false)
+			return
+		await get_tree().create_timer(0.01).timeout
 
 func _pack_id(run: RunStateMachine, kind: String) -> String:
 	for value: Dictionary in run.items:

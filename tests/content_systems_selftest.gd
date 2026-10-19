@@ -14,7 +14,7 @@ func _check(label: String, value: bool) -> void:
 
 func _run() -> void:
 	SeedService.begin_run("content-systems-fixed-seed")
-	_check("正式残片33条、普通奖励26条、负面7条", TextCatalog.entries("fragments").size() == 33 and RelicCatalog.reward_ids().size() == 26 and RelicCatalog.negative_ids(RelicCatalog.load_definitions()).size() == 7)
+	_check("正式残片32条、普通奖励25条、负面7条", TextCatalog.entries("fragments").size() == 32 and RelicCatalog.reward_ids().size() == 25 and RelicCatalog.negative_ids(RelicCatalog.load_definitions()).size() == 7)
 	var board := RelicBoard.new()
 	_check("行、列、上下、全局范围", board.neighbors(5, RelicFragmentData.Reach.ROW) == [4, 6, 7] and board.neighbors(5, RelicFragmentData.Reach.COLUMN) == [1, 9] and board.neighbors(5, RelicFragmentData.Reach.VERTICAL) == [1, 9] and board.neighbors(5, RelicFragmentData.Reach.ALL).size() == 11)
 	_test_monsters()
@@ -194,7 +194,7 @@ func _test_relic_contracts() -> void:
 	_end_turn(battle)
 	_check("敌方回合格挡成功也能触发残片抽牌", setup.relics.activation_count >= 1 and battle.hand.size() == 10)
 	battle.free()
-	_check("玫瑰园增加选项数量", RelicCatalog.choice_bonus(["FRG-021"]) == 1)
+	_check("玫瑰园旧ID兼容但不再有效果或加入奖励池", RelicCatalog.resolve("FRG-021").action_id.is_empty() and "FRG-021" not in RelicCatalog.reward_ids())
 	setup = _setup("20", {0: "FRG-001", 1: "FRG-015"})
 	battle = setup.battle
 	battle.change_buff_layers(&"enemy", "20", "poison", 4)
@@ -280,10 +280,8 @@ func _request(index: int, run: Node, session: EventSession) -> Dictionary:
 func _test_events() -> void:
 	var root := "res://.godot/content-systems-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(root)
-	SaveGateway.profile_path = root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([root.path_join("1.json"), root.path_join("2.json"), root.path_join("3.json")])
-	SaveGateway._active_slot = 1
-	_check("隔离存档", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = root.path_join("game.json")
+	_check("隔离存档", SaveGateway.load_current() == OK)
 	var config: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
 	config.run_id = "content-test"
 	_check("事件测试新局", SaveGateway.start_new_run("event-seed", config) == OK)

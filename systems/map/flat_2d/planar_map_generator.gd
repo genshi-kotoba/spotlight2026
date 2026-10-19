@@ -5,6 +5,12 @@ const VERSION := "planar-walk-v1"
 const Hex = preload("res://systems/map/hex_coord.gd")
 const Domains = preload("res://systems/random/random_domains.gd")
 const SpaceRefiner = preload("res://systems/map/flat_2d/hex_space_refiner.gd")
+const AlchemyEvents = preload("res://systems/map/flat_2d/alchemy_event_catalog.gd")
+const NodeGeometry = preload("res://systems/map/flat_2d/node_geometry.gd")
+const _LEXICOGRAPHIC_DIRS: Array[Vector2i] = [
+	Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, -1),
+	Vector2i(0, 1), Vector2i(1, -1), Vector2i(1, 0),
+]
 const DEFAULT_CONFIG := {
 	"size": "small", "normal": 3, "elite": 1, "events": 8,
 	"min_boss_content_nodes": 4, "transition_count": 6,
@@ -13,6 +19,7 @@ const DEFAULT_CONFIG := {
 	"layout_candidates": 1,
 	"layout_profile": "legacy",
 	"route_profile": "legacy",
+	"content_profile": "legacy",
 }
 const MAX_ATTEMPTS := 8
 const EMBEDDING_TRIALS := 40
@@ -43,7 +50,15 @@ func normalize_config(input: Dictionary) -> Dictionary:
 		return _fail("layout_profile must be legacy or compact")
 	if c.route_profile not in ["legacy", "switchback"]:
 		return _fail("route_profile must be legacy or switchback")
-	if c.normal < 2 or c.normal > 8 or c.elite < 1 or c.elite > 5 or c.normal + c.elite < 4:
+	if c.content_profile not in ["legacy", "alchemy_floor1", "alchemy_floor1_pile"]:
+		return _fail("content_profile must be legacy, alchemy_floor1, or alchemy_floor1_pile")
+	if c.content_profile == "alchemy_floor1":
+		if c.normal != 3 or c.elite != 0 or c.events != 4 or c.min_boss_content_nodes != 4:
+			return _fail("alchemy_floor1 requires normal=3, elite=0, events=4, min_boss_content_nodes=4")
+	elif c.content_profile == "alchemy_floor1_pile":
+		if c.normal != 3 or c.elite != 0 or c.events != 5 or c.min_boss_content_nodes != 4:
+			return _fail("alchemy_floor1_pile requires normal=3, elite=0, events=5, min_boss_content_nodes=4")
+	elif c.normal < 2 or c.normal > 8 or c.elite < 1 or c.elite > 5 or c.normal + c.elite < 4:
 		return _fail("Use 2..8 normal, 1..5 elite, and at least four combat nodes")
 	if c.events < 4 or c.events > 16:
 		return _fail("events must be 4..16, including one shop and three services")
@@ -60,6 +75,8 @@ func normalize_config(input: Dictionary) -> Dictionary:
 		c.erase("layout_profile")
 	if c.route_profile == "legacy":
 		c.erase("route_profile")
+	if c.content_profile == "legacy":
+		c.erase("content_profile")
 	return c
 
 
@@ -1140,6 +1157,10 @@ func _assign_types(data: Dictionary, rng, c: Dictionary) -> bool:
 	for id in movable:
 		if id not in chosen.combat and id != chosen.shop:
 			event_ids.append(id)
+	if c.get("content_profile", "legacy") == "alchemy_floor1":
+		return _assign_alchemy_content(data, rng, chosen.shop, boss, combat_types, event_ids)
+	if c.get("content_profile", "legacy") == "alchemy_floor1_pile":
+		return _assign_alchemy_pile_content(data, rng, chosen.shop, boss, combat_types, event_ids)
 	var subtypes: Array = ["herbs", "forge", "alchemy"]
 	for i in c.events - 4:
 		subtypes.append("random")
@@ -1150,6 +1171,63 @@ func _assign_types(data: Dictionary, rng, c: Dictionary) -> bool:
 		node.content_id = "flat_2d/" + (node.event_kind if node.type == "event" else node.type)
 		node.revisitable = node.type in ["event", "shop"]
 	return true
+
+
+func _assign_alchemy_content(data: Dictionary, rng, shop_id: String, boss_id: String, combat_types: Dictionary, event_ids: Array) -> bool:
+	# The existing events budget includes a shop and a chest. Only the two
+	# remaining slots draw identities, without replacement, from map.nodes.
+	if event_ids.size() != 3:
+		return false
+	var chest_id: String = rng.pick(event_ids)
+	var kinds: Array = AlchemyEvents.ids()
+	rng.shuffle_in_place(kinds)
+	var event_index := 0
+	for node in data.nodes:
+		node.type = "boss" if node.id == boss_id else "shop" if node.id == shop_id else "chest" if node.id == chest_id else str(combat_types.get(node.id, "event"))
+		node.event_kind = ""
+		node.content_id = "flat_2d/" + node.type
+		if node.type == "event":
+			node.event_kind = kinds[event_index]
+			node.content_id = "alchemy/events/" + node.event_kind
+			event_index += 1
+		elif node.type == "shop":
+			node.event_kind = "shop"
+		node.revisitable = node.type in ["event", "shop"]
+		if node.type == "event":
+			node.body_capsule = NodeGeometry.event_capsule()
+		else:
+			node.body_radius = NodeGeometry.alchemy_radius(node.type)
+	return event_index == 2
+
+
+func _assign_alchemy_pile_content(data: Dictionary, rng, shop_id: String, boss_id: String, combat_types: Dictionary, service_ids: Array) -> bool:
+	# The new profile adds one independent pile to the original content quota.
+	# Pick both loot nodes before drawing the two actual event identities.
+	if service_ids.size() != 4:
+		return false
+	var chest_id: String = rng.pick(service_ids)
+	var pile_candidates: Array = service_ids.duplicate()
+	pile_candidates.erase(chest_id)
+	var pile_id: String = rng.pick(pile_candidates)
+	var kinds: Array = AlchemyEvents.ids()
+	rng.shuffle_in_place(kinds)
+	var event_index := 0
+	for node in data.nodes:
+		node.type = "boss" if node.id == boss_id else "shop" if node.id == shop_id else "chest" if node.id == chest_id else "pile" if node.id == pile_id else str(combat_types.get(node.id, "event"))
+		node.event_kind = ""
+		node.content_id = "flat_2d/" + node.type
+		if node.type == "event":
+			node.event_kind = kinds[event_index]
+			node.content_id = "alchemy/events/" + node.event_kind
+			event_index += 1
+		elif node.type == "shop":
+			node.event_kind = "shop"
+		node.revisitable = node.type in ["event", "shop"]
+		if node.type == "event":
+			node.body_capsule = NodeGeometry.event_capsule()
+		else:
+			node.body_radius = NodeGeometry.alchemy_radius(node.type)
+	return event_index == 2
 
 
 func _distances(band: Dictionary, goal: Vector2i) -> Dictionary:
@@ -1306,6 +1384,12 @@ func _validate(data: Dictionary, c: Dictionary) -> Dictionary:
 		return {"ok": false, "error": "Actual owner graph differs from the selected WALK tree"}
 	var gates: Array = []
 	var counts: Dictionary = {"battle": 0, "elite": 0, "event": 0, "shop": 0, "boss": 0}
+	var alchemy_pile: bool = c.get("content_profile", "legacy") == "alchemy_floor1_pile"
+	var alchemy: bool = c.get("content_profile", "legacy") in ["alchemy_floor1", "alchemy_floor1_pile"]
+	if alchemy:
+		counts.chest = 0
+	if alchemy_pile:
+		counts.pile = 0
 	var events: Dictionary = {}
 	var boss: Dictionary = {}
 	for node in data.nodes:
@@ -1325,7 +1409,8 @@ func _validate(data: Dictionary, c: Dictionary) -> Dictionary:
 			footprint_cells[k] = true
 		if _flood(footprint_cells, node.coord).size() != footprint_cells.size():
 			return {"ok": false, "error": "Node footprint is disconnected"}
-	if counts.battle != c.normal or counts.elite != c.elite or counts.shop != 1 or counts.event != c.events - 1 or counts.boss != 1 or gates.size() != 2:
+	var expected_events: int = c.events - (3 if alchemy_pile else 2 if alchemy else 1)
+	if counts.battle != c.normal or counts.elite != c.elite or counts.shop != 1 or counts.event != expected_events or counts.boss != 1 or gates.size() != 2 or (alchemy and counts.chest != 1) or (alchemy_pile and counts.pile != 1):
 		return {"ok": false, "error": "Content quota mismatch"}
 	var event_run: int = _event_run(graph.adjacency, events)
 	if event_run > 3:
@@ -1492,10 +1577,11 @@ func _relocate(data: Dictionary, node_id: String, delta: Vector2i, context: Dict
 		var parents: Dictionary = {centers[a]: centers[a]}
 		var index := 0
 		while index < queue.size() and not parents.has(centers[b]):
-			var neighbors: Dictionary = {}
-			for n in Hex.neighbors(queue[index]):
-				neighbors[n] = true
-			for n in _sorted(neighbors):
+			# Translation preserves axial lexicographic order. This is the exact
+			# order of _sorted(Hex.neighbors(queue[index])) without a temporary
+			# Dictionary, keys Array, and comparator sort at every BFS step.
+			for direction: Vector2i in _LEXICOGRAPHIC_DIRS:
+				var n: Vector2i = queue[index] + direction
 				if not parents.has(n) and _joint_safe(n, trial, mask, endpoints, empty_incident, moving.unlock_gates):
 					parents[n] = queue[index]
 					queue.append(n)
@@ -1660,5 +1746,10 @@ func _snapshot(data: Dictionary, seed: String, map_id: String, floor_index: int)
 		var id: String = "boss-1" if node.type == "boss" else node.id
 		var unlocks: Array = node.unlock_gates.duplicate()
 		unlocks.sort()
-		result.nodes.append({"id": id, "type": node.type, "coord": _point(node.coord), "footprint": _points(node.footprint), "is_route_gate": node.is_route_gate, "revisitable": node.revisitable, "unlock_gates": unlocks, "event_kind": node.event_kind, "content_id": node.content_id})
+		var clean := {"id": id, "type": node.type, "coord": _point(node.coord), "footprint": _points(node.footprint), "is_route_gate": node.is_route_gate, "revisitable": node.revisitable, "unlock_gates": unlocks, "event_kind": node.event_kind, "content_id": node.content_id}
+		if node.has("body_radius"):
+			clean.body_radius = node.body_radius
+		if node.has("body_capsule"):
+			clean.body_capsule = node.body_capsule.duplicate(true)
+		result.nodes.append(clean)
 	return result

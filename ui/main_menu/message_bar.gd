@@ -11,6 +11,11 @@ extends Panel
 var _token := 0
 
 
+func _ready() -> void:
+	add_theme_stylebox_override("panel", CommonUiSkin.panel("strip"))
+	_label.add_theme_color_override("font_color", CommonUiSkin.TEXT)
+
+
 func show_message(text: String) -> void:
 	_label.text = text
 	visible = true

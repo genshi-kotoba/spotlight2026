@@ -2,6 +2,7 @@ extends Node2D
 ## Assembly only: planar state + drawings + Camera2D + cross-module bridge.
 const Session = preload("res://systems/map/flat_2d/planar_map_session.gd")
 const Hex = preload("res://systems/map/hex_coord.gd")
+const EventCatalog = preload("res://systems/map/flat_2d/alchemy_event_catalog.gd")
 const MapView = preload("res://ui/world_map/flat_2d/map_view.gd")
 const MiniMap = preload("res://ui/world_map/flat_2d/map_minimap.gd")
 const RunPanel = preload("res://ui/hud/run_status_panel.gd")
@@ -9,14 +10,19 @@ const RunMenu = preload("res://ui/hud/run_menu_overlay.gd")
 const MapViewerScript = preload("res://ui/world_map/map_viewer.gd")
 const MAP_PATH := "res://data/config/flat_2d/demo_map.json"
 const SETTINGS_PATH := "res://data/config/flat_2d/demo_settings.json"
-const LABELS := {"battle": "普通战斗", "elite": "精英战斗", "shop": "商店", "boss": "Boss", "event": "随机事件"}
+const LABELS := {"battle": "普通战斗", "elite": "精英战斗", "shop": "商店", "boss": "Boss", "event": "随机事件", "chest": "宝箱", "pile": "残堆"}
+const WALK_ACCELERATION_DELAY := 2.0
+const WALK_ACCELERATION_DURATION := 1.0
+const WALK_ACCELERATION_MAX := 1.5
 
 @export var demo_interactions_enabled := true
 var session = Session.new()
 var cell_radius_px := 60.0
 var map_scale := 4.0
 var move_speed := 2.1
-var speed_multiplier := 1.0
+## User-adjustable base speed; the continuous-walk bonus never changes it.
+var speed_multiplier := 2.0
+var _continuous_walk_seconds := 0.0
 var paused := false
 var _map_snapshot: Dictionary = {}
 var _view: Node2D
@@ -105,7 +111,7 @@ func _ready() -> void:
 	_bus.node_result_submitted.connect(submit_node_result)
 	get_viewport().size_changed.connect(_update_camera)
 	var data := _initial_snapshot()
-	if data.is_empty() or not load_map(data):
+	if data.is_empty() or not load_map(data, _initial_state()):
 		_toast = "地图加载失败：" + session.last_error
 		push_error(_toast)
 	set_process(true)
@@ -221,6 +227,9 @@ func _initial_snapshot() -> Dictionary:
 	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
 	return data if data is Dictionary else {}
 
+func _initial_state() -> Dictionary:
+	return {}
+
 func _register_input() -> void:
 	var actions := {"map2d_left": [KEY_A, KEY_LEFT], "map2d_right": [KEY_D, KEY_RIGHT], "map2d_up": [KEY_W, KEY_UP], "map2d_down": [KEY_S, KEY_DOWN], "map2d_interact": [KEY_E], "map2d_pause": [KEY_ESCAPE], "map2d_cycle": [KEY_Q]}
 	for action in actions:
@@ -286,7 +295,7 @@ func _build_hud() -> void:
 	var speed_row := HBoxContainer.new()
 	box.add_child(speed_row)
 	_speed_label = Label.new()
-	_speed_label.text = "移速 %.2f×" % speed_multiplier
+	_update_speed_label()
 	_speed_label.custom_minimum_size.x = 120
 	_speed_label.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
 	speed_row.add_child(_speed_label)
@@ -297,9 +306,10 @@ func _build_hud() -> void:
 	slider.value = speed_multiplier
 	slider.custom_minimum_size = Vector2(230, 24)
 	slider.focus_mode = Control.FOCUS_NONE
-	slider.value_changed.connect(func(value): speed_multiplier = value; _speed_label.text = "移速 %.2f×" % value)
+	slider.value_changed.connect(func(value): speed_multiplier = value; _update_speed_label())
 	speed_row.add_child(slider)
 	var mini_box := PanelContainer.new()
+	mini_box.add_theme_stylebox_override("panel", CommonUiSkin.panel("small"))
 	mini_box.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	mini_box.offset_left = -320
 	mini_box.offset_right = -18
@@ -339,13 +349,14 @@ func _build_hud() -> void:
 	help.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
 	footer_box.add_child(help)
 	var legend := Label.new()
-	legend.text = "节点：B 普通战斗 · E 精英 · $ 商店 · ? 随机事件 · BOSS 首领 · 橙色锁为路线关口"
+	legend.text = "节点：战斗 · 商店 · 宝箱 · ? 未开启事件 · Boss · 事件开启后显示名称或专属图"
 	legend.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
 	footer_box.add_child(legend)
 	_status = Label.new()
 	_status.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
 	footer_box.add_child(_status)
 	_dialog = ConfirmationDialog.new()
+	CommonUiSkin.style_dialog(_dialog)
 	_dialog.title = "节点接入演示"
 	_dialog.ok_button_text = "模拟完成"
 	_dialog.cancel_button_text = "取消并返回地图"
@@ -354,18 +365,8 @@ func _build_hud() -> void:
 	_dialog.canceled.connect(func(): _demo_result("cancelled"))
 	add_child(_dialog)
 
-func _bar_style() -> StyleBoxFlat:
-	# 左右两块底栏共用：不透明底，避免地图从面板下透上来显得发花。
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.102, 0.086, 0.070, 0.96)
-	style.set_border_width_all(1)
-	style.border_color = Color(0.910, 0.706, 0.333, 0.42)
-	style.set_corner_radius_all(6)
-	style.content_margin_left = 16
-	style.content_margin_right = 16
-	style.content_margin_top = 10
-	style.content_margin_bottom = 10
-	return style
+func _bar_style() -> StyleBox:
+	return CommonUiSkin.panel("strip", Vector4(16, 10, 16, 10))
 
 
 func _button(label: String, action: Callable) -> Button:
@@ -375,29 +376,10 @@ func _button(label: String, action: Callable) -> Button:
 	button.add_theme_font_size_override("font_size", 16)
 	button.add_theme_color_override("font_color", Color(0.949, 0.890, 0.776))
 	button.add_theme_color_override("font_disabled_color", Color(0.749, 0.682, 0.553, 0.65))
-	button.add_theme_stylebox_override("normal", _button_style(Color(0.141, 0.102, 0.075, 0.9),
-		Color(0.910, 0.706, 0.333, 0.45)))
-	button.add_theme_stylebox_override("hover", _button_style(Color(0.349, 0.220, 0.161, 1.0),
-		Color(0.949, 0.749, 0.361, 1.0)))
-	button.add_theme_stylebox_override("pressed", _button_style(Color(0.349, 0.220, 0.161, 1.0),
-		Color(0.949, 0.749, 0.361, 1.0)))
-	button.add_theme_stylebox_override("disabled", _button_style(Color(0.090, 0.070, 0.055, 0.85),
-		Color(0.550, 0.450, 0.250, 0.30)))
+	CommonUiSkin.style_button(button, Vector4(12, 4, 12, 4))
 	button.pressed.connect(action)
 	return button
 
-
-func _button_style(color: Color, edge: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = color
-	style.set_border_width_all(1)
-	style.border_color = edge
-	style.set_corner_radius_all(4)
-	style.content_margin_left = 12
-	style.content_margin_right = 12
-	style.content_margin_top = 4
-	style.content_margin_bottom = 4
-	return style
 
 ## Public assembly API. On failure, neither the live map nor its state changes.
 func load_map(snapshot: Dictionary, saved_state: Dictionary = {}) -> bool:
@@ -513,12 +495,39 @@ func _physics_process(delta: float) -> void:
 	_advance_motion(direction, delta)
 
 func _advance_motion(direction: Vector2, delta: float) -> void:
-	session.move_actor(direction * move_speed * speed_multiplier * minf(delta, 0.05))
+	if direction.is_zero_approx():
+		_reset_walk_acceleration()
+	var step_delta := clampf(delta, 0.0, 0.05)
+	var before: Vector2 = session.actor_plane
+	session.move_actor(direction * move_speed * _walking_speed_multiplier() * step_delta)
+	# Count collision-resolved movement, including sliding and direction changes.
+	# A fully blocked frame resets the bonus instead of charging it at a wall.
+	if session.actor_plane != before:
+		_continuous_walk_seconds = minf(_continuous_walk_seconds + step_delta,
+			WALK_ACCELERATION_DELAY + WALK_ACCELERATION_DURATION)
+	else:
+		_reset_walk_acceleration()
 	_render_path.assign(session.motion_path)
 	_render_path_length = 0.0
 	for i in range(1, _render_path.size()):
 		_render_path_length += _render_path[i - 1].distance_to(_render_path[i])
 	_notify_actor_cell()
+
+func _walking_speed_multiplier() -> float:
+	var progress := clampf((_continuous_walk_seconds - WALK_ACCELERATION_DELAY)
+		/ WALK_ACCELERATION_DURATION, 0.0, 1.0)
+	return speed_multiplier * lerpf(1.0, WALK_ACCELERATION_MAX, progress)
+
+func _reset_walk_acceleration() -> void:
+	_continuous_walk_seconds = 0.0
+	_update_speed_label()
+
+func _update_speed_label() -> void:
+	if not is_instance_valid(_speed_label):
+		return
+	var text := "移速 %.2f×（基础 %.2f×）" % [_walking_speed_multiplier(), speed_multiplier]
+	if _speed_label.text != text:
+		_speed_label.text = text
 
 func _movement_direction() -> Vector2:
 	if get_viewport().gui_get_focus_owner() != null:
@@ -566,9 +575,10 @@ func _process(delta: float) -> void:
 		_prompt.text = "自由探索 · 灰雾只显示轮廓 · 橙色关口需完成本地战斗"
 	else:
 		var node: Dictionary = session.nodes[_selected]
-		_prompt.text = "交互目标：%s  %s%s%s" % [LABELS[node.type], _selected, " · 路线关口" if node.is_route_gate else "", " · 可再次访问" if session.completed.has(_selected) else ""]
+		_prompt.text = "交互目标：%s  %s%s%s" % [_node_label(node), _selected, " · 路线关口" if node.is_route_gate else "", " · 可再次访问" if session.completed.has(_selected) else ""]
 	if _status_elapsed >= 0.25:
 		_status_elapsed = 0
+		_update_speed_label()
 		_status.text = "位置 (%d, %d) · 已完成 %d / %d · %.0f FPS%s" % [_last_cell.x, _last_cell.y, session.completed.size(), session.nodes.size(), Engine.get_frames_per_second(), " · " + _toast if _toast_left > 0 else ""]
 
 func _input(event: InputEvent) -> void:
@@ -608,10 +618,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _notification(what: int) -> void:
+	if what == NOTIFICATION_ENTER_TREE:
+		_reset_walk_acceleration()
 	# A node's modal temporarily takes focus from the root window. Pending
 	# already blocks movement, so do not leave the map paused on its return.
 	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT and is_inside_tree():
 		_mouse_steering_held = false
+		_reset_walk_acceleration()
 		if session.pending.is_empty():
 			_resume_after_focus = not paused
 			_set_paused(true)
@@ -623,6 +636,7 @@ func _notification(what: int) -> void:
 func _set_paused(value: bool) -> void:
 	paused = value
 	_mouse_steering_held = false
+	_reset_walk_acceleration()
 	if is_instance_valid(_player):
 		_sync_actor(false)
 
@@ -634,6 +648,8 @@ func _interact() -> void:
 	if request.is_empty():
 		return
 	_mouse_steering_held = false
+	_reset_walk_acceleration()
+	if request.type == "event": _sync_view()
 	_sync_actor(false)
 	var active = session
 	_emit_state()
@@ -643,9 +659,24 @@ func _interact() -> void:
 	# A synchronous external result may already have resolved this request.
 	if demo_interactions_enabled and _uses_demo_dialog(request) and session == active and session.pending.get("request_id") == request.request_id:
 		_dialog_request_id = request.request_id
+		_configure_node_dialog(request)
+
+func _node_label(node: Dictionary) -> String:
+	if node.type == "event" and session.opened.has(node.id):
+		return EventCatalog.display_name(str(node.get("event_kind", ""))) if EventCatalog.has_event(str(node.get("event_kind", ""))) else "事件"
+	return LABELS.get(node.type, "节点")
+
+func _configure_node_dialog(request: Dictionary) -> void:
+	var presentation_only: bool = session.floor_index == 1 and (request.type in ["chest", "pile"] or (request.type == "event" and str(request.content_id).begins_with("alchemy/events/")))
+	_dialog.get_ok_button().visible = not presentation_only
+	_dialog.cancel_button_text = "返回地图" if presentation_only else "取消并返回地图"
+	if presentation_only:
+		_dialog.title = _node_label(session.nodes[request.node_id])
+		_dialog.dialog_text = "已开启此事件，可以离开并稍后再次访问。\n本轮仅接入地图节点展示，事件选项与效果待后续接入。" if request.type == "event" else "%s节点已接入地图。\n节点奖励由正式游戏入口处理。" % LABELS.get(request.type, "战利品")
+	else:
 		_dialog.title = "路线关口 · 完成后开放后方" if request.is_route_gate else "节点接入演示"
-		_dialog.dialog_text = "%s · %s\n\n这里只演示节点请求与结果回传。\n正式战斗、商店和事件由各自模块处理。\n%s" % [LABELS[request.type], request.node_id, "完成本关口将揭开后方迷雾并允许通行；取消不解锁。" if request.is_route_gate else "此节点不是路线关口；完成不改变后方区域的可达性。"]
-		_dialog.popup_centered(Vector2i(570, 255))
+		_dialog.dialog_text = "%s · %s\n\n这里只演示节点请求与结果回传。\n正式战斗、商店和事件由各自模块处理。\n%s" % [LABELS.get(request.type,"节点"), request.node_id, "完成本关口将揭开后方迷雾并允许通行；取消不解锁。" if request.is_route_gate else "此节点不是路线关口；完成不改变后方区域的可达性。"]
+	_dialog.popup_centered(Vector2i(570, 255))
 
 func _uses_demo_dialog(_request: Dictionary) -> bool:
 	return true

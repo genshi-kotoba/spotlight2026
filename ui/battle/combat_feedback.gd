@@ -35,6 +35,7 @@ var player_portrait: Control
 var enemy_portrait: Control
 var player_float_anchor := Vector2(205.0, 610.0)
 var enemy_float_anchor := Vector2(998.0, 330.0)
+var enemy_visual_provider: Callable
 
 var _last_block: Dictionary = {}
 var _last_vfx_ms: Dictionary = {}
@@ -55,74 +56,103 @@ func setup(p_host: Control, p_player_portrait: Control, p_enemy_portrait: Contro
 	_portrait_homes = {SIDE_PLAYER: player_portrait.position, &"enemy": enemy_portrait.position}
 
 
-func on_damaged(side: StringName, damage: int, blocked: int) -> void:
+func on_damaged(side: StringName, damage: int, blocked: int, entity_id: String = "") -> void:
 	var lost := maxi(damage - blocked, 0)
 	if lost <= 0:
 		return
-	_flash(side)
-	_shake(side)
-	_float(_anchor(side), "-%d" % lost, Color(1.0, 0.44, 0.38))
-	_vfx(side, VfxPlayback.Kind.ATTACK, VFX_ATTACK)
+	_flash(side, entity_id)
+	_shake(side, entity_id)
+	_float(_anchor(side, entity_id), "-%d" % lost, Color(1.0, 0.44, 0.38))
+	_vfx(side, VfxPlayback.Kind.ATTACK, VFX_ATTACK, entity_id)
 
 
-func on_healed(side: StringName, amount: int) -> void:
+func on_healed(side: StringName, amount: int, entity_id: String = "") -> void:
 	if amount <= 0:
 		return
-	_float(_anchor(side), "+%d" % amount, Color(0.56, 0.95, 0.62))
-	_vfx(side, VfxPlayback.Kind.HEAL, VFX_HEAL)
+	_float(_anchor(side, entity_id), "+%d" % amount, Color(0.56, 0.95, 0.62))
+	_vfx(side, VfxPlayback.Kind.HEAL, VFX_HEAL, entity_id)
 
 
-func on_block_changed(side: StringName, block: int) -> void:
-	var previous := int(_last_block.get(side, 0))
-	_last_block[side] = block
+func on_block_changed(side: StringName, block: int, entity_id: String = "") -> void:
+	var key := _entity_key(side, entity_id)
+	var previous := int(_last_block.get(key, 0))
+	_last_block[key] = block
 	var gain := block - previous
 	if gain <= 0:
 		# 掉格挡要么是被打掉（受伤事件已经播过），要么是回合清空，不需要提示。
 		return
-	_float(_anchor(side), "+%d 格挡" % gain, Color(0.62, 0.84, 1.0))
-	_vfx(side, VfxPlayback.Kind.BLOCK, VFX_BLOCK)
+	_float(_anchor(side, entity_id), "+%d 格挡" % gain, Color(0.62, 0.84, 1.0))
+	_vfx(side, VfxPlayback.Kind.BLOCK, VFX_BLOCK, entity_id)
 
 
-func _anchor(side: StringName) -> Vector2:
+func _entity_key(side: StringName, entity_id: String) -> String:
+	return str(side) if side == SIDE_PLAYER or entity_id.is_empty() else "enemy:" + entity_id
+
+
+func _enemy_visual(entity_id: String) -> Dictionary:
+	return enemy_visual_provider.call(entity_id) if enemy_visual_provider.is_valid() else {}
+
+
+func _anchor(side: StringName, entity_id: String = "") -> Vector2:
+	if side != SIDE_PLAYER:
+		var visual := _enemy_visual(entity_id)
+		if not visual.is_empty(): return visual.anchor
 	return player_float_anchor if side == SIDE_PLAYER else enemy_float_anchor
 
 
-func _flash(side: StringName) -> void:
-	var target: Control = player_portrait if side == SIDE_PLAYER else enemy_portrait
+func _portrait(side: StringName, entity_id: String) -> Control:
+	if side == SIDE_PLAYER: return player_portrait
+	return _enemy_visual(entity_id).get("portrait", enemy_portrait)
+
+
+func _flash(side: StringName, entity_id: String = "") -> void:
+	var target := _portrait(side, entity_id)
 	if target == null or not is_instance_valid(target):
 		return
-	var previous: Tween = _flash_tweens.get(side)
+	var key := _entity_key(side, entity_id)
+	var previous: Tween = _flash_tweens.get(key)
 	if previous != null and previous.is_valid():
 		previous.kill()
 	var flash := target.create_tween()
-	_flash_tweens[side] = flash
+	_flash_tweens[key] = flash
 	flash.tween_property(target, "modulate", Color(1.0, 0.42, 0.42, 1.0), 0.07)
-	flash.tween_property(target, "modulate", Color.WHITE, 0.24)
+	# 阶段转换可能在闪红途中从死亡恢复，结束色必须读取当前状态。
+	flash.tween_method(func(weight: float):
+		target.modulate = Color(1.0, 0.42, 0.42, 1.0).lerp(target.get_meta("base_tint", Color.WHITE), weight), 0.0, 1.0, 0.24)
 
 
-func _shake(side: StringName) -> void:
-	var portrait := player_portrait if side == SIDE_PLAYER else enemy_portrait
+func _shake(side: StringName, entity_id: String = "") -> void:
+	var portrait := _portrait(side, entity_id)
 	if not is_instance_valid(portrait):
 		return
-	var previous: Tween = _shake_tweens.get(side)
+	var key := _entity_key(side, entity_id)
+	var previous: Tween = _shake_tweens.get(key)
 	if previous != null and previous.is_valid():
 		previous.kill()
-	var home: Vector2 = _portrait_homes.get(side, portrait.position)
+	var home: Vector2 = portrait.get_meta("feedback_home", _portrait_homes.get(side, portrait.position))
 	var tween := portrait.create_tween()
-	_shake_tweens[side] = tween
+	_shake_tweens[key] = tween
 	tween.set_trans(Tween.TRANS_SINE)
+	var start := portrait.position.x - home.x
 	for offset: float in [7.0, -6.0, 4.5, -3.0, 0.0]:
-		tween.tween_property(portrait, "position", home + Vector2(offset, 0.0), 0.055)
+		tween.tween_method(func(value: float):
+			portrait.position = Vector2(portrait.get_meta("feedback_home", home)) + Vector2(value, 0), start, offset, 0.055)
+		start = offset
 
 
-func _vfx(side: StringName, kind: int, table: Dictionary) -> void:
+func _vfx(side: StringName, kind: int, table: Dictionary, entity_id: String = "") -> void:
 	if host == null:
 		return
 	var now := Time.get_ticks_msec()
-	if now - int(_last_vfx_ms.get(side, -10000)) < int(VFX_INTERVAL * 1000.0):
+	var key := _entity_key(side, entity_id)
+	if now - int(_last_vfx_ms.get(key, -10000)) < int(VFX_INTERVAL * 1000.0):
 		return
-	_last_vfx_ms[side] = now
+	_last_vfx_ms[key] = now
 	var config: Dictionary = table.get(side, table[&"enemy"])
+	if side != SIDE_PLAYER:
+		var visual := _enemy_visual(entity_id)
+		if not visual.is_empty():
+			config = {"at": visual.at, "size": config.size * maxf(0.45, float(visual.scale))}
 	var vfx: Sprite2D = VfxScript.new()
 	host.add_child(vfx)
 	vfx.play(kind, config["at"], config["size"])

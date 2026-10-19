@@ -1,0 +1,20 @@
+{
+  "asset_id": "ENV-002",
+  "retrieved_at": "2026-10-19",
+  "files": [
+    {
+      "name": "ENV-002.jpg",
+      "record": "reczz28ITaBJLH86",
+      "file_token": "Lz0abP5TNorjuNxRYibcJmkinFg",
+      "sha256": "7d6b67c05e5fb91374b913ea2dd8b350bee9e6af9f76f2e34ad0a09afd2bd486",
+      "runtime": "res://assets/env/ENV-002/ENV-002.png"
+    },
+    {
+      "name": "ENV-002-2.jpg",
+      "record": "reczz28ITaBJLH86",
+      "file_token": "TT0ibuD4Vo5q3Hxnb7zcGsn2nyd",
+      "sha256": "c7afd92ab501db93b938a52bb4a64b8445daf7b3e7bc16ba20973fd657d19f0a",
+      "runtime": "res://assets/env/ENV-002/ENV-002-2.png"
+    }
+  ]
+}

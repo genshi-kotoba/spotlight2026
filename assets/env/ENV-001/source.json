@@ -1,0 +1,13 @@
+{
+  "asset_id": "ENV-001",
+  "retrieved_at": "2026-10-19",
+  "files": [
+    {
+      "name": "IMG_4853.PNG",
+      "record": "reczz28ITZGDomJy",
+      "file_token": "UWANb5Xyuo9pkKxabt6c4bOpnIg",
+      "sha256": "38dbecd01b0a65832e300ff54667333c4079095e859efece35c9b18a8c8db488",
+      "runtime": "res://assets/env/ENV-001/ENV-001.PNG"
+    }
+  ]
+}

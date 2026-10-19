@@ -35,7 +35,7 @@ static func generate(seed_text: String, map_id: String, node_id: String, floor_i
 		offer.discount = int(rng.int_range(2, 6)) if index == 0 else int(rng.int_range(5, 9))
 		offer.price = int(floor(int(offer.base_price) * int(offer.discount) / 10.0))
 	var enchantments: Array = []
-	var enchant_ids := CardEnchantments.DEFINITIONS.keys()
+	var enchant_ids := CardEnchantments.reward_ids()
 	enchant_ids.sort()
 	for index in 3:
 		var id := str(rng.pick(enchant_ids))

@@ -11,21 +11,14 @@
 ## 入口都要能安全地在节点未 ready 时返回。
 ##
 ## 几何与字号默认全部在 card_view.tscn 里用锚点加偏移摆好。小卡（手牌、出牌区、
-## 卡组、牌堆）由调用方在设置 scale 后调用 apply_compact_layout()：把卡名与效果
-## 字号按显示比例反算，效果文本扩到整块文字框并按真实字宽折行，避免缩放后文字
-## 变成 4px 或顶出卡面。
+## 卡组、牌堆）由调用方调用 apply_compact_layout()：按场景中实际的文字框折行，
+## 长文案在固定卡内坐标中适度缩小；悬停缩放不会重新排版。
 
 @tool
 class_name CardView
 extends Control
 
-const COMPACT_EFFECT_RECT := Rect2(0.1223, 0.700, 0.7473, 0.275)
-const COMPACT_EFFECT_WIDTH := 338.0
-## 卡名文字框的局部宽度（480 × (0.896 - 0.0959) - 左右各 10px 内缩）。
-const COMPACT_TITLE_WIDTH := 364.0
-## 描述字号下限：再小就宁可截断，不然卡面上全是糊字。
-const COMPACT_BODY_MIN_PX := 10.0
-## 卡面文字统一规格：以 0.285 倍卡（137×233）为基准，标题 16 / 描述 13。
+## 卡面文字最大规格：以 0.285 倍卡（137×233）为基准，标题 16 / 描述 14。
 ## 其他尺寸的卡（出牌 0.23、牌堆 0.40、大图 0.62/0.7）按同一比例缩放，
 ## 保证同一张卡在任何位置看起来都是「同一张卡的另一尺寸」。
 ## 卡面字体只在「卡内坐标」定一次：手牌、出牌区、卡组、牌堆、点开的大图都是同一张卡
@@ -36,14 +29,23 @@ const TYPE_BODY_PX := 14.0
 const LOCAL_TITLE_PX := 56
 const LOCAL_BODY_PX := 49
 const LOCAL_OUTLINE_PX := 3
+## 留出描边和阴影的安全边距，单位为卡内像素，不受悬停缩放影响。
+const TEXT_SAFETY_PADDING := Vector2(8, 8)
 
 const COMPACT_FONT_NAMES := ["Microsoft YaHei", "SimHei", "Noto Sans CJK SC"]
 
 static var _compact_font: SystemFont
 static var _compact_body_font: SystemFont
+static var _compact_text_cache: Dictionary = {}
 
 ## 数据变化后放一次。容器可以据此编排，例如数据写入后再开始发牌动画。
 signal card_data_applied(card_id: StringName)
+
+@export_group("紧凑卡面文字")
+## 最大字号仍由 LOCAL_TITLE_PX / LOCAL_BODY_PX 和调用方参数决定。
+@export_range(12, 56, 1) var compact_title_min_size := 28
+@export_range(12, 49, 1) var compact_body_min_size := 26
+@export_group("")
 
 ## 要显示的卡牌数据。在编辑器里挂上就渲染，这是给人用的入口。
 @export var 卡牌数据: CardData:
@@ -88,36 +90,55 @@ var _compact_pending := false
 var _raw_title := ""
 var _raw_effect := ""
 var _raw_intro := ""
+var _enchantment_symbols := ""
+var _texts_pending := false
+
+## 接受具体副本而非 CardData：同名牌不会共享附魔。预 ready 调用也有效。
+func set_enchantments(card: Dictionary) -> void:
+	_enchantment_symbols = CardEnchantments.symbols(card)
+	if is_node_ready():
+		%附魔符号.text = _enchantment_symbols
+		%附魔符号.visible = not _enchantment_symbols.is_empty()
 
 
 func _ready() -> void:
 	_refresh_face()
+	%附魔符号.text = _enchantment_symbols
+	%附魔符号.visible = not _enchantment_symbols.is_empty()
 	# CSV 展示文本统一入口；编辑器预览仍读资源，空表保留原测试卡文案。
 	var catalog := get_node_or_null("/root/TextCatalog")
 	if not Engine.is_editor_hint() and catalog != null:
 		catalog.catalog_changed.connect(_on_catalog_changed)
 	# 卡牌数据为空时不动文本，场景里手写的样张文案要留着。
-	if 卡牌数据 != null:
-		_render_card_data()
 	if _compact_pending:
 		_compact_pending = false
 		_apply_compact(_display_scale, _compact_title_px, _compact_body_px)
+	elif 卡牌数据 != null:
+		_render_card_data()
+	elif _texts_pending:
+		set_texts(_raw_title, _raw_effect, _raw_intro)
+	resized.connect(_refresh_compact_text)
 
 
 ## 主入口：直接给三段文本。intro 为空时介绍标签自动隐藏。
 func set_texts(title: String, effect: String, intro: String = "") -> void:
-	if not is_node_ready():
-		return
 	_raw_title = title
 	_raw_effect = effect
 	_raw_intro = intro
-	_title_label.text = title
-	_effect_label.text = effect if not _compact else _compact_effect(effect)
+	_texts_pending = true
+	if not is_node_ready():
+		return
+	_texts_pending = false
+	if _compact:
+		_refresh_compact_text()
+	else:
+		_title_label.text = title
+		_effect_label.text = effect
 	_intro_label.text = intro
 	_intro_label.visible = intro != "" and not _compact
 
 
-## 小卡布局：按屏幕上的目标字号反算局部字号，效果文本占满卡面下方的文字框。
+## 小卡布局：指定卡内最大字号，长文案按场景中的实际文字框适配。
 ## 手牌、出牌区、卡组、牌堆都走这里；全尺寸卡面（图鉴大图）不调用。
 ## 返回卡内坐标字号，与展示缩放无关：同一张卡只换 scale，就是常规放大缩小。
 static func text_px_for(_display_scale: float) -> Vector2i:
@@ -153,16 +174,12 @@ func _apply_compact(display_scale: float, title_px: int, body_px: int) -> void:
 	_title_label.add_theme_constant_override("shadow_offset_y", 1)
 	_effect_label.add_theme_constant_override("shadow_offset_x", 1)
 	_effect_label.add_theme_constant_override("shadow_offset_y", 1)
-	# 描边按缩放反算，保证屏幕上约 1px：小卡文字压在浅色卡框上时靠它撑开对比。
+	# 描边固定在卡内坐标，随整张卡同步缩放。
 	_effect_label.add_theme_color_override("font_outline_color", Color(0.06, 0.05, 0.04, 0.9))
 	_effect_label.add_theme_constant_override("outline_size", LOCAL_OUTLINE_PX)
-	var title_local := maxi(1, title_px)
-	title_local = _fit_title_size(_raw_title, title_font, title_local,
-		maxi(1, body_px))
-	_title_label.add_theme_font_size_override("font_size", title_local)
-	var body_local := maxi(1, body_px)
-	_effect_label.add_theme_font_size_override("font_size", body_local)
 	_title_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_title_label.max_lines_visible = 1
+	_title_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_effect_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_effect_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -173,32 +190,80 @@ func _apply_compact(display_scale: float, title_px: int, body_px: int) -> void:
 		_render_card_data()
 	else:
 		set_texts(_raw_title, _raw_effect, _raw_intro)
-	# 描述字号不做逐卡自适应：所有卡同一档字，版式才对得齐。
+	# 所有卡以同一最大字号起步，只有超出实际框的文案缩小。
 
 
 
-func _fit_title_size(title: String, font: Font, wanted: int, floor_px: int) -> int:
-	if title.is_empty() or font == null:
-		return wanted
-	var size := wanted
-	while size > floor_px:
-		if font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1.0, size).x \
-			<= COMPACT_TITLE_WIDTH:
-			break
-		size -= 1
-	return size
+func _text_box(label: Label) -> Vector2:
+	# 不使用 Label.size：长文本可能已把自身最小尺寸撑大。
+	return Vector2(size.x * (label.anchor_right - label.anchor_left) + label.offset_right - label.offset_left,
+		size.y * (label.anchor_bottom - label.anchor_top) + label.offset_bottom - label.offset_top)
 
 
-func _fit_body_size(effect: String, font: Font, wanted: int) -> int:
-	var box_height := COMPACT_EFFECT_RECT.size.y * 818.0 - 8.0
-	var floor_px := maxi(1, roundi(COMPACT_BODY_MIN_PX / _display_scale))
-	for candidate in range(wanted, floor_px - 1, -1):
-		var line_height := (font.get_height(candidate) if font != null \
-			else float(candidate)) + 2.0
-		var wrapped := CardText.wrap_to_width(effect, font, candidate, COMPACT_EFFECT_WIDTH)
-		if float(wrapped.split("\n").size()) * line_height <= box_height:
-			return candidate
-	return floor_px
+func _text_height(label: Label, font_size: int, lines: int) -> float:
+	return label.get_theme_font("font").get_height(font_size) * lines \
+		+ label.get_theme_constant("line_spacing") * maxi(0, lines - 1)
+
+
+func _refresh_compact_text() -> void:
+	if not is_node_ready() or not _compact:
+		return
+	var title_box := _text_box(_title_label)
+	var body_box := _text_box(_effect_label)
+	var title_area := (title_box - TEXT_SAFETY_PADDING).max(Vector2.ONE)
+	var body_area := (body_box - TEXT_SAFETY_PADDING).max(Vector2.ONE)
+	var title_font := _title_label.get_theme_font("font")
+	var font := _effect_label.get_theme_font("font")
+	var key := JSON.stringify([_raw_title, _raw_effect, title_area.x, title_area.y, body_area.x, body_area.y,
+		_compact_title_px, _compact_body_px, compact_title_min_size, compact_body_min_size,
+		title_font.get_instance_id(), font.get_instance_id(), _effect_label.get_theme_constant("line_spacing")])
+	if not _compact_text_cache.has(key):
+		if _compact_text_cache.size() >= 512: _compact_text_cache.clear()
+		_compact_text_cache[key] = _calculate_compact_text(title_area, body_area, title_font, font)
+	var layout: Dictionary = _compact_text_cache[key]
+	_title_label.add_theme_font_size_override("font_size", layout.title_size)
+	_title_label.text = _raw_title
+	_effect_label.add_theme_font_size_override("font_size", layout.body_size)
+	_effect_label.max_lines_visible = layout.max_lines
+	_effect_label.text = layout.text
+	# 字号与最大行数先受限；几何仍由 .tscn 的锚点决定，不在脚本中重写。
+
+
+func _calculate_compact_text(title_area: Vector2, body_area: Vector2, title_font: Font, font: Font) -> Dictionary:
+	var title_size := maxi(1, _compact_title_px)
+	var title_floor := mini(title_size, compact_title_min_size)
+	while title_size > title_floor and (title_font.get_string_size(_raw_title, HORIZONTAL_ALIGNMENT_LEFT, -1.0, title_size).x > title_area.x \
+			or _text_height(_title_label, title_size, 1) > title_area.y):
+		title_size -= 1
+	var effect := strip_period(_raw_effect)
+	var body_size := maxi(1, _compact_body_px)
+	var body_floor := mini(body_size, compact_body_min_size)
+	var wrapped := CardText.wrap_to_width(effect, font, body_size, body_area.x)
+	if _text_height(_effect_label, body_size, wrapped.split("\n").size()) > body_area.y:
+		# 二分查找最大可用字号，避免每次刷新长描述时逐字号反复测量。
+		var low := body_floor
+		var high := body_size - 1
+		body_size = body_floor
+		while low <= high:
+			var candidate := (low + high) / 2
+			var text := CardText.wrap_to_width(effect, font, candidate, body_area.x)
+			if _text_height(_effect_label, candidate, text.split("\n").size()) <= body_area.y:
+				body_size = candidate
+				low = candidate + 1
+			else:
+				high = candidate - 1
+		wrapped = CardText.wrap_to_width(effect, font, body_size, body_area.x)
+	var line_height := font.get_height(body_size)
+	var spacing := _effect_label.get_theme_constant("line_spacing")
+	var max_lines := maxi(1, int((body_area.y + spacing) / maxf(1.0, line_height + spacing)))
+	var lines := wrapped.split("\n")
+	if lines.size() > max_lines:
+		lines.resize(max_lines)
+		var last := lines[max_lines - 1]
+		while not last.is_empty() and font.get_string_size(last + "…", HORIZONTAL_ALIGNMENT_LEFT, -1.0, body_size).x > body_area.x:
+			last = last.left(last.length() - 1)
+		lines[max_lines - 1] = last + "…"
+	return {"title_size": title_size, "body_size": body_size, "max_lines": max_lines, "text": "\n".join(lines)}
 
 
 static func _compact_typeface() -> SystemFont:
@@ -223,25 +288,6 @@ static func strip_period(text: String) -> String:
 	while not trimmed.is_empty() and trimmed.right(1) in ["。", ".", "．"]:
 		trimmed = trimmed.left(trimmed.length() - 1).strip_edges()
 	return trimmed
-
-
-func _compact_effect(effect: String) -> String:
-	effect = strip_period(effect)
-	var font := _effect_label.get_theme_font("font")
-	var font_size := _effect_label.get_theme_font_size("font_size")
-	var wrapped := CardText.wrap_to_width(effect, font, font_size, COMPACT_EFFECT_WIDTH)
-	if wrapped.is_empty():
-		return wrapped
-	# 小卡文字框最多容下几行就截到几行，避免长测试文案顶出卡面。
-	var line_height := (font.get_height(font_size) if font != null else float(font_size)) + 2.0
-	var max_lines := maxi(1, int((COMPACT_EFFECT_RECT.size.y * 818.0 - 8.0) / line_height))
-	var lines := wrapped.split("\n")
-	if lines.size() > max_lines:
-		lines.resize(max_lines)
-		var last := lines[max_lines - 1]
-		lines[max_lines - 1] = last.substr(0, maxi(0, last.length() - 1)) + "…"
-		wrapped = "\n".join(lines)
-	return wrapped
 
 
 func _apply_anchor_rect(control: Control, rect: Rect2, pad: bool) -> void:
@@ -306,6 +352,7 @@ func get_card_id() -> StringName:
 ## 清空文本并放一次 card_data_applied(&"")。底图不动。
 func clear() -> void:
 	_card_id = &""
+	set_enchantments({})
 	set_texts("", "", "")
 	card_data_applied.emit(_card_id)
 
@@ -326,18 +373,20 @@ func _render_card_data() -> void:
 	var title: String = 卡牌数据.card_name
 	if title.is_empty():
 		title = String(卡牌数据.card_id)
-	set_texts(title, 卡牌数据.description, "")
+	var effect := 卡牌数据.description
 	_card_id = 卡牌数据.card_id
 	var catalog := get_node_or_null("/root/TextCatalog")
 	if not Engine.is_editor_hint() and catalog != null:
 		var record: Dictionary = catalog.entry("cards", String(_card_id))
 		if not record.is_empty():
-			set_texts(str(record.get("name", "")), str(record.get("effect", "")), "")
+			title = str(record.get("name", ""))
+			effect = str(record.get("effect", ""))
 			set_art_texture(catalog.art_texture(str(record.get("art_path", ""))))
 			_csv_art_applied = true
 		elif _csv_art_applied:
 			set_art_texture(null)
 			_csv_art_applied = false
+	set_texts(title, effect, "")
 	card_data_applied.emit(_card_id)
 
 

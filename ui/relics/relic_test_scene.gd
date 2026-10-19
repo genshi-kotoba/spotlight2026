@@ -54,7 +54,9 @@ func _build_ui() -> void:
 	left.add_child(_label("测试残片库 · 可放置多个副本", 23))
 	for id: String in _catalog:
 		if id.contains("~"): continue # 组合负面由事件生成，避免铺满全部笛卡尔积。
-		var data: RelicFragmentData = _catalog[id]
+		var data: RelicFragmentData = RelicCatalog.resolve(id, _catalog)
+		if data == null:
+			continue
 		var button := RelicSlotButton.new()
 		button.fragment_id = id
 		button.text = "%s · %s\n%s" % [data.kind_name(), data.display_name, data.description]
@@ -71,7 +73,7 @@ func _build_ui() -> void:
 	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	center.add_theme_constant_override("separation", 16)
 	body.add_child(center)
-	center.add_child(_label("典籍页面  /  金：触发  ·  蓝：效果  ·  紫：存在", 23))
+	center.add_child(_label("典籍页面  /  残片颜色随自身保存", 23))
 	var grid := GridContainer.new()
 	grid.columns = RelicBoard.COLUMNS
 	grid.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -123,9 +125,12 @@ func _build_ui() -> void:
 
 
 func _select_fragment(id: String) -> void:
+	var data: RelicFragmentData = RelicCatalog.resolve(id, _catalog)
+	if data == null:
+		return
 	_selected = id
 	_refresh()
-	_status.text = "已选中「%s」，点击目标格子放置；点击已占用格会替换残片。" % _catalog[id].display_name
+	_status.text = "已选中「%s」，点击目标格子放置；点击已占用格会替换残片。" % data.display_name
 
 
 func _place_selected(index: int) -> void:
@@ -171,12 +176,14 @@ func _clear_board() -> void:
 
 func _refresh() -> void:
 	for button: RelicSlotButton in _palette:
-		var data: RelicFragmentData = _catalog[button.fragment_id]
+		var data: RelicFragmentData = RelicCatalog.resolve(button.fragment_id, _catalog)
+		if data == null:
+			continue
 		button.add_theme_stylebox_override("normal", _style(data.tint(), button.fragment_id == _selected))
 	for index in _slots.size():
 		var button := _slots[index]
 		button.fragment_id = _board.cells[index]
-		var data: RelicFragmentData = _catalog.get(button.fragment_id)
+		var data: RelicFragmentData = RelicCatalog.resolve(button.fragment_id, _catalog)
 		var coordinate := "%d · %d" % [index / RelicBoard.COLUMNS + 1, index % RelicBoard.COLUMNS + 1]
 		button.text = coordinate + "\n空格" if data == null else "%s  /  %s\n%s\n%s" % [
 			coordinate, data.kind_name(), data.display_name, data.description]
@@ -188,7 +195,7 @@ func _refresh() -> void:
 
 func _show_range(index: int) -> void:
 	_refresh()
-	var data: RelicFragmentData = _catalog.get(_board.cells[index])
+	var data: RelicFragmentData = RelicCatalog.resolve(_board.cells[index], _catalog)
 	if data == null:
 		_detail.text = "空格：选择残片后点击放置，或从左侧拖入。"
 		return
@@ -197,7 +204,7 @@ func _show_range(index: int) -> void:
 		return
 	var connected := 0
 	for neighbor: int in _board.neighbors(index, data.reach):
-		var effect: RelicFragmentData = _catalog.get(_board.cells[neighbor])
+		var effect: RelicFragmentData = RelicCatalog.resolve(_board.cells[neighbor], _catalog)
 		var tint := Color("667084") if effect == null else effect.tint()
 		_slots[neighbor].add_theme_stylebox_override("normal", _style(tint, true))
 		if effect != null and effect.kind == RelicFragmentData.Kind.EFFECT:

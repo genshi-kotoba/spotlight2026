@@ -2,7 +2,9 @@ extends RefCounted
 ## Pure planar map state. Unit radius = 1; rendering pixels and height are absent.
 const Hex = preload("res://systems/map/hex_coord.gd")
 const HeightRecipe = preload("res://systems/map/flat_2d/height_recipe.gd")
-const TYPES := ["battle", "elite", "shop", "boss", "event"]
+const AlchemyEvents = preload("res://systems/map/flat_2d/alchemy_event_catalog.gd")
+const NodeGeometry = preload("res://systems/map/flat_2d/node_geometry.gd")
+const TYPES := ["battle", "elite", "shop", "boss", "event", "chest", "pile"]
 const FOOT_RADIUS := 0.18
 var map_id := ""
 var seed := ""
@@ -13,6 +15,7 @@ var cells: Dictionary = {}
 var nodes: Dictionary = {}
 var known: Dictionary = {}
 var completed: Dictionary = {}
+var opened: Dictionary = {}
 var visits: Dictionary = {}
 var pending: Dictionary = {}
 var last_error := ""
@@ -20,6 +23,7 @@ var _snapshot: Dictionary = {}
 var _gate_cells: Dictionary = {}
 var _serial := 0
 var _boundaries: Dictionary = {}
+var _node_bodies: Array = []
 var motion_path: Array[Vector2] = []
 
 static func key(c: Vector2i) -> String:
@@ -97,6 +101,19 @@ func _parse(data: Dictionary) -> bool:
 			if not item.get(field, "") is String:
 				return _fail("Invalid node " + field)
 		var clean := {"id": item.id, "type": item.type, "coord": [int(item.coord[0]), int(item.coord[1])], "footprint": footprint, "is_route_gate": item.get("is_route_gate", false), "revisitable": item.get("revisitable", false), "unlock_gates": gates, "event_kind": item.get("event_kind", ""), "content_id": item.get("content_id", "")}
+		if item.has("body_radius") and item.has("body_capsule"):
+			return _fail("Use either body_radius or body_capsule, not both")
+		if item.has("body_radius"):
+			var radius: Variant = item.body_radius
+			if not (radius is int or radius is float) or not is_finite(float(radius)) or float(radius) < 0.0 or float(radius) > NodeGeometry.MAX_BODY_RADIUS:
+				return _fail("body_radius must be a finite number in 0..0.45")
+			# Omission remains omission, preserving legacy snapshot fingerprints.
+			clean.body_radius = float(radius)
+		if item.has("body_capsule"):
+			var capsule: Dictionary = _parse_capsule(item.body_capsule)
+			if capsule.is_empty():
+				return _fail("body_capsule requires a unit axis, positive half_length and nonnegative radius within a 0.45 outer radius")
+			clean.body_capsule = capsule
 		nodes[item.id] = clean
 		clean_nodes.append(clean)
 	for item in clean_nodes:
@@ -116,7 +133,27 @@ func _parse(data: Dictionary) -> bool:
 		_snapshot.height_recipe = parsed.recipe
 	actor_plane = Hex.to_plane(spawn, 1.0)
 	_discover()
+	if not can_stand(actor_plane):
+		return _fail("Spawn overlaps a node body")
 	return true
+
+static func _parse_capsule(value: Variant) -> Dictionary:
+	if not value is Dictionary or value.size() != 3 or not value.has("half_length") or not value.has("radius") or not value.has("axis"):
+		return {}
+	for number in [value.half_length, value.radius]:
+		if not (number is int or number is float) or not is_finite(float(number)):
+			return {}
+	if float(value.half_length) <= 0.0 or float(value.radius) < 0.0 or float(value.half_length) + float(value.radius) > NodeGeometry.MAX_BODY_RADIUS:
+		return {}
+	if not value.axis is Array or value.axis.size() != 2:
+		return {}
+	for number in value.axis:
+		if not (number is int or number is float) or not is_finite(float(number)) or absf(float(number)) > 1.0:
+			return {}
+	var axis := Vector2(float(value.axis[0]), float(value.axis[1]))
+	if absf(axis.length_squared() - 1.0) > 0.000001:
+		return {}
+	return {"half_length": float(value.half_length), "radius": float(value.radius), "axis": [float(value.axis[0]), float(value.axis[1])]}
 
 func _adopt(other) -> void:
 	map_id = other.map_id
@@ -128,11 +165,13 @@ func _adopt(other) -> void:
 	nodes = other.nodes
 	known = other.known
 	completed = other.completed
+	opened = other.opened
 	visits = other.visits
 	pending = other.pending
 	_snapshot = other._snapshot
 	_gate_cells = other._gate_cells
 	_boundaries = other._boundaries
+	_node_bodies = other._node_bodies
 	motion_path = [actor_plane]
 	_serial += 1
 	last_error = ""
@@ -188,6 +227,29 @@ func _rebuild_boundaries() -> void:
 			var inward := (center - Hex.to_plane(neighbor, 1.0)).normalized()
 			edges.append({"a": a, "b": b, "normal": inward, "direction": i, "neighbor_key": key(neighbor)})
 		_boundaries[k] = edges
+	_rebuild_node_bodies()
+
+func _rebuild_node_bodies() -> void:
+	_node_bodies = []
+	var ids: Array = nodes.keys()
+	ids.sort()
+	for id in ids:
+		var node: Dictionary = nodes[id]
+		if not _node_visible(node): continue
+		var capsule := NodeGeometry.active_capsule(node, completed.has(id))
+		if not capsule.is_empty():
+			var center := Hex.to_plane(coord(node.coord), 1.0)
+			var offset := Vector2(capsule.axis[0], capsule.axis[1]) * float(capsule.half_length)
+			_node_bodies.append({"id": id, "shape": "capsule", "center": center, "radius": float(capsule.radius), "a": center - offset, "b": center + offset})
+			continue
+		var radius := NodeGeometry.active_radius(node, completed.has(id))
+		if radius > 0.0:
+			_node_bodies.append({"id": id, "center": Hex.to_plane(coord(node.coord), 1.0), "radius": radius})
+
+func node_bodies() -> Array:
+	# Read-only effective geometry: circles have center/radius; capsules also
+	# have shape="capsule" and world-planar endpoints a/b (never pixel values).
+	return _node_bodies.duplicate(true)
 
 func collision_boundaries() -> Dictionary:
 	# Read-only copy of the SAME segments used by circle sweeps. Presentation
@@ -212,6 +274,11 @@ func can_stand(point: Vector2) -> bool:
 	var center := Hex.from_plane(point, 1.0)
 	if not _passable(center) or not known.has(key(center)):
 		return false
+	for body in _node_bodies:
+		var clearance: float = FOOT_RADIUS + body.radius
+		var nearest: Vector2 = Geometry2D.get_closest_point_to_segment(point, body.a, body.b) if body.get("shape", "circle") == "capsule" else body.center
+		if point.distance_squared_to(nearest) < clearance * clearance - 0.000001:
+			return false
 	# The circle radius is below the hex inradius. Only six neighbor hexes
 	# can intersect it; distance to their edges gives exact corner clearance.
 	for neighbor in Hex.neighbors(center):
@@ -266,6 +333,9 @@ func _slide_piece(displacement: Vector2) -> void:
 			remaining -= normal * minf(remaining.dot(normal), 0.0)
 
 func _sweep_circle(point: Vector2, motion: Vector2) -> Dictionary:
+	var length_squared := motion.length_squared()
+	if length_squared <= 0.0000000001:
+		return {}
 	var center := Hex.from_plane(point, 1.0)
 	var local_cells: Array = [center]
 	local_cells.append_array(Hex.neighbors(center))
@@ -298,6 +368,27 @@ func _sweep_circle(point: Vector2, motion: Vector2) -> Dictionary:
 					var corner_normal: Vector2 = (point + motion * t - vertex).normalized()
 					if motion.dot(corner_normal) < -0.0000001:
 						hits.append({"time": t, "normal": corner_normal})
+	for body in _node_bodies:
+		var radius: float = FOOT_RADIUS + body.radius
+		if body.get("shape", "circle") == "capsule":
+			var edge: Vector2 = body.b - body.a
+			var axis := edge.normalized()
+			var perpendicular := Vector2(-axis.y, axis.x)
+			# The segment's expanded strip and its two circular caps form the
+			# exact Minkowski sum with the unchanged player foot circle.
+			for normal: Vector2 in [perpendicular, -perpendicular]:
+				var velocity := motion.dot(normal)
+				if velocity >= -0.0000001: continue
+				var t: float = (radius - (point - body.a).dot(normal)) / velocity
+				if t < -0.00001 or t > 1.0: continue
+				t = maxf(t, 0.0)
+				var along: float = (point + motion * t - body.a).dot(axis)
+				if along >= 0.0 and along <= edge.length():
+					hits.append({"time": t, "normal": normal})
+			_append_node_circle_hit(hits, point, motion, body.a, radius, length_squared)
+			_append_node_circle_hit(hits, point, motion, body.b, radius, length_squared)
+		else:
+			_append_node_circle_hit(hits, point, motion, body.center, radius, length_squared)
 	if hits.is_empty():
 		return {}
 	var earliest := 1.0
@@ -308,6 +399,20 @@ func _sweep_circle(point: Vector2, motion: Vector2) -> Dictionary:
 		if absf(hit.time - earliest) <= 0.00001 and hit.normal not in normals:
 			normals.append(hit.normal)
 	return {"time": earliest, "normals": normals}
+
+func _append_node_circle_hit(hits: Array, point: Vector2, motion: Vector2, center: Vector2, radius: float, length_squared: float) -> void:
+	var offset := point - center
+	var bb := 2.0 * offset.dot(motion)
+	var cc := offset.length_squared() - radius * radius
+	var discriminant := bb * bb - 4.0 * length_squared * cc
+	if bb >= 0.0 or discriminant < 0.0:
+		return
+	var t := (-bb - sqrt(discriminant)) / (2.0 * length_squared)
+	if t >= -0.00001 and t <= 1.0:
+		t = maxf(t, 0.0)
+		var normal := (point + motion * t - center).normalized()
+		if motion.dot(normal) < -0.0000001:
+			hits.append({"time": t, "normal": normal})
 
 func nearby_nodes() -> Array[String]:
 	var found: Array[String] = []
@@ -334,6 +439,8 @@ func request_node(id: String) -> Dictionary:
 		return {}
 	_serial += 1
 	var node: Dictionary = nodes[id]
+	if node.type == "event":
+		opened[id] = true
 	pending = {"request_id": "%d:%d" % [get_instance_id(), _serial], "map_id": map_id, "seed": seed, "floor_index": floor_index, "node_id": id, "type": node.type, "event_kind": node.event_kind, "content_id": node.content_id, "is_route_gate": node.is_route_gate, "visit_index": int(visits.get(id, 0))}
 	last_error = ""
 	return pending.duplicate(true)
@@ -360,14 +467,22 @@ func get_view() -> Dictionary:
 		view_cells.append(copy)
 	var view_nodes: Array = []
 	for node in _snapshot.get("nodes", []):
-		view_nodes.append({"id": node.id, "type": node.type, "coord": node.coord.duplicate(), "known": _node_visible(node), "completed": completed.has(node.id), "is_route_gate": node.is_route_gate})
+		var visible: bool = _node_visible(node)
+		var event_kind := ""
+		var display_name: String = {"battle": "普通战斗", "elite": "精英战斗", "shop": "商店", "boss": "首领", "chest": "宝箱", "pile": "残堆"}.get(node.type, "随机事件")
+		if node.type == "event" and visible and opened.has(node.id):
+			event_kind = node.event_kind
+			var event_name: String = AlchemyEvents.display_name(event_kind)
+			if not event_name.is_empty():
+				display_name = event_name
+		view_nodes.append({"id": node.id, "type": node.type, "coord": node.coord.duplicate(), "known": visible, "completed": completed.has(node.id), "opened": opened.has(node.id), "event_kind": event_kind, "display_name": display_name, "body_radius": NodeGeometry.active_radius(node, completed.has(node.id)) if visible else 0.0, "body_capsule": NodeGeometry.active_capsule(node, completed.has(node.id)) if visible else {}, "is_route_gate": node.is_route_gate})
 	return {"cells": view_cells, "nodes": view_nodes, "spawn": _snapshot.get("spawn", []).duplicate()}
 
 func get_snapshot() -> Dictionary:
 	return _snapshot.duplicate(true)
 
 func capture_state() -> Dictionary:
-	return {"state_version": 1, "map_id": map_id, "fingerprint": fingerprint, "actor_plane": [actor_plane.x, actor_plane.y], "known": known.keys(), "completed": completed.keys(), "visits": visits.duplicate(), "pending": pending.duplicate(true)}
+	return {"state_version": 1, "map_id": map_id, "fingerprint": fingerprint, "actor_plane": [actor_plane.x, actor_plane.y], "known": known.keys(), "completed": completed.keys(), "opened": opened.keys(), "visits": visits.duplicate(), "pending": pending.duplicate(true)}
 
 func restore_state(saved: Dictionary) -> bool:
 	# Validate in a candidate. Any rejection leaves the active session intact.
@@ -380,7 +495,7 @@ func restore_state(saved: Dictionary) -> bool:
 func _restore_checked(saved: Dictionary) -> bool:
 	if saved.get("state_version") != 1 or saved.get("map_id") != map_id or saved.get("fingerprint") != fingerprint:
 		return _fail("State version or map identity does not match")
-	if not saved.get("known") is Array or not saved.get("completed") is Array or not saved.get("visits") is Dictionary or not saved.get("pending") is Dictionary:
+	if not saved.get("known") is Array or not saved.get("completed") is Array or not saved.get("opened", []) is Array or not saved.get("visits") is Dictionary or not saved.get("pending") is Dictionary:
 		return _fail("Invalid state collections")
 	var p: Variant = saved.get("actor_plane")
 	if not p is Array or p.size() != 2 or not (p[0] is float or p[0] is int) or not (p[1] is float or p[1] is int) or not is_finite(float(p[0])) or not is_finite(float(p[1])):
@@ -405,6 +520,16 @@ func _restore_checked(saved: Dictionary) -> bool:
 		known[k] = true
 	if known != expected_known:
 		return _fail("Saved fog does not match completed local gates")
+	opened = {}
+	for id in saved.get("opened", []):
+		if not id is String or not nodes.has(id) or nodes[id].type != "event" or opened.has(id) or not _node_visible(nodes[id]):
+			return _fail("Invalid or inaccessible opened event")
+		opened[id] = true
+	# Older saves did not track opening separately. Completion proves that the
+	# event was opened; a restored pending event is opened by request_node below.
+	for id in completed:
+		if nodes[id].type == "event":
+			opened[id] = true
 	visits = {}
 	for id in saved.visits:
 		if not nodes.has(id) or not _integer(saved.visits[id]) or int(saved.visits[id]) < 1 or not completed.has(id):

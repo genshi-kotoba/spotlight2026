@@ -1,0 +1,369 @@
+{
+  "asset_id": "UI-018",
+  "record_id": "reczz28Ial4LO7a1",
+  "source_package_sha256": "10c3d1a0ac30884e823a6d0f503bf30b3da2b415d07c8aec73d3088d1fce6b5a",
+  "processing": "Trim transparent margins and fit max 512px. All event sprites reveal only after opening; unknown events use question art. Node type pools and collision rules unchanged.",
+  "files": [
+    {
+      "id": "battle",
+      "source_file": "普通战斗.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1511,
+        1461,
+        2556,
+        2731
+      ],
+      "runtime_size": [
+        421,
+        512
+      ],
+      "source_sha256": "860abb78492a620145d6e7823a39a95e8aed6e7adfff2a7792501a4bd3c8c783"
+    },
+    {
+      "id": "boss",
+      "source_file": "BOSS.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1061,
+        1073,
+        2982,
+        3169
+      ],
+      "runtime_size": [
+        469,
+        512
+      ],
+      "source_sha256": "a0ef6055159b1fa378e43e87c3ce91c3ed72fb5fa8658f7ec965746af942ca60"
+    },
+    {
+      "id": "shop",
+      "source_file": "商店.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1390,
+        1939,
+        2687,
+        2967
+      ],
+      "runtime_size": [
+        512,
+        406
+      ],
+      "source_sha256": "a57e1562647f3161b86902611b4f62ad8c0e9046f50fe1ef11e6385405507eb0"
+    },
+    {
+      "id": "chest",
+      "source_file": "宝箱.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1294,
+        1543,
+        2759,
+        2869
+      ],
+      "runtime_size": [
+        512,
+        463
+      ],
+      "source_sha256": "9782d23f96c348838f80790b22a67fb859f0e01e6231cf30f22da37ebaf78d81"
+    },
+    {
+      "id": "pile",
+      "source_file": "残堆.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1017,
+        1709,
+        3445,
+        2846
+      ],
+      "runtime_size": [
+        512,
+        240
+      ],
+      "source_sha256": "ee93427cd5bf251505c7847ecd6d925f58c12a599ceecdc6a59b2243377d3eee"
+    },
+    {
+      "id": "elite",
+      "source_file": "精英战斗.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1356,
+        1356,
+        2797,
+        2846
+      ],
+      "runtime_size": [
+        495,
+        512
+      ],
+      "source_sha256": "a64e3f62405608fb70b3a03b27811ecad6dc8cbe0e4e4bea6d7ba28bdeea951f"
+    },
+    {
+      "id": "question",
+      "source_file": "问号.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1522,
+        1424,
+        2463,
+        2851
+      ],
+      "runtime_size": [
+        338,
+        512
+      ],
+      "source_sha256": "16943d0f28be37b23a3cedc2f8d9d621eabaac55ec231e3800215dc350c19630"
+    },
+    {
+      "id": "great_work",
+      "source_file": "伟大炼成.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1466,
+        1448,
+        2579,
+        2711
+      ],
+      "runtime_size": [
+        451,
+        512
+      ],
+      "source_sha256": "1530a55913520a20234bb682a92c89df7fcfb49c8de0ac29cc9f54fd01acbdc7"
+    },
+    {
+      "id": "medical",
+      "source_file": "医疗.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1526,
+        1401,
+        2417,
+        2776
+      ],
+      "runtime_size": [
+        332,
+        512
+      ],
+      "source_sha256": "5027fda32dc34e5d480912eef569099058423dbb37f0d39ae2dd430a0b4778fd"
+    },
+    {
+      "id": "empty_gambling_table",
+      "source_file": "空置赌桌.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        977,
+        1703,
+        3083,
+        3114
+      ],
+      "runtime_size": [
+        512,
+        343
+      ],
+      "source_sha256": "90ad06e8cbaa5bfb5cd25309fe75020b0bf02f835db46b60b3cf893175356c46"
+    },
+    {
+      "id": "death_and_taxes",
+      "source_file": "死亡赋税.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1274,
+        1447,
+        2755,
+        2827
+      ],
+      "runtime_size": [
+        512,
+        477
+      ],
+      "source_sha256": "7d10efd833ff443c27f4643b2e51419ab1e0ff6330f6b38363d6ed457404d71c"
+    },
+    {
+      "id": "wishing_well",
+      "source_file": "许愿池.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        961,
+        1630,
+        3094,
+        3034
+      ],
+      "runtime_size": [
+        512,
+        337
+      ],
+      "source_sha256": "f2246c50503988caba18baccdcee15c4bfadd2bb99b70ef67032c6400f4401b8"
+    },
+    {
+      "id": "beast_fight",
+      "source_file": "与兽共斗.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1241,
+        1406,
+        2847,
+        3012
+      ],
+      "runtime_size": [
+        512,
+        512
+      ],
+      "source_sha256": "5352ebfb2bd12e7f2a3faa71ed817bab0bcfbc45af1e7283a3e353e925627257"
+    },
+    {
+      "id": "damage_stele",
+      "source_file": "伤害石碑.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1442,
+        1414,
+        2579,
+        2833
+      ],
+      "runtime_size": [
+        410,
+        512
+      ],
+      "source_sha256": "8eaa4ddbd846186f483fa158f7984042f14869860b4372d3a42166c19099b1f0"
+    },
+    {
+      "id": "object_confession",
+      "source_file": "器物告白.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1612,
+        1296,
+        2456,
+        2825
+      ],
+      "runtime_size": [
+        283,
+        512
+      ],
+      "source_sha256": "077709f22ef611dd5ceb9fca14d3315f47447dc4c3870d68456a3961bb5aed9d"
+    },
+    {
+      "id": "codex_exchange",
+      "source_file": "典籍交换.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1350,
+        1578,
+        2524,
+        2892
+      ],
+      "runtime_size": [
+        457,
+        512
+      ],
+      "source_sha256": "b95878006d71b6b74850a1f2771de663e8734a9fed5d8bab0c6bdd097c53c8a0"
+    },
+    {
+      "id": "material_synthesis",
+      "source_file": "素材合成.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1590,
+        1737,
+        2477,
+        2846
+      ],
+      "runtime_size": [
+        410,
+        512
+      ],
+      "source_sha256": "1bdea93af207963e30309117bcd862599e895b339f7254e952c4c08f57e01af6"
+    },
+    {
+      "id": "material_upgrade",
+      "source_file": "素材升级.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1418,
+        1534,
+        2397,
+        2817
+      ],
+      "runtime_size": [
+        391,
+        512
+      ],
+      "source_sha256": "de623c055419e0f745a58dd045b44b54818dc8c3ba1c2451cb52ff718f235c30"
+    },
+    {
+      "id": "listening_conch",
+      "source_file": "倾听海螺.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1299,
+        1620,
+        2731,
+        2812
+      ],
+      "runtime_size": [
+        512,
+        426
+      ],
+      "source_sha256": "1d4db0312b7301fa04aa1ea823ccf842f7afc092d78c768f2ef4ee33f1c81bf5"
+    }
+  ]
+}

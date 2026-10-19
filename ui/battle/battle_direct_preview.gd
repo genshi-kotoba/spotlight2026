@@ -41,11 +41,14 @@ static func _sum(ops: Array, card: Dictionary, attack_bonus: int, block_bonus: i
 		var amount: Variant = op.get("amount", 0)
 		if not (amount is int or amount is float):
 			continue # 条件数值不能用零伪装成确定预测。
+		amount = int(floor(float(amount) * float(card.get("effect_scale", 1.0))))
 		match str(op.get("op", "")):
 			"damage":
 				var damage := maxi(0, int(amount) + attack_bonus)
 				if card.get("enchantments", []).has("damage_50"):
 					damage = int(floor(damage * 1.5))
+				if CardEnchantments.has(card, 3): damage = int(floor(damage * 1.3))
+				if CardEnchantments.has(card, 6): damage *= 2
 				result.damage += damage * repeats
 			"block":
 				result.block += maxi(0, int(amount) + block_bonus) * repeats

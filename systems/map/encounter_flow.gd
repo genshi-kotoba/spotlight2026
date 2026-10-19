@@ -6,6 +6,7 @@ const BATTLE_SCENE := "res://ui/battle/map_battle_scene.tscn"
 const MAP_SCENE := "res://ui/main_menu/menu_map_entry.tscn"
 const TOTAL_FLOORS := 4
 const IMPLEMENTED_FLOORS := 3
+const DEBUG_VICTORY_SETTING := "debug/map_battle/enable_instant_victory"
 var map_run: RefCounted
 var session: RefCounted
 var run: RunStateMachine
@@ -98,6 +99,27 @@ func open_battle() -> void:
 		if error != OK:
 			_fail("打开战斗界面失败：%d" % error)
 
+func debug_victory_enabled() -> bool:
+	# Release previews must opt in explicitly in their own project settings.
+	# The production project has no override and therefore exposes no cheat UI.
+	var enabled: Variant = ProjectSettings.get_setting(DEBUG_VICTORY_SETTING, false)
+	return enabled is bool and enabled
+
+func can_debug_finish_battle(battle: BattleStateMachine) -> bool:
+	return debug_victory_enabled() and is_instance_valid(run) and run.active \
+		and run == SaveGateway.current_run() and is_instance_valid(battle) \
+		and run.current_battle == battle and battle.active and _matches_battle(battle) \
+		and battle.phase == BattleStateMachine.Phase.PLAYER_ACTION \
+		and not battle.rules.queue.processing and not battle.rules.queue.paused \
+		and battle.rules.queue.pending_count() == 0
+
+func debug_finish_battle(battle: BattleStateMachine) -> Error:
+	if not debug_victory_enabled(): return ERR_UNAVAILABLE
+	if not can_debug_finish_battle(battle): return ERR_BUSY
+	# Debug completion skips damage reactions/transformations, but its single
+	# battle_ended still drives normal rewards, map settlement and saving.
+	return battle.debug_finish_victory()
+
 func _matches_battle(battle: BattleStateMachine) -> bool:
 	return session != null and not session.pending.is_empty() \
 		and battle.enemies.size() >= 1 and session.pending.type in ["battle", "elite", "boss"] \
@@ -153,8 +175,8 @@ func _boss_completed() -> bool:
 func _advance_after_boss() -> bool:
 	run.complete_current_map()
 	if map_run.current_floor >= IMPLEMENTED_FLOORS:
-		# 不能把第三层当全游戏胜利；保留本局，等待后续第四层。
-		run.map_states[run.current_map_id]["awaiting_fourth_floor"] = true
+		# 当前测试版以第三层为终点，领完最终 Boss 奖励后再记录最终背包。
+		run.inventory_state["pending_run_victory"] = true
 		return true
 	var entry: Dictionary = map_run.enter_floor(map_run.current_floor + 1, session.capture_state())
 	if entry.is_empty():

@@ -41,10 +41,10 @@ const FACE_SIZE := Vector2(480, 818)
 const ANCHOR_TOLERANCE := 0.001
 const IMPORT_MAX_EDGE := 1024
 
-## 新版卡面把效果区扩展到 0.700..0.975；介绍默认隐藏，只在手写预览中按需展示。
+## 效果区限定在底图文字框内 0.700..0.940；介绍默认隐藏。
 const ART_ANCHORS := Rect2(0.1192, 0.2087, 0.7534, 0.3581)
 const TITLE_ANCHORS := Rect2(0.0959, 0.5749, 0.8001, 0.1211)
-const EFFECT_ANCHORS := Rect2(0.1223, 0.700, 0.7473, 0.275)
+const EFFECT_ANCHORS := Rect2(0.1223, 0.700, 0.7473, 0.240)
 const INTRO_ANCHORS := Rect2(0.1223, 0.819, 0.7473, 0.1)
 
 ## 脚本里一旦出现这些写法，说明几何被搬进了代码，编辑器里拖不动。

@@ -3,15 +3,22 @@ extends RefCounted
 ## is exclusively requested by the main-thread mesh publish/dynamic draw path.
 const ATLAS_PATH := "res://assets/environment/env005/env005-atlas.png"
 const VariantCatalog = preload("res://systems/map/relief_2d/art_variant_catalog.gd")
+const ArtThemes = preload("res://systems/map/relief_2d/map_art_themes.gd")
 # Reuse the supplied top and its painted black perimeter. A darker neutral
 # stone albedo separates non-walkable crowns from the walkable floor without
 # extra geometry, outlines, seam strips, or an additional texture.
 const WALL_CROWN_TINT := Color(.78,.775,.76,1.0)
 const CORNERS := [Vector2(2862,2855),Vector2(1938,3103),Vector2(1104,2767),Vector2(1185,2180),Vector2(2125,1933),Vector2(2955,2268)]
-static var _atlas: Texture2D
-static var _load_ms := 0.0
-static var _mip_bytes := 0
+# Main-thread texture sharing does not own the GPU resources. Published and
+# cached batches hold strong references; retiring a floor can release its atlas.
+static var _atlas_refs: Dictionary = {}
+static var _texture_metrics: Dictionary = {}
 var enabled := false
+var theme_id := "alchemy"
+var asset_id := "ENV-005"
+var atlas_path := ATLAS_PATH
+var manifest_path := VariantCatalog.MANIFEST
+var theme_fallback_reason := ""
 var _blocked: Dictionary = {}
 var _address := ""
 var cache_ms := 0.0
@@ -32,21 +39,49 @@ func _init() -> void:
 		var b := Vector2(cos((edge+1)*PI/3.0),sin((edge+1)*PI/3.0))
 		_uv_edge_a.append(a);_uv_edge_b.append(b);_uv_edge_cross.append(a.cross(b))
 
-static func atlas_texture() -> Texture2D:
-	if _atlas == null:
-		var start := Time.get_ticks_usec()
-		var image := Image.new()
-		var error := image.load_png_from_buffer(FileAccess.get_file_as_bytes(ATLAS_PATH))
-		if error != OK or image.is_empty(): push_error("ENV005 atlas missing: "+ATLAS_PATH);return null
-		image.fix_alpha_edges()
-		image.generate_mipmaps()
-		_mip_bytes = image.get_data_size()
-		_atlas = ImageTexture.create_from_image(image)
-		_load_ms = (Time.get_ticks_usec()-start)/1000.0
-	return _atlas
+static func atlas_texture(path: String = ATLAS_PATH) -> Texture2D:
+	# Called only by the main-thread mesh publish/dynamic draw path.
+	for key: String in _atlas_refs.keys():
+		if _atlas_refs[key].get_ref() == null: _atlas_refs.erase(key)
+	var reference: WeakRef = _atlas_refs.get(path)
+	if reference != null:
+		var existing: Texture2D = reference.get_ref() as Texture2D
+		if existing != null: return existing
+	var start := Time.get_ticks_usec()
+	var image := Image.new()
+	var error := image.load_png_from_buffer(FileAccess.get_file_as_bytes(path))
+	if error != OK or image.is_empty(): push_error("Map art atlas missing: " + path);return null
+	image.fix_alpha_edges()
+	image.generate_mipmaps()
+	var texture := ImageTexture.create_from_image(image)
+	_atlas_refs[path] = weakref(texture)
+	_texture_metrics[path] = {"rgba_mipmap_bytes":image.get_data_size(),"texture_load_ms":(Time.get_ticks_usec()-start)/1000.0}
+	# Metrics are small CPU records, but keep even user-supplied path changes bounded.
+	while _texture_metrics.size() > 16: _texture_metrics.erase(_texture_metrics.keys()[0])
+	return texture
+
+func select_floor(floor_index: int) -> void:
+	var theme: Dictionary = ArtThemes.for_floor(floor_index)
+	theme_fallback_reason = str(theme.fallback_reason)
+	if atlas_path != str(theme.atlas) or manifest_path != str(theme.manifest):
+		var candidate: VariantCatalog = VariantCatalog.new({},str(theme.manifest))
+		if not candidate.errors.is_empty() or candidate.pools.get("ground",[]).is_empty() or candidate.pools.get("wall",[]).is_empty():
+			theme = ArtThemes.fallback("Invalid theme catalog: " + str(theme.id))
+			theme_fallback_reason = str(theme.fallback_reason)
+			candidate = VariantCatalog.new()
+		catalog = candidate
+		_choices.clear()
+	theme_id = str(theme.id)
+	asset_id = str(theme.asset_id)
+	atlas_path = str(theme.atlas)
+	manifest_path = str(theme.manifest)
+
+func cache_identity() -> Array:
+	return [theme_id,atlas_path,manifest_path,catalog.signature]
 
 func configure(value: bool, snapshot: Dictionary, known: Dictionary) -> void:
 	var start := Time.get_ticks_usec()
+	select_floor(int(snapshot.get("floor_index",1)))
 	enabled = value;_blocked.clear();_choices.clear()
 	_address = JSON.stringify([str(snapshot.get("seed","")),str(snapshot.get("map_id","")),int(snapshot.get("floor_index",0))])
 	for node: Dictionary in snapshot.get("nodes",[]):
@@ -179,4 +214,5 @@ func decoration(source, face: Dictionary) -> Dictionary:
 func report() -> Dictionary:
 	var counts := {}
 	for pool: String in catalog.pools: counts[pool]=catalog.pools[pool].size()
-	return {"enabled":enabled,"atlas":"env005-atlas.png","size":[catalog.size.x,catalog.size.y],"rgba_mipmap_bytes":_mip_bytes,"texture_load_ms":_load_ms,"cache_ms":cache_ms,"wall_repeat_world":catalog.repeat_height,"wall_crown_tint":WALL_CROWN_TINT.to_html(false),"filter":"linear-mipmap","variant_pools":counts,"catalog_signature":catalog.signature,"catalog_errors":catalog.errors,"decoration_probability":catalog.decoration_probability,"selection":"seed-map-floor-cell-pool-stateless-v1"}
+	var metrics: Dictionary = _texture_metrics.get(atlas_path,{})
+	return {"enabled":enabled,"theme":theme_id,"asset_id":asset_id,"atlas":atlas_path.get_file(),"atlas_path":atlas_path,"manifest_path":manifest_path,"theme_fallback_reason":theme_fallback_reason,"size":[catalog.size.x,catalog.size.y],"rgba_mipmap_bytes":int(metrics.get("rgba_mipmap_bytes",0)),"texture_load_ms":float(metrics.get("texture_load_ms",0.0)),"cache_ms":cache_ms,"wall_repeat_world":catalog.repeat_height,"wall_crown_tint":WALL_CROWN_TINT.to_html(false),"filter":"linear-mipmap","variant_pools":counts,"catalog_signature":catalog.signature,"catalog_errors":catalog.errors,"decoration_probability":catalog.decoration_probability,"selection":"seed-map-floor-cell-pool-stateless-v1"}

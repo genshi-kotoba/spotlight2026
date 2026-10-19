@@ -4,10 +4,8 @@ var captured: Dictionary = {}
 func _run() -> void:
 	fixture_root = "res://.godot/shop-enchant-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(fixture_root)
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("1.json"), fixture_root.path_join("2.json"), fixture_root.path_join("3.json")])
-	SaveGateway._active_slot = 1
-	_check("隔离测试档案", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture_root.path_join("game.json")
+	_check("隔离测试档案", SaveGateway.load_current() == OK)
 	EncounterFlow.relic_board_path = fixture_root.path_join("empty-board.json")
 	_config = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
 	_config.run_id = "shop-fixture"
@@ -28,6 +26,8 @@ func _run() -> void:
 	if not is_instance_valid(popup):
 		get_tree().quit(1)
 		return
+	var shop_background := popup._root.get_node_or_null("ShopBackground") as TextureRect
+	_check("商店使用EVBG-013背景且不拦截点击", shop_background != null and shop_background.texture != null and shop_background.texture.resource_path == ShopPopup.SHOP_BACKGROUND and shop_background.mouse_filter == Control.MOUSE_FILTER_IGNORE)
 	var request := popup.request.duplicate(true)
 	var original := RunShop.shelf(run, request)
 	if original.is_empty():
@@ -184,11 +184,10 @@ func _approach_shop(view: Node) -> String:
 		var node: Dictionary = view.session.nodes[id]
 		if node.type != "shop":
 			continue
-		# 地图更新会改变节点编号；夹具选含两种附魔的真实商店，不假设第一家必有两种。
+		# 正式表已扩为22种，夹具选择至少两种能附给狮子之血的真实货架。
 		var run := SaveGateway.current_run()
 		var shelf := RunShop.generate(run.main_seed, view.session.map_id, id, view.session.floor_index)
-		var enchant_ids: Array = shelf.enchantments.map(func(offer: Dictionary): return str(offer.id))
-		if not enchant_ids.has("damage_50") or not enchant_ids.has("repeat_2"):
+		if not _two_applicable_enchantments(shelf):
 			continue
 		for point: Array in node.footprint:
 			for cell: Vector2i in Hex.neighbors(Session.coord(point)):
@@ -204,7 +203,7 @@ func _approach_shop(view: Node) -> String:
 	return ""
 
 func _seed_with_both_enchantments() -> String:
-	# 双槽交易测试需要同店含两种测试附魔，选合法种子而不篡改真实货架或生产随机规则。
+	# 选合法种子而不篡改真实货架；兼容正式22种附魔与类别约束。
 	var version := str(ProjectSettings.get_setting("application/config/seed_content_version", ""))
 	var settings: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/relief_2d/exploration.json"))
 	for attempt in 20:
@@ -218,11 +217,17 @@ func _seed_with_both_enchantments() -> String:
 			if node.type != "shop":
 				continue
 			var shelf := RunShop.generate(candidate, str(entry.snapshot.map_id), str(node.id), 1)
-			var ids: Array = shelf.enchantments.map(func(offer: Dictionary): return str(offer.id))
-			if ids.has("damage_50") and ids.has("repeat_2"):
+			if _two_applicable_enchantments(shelf):
 				return candidate
 	push_error("测试未找到含两种附魔的商店种子")
 	return "shop-fixed"
+
+func _two_applicable_enchantments(shelf: Dictionary) -> bool:
+	var seen := {}
+	for offer: Dictionary in shelf.get("enchantments", []):
+		if not CardEnchantments.can_apply({"card_id": "1"}, str(offer.id)): return false
+		seen[str(offer.id)] = true
+	return seen.size() >= 2
 
 func _fixture(ids: Array[String], enchantments: Array) -> BattleStateMachine:
 	var b := BattleStateMachine.new()
@@ -286,6 +291,7 @@ func _battle_rules() -> void:
 	b.queue_free()
 	b = _fixture(["1"], ["damage_50"])
 	var board := RelicBoard.new()
+	board.set_unlocked_cells(range(RelicBoard.CELL_COUNT))
 	for index in RelicBoard.CELL_COUNT:
 		board.cells[index] = "on_enemy_damaged" if index < 6 else "deal_damage"
 	var relics := RelicBattleSystem.new()
@@ -293,5 +299,5 @@ func _battle_rules() -> void:
 	var resolver: BattleEffectResolver = b.get_child(0)
 	relics.attach_to_battle(b, board, RelicCatalog.load_definitions(), resolver.buff_catalog)
 	b.commit_player_sequence(["e-0"], {"e-0": "enemy"})
-	_check("典籍连锁仍每次2伤，不继承卡牌倍率且保护仍生效", relics.activation_count == 128 and int(captured.enemies[0].health) == 737 and b.rules.last_error == OK)
+	_check("典籍连锁仍每次2伤，不继承卡牌倍率且保护仍生效", relics.activation_count > 0 and relics.activation_count <= RelicBattleSystem.MAX_CHAIN_EFFECTS and int(captured.enemies[0].health) == 993 - 2 * relics.activation_count and b.rules.last_error == OK)
 	b.queue_free()

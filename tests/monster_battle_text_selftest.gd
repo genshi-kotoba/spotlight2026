@@ -13,10 +13,8 @@ func _run() -> void:
 	get_window().size = Vector2i(1920, 1080)
 	fixture_root = "res://.godot/monster-text-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(fixture_root)
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("1.json"), fixture_root.path_join("2.json"), fixture_root.path_join("3.json")])
-	SaveGateway._active_slot = 1
-	_check("独立测试存档", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture_root.path_join("game.json")
+	_check("独立测试存档", SaveGateway.load_current() == OK)
 	EncounterFlow.relic_board_path = fixture_root.path_join("empty-board.json")
 	_check("句号换行、分号换行、BOM、CRLF与尾句", MonsterBattleText.parse_sentences("\uFEFF甲；\r\n乙。\r\n丙。行内句号不拆。\n尾句") == ["甲；\n乙。", "丙。行内句号不拆。", "尾句"])
 	_check("问号感叹号加换行结束一句", MonsterBattleText.parse_sentences("谁？\n我！\n结束。\n") == ["谁？", "我！", "结束。"])

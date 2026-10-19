@@ -2,10 +2,8 @@ extends "res://tests/map_entry_input_selftest.gd"
 ## 新版2.5D地图与UI的真实接线回归，全部数据写入隔离目录。
 func _run() -> void:
 	fixture_root = "res://.godot/map-ui-merge-%d" % Time.get_ticks_usec()
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("1.json"), fixture_root.path_join("2.json"), fixture_root.path_join("3.json")])
-	SaveGateway._active_slot = 1
-	_check("隔离档案", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture_root.path_join("game.json")
+	_check("隔离档案", SaveGateway.load_current() == OK)
 	var config: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
 	config.run_id = "map-ui-merge"
 	_check("真实初始牌组开局", SaveGateway.start_new_run("map-ui-merge-v1", config) == OK)

@@ -227,6 +227,10 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 	pointer_index = saved_pointer
 	pointer_resolutions = saved_resolutions
 	player = saved_player.duplicate(true)
+	if player.has("encounter_relic_board"):
+		var saved_board := RelicBoard.new()
+		saved_board.restore(player.encounter_relic_board, RelicCatalog.load_definitions())
+		player.encounter_relic_board = saved_board.to_dictionary()
 	enemies = _copy_dictionary_array(saved_enemies)
 	draw_pile = _copy_dictionary_array(saved_draw)
 	discard_pile = _copy_dictionary_array(saved_discard)
@@ -299,10 +303,12 @@ func commit_player_sequence(instance_ids: Array[String], targets: Dictionary = {
 	for card: Dictionary in play_zone:
 		if not bool(card.get("slot_empty", false)) and bool(card.get("occupies_slot", true)):
 			used_slots += 1
+	var existing_slots := used_slots
 	for id: String in instance_ids:
 		if bool(hand[_find_card_index(hand, id)].get("occupies_slot", true)):
 			used_slots += 1
-	if effective_play_limit() > 0 and used_slots > effective_play_limit():
+	# 弃牌附魔/效果强制插入的已有牌必须能继续结算，但不额外放宽手动出牌额度。
+	if effective_play_limit() > 0 and used_slots > maxi(effective_play_limit(), existing_slots):
 		return _fail(ERR_INVALID_PARAMETER, "Sequence exceeds available card slots")
 	var original_hand := hand.duplicate(true)
 	for instance_id: String in instance_ids:
@@ -396,7 +402,8 @@ func _finish_resolved_card(card: Dictionary, resolved_at: int,
 		card_instance_id: String, pointer_override: int) -> Error:
 	pointer_resolutions += 1
 	card_resolved.emit(card.duplicate(true), resolved_at)
-	rules.publish("card.resolved", {"card": card, "index": resolved_at})
+	rules.publish("card.resolved", {"card": card, "index": resolved_at,
+		"final_repeat": int(_repeat_remaining_by_card.get(card_instance_id, 0)) <= 0})
 	if _finish_if_needed():
 		return OK
 
@@ -749,7 +756,7 @@ func submit_battle_choice(ids: Array[String]) -> Error:
 		if id not in allowed or seen.has(id): return ERR_INVALID_PARAMETER
 		seen[id] = true
 	player.erase("battle_choice")
-	rules.publish("monster.choice_result", {"mode": choice.mode, "ids": ids})
+	rules.publish("enchantment.choice_result" if str(choice.mode).begins_with("enchantment_") else "monster.choice_result", {"mode": choice.mode, "ids": ids})
 	rules.queue.resume()
 	return rules.flush()
 
@@ -783,6 +790,7 @@ func update_card_properties(id: String, changes: Dictionary) -> Error:
 		for card: Dictionary in zone:
 			if str(card.instance_id) == id:
 				card.merge(changes, true)
+				if CardEnchantments.has(card, 4): card["occupies_slot"] = false
 				return OK
 	return ERR_DOES_NOT_EXIST
 
@@ -1062,6 +1070,21 @@ func _step_buff_resolved(event: BattleEvent) -> void:
 	_finish_if_needed()
 
 
+## Explicit preview opt-in only. Do not run monster damage/death reactions:
+## reflection or a new phase must not turn a debug victory into a real defeat.
+func debug_finish_victory() -> Error:
+	var enabled: Variant = ProjectSettings.get_setting("debug/map_battle/enable_instant_victory", false)
+	if not enabled is bool or not enabled:
+		return ERR_UNAVAILABLE
+	if not active or phase != Phase.PLAYER_ACTION or int(player.health) <= 0 \
+			or rules.queue.processing or rules.queue.paused or rules.queue.pending_count() != 0:
+		return ERR_BUSY
+	for enemy: Dictionary in enemies:
+		enemy.health = 0
+	_finish_battle("victory")
+	return OK
+
+
 func _finish_if_needed() -> bool:
 	if not active:
 		return true
@@ -1143,6 +1166,10 @@ func _prepare_config(config: Dictionary) -> Dictionary:
 
 
 static func _valid_player(value: Dictionary) -> bool:
+	if value.has("encounter_relic_board"):
+		if not value.encounter_relic_board is Dictionary: return false
+		var saved_board := RelicBoard.new()
+		if saved_board.restore(value.encounter_relic_board, RelicCatalog.load_definitions()) != OK: return false
 	var health: Variant = _integer_value(value.get("health"))
 	var maximum: Variant = _integer_value(value.get("max_health"))
 	var block: Variant = _integer_value(value.get("block", 0))
@@ -1150,7 +1177,18 @@ static func _valid_player(value: Dictionary) -> bool:
 	return health != null and maximum != null and block != null and maximum > 0 \
 		and health >= 0 and health <= maximum and block >= 0 and buffs is Array \
 		and _valid_buff_array(buffs) and value.get("card_rules", {}) is Dictionary \
-		and _json_safe(value.get("card_rules", {}))
+		and _json_safe(value.get("card_rules", {})) and _valid_relic_runtime(value.get("relic_runtime", {}))
+
+
+static func _valid_relic_runtime(value: Variant) -> bool:
+	if not value is Dictionary or not _json_safe(value): return false
+	if not value.has("chain_charges"): return true
+	if not value.chain_charges is Dictionary: return false
+	for key: Variant in value.chain_charges:
+		if not key is String or not key.is_valid_int() or str(int(key)) != key \
+				or int(key) < 0 or int(key) >= RelicBoard.CELL_COUNT or not value.chain_charges[key] is bool:
+			return false
+	return true
 
 
 static func _valid_enemy_array(values: Array) -> bool:

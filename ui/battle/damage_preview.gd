@@ -20,11 +20,7 @@ func _ready() -> void:
 	var plate := Panel.new()
 	plate.set_anchors_preset(Control.PRESET_FULL_RECT)
 	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = PLATE_COLOR
-	style.set_corner_radius_all(10)
-	style.set_border_width_all(1)
-	style.border_color = EDGE_COLOR
+	var style := CommonUiSkin.panel("strip")
 	plate.add_theme_stylebox_override("panel", style)
 	add_child(plate)
 

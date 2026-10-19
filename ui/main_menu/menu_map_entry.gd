@@ -6,6 +6,7 @@ var _gateway: Node
 var _saved_entry_state: Dictionary = {}
 var _reward_popup: LootPopup
 var _shop_popup: ShopPopup
+var _node_loot_popup: NodeLootPopup
 
 # PRG-002 已经安装了真实随机快照；地图恢复仅验证同一个快照，不能再次安装
 # SeedService，否则会使 main 的战斗/奖励等已经持有的 RandomStream 失效。
@@ -39,12 +40,9 @@ func _ready() -> void:
 	MapEvents.node_interaction_requested.connect(_on_world_node_requested)
 	super._ready()
 	if not _saved_entry_state.is_empty():
-		load_map(_map_snapshot, _saved_entry_state)
 		if not session.pending.is_empty() and demo_interactions_enabled and _uses_demo_dialog(session.pending):
 			_dialog_request_id = str(session.pending.request_id)
-			_dialog.title = "已恢复待结算节点"
-			_dialog.dialog_text = "节点 %s 的请求已恢复，请完成或取消以继续探索。" % session.pending.node_id
-			_dialog.popup_centered(Vector2i(570, 255))
+			_configure_node_dialog(session.pending)
 	if not EncounterFlow.bind_map(self):
 		_show_toast(EncounterFlow.last_error)
 		return
@@ -55,12 +53,14 @@ func _ready() -> void:
 		EncounterFlow.session = session
 	if not RunRewards.pending(_gateway.current_run()).is_empty() and _gateway.current_run().current_battle == null:
 		call_deferred("_show_pending_rewards")
+	elif bool(_gateway.current_run().inventory_state.get("pending_run_victory", false)):
+		RunResults.call_deferred("complete_if_ready")
 	elif session.pending.get("type") == "shop":
 		call_deferred("_show_shop", session.pending.duplicate(true))
 	elif session.pending.get("type") == "event":
 		call_deferred("_show_random_event")
-	elif EncounterFlow.waiting_for_fourth_floor():
-		_show_fourth_floor_notice()
+	elif session.pending.get("type") in ["chest", "pile"]:
+		call_deferred("_show_node_loot", session.pending.duplicate(true))
 	# 放弃本局的二次确认在设置面板里完成，这里只负责落地。
 	# 冒险菜单设置页里的三个动作：存档、回主菜单、退出都走存档网关。
 	_run_menu.abandon_requested.connect(_on_menu_abandon)
@@ -112,6 +112,9 @@ func _initial_snapshot() -> Dictionary:
 	var entry: Dictionary = map_run.enter_floor(maxi(1, floor_index))
 	return entry.get("snapshot", {})
 
+func _initial_state() -> Dictionary:
+	return _saved_entry_state
+
 func _enable_monster_assignments() -> bool:
 	var policy = preload("res://systems/map/flat_2d/monster_encounters.gd")
 	var roster: Array = policy.roster_from_catalog(TextCatalog.entries("monsters"))
@@ -121,7 +124,7 @@ func _enable_monster_assignments() -> bool:
 	return true
 
 func _uses_demo_dialog(request: Dictionary) -> bool:
-	return request.get("type") not in ["battle", "elite", "boss", "shop", "event"]
+	return request.get("type") not in ["battle", "elite", "boss", "shop", "event", "chest", "pile"]
 
 func _on_world_node_requested(request: Dictionary) -> void:
 	if request.get("map_id") != session.map_id or _uses_demo_dialog(request):
@@ -135,6 +138,9 @@ func _on_world_node_requested(request: Dictionary) -> void:
 	if request.get("type") == "shop":
 		_show_shop(request)
 		return
+	if request.get("type") in ["chest", "pile"]:
+		_show_node_loot(request)
+		return
 	if not EncounterFlow.begin_encounter(request):
 		_show_toast(EncounterFlow.last_error)
 
@@ -142,8 +148,10 @@ func _interact() -> void:
 	if not RunRewards.pending(_gateway.current_run()).is_empty():
 		_show_pending_rewards()
 		return
-	if EncounterFlow.waiting_for_fourth_floor():
-		_show_toast("前三层已完成，第四层暂未开放")
+	if RunResults.complete_if_ready():
+		return
+	if session.pending.get("type") in ["chest", "pile"]:
+		_show_node_loot(session.pending.duplicate(true))
 		return
 	if not session.pending.is_empty() and _gateway.current_run().current_battle != null:
 		if _gateway.save_current() == OK:
@@ -164,6 +172,29 @@ func _show_shop(request: Dictionary) -> void:
 	add_child(_shop_popup)
 	_shop_popup.close_handler = _close_shop
 	_shop_popup.show_shop(request)
+
+func _show_node_loot(request: Dictionary) -> void:
+	if is_instance_valid(_node_loot_popup): return
+	_set_paused(true)
+	_node_loot_popup = NodeLootPopup.new()
+	add_child(_node_loot_popup)
+	_node_loot_popup.close_handler = _close_node_loot
+	_node_loot_popup.claimed.connect(_on_node_loot_claimed)
+	_node_loot_popup.finished.connect(func(): _set_paused(false), CONNECT_DEFERRED)
+	_node_loot_popup.show_loot(request)
+
+func _on_node_loot_claimed(request: Dictionary) -> void:
+	_sync_view()
+	_sync_actor()
+	MapEvents.map_state_changed.emit(str(request.map_id), session.capture_state())
+	MapEvents.node_interaction_resolved.emit(str(request.request_id), str(request.node_id), "completed")
+
+func _close_node_loot(request: Dictionary) -> Error:
+	var error := RunNodeLoot.cancel(_gateway.current_run(), request)
+	if error == OK:
+		MapEvents.map_state_changed.emit(str(request.map_id), session.capture_state())
+		MapEvents.node_interaction_resolved.emit(str(request.request_id), str(request.node_id), "cancelled")
+	return error
 
 func _show_random_event() -> void:
 	if _gateway.save_current() != OK:
@@ -191,7 +222,7 @@ func _close_shop() -> Error:
 	return OK
 
 func _handle_menu_hotkeys(event: InputEvent) -> bool:
-	if is_instance_valid(_shop_popup) or is_instance_valid(_reward_popup):
+	if is_instance_valid(_shop_popup) or is_instance_valid(_reward_popup) or is_instance_valid(_node_loot_popup):
 		return false
 	return super._handle_menu_hotkeys(event)
 
@@ -205,9 +236,8 @@ func _show_pending_rewards() -> void:
 	_reward_popup.show_rewards()
 
 func _on_rewards_closed() -> void:
+	if RunResults.complete_if_ready(): return
 	_set_paused(false)
-	if EncounterFlow.waiting_for_fourth_floor():
-		_show_fourth_floor_notice()
 
 func _reset_map() -> void:
 	_show_toast("正式冒险不重置节点；同一种子的敌人和已完成进度均保留")
@@ -217,16 +247,7 @@ func _refresh_run_controls() -> void:
 	_previous.hide()
 	_next.hide()
 	if map_run != null and map_run.current_floor > 0:
-		_floor_label.text = "第 %d / 4 层 · 击败 BOSS 自动前往下一层" % map_run.current_floor
-
-func _show_fourth_floor_notice() -> void:
-	_set_paused(true)
-	var notice := AcceptDialog.new()
-	notice.title = "前三层已完成"
-	notice.dialog_text = "已击败第三层 BOSS。\n第四层暂未制作，本局进度已保留；这还不是全游戏通关。"
-	notice.ok_button_text = "留在地图"
-	add_child(notice)
-	notice.popup_centered(Vector2i(660, 220))
+		_floor_label.text = "第 %d / 3 层 · 测试版第三层 BOSS 后通关" % map_run.current_floor
 
 
 func capture_menu_checkpoint() -> Dictionary:

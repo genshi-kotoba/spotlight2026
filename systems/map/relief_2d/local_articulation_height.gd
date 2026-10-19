@@ -356,13 +356,35 @@ static func _summary(quality:Dictionary)->Dictionary:
  var result=quality.duplicate(false);result.erase("_bands");result.erase("_near");return result
 
 static func _tiny_rows(levels:Array,data:Dictionary)->Array:
- var result=[]
- for row in Regions._small_components(levels,data).rows:
-  if row.cells.size()>3:continue
-  var free=false
-  for pair in row.cells:
-   if not data._la_required.has(Vector2i(int(pair[0]),int(pair[1]))):free=true;break
-  if free:result.append(row)
+ # This caller only consumes extrema of at most three cells. Traverse the
+ # same topology in the same order, without building discarded large rows.
+ var topology:Dictionary=data.get("_rw_cell_topology",{})
+ if topology.is_empty():topology=Regions._cell_topology(data)
+ var coords:Array=topology.coords;var owners:Array=topology.owners;var neighbors:Array=topology.neighbors
+ var elevations:=PackedInt32Array();elevations.resize(coords.size())
+ for i:int in coords.size():elevations[i]=int(levels[owners[i]])
+ var used:=PackedByteArray();used.resize(coords.size());used.fill(0)
+ var result:Array=[]
+ for start:int in coords.size():
+  if used[start]!=0:continue
+  var z:int=elevations[start];var queue:Array[int]=[start];var cursor:int=0
+  var above:bool=false;var below:bool=false;used[start]=1
+  while cursor<queue.size():
+   var here:int=queue[cursor];cursor+=1
+   for n:int in neighbors[here]:
+    var other:int=elevations[n]
+    if other==z:
+     if used[n]==0:used[n]=1;queue.append(n)
+    elif other>z:above=true
+    else:below=true
+  if queue.size()>3 or above==below:continue
+  var free:bool=false
+  for i:int in queue:
+   if not data._la_required.has(coords[i]):free=true;break
+  if not free:continue
+  var cells:Array=[]
+  for i:int in queue:cells.append([coords[i].x,coords[i].y])
+  result.append({"cells":cells,"level":z,"kind":"peak" if below else "pit","expected_spawn_approach":int(topology.spawn) in queue})
  return result
 
 static func _repair_graph(graph:Array)->Dictionary:

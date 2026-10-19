@@ -2,6 +2,7 @@ extends Control
 
 const CATEGORY_LABELS := {"cards": "卡牌", "fragments": "典籍残片", "monsters": "怪物"}
 const MODE_LABELS := ["显示所有", "显示已解锁", "显示未解锁"]
+const MONSTER_LOCATIONS := {"1": "炼金工坊", "2": "贫民窟", "3": "修道院", "4": "教堂顶"}
 
 var category := "cards"
 var display_mode: TextCatalogService.DisplayMode = TextCatalogService.DisplayMode.ALL
@@ -18,7 +19,7 @@ var _detail_fields: VBoxContainer
 
 
 func _ready() -> void:
-	var body := CatalogUi.shell(self, "图鉴", "解锁状态属于当前档案")
+	var body := CatalogUi.shell(self, "图鉴", "浏览卡牌、典籍残片与怪物")
 	var navigation := HBoxContainer.new()
 	navigation.name = "Categories"
 	navigation.add_theme_constant_override("separation", 16)
@@ -81,6 +82,8 @@ func refresh() -> void:
 	if not is_node_ready():
 		return
 	visible_entries = TextCatalog.entries(category, display_mode)
+	if category == "fragments":
+		visible_entries = visible_entries.filter(_is_catalog_entry_visible)
 	_mode_button.text = MODE_LABELS[int(display_mode)]
 	for key: String in _category_buttons:
 		_category_buttons[key].disabled = key == category
@@ -98,12 +101,11 @@ func refresh() -> void:
 		tile.custom_minimum_size = Vector2(264, 480)
 		tile.add_theme_constant_override("separation", 10)
 		_grid.add_child(tile)
-		var id_label := CatalogUi.label(record.id, 22)
-		id_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		id_label.modulate = CatalogUi.MUTED
-		tile.add_child(id_label)
 		var hit := Button.new()
 		hit.name = "OpenDetail"
+		hit.flat = true
+		for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
+			hit.add_theme_stylebox_override(state, StyleBoxEmpty.new())
 		hit.custom_minimum_size = Vector2(264, 429)
 		hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		hit.tooltip_text = "查看详情"
@@ -121,9 +123,14 @@ func _resize_grid() -> void:
 		_grid.columns = maxi(1, int((_scroll.size.x - 20.0) / 288.0))
 
 
+func _is_catalog_entry_visible(record: Dictionary) -> bool:
+	# 仅控制图鉴展示，不过滤导入数据，也不改变残片获取、附着或战斗规则。
+	return category != "fragments" or str(record.get("type", "")).strip_edges().to_lower() not in ["负面", "negative"]
+
+
 func open_detail(id: String) -> void:
 	var record := TextCatalog.entry(category, id)
-	if record.is_empty():
+	if record.is_empty() or not _is_catalog_entry_visible(record):
 		_detail.hide()
 		detail_entry.clear()
 		return
@@ -131,19 +138,59 @@ func open_detail(id: String) -> void:
 	CatalogUi.clear(_detail_card)
 	CatalogUi.clear(_detail_fields)
 	CatalogUi.preview(_detail_card, record, category, 0.8)
-	var labels: Array = TextCatalogService.MONSTER_HEADERS if category == "monsters" else (TextCatalogService.CARD_HEADERS if category == "cards" else TextCatalogService.FRAGMENT_HEADERS)
-	var keys: Array = TextCatalogService.CARD_KEYS if category == "cards" else TextCatalogService.ENTRY_KEYS
-	for i: int in keys.size():
-		var value := str(record.get(keys[i], ""))
-		var field := CatalogUi.label(str(labels[i]) + "\n" + (value if not value.is_empty() else "（未填写）"), 26)
-		field.name = keys[i]
-		field.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
-		_detail_fields.add_child(field)
-	var state := CatalogUi.label("解锁状态\n" + ("已解锁" if TextCatalog.is_unlocked(category, id) else "未解锁"), 26)
-	state.name = "unlock_state"
-	_detail_fields.add_child(state)
+	if category == "monsters":
+		_build_monster_detail(record)
+	else:
+		var labels: Array = TextCatalogService.CARD_HEADERS if category == "cards" else TextCatalogService.FRAGMENT_HEADERS
+		var keys: Array = TextCatalogService.CARD_KEYS if category == "cards" else TextCatalogService.ENTRY_KEYS
+		for i: int in keys.size():
+			# 隐藏展示字段，不修改导入数据、编号排序或解锁筛选。
+			if keys[i] in ["id", "art_path", "text", "name", "effect"]:
+				continue
+			_add_detail_field(str(keys[i]), str(labels[i]), str(record.get(keys[i], "")))
 	_detail.show()
 	_detail.get_node("Panel/Content/Heading/Close").grab_focus()
+
+
+func _add_detail_field(key: String, title: String, value: String) -> void:
+	var content := value if not value.is_empty() else "（未填写）"
+	var field := CatalogUi.label(title + "\n" + content if not title.is_empty() else content, 26)
+	field.name = key
+	field.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
+	_detail_fields.add_child(field)
+
+
+func _build_monster_detail(record: Dictionary) -> void:
+	var parts := _monster_detail_parts(str(record.get("type", "")))
+	_add_detail_field("type", "类型", parts.type)
+	_add_detail_field("location", "出现地", parts.location)
+	var divider := HSeparator.new()
+	divider.name = "TextSeparator"
+	divider.custom_minimum_size.y = 24.0
+	var line := StyleBoxLine.new()
+	line.color = Color(CatalogUi.GOLD, 0.5)
+	line.thickness = 2
+	divider.add_theme_stylebox_override("separator", line)
+	_detail_fields.add_child(divider)
+	# 名称仅保留在左侧预览；右侧叙述独立成区，不再加“文本”字段标题。
+	_add_detail_field("text", "", str(record.get("text", "")))
+
+
+func _monster_detail_parts(value: String) -> Dictionary:
+	# CSV 仍保留“类型与出现地”一列；仅在详情展示时拆分并替换楼层名称。
+	var separator := RegEx.new()
+	separator.compile("[·/／|｜]")
+	var split_at := separator.search(value)
+	var monster_type := value.strip_edges()
+	var location := ""
+	if split_at != null:
+		monster_type = value.left(split_at.get_start()).strip_edges()
+		location = value.substr(split_at.get_end()).strip_edges()
+	var floor_pattern := RegEx.new()
+	floor_pattern.compile("(?<![0-9])第?\\s*([1-4])\\s*层")
+	for matched: RegExMatch in floor_pattern.search_all(location):
+		location = location.replace(matched.get_string(), MONSTER_LOCATIONS[matched.get_string(1)])
+	return {"type": monster_type, "location": location}
 
 
 func _build_detail() -> void:
@@ -157,7 +204,7 @@ func _build_detail() -> void:
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var panel := PanelContainer.new()
 	panel.name = "Panel"
-	var style := CatalogUi.panel_style()
+	var style := CommonUiSkin.panel("panel")
 	style.content_margin_left = 24
 	style.content_margin_right = 24
 	style.content_margin_top = 24
@@ -180,6 +227,7 @@ func _build_detail() -> void:
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.add_child(title)
 	var close := CatalogUi.button("关闭详情", "Close")
+	CommonUiSkin.style_navigation_button(close, "close", true)
 	heading.add_child(close)
 	close.pressed.connect(close_detail)
 	var columns := HBoxContainer.new()
