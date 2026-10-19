@@ -398,7 +398,7 @@ func _cache_key(snapshot: Dictionary, known: Dictionary) -> String:
 
 
 func _cache_config_signature() -> Array:
-	return [_sun_config,_atmosphere_config,_art_enabled,_exploration_fog_enabled,_exploration_fog_visual_mode,show_grid,show_node_regions]
+	return [_sun_config,_atmosphere_config,_art_enabled,_exploration_fog_enabled,_exploration_fog_visual_mode,show_grid,show_node_regions,_art.cache_identity()]
 
 
 func prepare_presentation_cache(states: Array[Dictionary]) -> bool:
@@ -754,6 +754,9 @@ func _load_map_data(snapshot: Dictionary) -> void:
 			if _source_snapshot.get(field)!=snapshot.get(field): _material_face_cache={};break
 	if _floor_data==null or not _floor_data.matches(snapshot): _floor_data=FloorRenderData.new(snapshot)
 	_source_snapshot = _floor_data.snapshot_for(snapshot)
+	# CPU catalog selection precedes rock outlines and all material UV packets.
+	# Texture allocation remains in VectorBatch's main-thread publish path.
+	_art.select_floor(int(_source_snapshot.get("floor_index",1)))
 	_solar_snapshot = _source_snapshot
 	_cells = _floor_data.cells
 	_wall_readability_cache={}
@@ -1154,7 +1157,7 @@ func _material_face_key(face: Dictionary) -> Array:
 				fog_domain.append(_known.get(_key(coord+direction),false))
 				for second: Vector2i in DIRS: fog_domain.append(_known.get(_key(coord+direction+second),false))
 	if _material_context_id==0:
-		_material_context_id=_floor_data.material_context_id(["surface-point-light-v1",show_grid,_display_sun_config,_display_art_enabled,_art.catalog.signature,_art._address,_display_atmosphere_config,_atmosphere._anchor,_display_exploration_fog_enabled,_display_exploration_fog_visual_mode])
+		_material_context_id=_floor_data.material_context_id(["surface-point-light-v1",show_grid,_display_sun_config,_display_art_enabled,_art.cache_identity(),_art._address,_display_atmosphere_config,_atmosphere._anchor,_display_exploration_fog_enabled,_display_exploration_fog_visual_mode])
 	return [_material_context_id,_is_cutaway_wall(face),face.polygon,face.coefficient,face.normal,face.color,face.category,face.id,face.key,face.known,face.get("solar_factor",1.0),face.get("solar_shadows",[]),face.get("label"),face.get("label_point"),face.get("node_id"),face.top,face.get("draw_edges",true),_art._blocked.has(face.key),lamps,fog_domain,face.get("rock",{})]
 
 
@@ -1218,7 +1221,7 @@ func _process(_delta: float) -> void:
 		batch.show_behind_parent = true
 		batch.visibility_layer = 0
 		add_child(batch)
-		batch.apply_prepared(_geometry_builder._prepared_face_groups[_pending_cursor],_pending_arrays[_pending_cursor])
+		batch.apply_prepared(_geometry_builder._prepared_face_groups[_pending_cursor],_pending_arrays[_pending_cursor],_geometry_builder._art.atlas_path)
 		# Mesh + retained wall packets now own their data; release upload scratch.
 		_pending_arrays[_pending_cursor]=[]
 		_pending_batches.append(batch);_pending_cursor+=1
@@ -2119,7 +2122,7 @@ func _refresh_art_actor_shadow() -> void:
 					decal.polygon=overlap
 					buffer.art_decoration(self,shadow.receiver,decal,true)
 	buffer.flush_mesh()
-	_art_actor_shadow_batch.apply_prepared([],buffer.commands)
+	_art_actor_shadow_batch.apply_prepared([],buffer.commands,_art.atlas_path)
 	if _wall_cutaway != null: _art_actor_shadow_batch.material=_wall_cutaway.material
 	_art_actor_shadow_batch.show()
 
@@ -2639,7 +2642,7 @@ func _drain_retired_warm_jobs(wait_for_all: bool=false) -> void:
 
 func _make_rocks() -> void:
 	# Full-floor deterministic positions; discovery only controls drawing.
-	_rock_layout=RockScatter.generate(_source_snapshot)
+	_rock_layout=RockScatter.generate(_source_snapshot,_art.catalog)
 	for entry: Dictionary in _rock_layout.get("entries",[]):
 		if not bool(_known.get(str(entry.key),false)): continue
 		if entry.kind=="rubble" and not bool(_known.get(str(entry.wall_key),false)): continue

@@ -15,6 +15,8 @@ extends Control
 @export_range(1, 99999, 1) var enemy_starting_health := 3000
 ## 独立测试战场可直接在检查器预览四层；正式战斗由开战存档决定。
 @export_range(1, 4, 1) var test_floor_index := 1
+## -1 使用楼层默认背景，其他值预览本层对应差分；不消耗随机流。
+@export_range(-1, 8, 1) var test_background_variant := -1
 
 ## 手牌悬停扇开，规则与取值参考 reference/card-and-dice 的 HandUIController.Hover：
 ## 距悬停卡 1/2/3 张分别外移大/中/小距离，手牌越多幅度越小（10 张时只剩 10%）。
@@ -226,7 +228,7 @@ func _ready() -> void:
 	$背包底板.add_theme_stylebox_override("panel", CommonUiSkin.panel("strip"))
 	$出牌计数底板.add_theme_stylebox_override("panel", CommonUiSkin.panel("tiny"))
 	$PileModal/Window.add_theme_stylebox_override("panel", CommonUiSkin.panel("panel", Vector4(24, 20, 24, 20)))
-	CommonUiSkin.style_button($PileModal/Window/Column/Header/ClosePileButton, Vector4(8, 4, 8, 4))
+	CommonUiSkin.style_navigation_button(%ClosePileButton, "close", true)
 	pile_modal.z_index = 300
 	draw_button.pressed.connect(_on_draw_pile_pressed)
 	discard_button.pressed.connect(_on_discard_pile_pressed)
@@ -259,7 +261,7 @@ func _ready() -> void:
 		var pending_choice: Dictionary = _battle.player.get("battle_choice", {})
 		if not pending_choice.is_empty(): _on_battle_choice_requested(str(pending_choice.mode), int(pending_choice.count), pending_choice.candidates)
 	_build_battle_actions()
-	$Background.texture = BATTLE_ENVIRONMENT.texture_for_floor(_battle_environment_floor())
+	$Background.texture = BATTLE_ENVIRONMENT.texture_for_floor(_battle_environment_floor(), test_background_variant)
 	_refresh_coin()
 	_setup_monster_battle_text()
 

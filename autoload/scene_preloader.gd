@@ -98,7 +98,7 @@ func prepare_map(snapshot: Dictionary, run_id: String, monsters: Dictionary = {}
 					if path.begins_with("res://"):
 						paths.append(path)
 			"shop":
-				paths.append_array([SHOP_SCRIPT, LOOT_SCRIPT, CARD_SCENE])
+				paths.append_array([SHOP_SCRIPT, LOOT_SCRIPT, CARD_SCENE, "res://assets/events/EVBG-013.png"])
 				# 不提前抽取/保存货架，缓存候选卡图也覆盖未来开包和附魔选牌。
 				paths.append_array(card_art)
 			"event":

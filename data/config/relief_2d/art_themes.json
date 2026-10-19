@@ -1,0 +1,35 @@
+{
+  "floors": {
+    "1": "alchemy",
+    "2": "slums",
+    "3": "church_white",
+    "4": "church_violet"
+  },
+  "themes": {
+    "alchemy": {
+      "asset_id": "ENV-005",
+      "atlas": "res://assets/environment/env005/env005-atlas.png",
+      "manifest": "res://assets/environment/env005/manifest.json"
+    },
+    "slums": {
+      "asset_id": "ENV-006",
+      "atlas": "res://assets/environment/env006/atlas.png",
+      "manifest": "res://assets/environment/env006/manifest.json"
+    },
+    "church_white": {
+      "asset_id": "ENV-007",
+      "atlas": "res://assets/environment/env007-white/atlas.png",
+      "manifest": "res://assets/environment/env007-white/manifest.json"
+    },
+    "church_violet": {
+      "asset_id": "ENV-007",
+      "atlas": "res://assets/environment/env007-violet/atlas.png",
+      "manifest": "res://assets/environment/env007-violet/manifest.json"
+    },
+    "church_marble": {
+      "asset_id": "ENV-007",
+      "atlas": "res://assets/environment/env007-marble/atlas.png",
+      "manifest": "res://assets/environment/env007-marble/manifest.json"
+    }
+  }
+}

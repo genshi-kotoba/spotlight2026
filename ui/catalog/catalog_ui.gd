@@ -67,6 +67,7 @@ static func shell(root: Control, title_text: String, subtitle: String) -> VBoxCo
 	title.add_theme_color_override("font_color", Color(0.941, 0.902, 0.804))
 	heading.add_child(title)
 	var back := button("返回开始界面", "Back")
+	CommonUiSkin.style_navigation_button(back, "back")
 	heading.add_child(back)
 	back.pressed.connect(func():
 		var error := SceneTransition.change_scene_to_file("res://ui/main_menu/main_menu.tscn")

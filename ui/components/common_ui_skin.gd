@@ -8,6 +8,7 @@ const RELIC_MOTION := preload("res://ui/components/relic_text_motion.gd")
 const TEXT := Color("fff5e8")
 const DARK_TEXT := Color("211f1d")
 static var _button_textures: Dictionary = {}
+static var _navigation_textures: Dictionary = {}
 static var _relic_font: SystemFont
 static var _relic_bold_font: SystemFont
 
@@ -84,6 +85,48 @@ static func style_button(button: Button, margins: Vector4 = Vector4(18, 8, 18, 8
 	button.add_theme_color_override("font_hover_color", TEXT)
 	button.add_theme_color_override("font_pressed_color", DARK_TEXT)
 	button.add_theme_color_override("font_disabled_color", Color("aaa395"))
+
+## UI-006：只显式应用到关闭／返回控件，保留按钮原有的信号和行为。
+static func style_navigation_button(button: Button, kind: String, icon_only: bool = false) -> void:
+	assert(kind in ["close", "back"])
+	var asset_name := "关闭" if kind == "close" else "返回"
+	for state: String in ["初始", "悬停"]:
+		var path := "res://assets/ui/UI-006/%s-%s-金.png" % [asset_name, state]
+		if not _navigation_textures.has(path):
+			_navigation_textures[path] = load(path)
+	var normal: Texture2D = _navigation_textures["res://assets/ui/UI-006/%s-初始-金.png" % asset_name]
+	var hover: Texture2D = _navigation_textures["res://assets/ui/UI-006/%s-悬停-金.png" % asset_name]
+	style_button(button, Vector4(8, 4, 8, 4) if icon_only else Vector4(18, 8, 18, 8))
+	if icon_only:
+		if button.tooltip_text.is_empty():
+			button.tooltip_text = button.text if not button.text.is_empty() else asset_name
+		button.text = ""
+		button.custom_minimum_size = Vector2(64, 56)
+		var empty := StyleBoxEmpty.new()
+		empty.content_margin_left = 8
+		empty.content_margin_right = 8
+		empty.content_margin_top = 4
+		empty.content_margin_bottom = 4
+		for state: String in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+			button.add_theme_stylebox_override(state, empty)
+	button.icon = normal
+	button.expand_icon = true
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER if icon_only else HORIZONTAL_ALIGNMENT_LEFT
+	button.add_theme_constant_override("icon_max_width", 48 if icon_only else 40)
+	button.add_theme_constant_override("h_separation", 8)
+	button.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	button.focus_mode = Control.FOCUS_ALL
+	for state: String in ["normal", "hover", "focus", "pressed", "hover_pressed"]:
+		button.add_theme_color_override("icon_" + state + "_color", Color.WHITE)
+	button.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.4))
+	var refresh_icon := func():
+		button.icon = hover if not button.disabled and (button.is_hovered() or button.has_focus()) else normal
+	button.mouse_entered.connect(refresh_icon)
+	button.mouse_exited.connect(refresh_icon)
+	button.focus_entered.connect(refresh_icon)
+	button.focus_exited.connect(refresh_icon)
+
 
 static func style_dialog(dialog: AcceptDialog) -> void:
 	dialog.add_theme_stylebox_override("panel", panel("small", Vector4(24, 20, 24, 20)))

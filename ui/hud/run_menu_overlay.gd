@@ -55,7 +55,7 @@ var _shade: ColorRect
 var _panel: Panel
 var _page_title: Label
 var _pages: Array[Control] = []
-var _close_label: Label
+var _close_button: Button
 var _map_slot: Control
 var _map_source: Control
 var _map_placeholder: Control
@@ -440,17 +440,14 @@ func _build() -> void:
 	title_rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.add_child(title_rule)
 
-	_close_label = Label.new()
-	_close_label.text = "关闭"
-	_close_label.position = Vector2(PANEL_RECT.size.x - 120, 26)
-	_close_label.size = Vector2(96, 44)
-	_close_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_close_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_close_label.add_theme_font_size_override("font_size", 20)
-	_close_label.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
-	_close_label.mouse_filter = Control.MOUSE_FILTER_STOP
-	_close_label.gui_input.connect(_on_close_input)
-	_panel.add_child(_close_label)
+	_close_button = Button.new()
+	_close_button.name = "CloseMenu"
+	_close_button.text = "关闭"
+	CommonUiSkin.style_navigation_button(_close_button, "close", true)
+	_close_button.position = Vector2(PANEL_RECT.size.x - 96, 20)
+	_close_button.size = Vector2(64, 56)
+	_close_button.pressed.connect(close)
+	_panel.add_child(_close_button)
 
 	for index in PAGES.size():
 		var page := Control.new()
@@ -855,11 +852,6 @@ func _slot(size: Vector2, color: Color, edge: Color) -> Panel:
 
 
 func _on_shade_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		close()
-
-
-func _on_close_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		close()
 

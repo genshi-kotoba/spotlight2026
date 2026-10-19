@@ -183,6 +183,7 @@ func _build_detail() -> void:
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.add_child(title)
 	var close := CatalogUi.button("关闭详情", "Close")
+	CommonUiSkin.style_navigation_button(close, "close", true)
 	heading.add_child(close)
 	close.pressed.connect(close_detail)
 	var columns := HBoxContainer.new()

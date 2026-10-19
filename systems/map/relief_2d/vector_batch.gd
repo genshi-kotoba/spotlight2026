@@ -9,6 +9,7 @@ const ArtShader = preload("res://systems/map/relief_2d/env005_canvas.gdshader")
 # fallback's uniforms. Created by main-thread apply_prepared, not CPU workers.
 static var _default_art_material: ShaderMaterial
 var _atlas_texture: Texture2D
+var _atlas_path := Env005Material.ATLAS_PATH
 var commands: Array = []
 var faces: Array = []
 var build_usec := 0
@@ -316,24 +317,27 @@ static func _prepare_uncached(source, next_faces: Array) -> Array:
 	buffer.flush_mesh()
 	return buffer.commands
 
-func apply_prepared(next_faces: Array, prepared: Array) -> void:
+func apply_prepared(next_faces: Array, prepared: Array, atlas_path: String = Env005Material.ATLAS_PATH) -> void:
 	var start := Time.get_ticks_usec()
 	clear_dynamic_prepared()
 	faces = next_faces
 	node_marker_only = not faces.is_empty() and faces.all(func(face): return face.get("node_marker", false))
 	static_face_packets=prepared[0].get("face_packets",[]) if not prepared.is_empty() else []
 	commands.clear();triangles=0
-	_atlas_texture=null;material=null
+	material=null
+	_atlas_path=atlas_path
 	texture_filter=CanvasItem.TEXTURE_FILTER_PARENT_NODE
 	var built := _mesh_commands(prepared)
 	commands=built.commands;triangles=built.triangles
 	if built.atlas and not node_marker_only:
-		_atlas_texture=Env005Material.atlas_texture()
+		_atlas_texture=Env005Material.atlas_texture(_atlas_path)
 		if _default_art_material==null:
 			_default_art_material=ShaderMaterial.new()
 			_default_art_material.shader=ArtShader
 		material=_default_art_material
 		texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	else:
+		_atlas_texture=null
 	if next_faces.any(func(face): return face.get("node_marker", false)):
 		texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	build_usec=Time.get_ticks_usec()-start
@@ -369,7 +373,7 @@ func set_dynamic_prepared(prepared: Array) -> void:
 	_dynamic_override=true
 	# A surface override has the current group's same art mode/material. Keep
 	# shared cutaway uniforms, texture filtering and original draw order intact.
-	if built.atlas and _atlas_texture==null: _atlas_texture=Env005Material.atlas_texture()
+	if built.atlas and _atlas_texture==null: _atlas_texture=Env005Material.atlas_texture(_atlas_path)
 	queue_redraw()
 
 func clear_dynamic_prepared() -> void:
@@ -379,12 +383,13 @@ func clear_dynamic_prepared() -> void:
 
 func build(source, next_faces: Array) -> void:
 	var start := Time.get_ticks_usec()
-	apply_prepared(next_faces,prepare(source,next_faces))
+	apply_prepared(next_faces,prepare(source,next_faces),source._art.atlas_path)
 	build_usec=Time.get_ticks_usec()-start
 
 func clear() -> void:
 	clear_dynamic_prepared()
 	static_face_packets=[]
+	_atlas_texture=null
 	faces.clear();commands.clear();queue_redraw()
 
 func _draw() -> void:

@@ -11,11 +11,14 @@ var regions: Dictionary = {}
 var pools: Dictionary = {}
 var decoration_probability := 1.0/47.0
 var errors: Array[String] = []
+var source_path := MANIFEST
 
-func _init(data: Dictionary = {}) -> void:
+func _init(data: Dictionary = {}, manifest_path: String = MANIFEST) -> void:
+	source_path = manifest_path
 	if data.is_empty():
-		var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST))
+		var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(source_path))
 		if parsed is Dictionary: data=parsed
+		else: errors.append("Invalid manifest: " + source_path)
 	signature=JSON.stringify(data).sha256_text()
 	var dimensions: Array = data.get("size",[2048,1024])
 	if dimensions.size()==2: size=Vector2(dimensions[0],dimensions[1])

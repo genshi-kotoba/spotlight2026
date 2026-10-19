@@ -1,10 +1,31 @@
 class_name ShopPopup
 extends LootPopup
 ## 商店与选牌附魔共用一个模态层；确认目标后原子扣款，取消不占库存。
+const SHOP_BACKGROUND := "res://assets/events/EVBG-013.png"
 var request: Dictionary = {}
 var _enchant_index := -1
 var close_handler: Callable
 var _card_definitions: Dictionary = {}
+
+func _ready() -> void:
+	super._ready()
+	var background_texture := load(SHOP_BACKGROUND) as Texture2D
+	if background_texture == null:
+		return
+	var background := TextureRect.new()
+	background.name = "ShopBackground"
+	background.texture = background_texture
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# The inherited modal still catches input; only its art treatment changes.
+	var shade := _root.get_child(0) as ColorRect
+	shade.color = Color(0, 0, 0, 0.20)
+	_root.add_child(background)
+	_root.move_child(background, 0)
+	var panel := _body.get_parent() as PanelContainer
+	panel.add_theme_stylebox_override("panel", CommonUiSkin.panel("event", Vector4(36, 28, 36, 28)))
 
 func show_shop(value: Dictionary) -> void:
 	request = value.duplicate(true)
