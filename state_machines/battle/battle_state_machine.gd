@@ -18,6 +18,9 @@ signal card_effect_requested(card: Dictionary, target: Variant, pointer_index: i
 signal card_resolved(card: Dictionary, pointer_index: int)
 signal discard_choice_requested(card: Dictionary, count: int, candidates: Array[Dictionary])
 signal discard_choice_completed(discarded_instance_ids: Array[String])
+signal pile_choice_requested(count: int, candidates: Array[Dictionary])
+signal battle_choice_requested(mode: String, count: int, candidates: Array)
+signal potion_consumed(item_id: String)
 signal buff_effect_requested(side: StringName, entity_id: String, buff: Dictionary)
 signal buff_resolved(side: StringName, entity_id: String, buff: Dictionary)
 signal enemy_action_decided(enemy_id: String, action: Dictionary)
@@ -42,6 +45,9 @@ enum Phase {
 	VICTORY,
 	DEFEAT,
 }
+
+## 自然抽牌仍发布 card.drawn 事实，但不激活“获得卡牌”典籍。
+enum DrawReason { EFFECT, BATTLE_START, TURN_START }
 
 const SNAPSHOT_VERSION := 1
 const MAX_POINTER_RESOLUTIONS := 256
@@ -74,11 +80,15 @@ var _resolving_card := false
 var _next_pointer_override := -1
 var _resolution_targets: Dictionary = {}
 var _repeat_remaining_by_card: Dictionary = {}
+var _enchantment_repeat_active: Dictionary = {}
 var _pointer_move_sources: Dictionary = {}
 var _repeat_request_sources: Dictionary = {}
 var _pending_discard_count := 0
 var _pending_card: Dictionary = {}
 var _pending_resolved_at := -1
+var _pending_pile_count := 0
+var _pending_pile_source := ""
+var _repeat_pointer_override := -1
 
 
 func _init() -> void:
@@ -217,6 +227,10 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 	pointer_index = saved_pointer
 	pointer_resolutions = saved_resolutions
 	player = saved_player.duplicate(true)
+	if player.has("encounter_relic_board"):
+		var saved_board := RelicBoard.new()
+		saved_board.restore(player.encounter_relic_board, RelicCatalog.load_definitions())
+		player.encounter_relic_board = saved_board.to_dictionary()
 	enemies = _copy_dictionary_array(saved_enemies)
 	draw_pile = _copy_dictionary_array(saved_draw)
 	discard_pile = _copy_dictionary_array(saved_discard)
@@ -276,7 +290,7 @@ func start_battle() -> Error:
 ## 队列在本调用内推进到空闲或输入暂停。选择弃牌会停在
 ## PLAYER_EFFECTS，界面调用 submit_discard_choice() 后从同一指针继续。
 func commit_player_sequence(instance_ids: Array[String], targets: Dictionary = {}) -> Error:
-	if not active or phase != Phase.PLAYER_ACTION or instance_ids.is_empty():
+	if not active or phase != Phase.PLAYER_ACTION or (instance_ids.is_empty() and play_zone.is_empty()):
 		return _fail(ERR_INVALID_PARAMETER, "A nonempty sequence is required in PLAYER_ACTION")
 	var seen := {}
 	for instance_id: String in instance_ids:
@@ -285,13 +299,31 @@ func commit_player_sequence(instance_ids: Array[String], targets: Dictionary = {
 			return _fail(ERR_INVALID_PARAMETER, "Sequence contains a duplicate/unknown card")
 		seen[instance_id] = true
 
-	play_zone.clear()
+	var used_slots := 0
+	for card: Dictionary in play_zone:
+		if not bool(card.get("slot_empty", false)) and bool(card.get("occupies_slot", true)):
+			used_slots += 1
+	for id: String in instance_ids:
+		if bool(hand[_find_card_index(hand, id)].get("occupies_slot", true)):
+			used_slots += 1
+	if effective_play_limit() > 0 and used_slots > effective_play_limit():
+		return _fail(ERR_INVALID_PARAMETER, "Sequence exceeds available card slots")
+	var original_hand := hand.duplicate(true)
 	for instance_id: String in instance_ids:
 		var hand_index := _find_card_index(hand, instance_id)
 		var card: Dictionary = hand[hand_index]
 		hand.remove_at(hand_index)
-		play_zone.append(card)
-		card_committed.emit(card.duplicate(true), play_zone.size() - 1)
+		var vacant := -1
+		for index in play_zone.size():
+			if bool(play_zone[index].get("slot_empty", false)):
+				vacant = index
+				break
+		if vacant >= 0:
+			play_zone[vacant] = card
+		else:
+			play_zone.append(card)
+		card_committed.emit(card.duplicate(true), _find_card_index(play_zone, instance_id))
+	rules.publish("cards.sequence_committed", {"hand": original_hand})
 
 	_set_phase(Phase.PLAYER_EFFECTS)
 	pointer_index = 0
@@ -307,8 +339,15 @@ func _continue_player_resolution() -> Error:
 
 func _step_sequence(_event: BattleEvent) -> void:
 	if pointer_index >= play_zone.size():
-		while not play_zone.is_empty():
-			_discard_play_card(0, &"resolved")
+		var runtime: Dictionary = player.get("relic_runtime", {})
+		if int(runtime.get("extra_pointers", 0)) > 0:
+			runtime.extra_pointers = int(runtime.extra_pointers) - 1
+			runtime["extra_pointer_active"] = true
+			pointer_index = 0
+			rules.publish("flow.sequence.next")
+			return
+		runtime["extra_pointer_active"] = false
+		finish_play_zone()
 		_resolution_targets.clear()
 		_begin_enemy_turn()
 		return
@@ -318,13 +357,30 @@ func _step_sequence(_event: BattleEvent) -> void:
 		rules.last_error = _fail(ERR_CYCLIC_LINK, "Card pointer resolution limit reached")
 		return
 	var card: Dictionary = play_zone[pointer_index].duplicate(true)
-	var target: Variant = _resolution_targets.get(card.instance_id)
-	_next_pointer_override = -1
+	var extra := bool(player.get("relic_runtime", {}).get("extra_pointer_active", false))
+	if extra and int(_logic_stream.int_range(0, 100)) >= 40:
+		pointer_resolutions += 1
+		pointer_index += 1
+		rules.publish("pointer.moved", {"distance": 1, "from": pointer_index - 1, "to": pointer_index, "automatic": true})
+		rules.publish("flow.sequence.next")
+		return
+	var enchanted_id := str(card.instance_id)
+	if card.get("enchantments", []).has("repeat_2") and not _enchantment_repeat_active.has(enchanted_id) and not bool(card.get("slot_empty", false)) and not bool(card.get("nullified", false)):
+		_enchantment_repeat_active[enchanted_id] = true
+		# 复用原状态机重复队列，确保弃牌等交互逐次暂停、指针/循环保护继续生效。
+		_repeat_remaining_by_card[enchanted_id] = (int(_repeat_remaining_by_card.get(enchanted_id, 0)) + 1) * 2 - 1
+	var target: Variant = _resolution_targets.get(card.instance_id, card.get("stored_target"))
+	if target == null or not _enemy_is_alive(str(target)):
+		for enemy: Dictionary in enemies:
+			if int(enemy.health) > 0: target = str(enemy.enemy_id); break
+	play_zone[pointer_index]["stored_target"] = target
+	_next_pointer_override = _repeat_pointer_override
+	_repeat_pointer_override = -1
 	_resolving_card = true
 	_pending_card = card
 	_pending_resolved_at = pointer_index
 	card_effect_requested.emit(card.duplicate(true), _copy_json_value(target), pointer_index)
-	rules.publish("card.effect_requested", {"card": card, "target": target}, {"source_card": card.instance_id})
+	rules.publish("card.effect_requested", {"card": card, "target": target}, {"source_card": card.instance_id, "extra_pointer": extra})
 	rules.publish("flow.sequence.finish", {"card": card, "index": pointer_index})
 
 
@@ -344,11 +400,13 @@ func _finish_resolved_card(card: Dictionary, resolved_at: int,
 		card_instance_id: String, pointer_override: int) -> Error:
 	pointer_resolutions += 1
 	card_resolved.emit(card.duplicate(true), resolved_at)
+	rules.publish("card.resolved", {"card": card, "index": resolved_at})
 	if _finish_if_needed():
 		return OK
 
 	var repeat_count := int(_repeat_remaining_by_card.get(card_instance_id, 0))
 	if repeat_count > 0 and _find_card_index(play_zone, card_instance_id) >= 0:
+		_repeat_pointer_override = pointer_override
 		if repeat_count == 1:
 			_repeat_remaining_by_card.erase(card_instance_id)
 		else:
@@ -356,6 +414,7 @@ func _finish_resolved_card(card: Dictionary, resolved_at: int,
 		pointer_index = _find_card_index(play_zone, card_instance_id)
 		return OK
 	_repeat_remaining_by_card.erase(card_instance_id)
+	_enchantment_repeat_active.erase(card_instance_id)
 
 	if pointer_override >= 0:
 		pointer_index = pointer_override
@@ -363,6 +422,8 @@ func _finish_resolved_card(card: Dictionary, resolved_at: int,
 		# “使用后移除”会让右侧卡牌左移，下一张仍在原索引。
 		pointer_index = resolved_at + 1 \
 			if _find_card_index(play_zone, card_instance_id) >= 0 else resolved_at
+		if pointer_index != resolved_at:
+			rules.publish("pointer.moved", {"distance": absi(pointer_index - resolved_at), "from": resolved_at, "to": pointer_index, "automatic": true})
 	return OK
 
 
@@ -401,6 +462,9 @@ func pending_discard_count() -> int:
 func end_player_action() -> Error:
 	if not active or phase != Phase.PLAYER_ACTION:
 		return _fail(ERR_INVALID_PARAMETER, "Player action can only end in PLAYER_ACTION")
+	if not play_zone.is_empty():
+		var empty: Array[String] = []
+		return commit_player_sequence(empty)
 	return _begin_enemy_turn()
 
 
@@ -409,18 +473,24 @@ func request_pointer_rewind(steps: int) -> Error:
 	if not _resolving_card or phase != Phase.PLAYER_EFFECTS or steps <= 0:
 		return _fail(ERR_INVALID_PARAMETER, "Pointer rewind is only valid during a card effect")
 	var target_index := maxi(0, pointer_index - steps)
+	var anchor_index := _find_card_index(play_zone, str(player.get("card_rules", {}).get("anchor", "")))
+	if anchor_index >= 0:
+		target_index = anchor_index
 	if target_index == pointer_index:
 		return ERR_INVALID_PARAMETER
 	var source_id := String(play_zone[pointer_index].get("instance_id", ""))
 	if _pointer_move_sources.has(source_id):
 		return ERR_ALREADY_IN_USE
 	_pointer_move_sources[source_id] = true
-	_next_pointer_override = target_index
+	move_formal_pointer(target_index)
 	return OK
 
 
 ## 指针跳到指定索引；等于 play_zone.size() 表示直接结束本轮牌区结算。
 func request_pointer_move_to(index: int) -> Error:
+	var anchor_index := _find_card_index(play_zone, str(player.get("card_rules", {}).get("anchor", "")))
+	if anchor_index >= 0:
+		index = anchor_index
 	if not _resolving_card or phase != Phase.PLAYER_EFFECTS \
 			or index < 0 or index > play_zone.size() or index == pointer_index:
 		return _fail(ERR_INVALID_PARAMETER, "Pointer target is invalid")
@@ -428,7 +498,7 @@ func request_pointer_move_to(index: int) -> Error:
 	if _pointer_move_sources.has(source_id):
 		return ERR_ALREADY_IN_USE
 	_pointer_move_sources[source_id] = true
-	_next_pointer_override = index
+	move_formal_pointer(index)
 	return OK
 
 
@@ -476,15 +546,17 @@ func apply_damage_to_player(amount: int, ignore_block: bool = false) -> Error:
 	return OK
 
 
-func apply_damage_to_enemy(enemy_id: String, amount: int, ignore_block: bool = false) -> Error:
+func apply_damage_to_enemy(enemy_id: String, amount: int, ignore_block: bool = false, block_double: bool = false) -> Error:
 	var index := _find_enemy_index(enemy_id)
 	if not active or amount < 0 or index < 0:
 		return _fail(ERR_INVALID_PARAMETER, "Enemy damage target/amount is invalid")
 	var enemy: Dictionary = enemies[index]
 	var before := int(enemy["health"])
-	var blocked := 0 if ignore_block else mini(int(enemy["block"]), amount)
+	var multiplier := 2 if block_double else 1
+	var blocked := 0 if ignore_block else mini(int(enemy["block"]), amount * multiplier)
+	var absorbed := int(ceil(float(blocked) / multiplier))
 	enemy["block"] = int(enemy["block"]) - blocked
-	enemy["health"] = maxi(0, int(enemy["health"]) - (amount - blocked))
+	enemy["health"] = maxi(0, int(enemy["health"]) - (amount - absorbed))
 	enemies[index] = enemy
 	block_changed.emit(&"enemy", enemy_id, enemy["block"])
 	combatant_damaged.emit(&"enemy", enemy_id, amount, blocked, enemy["health"])
@@ -553,21 +625,24 @@ func discard_from_hand(instance_id: String, reason: StringName = &"effect") -> E
 	hand.remove_at(index)
 	discard_pile.append(card)
 	card_discarded.emit(card.duplicate(true), reason)
+	_publish_fact("card.discarded", {"card": card, "reason": String(reason), "from_hand": true})
 	return OK
 
 
 ## 效果层可在玩家行动或逐张结算期间抽牌；沿用 battle.draw 流。
-func draw_cards(count: int) -> Error:
-	if not active or not [Phase.PLAYER_ACTION, Phase.PLAYER_EFFECTS].has(phase) or count < 0:
+func draw_cards(count: int, reason: DrawReason = DrawReason.EFFECT) -> Error:
+	# 全局残片可以在敌方攻击/回合末触发抽牌；依然必须由队列串行执行。
+	if not active or phase in [Phase.IDLE, Phase.VICTORY, Phase.DEFEAT] or count < 0:
 		return _fail(ERR_INVALID_PARAMETER, "Cards cannot be drawn in this phase")
-	return rules.submit("flow.draw.one", {"remaining": count})
+	return rules.submit("flow.draw.one", {"remaining": count, "draw_reason": reason})
 
 
 func _step_draw(event: BattleEvent) -> void:
 	var remaining := int(event.payload.remaining)
 	if remaining <= 0:
 		return
-	var error := _draw_one()
+	var reason := int(event.payload.get("draw_reason", DrawReason.EFFECT))
+	var error := _draw_one(reason)
 	if error == ERR_DOES_NOT_EXIST:
 		return
 	if error != OK:
@@ -575,7 +650,7 @@ func _step_draw(event: BattleEvent) -> void:
 		return
 	rules.publish("flow.outcome")
 	if remaining > 1:
-		rules.publish("flow.draw.one", {"remaining": remaining - 1})
+		rules.publish("flow.draw.one", {"remaining": remaining - 1, "draw_reason": reason})
 
 
 ## 随机弃牌使用独立流，避免改变抽牌堆的既有随机序列。
@@ -654,6 +729,161 @@ func get_combatant(side: StringName, entity_id: String) -> Dictionary:
 	return _combatant(side, entity_id).duplicate(true)
 
 
+## 正式卡的结构性指令仍由状态机落实；规则对象只在队列处理器中调用。
+func effective_play_limit() -> int:
+	var base := int(player.get("base_play_limit", 0))
+	if base <= 0:
+		return 0
+	return maxi(1, base + int(player.get("card_rules", {}).get("slots", 0)) + int(player.get("relic_runtime", {}).get("slots", 0)) - int(player.get("conch_bound", 0)))
+
+
+func request_battle_choice(mode: String, candidates: Array, count: int) -> void:
+	if not active or candidates.is_empty(): return
+	player["battle_choice"] = {"mode": mode, "count": mini(count, candidates.size()), "candidates": candidates.duplicate(true)}
+	rules.queue.pause()
+	battle_choice_requested.emit(mode, mini(count, candidates.size()), candidates.duplicate(true))
+
+
+func submit_battle_choice(ids: Array[String]) -> Error:
+	var choice: Dictionary = player.get("battle_choice", {})
+	if not active or choice.is_empty() or ids.size() != int(choice.count): return ERR_INVALID_PARAMETER
+	var allowed: Array = choice.candidates.map(func(card: Dictionary): return str(card.instance_id))
+	var seen := {}
+	for id: String in ids:
+		if id not in allowed or seen.has(id): return ERR_INVALID_PARAMETER
+		seen[id] = true
+	player.erase("battle_choice")
+	rules.publish("monster.choice_result", {"mode": choice.mode, "ids": ids})
+	rules.queue.resume()
+	return rules.flush()
+
+
+func add_generated_card(card_id: String, destination: String, reason: String, source: Dictionary = {}) -> void:
+	var serial := int(player.get("generated_card_serial", 0)) + 1
+	player["generated_card_serial"] = serial
+	var card := source.duplicate(true)
+	card["instance_id"] = "generated:%s:%d:%d:%s" % [node_id, battle_index, serial, reason]
+	card["card_id"] = card_id
+	card.erase("copy_id")
+	if destination == "hand" and hand.size() < int(player.get("hand_limit", 10)):
+		hand.append(card)
+		card_drawn.emit(card.duplicate(true), hand.size())
+		_publish_fact("card.drawn", {"card": card, "hand_size": hand.size(), "draw_reason": DrawReason.EFFECT})
+	else:
+		discard_pile.append(card)
+		card_discarded.emit(card.duplicate(true), &"hand_limit" if destination == "hand" else &"generated")
+
+
+func card_rule_state() -> Dictionary:
+	if not player.has("card_rules"):
+		player["card_rules"] = {}
+	return player.card_rules
+
+
+func update_card_properties(id: String, changes: Dictionary) -> Error:
+	if not _json_safe(changes) or changes.has("instance_id") or changes.has("card_id"):
+		return ERR_INVALID_PARAMETER
+	for zone: Array in [hand, play_zone, discard_pile, draw_pile]:
+		for card: Dictionary in zone:
+			if str(card.instance_id) == id:
+				card.merge(changes, true)
+				return OK
+	return ERR_DOES_NOT_EXIST
+
+
+func swap_hand_cards(first: int, second: int) -> void:
+	if first < 0 or second < 0 or first >= hand.size() or second >= hand.size():
+		return
+	var card: Dictionary = hand[first]
+	hand[first] = hand[second]
+	hand[second] = card
+
+
+func finish_play_zone() -> void:
+	var last_locked := -1
+	for index in play_zone.size():
+		if int(play_zone[index].get("locked_until", 0)) > turn_number:
+			last_locked = index
+	var retained: Array[Dictionary] = []
+	for index in play_zone.size():
+		var card: Dictionary = play_zone[index]
+		if int(card.get("locked_until", 0)) > turn_number:
+			retained.append(card)
+		else:
+			if not bool(card.get("slot_empty", false)):
+				discard_pile.append(card)
+				card_discarded.emit(card.duplicate(true), &"resolved")
+			if index <= last_locked:
+				retained.append({"instance_id": "empty-%d-%d" % [turn_number, index], "card_id": "71", "slot_empty": true})
+	play_zone = retained
+
+
+func move_formal_pointer(destination: int, notify_skips: bool = true) -> void:
+	var origin := pointer_index if _next_pointer_override < 0 else _next_pointer_override
+	var target_index := clampi(destination, 0, play_zone.size())
+	_next_pointer_override = target_index
+	rules.publish("pointer.moved", {"distance": absi(target_index - origin), "from": origin, "to": target_index})
+	if notify_skips and target_index > pointer_index + 1:
+		for index in range(pointer_index + 1, mini(target_index, play_zone.size())):
+			rules.publish("card.skipped", {"card": play_zone[index]})
+
+
+func repeat_card_at(index: int, extra: int) -> void:
+	if index >= 0 and index < play_zone.size() and extra > 0:
+		var id := str(play_zone[index].instance_id)
+		_repeat_remaining_by_card[id] = int(_repeat_remaining_by_card.get(id, 0)) + extra
+
+
+func swap_play_cards(first: int, second: int) -> void:
+	if first < 0 or second < 0 or first >= play_zone.size() or second >= play_zone.size():
+		return
+	var card: Dictionary = play_zone[first]
+	play_zone[first] = play_zone[second]
+	play_zone[second] = card
+
+
+func set_player_block(value: int) -> void:
+	player["block"] = maxi(0, value)
+	block_changed.emit(&"player", "player", int(player.block))
+
+
+func request_pile_choice(count: int, source: String) -> void:
+	_pending_pile_count = mini(count, discard_pile.size())
+	_pending_pile_source = source
+	if _pending_pile_count <= 0:
+		return
+	rules.queue.pause()
+	pile_choice_requested.emit(_pending_pile_count, discard_pile.duplicate(true))
+
+
+func submit_pile_choice(ids: Array[String]) -> Error:
+	if not active or phase != Phase.PLAYER_EFFECTS or not rules.queue.paused \
+			or _pending_pile_count <= 0 or ids.size() != _pending_pile_count:
+		return ERR_INVALID_PARAMETER
+	if _find_card_index(play_zone, _pending_pile_source) < 0:
+		return ERR_INVALID_PARAMETER
+	var seen := {}
+	for id: String in ids:
+		if seen.has(id) or _find_card_index(discard_pile, id) < 0:
+			return ERR_INVALID_PARAMETER
+		seen[id] = true
+	var position := _find_card_index(play_zone, _pending_pile_source) + 1
+	for id: String in ids:
+		var index := _find_card_index(discard_pile, id)
+		var card: Dictionary = discard_pile[index]
+		discard_pile.remove_at(index)
+		play_zone.insert(position, card)
+		position += 1
+	_pending_pile_count = 0
+	_pending_pile_source = ""
+	rules.queue.resume()
+	return rules.flush()
+
+
+func pending_pile_count() -> int:
+	return _pending_pile_count
+
+
 func _combatant(side: StringName, entity_id: String) -> Dictionary:
 	if side == &"player" and entity_id == "player":
 		return player
@@ -681,7 +911,8 @@ func _step_turn_start(_event: BattleEvent) -> void:
 
 func _step_turn_draw(_event: BattleEvent) -> void:
 	_set_phase(Phase.PLAYER_DRAW)
-	rules.publish("flow.draw.one", {"remaining": draw_count})
+	rules.publish("flow.draw.one", {"remaining": draw_count,
+		"draw_reason": DrawReason.BATTLE_START if turn_number == 1 else DrawReason.TURN_START})
 	rules.publish("flow.turn.action")
 
 
@@ -703,6 +934,7 @@ func _step_enemy_begin(_event: BattleEvent) -> void:
 	# 能影响后续卡牌，并在整段出牌结束后清除；玩家中毒也在此时扣血和衰减。
 	_set_phase(Phase.PLAYER_BUFF)
 	_settle_buffs(&"player", "player", player["buffs"])
+	rules.publish("enemy.turn_started", {"turn": turn_number})
 	rules.publish("flow.enemy.plan")
 
 
@@ -712,7 +944,9 @@ func _step_enemy_plan(_event: BattleEvent) -> void:
 
 	_set_phase(Phase.ENEMY_DECIDE)
 	var planned: Array[Dictionary] = []
-	for enemy: Dictionary in enemies:
+	if _event.payload.has("planned"):
+		planned.assign(_event.payload.planned)
+	for enemy: Dictionary in ([] if _event.payload.has("planned") else enemies):
 		if int(enemy["health"]) <= 0:
 			continue
 		var picked: Variant = _logic_stream.pick(enemy["actions"])
@@ -766,6 +1000,7 @@ func _step_enemy_end(_event: BattleEvent) -> void:
 			var card: Dictionary = hand.pop_back()
 			discard_pile.append(card)
 			card_discarded.emit(card.duplicate(true), &"turn_end")
+			_publish_fact("card.discarded", {"card": card, "reason": "turn_end", "from_hand": true})
 	_start_player_turn()
 
 
@@ -776,16 +1011,22 @@ func _step_outcome(_event: BattleEvent) -> void:
 func _clear_resolution_runtime() -> void:
 	_resolution_targets.clear()
 	_repeat_remaining_by_card.clear()
+	_enchantment_repeat_active.clear()
 	_pointer_move_sources.clear()
 	_repeat_request_sources.clear()
 	_pending_discard_count = 0
+	_pending_pile_count = 0
+	_pending_pile_source = ""
 	_pending_card.clear()
 	_pending_resolved_at = -1
 	_next_pointer_override = -1
+	_repeat_pointer_override = -1
 	_resolving_card = false
 
 
-func _draw_one() -> Error:
+func _draw_one(reason: int = DrawReason.EFFECT) -> Error:
+	var limit := int(player.get("hand_limit", 10))
+	if limit > 0 and hand.size() >= limit: return ERR_DOES_NOT_EXIST
 	if draw_pile.is_empty():
 		if discard_pile.is_empty():
 			return ERR_DOES_NOT_EXIST
@@ -797,7 +1038,7 @@ func _draw_one() -> Error:
 	var card: Dictionary = draw_pile.pop_back()
 	hand.append(card)
 	card_drawn.emit(card.duplicate(true), hand.size())
-	_publish_fact("card.drawn", {"card": card, "hand_size": hand.size()})
+	_publish_fact("card.drawn", {"card": card, "hand_size": hand.size(), "draw_reason": reason})
 	return OK
 
 
@@ -825,6 +1066,21 @@ func _step_buff_resolved(event: BattleEvent) -> void:
 	_finish_if_needed()
 
 
+## Explicit preview opt-in only. Do not run monster damage/death reactions:
+## reflection or a new phase must not turn a debug victory into a real defeat.
+func debug_finish_victory() -> Error:
+	var enabled: Variant = ProjectSettings.get_setting("debug/map_battle/enable_instant_victory", false)
+	if not enabled is bool or not enabled:
+		return ERR_UNAVAILABLE
+	if not active or phase != Phase.PLAYER_ACTION or int(player.health) <= 0 \
+			or rules.queue.processing or rules.queue.paused or rules.queue.pending_count() != 0:
+		return ERR_BUSY
+	for enemy: Dictionary in enemies:
+		enemy.health = 0
+	_finish_battle("victory")
+	return OK
+
+
 func _finish_if_needed() -> bool:
 	if not active:
 		return true
@@ -848,6 +1104,8 @@ func _finish_battle(status: String) -> void:
 		card_resolved.emit(_pending_card.duplicate(true), _pending_resolved_at)
 	_resolving_card = false
 	_pending_discard_count = 0
+	_pending_pile_count = 0
+	_pending_pile_source = ""
 	_set_phase(Phase.VICTORY if status == "victory" else Phase.DEFEAT)
 	var defeated: Array[String] = []
 	for enemy: Dictionary in enemies:
@@ -860,6 +1118,8 @@ func _finish_battle(status: String) -> void:
 		"battle_index": battle_index,
 		"turns": turn_number,
 		"defeated_enemy_ids": defeated,
+		"stolen_refund": int(player.get("stolen_refund", 0)),
+		"conch_bound": int(player.get("conch_bound", 0)),
 	})
 
 
@@ -902,13 +1162,29 @@ func _prepare_config(config: Dictionary) -> Dictionary:
 
 
 static func _valid_player(value: Dictionary) -> bool:
+	if value.has("encounter_relic_board"):
+		if not value.encounter_relic_board is Dictionary: return false
+		var saved_board := RelicBoard.new()
+		if saved_board.restore(value.encounter_relic_board, RelicCatalog.load_definitions()) != OK: return false
 	var health: Variant = _integer_value(value.get("health"))
 	var maximum: Variant = _integer_value(value.get("max_health"))
 	var block: Variant = _integer_value(value.get("block", 0))
 	var buffs: Variant = value.get("buffs", [])
 	return health != null and maximum != null and block != null and maximum > 0 \
 		and health >= 0 and health <= maximum and block >= 0 and buffs is Array \
-		and _valid_buff_array(buffs)
+		and _valid_buff_array(buffs) and value.get("card_rules", {}) is Dictionary \
+		and _json_safe(value.get("card_rules", {})) and _valid_relic_runtime(value.get("relic_runtime", {}))
+
+
+static func _valid_relic_runtime(value: Variant) -> bool:
+	if not value is Dictionary or not _json_safe(value): return false
+	if not value.has("chain_charges"): return true
+	if not value.chain_charges is Dictionary: return false
+	for key: Variant in value.chain_charges:
+		if not key is String or not key.is_valid_int() or str(int(key)) != key \
+				or int(key) < 0 or int(key) >= RelicBoard.CELL_COUNT or not value.chain_charges[key] is bool:
+			return false
+	return true
 
 
 static func _valid_enemy_array(values: Array) -> bool:

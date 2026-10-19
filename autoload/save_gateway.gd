@@ -27,6 +27,7 @@ var _error_notice := ""
 
 func _ready() -> void:
 	_state = get_node("/root/GlobalState") as GlobalStateMachine
+	_state.save_on_window_close = false
 	_state.save_failed.connect(_forward_error)
 	get_tree().auto_accept_quit = false
 	var profile := _read_json(profile_path)
@@ -39,7 +40,7 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST and not _closing:
-		# GlobalState 的原退出通知先完成；随后保存含地图的完整检查点再退出。
+		# 窗口关闭只安装一次含地图的完整存档，失败则留在游戏内。
 		_closing = true
 		call_deferred("quit_game")
 
@@ -217,7 +218,7 @@ func save_current() -> Error:
 		return _fail(ERR_BUSY, "战斗结算中暂不能保存，请先完成操作。")
 	var view: Node = _map_view.get_ref() if _map_view != null else null
 	var checkpoint := _map_checkpoint.duplicate(true)
-	if is_instance_valid(view):
+	if is_instance_valid(view) and run != null:
 		checkpoint = view.capture_menu_checkpoint()
 		if checkpoint.is_empty():
 			return _fail(ERR_INVALID_DATA, "地图检查点捕获失败，未覆盖存档。")
@@ -227,24 +228,19 @@ func save_current() -> Error:
 	var error := _ensure_parent(path)
 	if error != OK:
 		return _fail(error, "无法创建存档目录。")
-	# main 的状态机负责序列化原有字段；先写独立中间件，最后一次原子安装完整文件。
-	var staging := path + ".menu-staging"
-	var previous_path := _state.save_path
-	_state.save_path = staging
-	error = _state.save_game()
-	_state.save_path = previous_path
-	if error != OK:
-		return error
-	var prepared := _read_json(staging)
+	# 状态机只构建原有完整载荷，补入地图后直接走既有最终原子安装。
+	# 不再把同一份状态先写盘、读回解析再写一次，也不更改状态机的保存路径。
+	var prepared := _state.build_save_payload()
 	if prepared.error != OK:
-		return _fail(prepared.error, "存档中间件读取失败。")
-	var data: Dictionary = prepared.data
+		return _state._fail(prepared.error, "Could not capture random state")
+	# 对齐旧中间保存成功后的状态；最终安装失败仍由网关报告。
+	_state.last_error = OK
+	var data: Dictionary = prepared.payload
 	# 尚未点击继续时 current_run 为 null，但磁盘仍有进行中的局；不能丢掉它的地图。
 	var saved_active: Variant = data.get("active_run")
 	if not checkpoint.is_empty() and saved_active is Dictionary and saved_active.get("run_snapshot") is Dictionary:
 		data[MAP_KEY] = {"run_id": saved_active.run_snapshot.run_id, "snapshot": checkpoint}
 	error = _write_json(path, data)
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(staging))
 	if error != OK:
 		return _fail(error, "保存失败，原存档已保留。")
 	_map_checkpoint = checkpoint
@@ -273,6 +269,18 @@ func _validate_slot(slot: int) -> Error:
 	if loaded.error != OK:
 		return loaded.error
 	var extension: Variant = loaded.data.get(MAP_KEY)
+	var node_loot: Variant = {}
+	var active_data: Variant = loaded.data.get("active_run")
+	if active_data is Dictionary and active_data.get("run_snapshot") is Dictionary:
+		if not RunRewards.valid_items(active_data.run_snapshot.get("items")): return ERR_INVALID_DATA
+		var inventory: Variant = active_data.run_snapshot.get("inventory_state", {})
+		if not inventory is Dictionary or not RunStateMachine._valid_inventory_state(inventory): return ERR_INVALID_DATA
+		var saved_battle: Variant = active_data.run_snapshot.get("current_battle")
+		if saved_battle != null:
+			if not saved_battle is Dictionary or not saved_battle.get("player") is Dictionary \
+					or not BattleStateMachine._valid_player(saved_battle.player): return ERR_INVALID_DATA
+		node_loot = inventory.get("node_loot", {})
+		if not RunNodeLoot.valid_records(node_loot): return ERR_INVALID_DATA
 	if extension != null:
 		var active: Variant = loaded.data.get("active_run")
 		if not extension is Dictionary or not extension.get("snapshot") is Dictionary \
@@ -285,6 +293,10 @@ func _validate_slot(slot: int) -> Error:
 			return ERR_INVALID_DATA
 		if JSON.stringify(extension.snapshot.get("seed_snapshot")) != JSON.stringify(active.get("seed_snapshot")):
 			return ERR_INVALID_DATA
+		if not RunNodeLoot.valid_map_records(node_loot, extension.snapshot.floors):
+			return ERR_INVALID_DATA
+	elif not node_loot.is_empty():
+		return ERR_INVALID_DATA
 	return OK
 
 

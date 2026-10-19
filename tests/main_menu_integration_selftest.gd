@@ -36,7 +36,7 @@ func _run() -> void:
 		_finish()
 		return
 	_check("真实状态机开局且三张地图配置合法", GlobalState.run_active and GlobalState.current_run.map_ids.size() == 3)
-	_check("不绕过 main 的解锁/初始牌组规则", GlobalState.current_run.deck.is_empty() and GlobalState.unlocked_cards.is_empty())
+	_check("新局固定八张初始牌且不伪造局外解锁", GlobalState.current_run.deck == ["1", "1", "1", "50", "50", "50", "40", "40"] and GlobalState.unlocked_cards.is_empty())
 	var run_id: String = GlobalState.current_run.run_id
 	var map_before: String = _json(view._map_snapshot)
 	var movement: Vector2 = view.session.actor_plane
@@ -136,6 +136,7 @@ func _frames() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	await get_tree().process_frame
+	await preload("res://tests/support/presentation_test_helper.gd").map_ready(get_tree())
 
 
 func _json(value: Variant) -> String:

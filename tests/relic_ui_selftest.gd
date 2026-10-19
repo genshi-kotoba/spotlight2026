@@ -15,7 +15,7 @@ func _run() -> void:
 	add_child(page)
 	await get_tree().process_frame
 	page._load_example()
-	_check("页面创建 12 个格子与五种残片", page._slots.size() == 12 and page._palette.size() == 5)
+	_check("页面创建12格与38种原型/正式残片，不铺开复合条目", page._slots.size() == 12 and page._palette.size() == 38)
 	page._palette[3].pressed.emit()
 	page._slots[7].pressed.emit()
 	_check("选择残片后点击格子可放置", page._board.cells[7] == "gain_block")
@@ -36,8 +36,8 @@ func _run() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	_check("战斗从保存配置读取 12 格构筑", battle_ui._relic_board.cells[0] == "turn_strength" and battle_ui._relic_board.cells[6] == "on_enemy_damaged")
-	_check("首回合力量及首抽触发链完整生效", int(battle_ui._battle.enemies[0].health) == battle_ui.enemy_starting_health - 72 and int(battle_ui._battle.player.block) == 24)
-	_check("HUD 显示 49 次残片生效", battle_ui._relic_title.text.contains("49") and not battle_ui._relic_events.is_empty())
+	_check("首抽不触发典籍伤害或格挡且遵守10张上限", int(battle_ui._battle.enemies[0].health) == battle_ui.enemy_starting_health and int(battle_ui._battle.player.block) == 0 and battle_ui._battle.hand.size() == mini(10, battle_ui.initial_draw_count))
+	_check("HUD 只显示存在类力量的一次生效", battle_ui._relics.activation_count == 1 and battle_ui._relic_title.text.contains("1") and not battle_ui._relic_events.is_empty())
 	await _capture("res://.godot/relic_battle_preview.png")
 	battle_ui.free()
 	DirAccess.remove_absolute(FIXTURE_PATH)

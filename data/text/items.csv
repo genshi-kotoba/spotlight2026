@@ -1,0 +1,8 @@
+编号,物品名,图标路径,效果文本
+治疗药水,治疗药水,res://assets/ui/UI-022/红药剂.png,恢复 6 点生命
+力量药水,力量药水,res://assets/ui/UI-022/黄药剂.png,获得 3 层力量
+格挡药剂,格挡药剂,res://assets/ui/UI-022/蓝药剂.png,获得 8 点格挡
+干净绷带,干净绷带,res://assets/ui/UI-022/绿药剂.png,治疗时额外恢复 2 点生命
+铜币袋,铜币袋,res://assets/ui/UI-023/UI-023.png,战斗结束额外获得 20 灵魂
+火把,火把,res://assets/ui/UI-022/紫药剂.png,照亮本层地图
+面包,面包,res://assets/ui/UI-022/黑药剂.png,恢复 3 点生命

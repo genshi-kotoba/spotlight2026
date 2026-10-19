@@ -20,6 +20,8 @@ var _pending_delete := false
 
 
 func _ready() -> void:
+	for button: Button in [$按钮行/切换档案, $按钮行/删除存档, $按钮行/返回]:
+		CommonUiSkin.style_button(button)
 	_gateway = get_node_or_null("/root/SaveGateway")
 	for index in _cards.size():
 		var slot := index + 1
@@ -81,7 +83,7 @@ func _on_switch_pressed() -> void:
 
 
 func _return_to_menu() -> void:
-	var error := get_tree().change_scene_to_file(main_menu_scene)
+	var error := SceneTransition.change_scene_to_file(main_menu_scene)
 	if error != OK:
 		_message_bar.show_message("返回开始界面失败：%d" % error)
 

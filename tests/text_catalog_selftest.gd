@@ -24,9 +24,10 @@ func _run() -> void:
 	gateway._active_slot = 1
 	_check("使用隔离档案，不写玩家存档", gateway._load_slot(1) == OK)
 	original_paths = TextCatalog.paths.duplicate()
-	_check("四份正式空 CSV 都可导入", TextCatalog.reload() == OK)
+	_check("四份正式 CSV 都可导入", TextCatalog.reload() == OK)
 	for category: String in TextCatalogService.CATEGORIES:
-		_check(category + " 正式模板只有表头", TextCatalog.entries(category).is_empty())
+		var expected := int({"cards": 70, "monsters": 23, "items": 7, "fragments": 33}.get(category, 0))
+		_check(category + " 正式数据数量", TextCatalog.entries(category).size() == expected)
 	_parser_checks()
 	_fixture_tables()
 	_check("测试表导入", TextCatalog.reload() == OK)
@@ -68,7 +69,7 @@ func _run() -> void:
 	_check("真实鼠标关闭详情", not page._detail.visible)
 	# 真实输入路径：pressed 信号中打开/关闭详情，避免 locked free 回归。
 	page._grid.get_child(1).get_node("OpenDetail").pressed.emit()
-	_check("详情左卡右全部七属性", page._detail.visible and page.detail_entry.id == "10" and page._detail_fields.get_child_count() == 7 and page._detail_card.get_child_count() == 1)
+	_check("详情左卡右全部八属性", page._detail.visible and page.detail_entry.id == "10" and page._detail_fields.get_child_count() == 8 and page._detail_card.get_child_count() == 1)
 	_check("详情包含隐藏属性及真实状态", page._detail_fields.get_node("text").text.contains("只在详情显示") and page._detail_fields.get_node("unlock_state").text.contains("已解锁"))
 	await _frames()
 	await _capture("catalog-detail.png")
@@ -114,9 +115,13 @@ func _run() -> void:
 	_check("菜单成就按钮真实导航", get_tree().current_scene.scene_file_path == ACHIEVEMENTS)
 	TextCatalog.paths = original_paths
 	TextCatalog.reload()
+	_write_table("cards", TextCatalogService.CARD_HEADERS, [])
+	TextCatalog.reload()
 	page = await _scene(ENCYCLOPEDIA)
 	_check("空模板明确空态", page.visible_entries.is_empty() and page._status.text.contains("暂无条目"))
 	await _capture("catalog-empty.png")
+	TextCatalog.paths = original_paths
+	TextCatalog.reload()
 	page = await _scene(MENU)
 	await _capture("catalog-menu.png")
 	print("文本与图鉴自测：全部通过" if failures == 0 else "文本与图鉴自测：%d 项失败" % failures)
@@ -124,7 +129,7 @@ func _run() -> void:
 
 
 func _parser_checks() -> void:
-	var headers := TextCatalogService.CARD_HEADERS
+	var headers := TextCatalogService.FRAGMENT_HEADERS
 	var keys := TextCatalogService.ENTRY_KEYS
 	var header := ",".join(headers) + "\r\n"
 	var parsed := CsvTextTable.parse("\uFEFF" + header + "2,,测试,\"含逗号,和\"\"引号\"\"\n多行\",类型,文本\r\n", headers, keys)
@@ -161,15 +166,15 @@ func _legacy_save_checks() -> void:
 
 func _fixture_tables() -> void:
 	_write_table("cards", TextCatalogService.CARD_HEADERS, [
-		["10", "", "十号测试卡", "造成测试伤害", "攻击", "只在详情显示的背景文本"],
-		["2", "res://assets/battle_test/CHR-025.png", "二号测试卡", "测试多行效果\n含逗号,与引号\"", "技能", "详情长文本\n".repeat(18)],
-		["CARD-003", "", "空插画测试", "无效果", "测试", "介绍"],
+		["10", "", "十号测试卡", "造成测试伤害", "攻击", "只在详情显示的背景文本", "普通"],
+		["2", "res://assets/battle_test/CHR-025.png", "二号测试卡", "测试多行效果\n含逗号,与引号\"", "技能", "详情长文本\n".repeat(18), "稀有"],
+		["CARD-003", "", "空插画测试", "无效果", "测试", "介绍", "暂无"],
 	])
-	_write_table("fragments", TextCatalogService.CARD_HEADERS, [
+	_write_table("fragments", TextCatalogService.FRAGMENT_HEADERS, [
 		["R-010", "", "测试触发残片", "周围四格", "触发", "残片详情"],
 		["R-002", "", "测试效果残片", "获得格挡", "效果", "残片说明"],
 	])
-	_write_table("monsters", TextCatalogService.MONSTER_HEADERS, [
+	_write_table("monsters", TextCatalogService.LEGACY_MONSTER_HEADERS, [
 		["M-010", "", "测试怪物十", "无能力", "普通 / 第一地区", "详情"],
 		["M-002", "res://assets/battle_test/CHR-025.png", "测试怪物二", "测试能力", "精英 / 第二地区", "怪物背景文本"],
 	])
@@ -199,6 +204,7 @@ func _scene(path: String) -> Control:
 func _frames() -> void:
 	for i: int in 4:
 		await get_tree().process_frame
+	await preload("res://tests/support/presentation_test_helper.gd").map_ready(get_tree())
 
 
 func _click(point: Vector2) -> void:

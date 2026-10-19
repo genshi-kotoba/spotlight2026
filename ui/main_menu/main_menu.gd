@@ -28,6 +28,9 @@ var _pending_new_run := false
 
 
 func _ready() -> void:
+	$按钮底板.add_theme_stylebox_override("panel", CommonUiSkin.panel("panel"))
+	for button: Button in [$按钮列/继续游戏, $按钮列/新游戏, $按钮列/设置, $按钮列/成就, $按钮列/图鉴, $按钮列/感谢名单, $按钮列/退出游戏, $档案]:
+		CommonUiSkin.style_button(button, Vector4(24, 12, 24, 12))
 	_gateway = get_node_or_null("/root/SaveGateway")
 	_continue_button.pressed.connect(_on_continue_pressed)
 	_new_game_button.pressed.connect(_on_new_game_pressed)
@@ -44,6 +47,7 @@ func _ready() -> void:
 		_gateway.active_slot_changed.connect(_on_gateway_changed)
 		_gateway.slots_refreshed.connect(_on_gateway_changed)
 	refresh()
+	ScenePreloader.warm_menu(game_scene)
 
 
 ## 把网关的状态铺到屏上。当前档与「继续游戏」的可用性都只问网关。
@@ -132,7 +136,7 @@ func _enter_game() -> void:
 
 
 func _change_scene(path: String) -> void:
-	var error := get_tree().change_scene_to_file(path)
+	var error := SceneTransition.change_scene_to_file(path)
 	if error != OK:
 		_message_bar.show_message("打开场景失败：%s（%d）" % [path, error])
 

@@ -12,6 +12,15 @@ extends Button
 var slot := 0
 
 
+func _ready() -> void:
+	CommonUiSkin.style_button(self, Vector4.ZERO)
+	for state: String in ["normal", "hover", "pressed", "disabled"]:
+		var style := CommonUiSkin.panel("small")
+		if state in ["hover", "pressed"]:
+			style.set("surface_tint", Color(0.76, 0.69, 0.49))
+		add_theme_stylebox_override(state, style)
+
+
 func setup(info: Dictionary, is_current: bool) -> void:
 	slot = int(info.get("slot", 0))
 	_slot_label.text = "档案 %d" % slot
@@ -51,5 +60,5 @@ static func summary_text(info: Dictionary) -> String:
 			lines.append("进度 %d" % int(info.get("progress", 0)))
 	var updated := String(info.get("updated_at", ""))
 	if not updated.is_empty():
-		lines.append("上次 %s" % updated)
+		lines.append("上次 %s" % updated.replace("T", " ").left(16))
 	return "\n".join(lines)

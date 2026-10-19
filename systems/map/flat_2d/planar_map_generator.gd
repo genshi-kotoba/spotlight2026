@@ -4,14 +4,27 @@ extends RefCounted
 const VERSION := "planar-walk-v1"
 const Hex = preload("res://systems/map/hex_coord.gd")
 const Domains = preload("res://systems/random/random_domains.gd")
+const SpaceRefiner = preload("res://systems/map/flat_2d/hex_space_refiner.gd")
+const AlchemyEvents = preload("res://systems/map/flat_2d/alchemy_event_catalog.gd")
+const NodeGeometry = preload("res://systems/map/flat_2d/node_geometry.gd")
+const _LEXICOGRAPHIC_DIRS: Array[Vector2i] = [
+	Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, -1),
+	Vector2i(0, 1), Vector2i(1, -1), Vector2i(1, 0),
+]
 const DEFAULT_CONFIG := {
 	"size": "small", "normal": 3, "elite": 1, "events": 8,
 	"min_boss_content_nodes": 4, "transition_count": 6,
 	"transition_steps": 1, "obstacle_rate": 0.06,
+	"cell_space": 1, "space_jitter": true,
+	"layout_candidates": 1,
+	"layout_profile": "legacy",
+	"route_profile": "legacy",
+	"content_profile": "legacy",
 }
 const MAX_ATTEMPTS := 8
 const EMBEDDING_TRIALS := 40
 const PLACEMENT_LIMIT := 144
+const COMPACT_MOVES := 6
 var last_error: String = ""
 
 
@@ -24,12 +37,28 @@ func normalize_config(input: Dictionary) -> Dictionary:
 	c.merge(input, true)
 	if c.size != "small":
 		return _fail("The production WALK outline supports size=small")
-	for field in ["normal", "elite", "events", "min_boss_content_nodes", "transition_count", "transition_steps"]:
+	for field in ["normal", "elite", "events", "min_boss_content_nodes", "transition_count", "transition_steps", "cell_space", "layout_candidates"]:
 		var value: Variant = c[field]
 		if not (value is int or value is float) or not is_finite(float(value)) or float(value) != floor(float(value)) or absf(float(value)) > 100000.0:
 			return _fail(field + " must be an integer")
 		c[field] = int(value)
-	if c.normal < 2 or c.normal > 8 or c.elite < 1 or c.elite > 5 or c.normal + c.elite < 4:
+	if c.cell_space not in [1, 3, 4, 7] or not c.space_jitter is bool:
+		return _fail("Use cell_space=1, 3, 4, or 7 and a boolean space_jitter")
+	if c.layout_candidates < 1 or c.layout_candidates > 4:
+		return _fail("layout_candidates must be 1..4; one preserves legacy layout selection")
+	if c.layout_profile not in ["legacy", "compact"]:
+		return _fail("layout_profile must be legacy or compact")
+	if c.route_profile not in ["legacy", "switchback"]:
+		return _fail("route_profile must be legacy or switchback")
+	if c.content_profile not in ["legacy", "alchemy_floor1", "alchemy_floor1_pile"]:
+		return _fail("content_profile must be legacy, alchemy_floor1, or alchemy_floor1_pile")
+	if c.content_profile == "alchemy_floor1":
+		if c.normal != 3 or c.elite != 0 or c.events != 4 or c.min_boss_content_nodes != 4:
+			return _fail("alchemy_floor1 requires normal=3, elite=0, events=4, min_boss_content_nodes=4")
+	elif c.content_profile == "alchemy_floor1_pile":
+		if c.normal != 3 or c.elite != 0 or c.events != 5 or c.min_boss_content_nodes != 4:
+			return _fail("alchemy_floor1_pile requires normal=3, elite=0, events=5, min_boss_content_nodes=4")
+	elif c.normal < 2 or c.normal > 8 or c.elite < 1 or c.elite > 5 or c.normal + c.elite < 4:
 		return _fail("Use 2..8 normal, 1..5 elite, and at least four combat nodes")
 	if c.events < 4 or c.events > 16:
 		return _fail("events must be 4..16, including one shop and three services")
@@ -40,6 +69,14 @@ func normalize_config(input: Dictionary) -> Dictionary:
 	if not (c.obstacle_rate is float or c.obstacle_rate is int) or not is_finite(float(c.obstacle_rate)) or float(c.obstacle_rate) < 0.0 or float(c.obstacle_rate) > 0.22:
 		return _fail("obstacle_rate must be a finite fraction in 0..0.22")
 	c.obstacle_rate = float(c.obstacle_rate)
+	# Keep legacy snapshots and normalized configs byte-compatible, including
+	# callers which explicitly opt back into the original profile.
+	if c.layout_profile == "legacy":
+		c.erase("layout_profile")
+	if c.route_profile == "legacy":
+		c.erase("route_profile")
+	if c.content_profile == "legacy":
+		c.erase("content_profile")
 	return c
 
 
@@ -55,6 +92,10 @@ func generate(seed_source, map_id: String, floor_index: int, config: Dictionary 
 	if not main_seed is String or main_seed.is_empty():
 		return _fail("seed_source must already have an initialized main seed")
 	var failures: Array = []
+	var best: Dictionary = {}
+	var best_data: Dictionary = {}
+	var best_score := -INF
+	var candidates: Array = []
 	for attempt in MAX_ATTEMPTS:
 		var layout: Variant = seed_source.get_stream(Domains.MAP_LAYOUT, [map_id], attempt)
 		var types: Variant = seed_source.get_stream(Domains.MAP_NODES, [map_id], attempt)
@@ -76,8 +117,7 @@ func generate(seed_source, map_id: String, floor_index: int, config: Dictionary 
 			continue
 		var transitions: Dictionary = {"requested_count": c.transition_count, "applied_count": 0, "skipped_count": c.transition_count, "operations": []}
 		if c.transition_count > 0:
-			var transition_rng: Variant = seed_source.get_stream(
-				Domains.MAP_TRANSITIONS, [map_id], attempt)
+			var transition_rng: Variant = seed_source.get_stream(Domains.MAP_TRANSITIONS, [map_id], attempt)
 			if transition_rng == null:
 				return _fail("Could not acquire map.transitions stream")
 			transitions = _apply_transitions(data, transition_rng, c)
@@ -87,13 +127,373 @@ func generate(seed_source, map_id: String, floor_index: int, config: Dictionary 
 			continue
 		last_error = ""
 		var result: Dictionary = _snapshot(data, str(main_seed), map_id, floor_index)
+		if c.cell_space != 1:
+			var space_rng: Variant = seed_source.get_stream(&"map.cell_space", [map_id], attempt)
+			if space_rng == null:
+				return _fail("Could not acquire map.cell_space stream")
+			result = SpaceRefiner.new().apply(result, space_rng, c.space_jitter,c.cell_space)
 		result.generator_version = VERSION
 		result.generation_config = c
 		result.generation_attempt = attempt
 		result.generation_quality = quality
 		result.generation_quality.transitions = transitions
-		return result
+		# Default remains first-valid, preserving existing seed layouts. Optional
+		# bounded selection compares only maps which pass ALL gameplay rules.
+		if c.layout_candidates == 1:
+			return _compact_result(seed_source, result, data, c)
+		var selection := _relief_layout_score(data, quality)
+		candidates.append({"attempt":attempt,"score":selection.score,"compactness":quality.shape.compactness,"near_detour_steps":selection.near_detour_steps})
+		if selection.score > best_score + 0.0000001:
+			best = result
+			best_score = selection.score
+			if c.get("layout_profile", "legacy") == "compact" or c.get("route_profile", "legacy") == "switchback":
+				best_data = data.duplicate(true)
+		if candidates.size() >= c.layout_candidates:
+			break
+	if not best.is_empty():
+		best.generation_quality.layout_selection = {"version":"compact-relief-layout-v1","requested":c.layout_candidates,"evaluated":candidates.size(),"chosen_attempt":best.generation_attempt,"score":best_score,"candidates":candidates}
+		last_error=""
+		return _compact_result(seed_source, best, best_data, c)
 	return _fail("WALK generation exhausted %d bounded attempts: %s" % [MAX_ATTEMPTS, str(failures)])
+
+
+func _compact_metric(data: Dictionary, include_shape: bool = true) -> Dictionary:
+	# Symmetric three-axis envelope avoids a camera-specific packing direction.
+	# The secondary objective brings room centres together without rewarding
+	# extra corridor cells merely for filling an empty bay.
+	var spans: Array = _axial_spans(data.floor)
+	var centers: Dictionary = _centers(data)
+	var centroid := Vector2.ZERO
+	for p: Vector2i in centers.values():
+		centroid += Vector2(p.x + p.y * 0.5, p.y * sqrt(3.0) * 0.5)
+	centroid /= centers.size()
+	var spread := 0.0
+	for p: Vector2i in centers.values():
+		spread += Vector2(p.x + p.y * 0.5, p.y * sqrt(3.0) * 0.5).distance_squared_to(centroid)
+	var envelope: float = (spans[0]+1) * (spans[1]+1) + (spans[1]+1) * (spans[2]+1) + (spans[0]+1) * (spans[2]+1)
+	var metric := {"score": envelope + spread * 0.10, "axial_envelope": envelope, "node_spread": spread}
+	if include_shape:
+		metric["shape"] = _shape(data.floor)
+	return metric
+
+
+func _compact_result(seed_source, original: Dictionary, data: Dictionary, c: Dictionary) -> Dictionary:
+	if c.get("layout_profile", "legacy") != "compact":
+		return _switchback_result(seed_source, original, data, c, original)
+	var base_floor: Dictionary = data.floor.duplicate()
+	var base_centers: Dictionary = _centers(data)
+	var costs: Dictionary = {}
+	for node: Dictionary in data.nodes:
+		costs[node.id] = _transition_route(base_floor, base_centers[node.parent_id], base_centers[node.id]).cost
+	var before: Dictionary = _compact_metric(data)
+	var operations: Array = []
+	var considered := 0
+	var transitions: Dictionary = original.generation_quality.transitions.duplicate(true)
+	for sweep in COMPACT_MOVES:
+		var current: Dictionary = _compact_metric(data, false)
+		var relocation: Dictionary = _relocation_context(data)
+		var best: Dictionary = {}
+		var best_score: float = current.score
+		# Node and axial-direction order are stable; no layout or content stream
+		# is consumed. The already selected logical plan and attempt stay intact.
+		for node: Dictionary in data.nodes:
+			if node.is_route_gate:
+				continue
+			for delta: Vector2i in Hex.DIRS:
+				considered += 1
+				var trial: Dictionary = _relocate(data, node.id, delta, relocation)
+				if trial.is_empty():
+					continue
+				var metric: Dictionary = _compact_metric(trial, false)
+				if metric.score >= best_score - 0.000001 or metric.axial_envelope > current.axial_envelope or trial.floor.size() > base_floor.size() + 6:
+					continue
+				var centers: Dictionary = _centers(trial)
+				var valid := true
+				# Preserve route capacity for relief: packing may bend a connection,
+				# but never shorten any original owner-to-owner traversal cost.
+				for other: Dictionary in trial.nodes:
+					if _transition_route(trial.floor, centers[other.parent_id], centers[other.id]).cost < costs[other.id]:
+						valid = false
+						break
+				# Declared transition buffers remain exactly +1 after every move.
+				for operation: Dictionary in transitions.operations:
+					if _transition_route(trial.floor, centers[operation.from], centers[operation.to]).cost != operation.after_cost:
+						valid = false
+						break
+				if not valid or not _validate(trial, c).ok:
+					continue
+				best = trial
+				best_score = metric.score
+		if best.is_empty():
+			break
+		operations.append(best.transition_move)
+		data.floor = best.floor
+		data.domains = best.domains
+		data.nodes = best.nodes
+	if operations.is_empty():
+		original.generation_quality.layout_compaction = {"version": "room-packing-v1", "applied_moves": 0, "placements_considered": considered, "before": before, "after": before, "operations": []}
+		return _switchback_result(seed_source, original, data, c, original)
+	var result: Dictionary = _snapshot(data, original.seed, original.map_id, original.floor_index)
+	if c.cell_space != 1:
+		# Legacy refinement was already evaluated as part of candidate selection.
+		# Compact refinement has its own address; it cannot perturb legacy draws.
+		var refinement_rng: Variant = seed_source.get_stream(&"map.compact_refinement", [original.map_id], original.generation_attempt)
+		if refinement_rng == null:
+			return _fail("Could not acquire map.compact_refinement stream")
+		result = SpaceRefiner.new().apply(result, refinement_rng, c.space_jitter,c.cell_space)
+	for key in ["generator_version", "generation_config", "generation_attempt"]:
+		result[key] = original[key]
+	result.generation_quality = _validate(data, c)
+	# Paths are refreshed against final geometry; baseline cost and original
+	# transition history remain available for exact gain verification.
+	var final_centers: Dictionary = _centers(data)
+	for operation: Dictionary in transitions.operations:
+		var measured: Dictionary = _transition_route(data.floor, final_centers[operation.from], final_centers[operation.to])
+		operation.after_cost = measured.cost
+		operation.gain = measured.cost - operation.before_cost
+		operation.path = _points(measured.path)
+	result.generation_quality.transitions = transitions
+	if original.generation_quality.has("layout_selection"):
+		result.generation_quality.layout_selection = original.generation_quality.layout_selection
+	result.generation_quality.layout_compaction = {"version": "room-packing-v1", "applied_moves": operations.size(), "placements_considered": considered, "before": before, "after": _compact_metric(data), "operations": operations, "policy": "whole rooms only; exact tree and four gate masks; no shorter original owner route; exact transition gains"}
+	return _switchback_result(seed_source, result, data, c, original)
+
+
+func _switchback_walk(state: Dictionary, path: Array, directions: Array, turns: int) -> void:
+	state.steps += 1
+	if state.steps > 10000 or state.found.size() >= 16:
+		return
+	var point: Vector2i = path.back()
+	if state.goals.has(point):
+		if path.size() >= 5 and path.size() <= 10 and turns >= 2 and turns <= 4:
+			state.found.append({"path": path.duplicate(), "turns": turns})
+		return
+	if path.size() >= 10:
+		return
+	var choices: Array = []
+	for index in 6:
+		var next: Vector2i = point + Hex.DIRS[index]
+		if not state.allowed.has(next) or next in path or state.allowed[next].has(state.from_id):
+			continue
+		var chord := false
+		for neighbor: Vector2i in Hex.neighbors(next):
+			if neighbor != point and neighbor in path:
+				chord = true
+		if chord:
+			continue
+		var next_turns: int = turns + (1 if not directions.is_empty() and directions.back() != index else 0)
+		if next_turns > 4:
+			continue
+		var distance := 1000000
+		for goal: Vector2i in state.goals:
+			distance = mini(distance, Hex.distance(next, goal))
+		if path.size() + distance > 10:
+			continue
+		choices.append({"point": next, "direction": index, "turns": next_turns, "distance": distance})
+	choices.sort_custom(func(a,b): return a.distance < b.distance if a.distance != b.distance else a.direction < b.direction)
+	for choice: Dictionary in choices:
+		path.append(choice.point)
+		directions.append(choice.direction)
+		_switchback_walk(state, path, directions, choice.turns)
+		path.pop_back()
+		directions.pop_back()
+		if state.steps > 10000 or state.found.size() >= 16:
+			return
+
+
+func _switchback_path(data: Dictionary, removed: Dictionary, from_id: String, to_id: String) -> Dictionary:
+	var floor_cells: Dictionary = data.floor.duplicate()
+	for point: Vector2i in removed: floor_cells.erase(point)
+	var lows: Array = [1000000,1000000,1000000]
+	var highs: Array = [-1000000,-1000000,-1000000]
+	for point: Vector2i in data.floor:
+		var values: Array = [point.x,point.y,point.x+point.y]
+		for i in 3:
+			lows[i] = mini(lows[i],values[i]-1)
+			highs[i] = maxi(highs[i],values[i]+1)
+	var allowed: Dictionary = {}
+	var starts: Dictionary = {}
+	var goals: Dictionary = {}
+	for q in range(lows[0],highs[0]+1):
+		for r in range(lows[1],highs[1]+1):
+			var point := Vector2i(q,r)
+			if floor_cells.has(point) or q+r < lows[2] or q+r > highs[2]:
+				continue
+			var incident: Dictionary = {}
+			var safe := true
+			for n: Vector2i in Hex.neighbors(point):
+				if not floor_cells.has(n):
+					continue
+				var owner: String = floor_cells[n]
+				if owner != from_id and owner != to_id:
+					safe = false
+					break
+				incident[owner] = true
+			if safe:
+				allowed[point] = incident
+				if incident.size() == 1 and incident.has(from_id): starts[point] = true
+				if incident.size() == 1 and incident.has(to_id): goals[point] = true
+	if goals.is_empty():
+		return {}
+	var state: Dictionary = {"allowed":allowed,"goals":goals,"from_id":from_id,"steps":0,"found":[]}
+	for start: Vector2i in _sorted(starts):
+		_switchback_walk(state,[start],[],0)
+		if state.steps > 10000 or state.found.size() >= 16: break
+	if state.found.is_empty():
+		return {}
+	state.found.sort_custom(func(a,b): return absi(a.path.size()-7) < absi(b.path.size()-7) if a.path.size() != b.path.size() else a.turns < b.turns)
+	return state.found[0]
+
+
+func _snapshot_bbox(snapshot: Dictionary) -> float:
+	var low := Vector2(INF,INF)
+	var high := Vector2(-INF,-INF)
+	for cell: Dictionary in snapshot.cells:
+		if cell.terrain != "ground": continue
+		var p := Vector2(float(cell.q)+float(cell.r)*0.5,float(cell.r)*sqrt(3.0)*0.5)
+		low = low.min(p)
+		high = high.max(p)
+	return (high.x-low.x+1.0)*(high.y-low.y+2.0/sqrt(3.0))
+
+
+func _fine_shortest(ground: Dictionary, starts: Array, goals: Dictionary) -> Array:
+	var queue: Array = starts.duplicate()
+	var previous: Dictionary = {}
+	for point: Vector2i in starts: previous[point] = point
+	var cursor := 0
+	while cursor < queue.size():
+		var point: Vector2i = queue[cursor]
+		cursor += 1
+		if goals.has(point):
+			var path: Array = [point]
+			while previous[path.back()] != path.back(): path.append(previous[path.back()])
+			path.reverse()
+			return path
+		for n: Vector2i in Hex.neighbors(point):
+			if ground.has(n) and not previous.has(n):
+				previous[n] = point
+				queue.append(n)
+	return []
+
+
+func _switchback_result(seed_source, original: Dictionary, data: Dictionary, c: Dictionary, legacy: Dictionary) -> Dictionary:
+	if c.get("route_profile", "legacy") != "switchback":
+		return original
+	var empty: Dictionary = {}
+	for point: Vector2i in data.floor:
+		if str(data.floor[point]).is_empty(): empty[point] = true
+	var parts: Array = _components(empty)
+	parts.sort_custom(func(a,b): return a.size() < b.size() if a.size() != b.size() else str(_sorted(a).front()) < str(_sorted(b).front()))
+	var by_id: Dictionary = {}
+	for node: Dictionary in data.nodes: by_id[node.id] = node
+	var result: Dictionary = original
+	var operations: Array = []
+	var centers: Dictionary = _centers(data)
+	for part: Dictionary in parts:
+		if operations.size() >= 2: break
+		var incident: Dictionary = _incident(data.floor, part)
+		var ids: Array = _ids(incident)
+		if ids.size() != 2 or "spawn" in ids or by_id[ids[0]].is_route_gate or by_id[ids[1]].is_route_gate or by_id[ids[0]].unlock_gates != by_id[ids[1]].unlock_gates:
+			continue
+		var found: Dictionary = _switchback_path(data, part, ids[0], ids[1])
+		if found.is_empty(): continue
+		var trial: Dictionary = data.duplicate(true)
+		for point: Vector2i in part: trial.floor.erase(point)
+		for point: Vector2i in found.path:
+			trial.floor[point] = ""
+			trial.domains[point] = by_id[ids[0]].unlock_gates.duplicate()
+		if not _validate(trial,c).ok: continue
+		var candidate: Dictionary = _snapshot(trial, original.seed, original.map_id, original.floor_index)
+		if c.cell_space != 1:
+			var refinement_rng: Variant = seed_source.get_stream(&"map.switchback_refinement",[original.map_id,ids[0],ids[1]],original.generation_attempt)
+			if refinement_rng == null: return _fail("Could not acquire map.switchback_refinement stream")
+			candidate = SpaceRefiner.new().apply(candidate,refinement_rng,c.space_jitter,c.cell_space)
+		# A local outer-wall stair may use one extra coarse row, but it must fit
+		# inside the original legacy map's total footprint area.
+		if _snapshot_bbox(candidate) > _snapshot_bbox(legacy) + 0.000001: continue
+		var before: int = _transition_route(data.floor,centers[ids[0]],centers[ids[1]]).cost
+		var after: int = _transition_route(trial.floor,centers[ids[0]],centers[ids[1]]).cost
+		operations.append({"from_id":ids[0],"to_id":ids[1],"coarse_path":_points(found.path),"turns":found.turns,"base_buffer_cost":before,"stairs_cost":after,"stairs_additional_cost":after-before})
+		data.floor = trial.floor
+		data.domains = trial.domains
+		result = candidate
+	if operations.is_empty():
+		original.height_recipe = {"version":"switchback-v1","climbs":[]}
+		original.generation_quality.switchbacks = {"version":"switchback-v1","applied_count":0,"connections":[],"fallback":"no bounded local connector passed exact topology and footprint limits"}
+		return original
+	for key in ["generator_version","generation_config","generation_attempt"]: result[key] = original[key]
+	result.generation_quality = _validate(data,c)
+	for key in ["transitions","layout_selection","layout_compaction"]:
+		if original.generation_quality.has(key): result.generation_quality[key] = original.generation_quality[key]
+	var ground: Dictionary = {}
+	for cell: Dictionary in result.cells:
+		if cell.terrain == "ground": ground[Vector2i(cell.q,cell.r)] = true
+	var nodes: Dictionary = {}
+	for node: Dictionary in result.nodes: nodes[node.id] = node
+	var climbs: Array = []
+	for operation: Dictionary in operations:
+		var a: Dictionary = nodes[operation.from_id]
+		var b: Dictionary = nodes[operation.to_id]
+		var start := Vector2i(a.coord[0],a.coord[1])
+		var goal := Vector2i(b.coord[0],b.coord[1])
+		var path: Array = _fine_shortest(ground,[start],{goal:true})
+		var region_a: Dictionary = {}
+		var region_b: Dictionary = {}
+		for point: Array in a.footprint: region_a[Vector2i(point[0],point[1])] = true
+		for point: Array in b.footprint: region_b[Vector2i(point[0],point[1])] = true
+		var boundary: Array = _fine_shortest(ground,_sorted(region_a),region_b)
+		operation.shortest_center_edges = path.size()-1
+		operation.shortest_boundary_edges = boundary.size()-1
+		climbs.append({"from_id":operation.from_id,"to_id":operation.to_id,"path":_points(path)})
+	result.height_recipe = {"version":"switchback-v1","climbs":climbs}
+	result.generation_quality.switchbacks = {"version":"switchback-v1","applied_count":operations.size(),"connections":operations,"base_buffer_phase":original.generation_quality.transitions.duplicate(true),"base_attempt":original.generation_attempt,"legacy_bbox_area":_snapshot_bbox(legacy),"final_bbox_area":_snapshot_bbox(result),"policy":"at most two existing tree edges; no room movement; induced coarse paths; one-row axial margin per connector, at most two rows total; final area no larger than legacy"}
+	var transitions: Dictionary = original.generation_quality.transitions.duplicate(true)
+	var final_centers: Dictionary = _centers(data)
+	for operation: Dictionary in transitions.operations:
+		var measured: Dictionary = _transition_route(data.floor,final_centers[operation.from],final_centers[operation.to])
+		operation.base_buffer_after_cost = operation.after_cost
+		operation.base_buffer_gain = operation.gain
+		operation.stairs_additional_cost = measured.cost-operation.after_cost
+		operation.after_cost = measured.cost
+		operation.gain = measured.cost-operation.before_cost
+		operation.path = _points(measured.path)
+	transitions.policy = "base buffer exactly +1; final cost and path include separately declared local switchback additions"
+	result.generation_quality.transitions = transitions
+	return result
+
+
+func _relief_layout_score(data: Dictionary, quality: Dictionary) -> Dictionary:
+	# High local detour capacity allows close-but-separated branches to carry
+	# different elevations. Density outranks it; empty bays do not earn reward.
+	var maximum := 0
+	var adjacent: Dictionary = {}
+	var ring: Array[Vector2i] = []
+	for q in range(-2,3):
+		for r in range(-2,3):
+			var delta := Vector2i(q,r)
+			if Hex.distance(Vector2i.ZERO,delta)==2: ring.append(delta)
+	for cell: Vector2i in data.floor:
+		var neighbors: Array[Vector2i] = []
+		for n: Vector2i in Hex.neighbors(cell):
+			if data.floor.has(n): neighbors.append(n)
+		adjacent[cell] = neighbors
+	for start: Vector2i in data.floor:
+		var targets: Dictionary = {}
+		for delta: Vector2i in ring:
+			if data.floor.has(start+delta): targets[start+delta]=true
+		var distances: Dictionary = {start:0}
+		var queue: Array = [start]
+		var cursor := 0
+		while cursor < queue.size() and not targets.is_empty():
+			var here: Vector2i = queue[cursor]; cursor += 1
+			for n: Vector2i in adjacent[here]:
+				if distances.has(n): continue
+				var distance: int = int(distances[here])+1
+				distances[n] = distance; queue.append(n)
+				if targets.erase(n): maximum = maxi(maximum,distance)
+	var shape: Dictionary = quality.shape
+	var score: float = 12.0*shape.compactness-.4*shape.elongation-.4*shape.oriented_aspect-8.0*shape.outer_tail_excess+.025*mini(24,maximum)
+	return {"score":score,"near_detour_steps":maximum}
 
 
 func _fail(message: String) -> Dictionary:
@@ -421,14 +821,25 @@ func _place(state: Dictionary, index: int) -> bool:
 	for point in state.occupied:
 		centroid += Vector2(point)
 	centroid /= state.occupied.size()
+	var coarse_index: PackedInt32Array=state.coarse_index
+	var coarse_offsets: PackedInt32Array=state.coarse_offsets
+	var coarse_stride: int=state.coarse_stride
+	var coarse_origin: int=state.coarse_origin
+	var parent_index: int=coarse_origin+p.x+p.y*coarse_stride
 	var choices: Array = []
-	for direction in Hex.DIRS:
+	for direction_index in Hex.DIRS.size():
+		var direction: Vector2i=Hex.DIRS[direction_index]
 		var k: Vector2i = p + direction
-		if state.occupied.has(k) or not _coarse_clear(k, p, state.occupied):
+		# Low three bits count occupied neighbors; bit three marks occupancy.
+		# A value of one is an empty cell touching only the occupied parent p.
+		var candidate_index: int=parent_index+coarse_offsets[direction_index]
+		if coarse_index[candidate_index]!=1:
 			continue
 		var free := 0
-		for n in Hex.neighbors(k):
-			if n != p and not state.occupied.has(n) and _coarse_clear(n, k, state.occupied):
+		for offset: int in coarse_offsets:
+			# k is not occupied yet. Zero means both an empty cell and no
+			# occupied neighbor, exactly the old _coarse_clear(n,k) condition.
+			if coarse_index[candidate_index+offset]==0:
 				free += 1
 		if free < state.plan.children[id].size():
 			continue
@@ -445,10 +856,15 @@ func _place(state: Dictionary, index: int) -> bool:
 	for choice in choices:
 		state.positions[id] = choice.point
 		state.occupied[choice.point] = true
+		var point_index: int=coarse_origin+int(choice.point.x)+int(choice.point.y)*coarse_stride
+		coarse_index[point_index]+=8
+		for offset: int in coarse_offsets:coarse_index[point_index+offset]+=1
 		if _place(state, index + 1):
 			return true
 		state.positions.erase(id)
 		state.occupied.erase(choice.point)
+		coarse_index[point_index]-=8
+		for offset: int in coarse_offsets:coarse_index[point_index+offset]-=1
 		if state.steps > 1600:
 			break
 	return false
@@ -474,9 +890,22 @@ func _embed(plan: Dictionary, rng) -> Dictionary:
 		children.sort_custom(func(a, b): return a < b if sizes[a] == sizes[b] else sizes[a] > sizes[b])
 		breadth_order.append_array(children)
 		index += 1
+	# Every placed coordinate is at most vertices.size()-1 steps from spawn.
+	# Queries extend two steps beyond a placed parent; this private grid has
+	# another guard cell and cannot truncate the original bounded search.
+	var coarse_extent: int=plan.vertices.size()+2
+	var coarse_stride: int=coarse_extent*2+1
+	var coarse_origin: int=coarse_extent*coarse_stride+coarse_extent
+	var coarse_offsets:=PackedInt32Array()
+	for direction: Vector2i in Hex.DIRS:coarse_offsets.append(direction.x+direction.y*coarse_stride)
 	var candidates: Array = []
 	for trial in EMBEDDING_TRIALS:
-		var state: Dictionary = {"plan": plan, "rng": rng, "trial": trial, "order": breadth_order if trial % 3 == 2 else depth_order, "steps": 0, "positions": {"spawn": Vector2i.ZERO}, "occupied": {Vector2i.ZERO: true}}
+		# Keep occupied's insertion order: the legacy centroid sums in that order.
+		var coarse_index:=PackedInt32Array()
+		coarse_index.resize(coarse_stride*coarse_stride)
+		coarse_index[coarse_origin]=8
+		for offset: int in coarse_offsets:coarse_index[coarse_origin+offset]=1
+		var state: Dictionary = {"plan": plan, "rng": rng, "trial": trial, "order": breadth_order if trial % 3 == 2 else depth_order, "steps": 0, "positions": {"spawn": Vector2i.ZERO}, "occupied": {Vector2i.ZERO: true}, "coarse_index":coarse_index,"coarse_offsets":coarse_offsets,"coarse_stride":coarse_stride,"coarse_origin":coarse_origin}
 		if not _place(state, 1):
 			continue
 		var tiles: Dictionary = {}
@@ -728,6 +1157,10 @@ func _assign_types(data: Dictionary, rng, c: Dictionary) -> bool:
 	for id in movable:
 		if id not in chosen.combat and id != chosen.shop:
 			event_ids.append(id)
+	if c.get("content_profile", "legacy") == "alchemy_floor1":
+		return _assign_alchemy_content(data, rng, chosen.shop, boss, combat_types, event_ids)
+	if c.get("content_profile", "legacy") == "alchemy_floor1_pile":
+		return _assign_alchemy_pile_content(data, rng, chosen.shop, boss, combat_types, event_ids)
 	var subtypes: Array = ["herbs", "forge", "alchemy"]
 	for i in c.events - 4:
 		subtypes.append("random")
@@ -738,6 +1171,63 @@ func _assign_types(data: Dictionary, rng, c: Dictionary) -> bool:
 		node.content_id = "flat_2d/" + (node.event_kind if node.type == "event" else node.type)
 		node.revisitable = node.type in ["event", "shop"]
 	return true
+
+
+func _assign_alchemy_content(data: Dictionary, rng, shop_id: String, boss_id: String, combat_types: Dictionary, event_ids: Array) -> bool:
+	# The existing events budget includes a shop and a chest. Only the two
+	# remaining slots draw identities, without replacement, from map.nodes.
+	if event_ids.size() != 3:
+		return false
+	var chest_id: String = rng.pick(event_ids)
+	var kinds: Array = AlchemyEvents.ids()
+	rng.shuffle_in_place(kinds)
+	var event_index := 0
+	for node in data.nodes:
+		node.type = "boss" if node.id == boss_id else "shop" if node.id == shop_id else "chest" if node.id == chest_id else str(combat_types.get(node.id, "event"))
+		node.event_kind = ""
+		node.content_id = "flat_2d/" + node.type
+		if node.type == "event":
+			node.event_kind = kinds[event_index]
+			node.content_id = "alchemy/events/" + node.event_kind
+			event_index += 1
+		elif node.type == "shop":
+			node.event_kind = "shop"
+		node.revisitable = node.type in ["event", "shop"]
+		if node.type == "event":
+			node.body_capsule = NodeGeometry.event_capsule()
+		else:
+			node.body_radius = NodeGeometry.alchemy_radius(node.type)
+	return event_index == 2
+
+
+func _assign_alchemy_pile_content(data: Dictionary, rng, shop_id: String, boss_id: String, combat_types: Dictionary, service_ids: Array) -> bool:
+	# The new profile adds one independent pile to the original content quota.
+	# Pick both loot nodes before drawing the two actual event identities.
+	if service_ids.size() != 4:
+		return false
+	var chest_id: String = rng.pick(service_ids)
+	var pile_candidates: Array = service_ids.duplicate()
+	pile_candidates.erase(chest_id)
+	var pile_id: String = rng.pick(pile_candidates)
+	var kinds: Array = AlchemyEvents.ids()
+	rng.shuffle_in_place(kinds)
+	var event_index := 0
+	for node in data.nodes:
+		node.type = "boss" if node.id == boss_id else "shop" if node.id == shop_id else "chest" if node.id == chest_id else "pile" if node.id == pile_id else str(combat_types.get(node.id, "event"))
+		node.event_kind = ""
+		node.content_id = "flat_2d/" + node.type
+		if node.type == "event":
+			node.event_kind = kinds[event_index]
+			node.content_id = "alchemy/events/" + node.event_kind
+			event_index += 1
+		elif node.type == "shop":
+			node.event_kind = "shop"
+		node.revisitable = node.type in ["event", "shop"]
+		if node.type == "event":
+			node.body_capsule = NodeGeometry.event_capsule()
+		else:
+			node.body_radius = NodeGeometry.alchemy_radius(node.type)
+	return event_index == 2
 
 
 func _distances(band: Dictionary, goal: Vector2i) -> Dictionary:
@@ -894,6 +1384,12 @@ func _validate(data: Dictionary, c: Dictionary) -> Dictionary:
 		return {"ok": false, "error": "Actual owner graph differs from the selected WALK tree"}
 	var gates: Array = []
 	var counts: Dictionary = {"battle": 0, "elite": 0, "event": 0, "shop": 0, "boss": 0}
+	var alchemy_pile: bool = c.get("content_profile", "legacy") == "alchemy_floor1_pile"
+	var alchemy: bool = c.get("content_profile", "legacy") in ["alchemy_floor1", "alchemy_floor1_pile"]
+	if alchemy:
+		counts.chest = 0
+	if alchemy_pile:
+		counts.pile = 0
 	var events: Dictionary = {}
 	var boss: Dictionary = {}
 	for node in data.nodes:
@@ -913,7 +1409,8 @@ func _validate(data: Dictionary, c: Dictionary) -> Dictionary:
 			footprint_cells[k] = true
 		if _flood(footprint_cells, node.coord).size() != footprint_cells.size():
 			return {"ok": false, "error": "Node footprint is disconnected"}
-	if counts.battle != c.normal or counts.elite != c.elite or counts.shop != 1 or counts.event != c.events - 1 or counts.boss != 1 or gates.size() != 2:
+	var expected_events: int = c.events - (3 if alchemy_pile else 2 if alchemy else 1)
+	if counts.battle != c.normal or counts.elite != c.elite or counts.shop != 1 or counts.event != expected_events or counts.boss != 1 or gates.size() != 2 or (alchemy and counts.chest != 1) or (alchemy_pile and counts.pile != 1):
 		return {"ok": false, "error": "Content quota mismatch"}
 	var event_run: int = _event_run(graph.adjacency, events)
 	if event_run > 3:
@@ -1010,26 +1507,37 @@ func _centers(data: Dictionary) -> Dictionary:
 	return result
 
 
-func _relocate(data: Dictionary, node_id: String, delta: Vector2i) -> Dictionary:
-	var centers: Dictionary = _centers(data)
-	var old_centers: Dictionary = centers.duplicate()
-	var moving: Dictionary = {}
-	for node in data.nodes:
-		if node.id == node_id:
-			moving = node
+func _relocation_context(data: Dictionary) -> Dictionary:
+	# A sweep tests many offsets against one unchanged layout. Keep only its
+	# immutable lookup work here; every trial still owns its mutable output.
 	var empty: Dictionary = {}
 	for k in data.floor:
 		if str(data.floor[k]).is_empty():
 			empty[k] = true
-	var removed_joints: Dictionary = {}
+	var joints: Array = []
 	for part in _components(empty):
-		var incident: Dictionary = _incident(data.floor, part)
+		joints.append({"cells": part, "incident": _incident(data.floor, part)})
+	var by_id: Dictionary = {}
+	for node in data.nodes:
+		by_id[node.id] = node
+	return {"centers": _centers(data), "keys": _sorted(data.floor), "joints": joints, "nodes": by_id}
+
+
+func _relocate(data: Dictionary, node_id: String, delta: Vector2i, context: Dictionary = {}) -> Dictionary:
+	if context.is_empty():
+		context = _relocation_context(data)
+	var old_centers: Dictionary = context.centers
+	var centers: Dictionary = old_centers.duplicate()
+	var moving: Dictionary = context.nodes.get(node_id, {})
+	var removed_joints: Dictionary = {}
+	for joint: Dictionary in context.joints:
+		var incident: Dictionary = joint.incident
 		if incident.has(node_id):
 			if incident.size() != 2:
 				return {}
-			removed_joints.merge(part, true)
+			removed_joints.merge(joint.cells, true)
 	var trial: Dictionary = {"plan": data.plan, "spawn": data.spawn, "nodes": data.nodes.duplicate(true), "floor": {}, "domains": {}, "obstacles_removed": data.get("obstacles_removed", 0)}
-	for k in _sorted(data.floor):
+	for k in context["keys"]:
 		if removed_joints.has(k):
 			continue
 		var next: Vector2i = k + delta if data.floor[k] == node_id else k
@@ -1041,6 +1549,10 @@ func _relocate(data: Dictionary, node_id: String, delta: Vector2i) -> Dictionary
 	for node in trial.nodes:
 		if node.id == node_id:
 			node.coord = centers[node_id]
+			# Relocation only moves this owner; joint reconstruction changes
+			# empty transit cells. Translation preserves footprint sort order.
+			for i in node.footprint.size():
+				node.footprint[i] += delta
 	var routes: Array = []
 	for node in data.nodes:
 		var a: String = node.parent_id
@@ -1065,10 +1577,11 @@ func _relocate(data: Dictionary, node_id: String, delta: Vector2i) -> Dictionary
 		var parents: Dictionary = {centers[a]: centers[a]}
 		var index := 0
 		while index < queue.size() and not parents.has(centers[b]):
-			var neighbors: Dictionary = {}
-			for n in Hex.neighbors(queue[index]):
-				neighbors[n] = true
-			for n in _sorted(neighbors):
+			# Translation preserves axial lexicographic order. This is the exact
+			# order of _sorted(Hex.neighbors(queue[index])) without a temporary
+			# Dictionary, keys Array, and comparator sort at every BFS step.
+			for direction: Vector2i in _LEXICOGRAPHIC_DIRS:
+				var n: Vector2i = queue[index] + direction
 				if not parents.has(n) and _joint_safe(n, trial, mask, endpoints, empty_incident, moving.unlock_gates):
 					parents[n] = queue[index]
 					queue.append(n)
@@ -1089,7 +1602,6 @@ func _relocate(data: Dictionary, node_id: String, delta: Vector2i) -> Dictionary
 			trial.floor[k] = ""
 			trial.domains[k] = moving.unlock_gates.duplicate()
 		routes.append({"from": a, "to": b, "path": _points(path), "transit_cells": _points(transit)})
-	_refresh_footprints(trial)
 	trial.transition_move = {"node_id": node_id, "from": _point(moving.coord), "to": _point(centers[node_id]), "delta": _point(delta), "routes": routes}
 	return trial
 
@@ -1160,13 +1672,14 @@ func _apply_transitions(data: Dictionary, rng, c: Dictionary) -> Dictionary:
 	for id in _ids(base_centers):
 		metadata.baseline_centers[id] = _point(base_centers[id])
 	var used: Dictionary = {}
+	var relocation: Dictionary = _relocation_context(data)
 	for candidate in candidates:
 		if metadata.applied_count >= c.transition_count or metadata.placements_considered >= PLACEMENT_LIMIT:
 			break
 		if used.has(candidate.id):
 			continue
 		metadata.placements_considered += 1
-		var trial: Dictionary = _relocate(data, candidate.id, candidate.delta)
+		var trial: Dictionary = _relocate(data, candidate.id, candidate.delta, relocation)
 		if trial.is_empty():
 			metadata.rejected_placements += 1
 			continue
@@ -1195,6 +1708,7 @@ func _apply_transitions(data: Dictionary, rng, c: Dictionary) -> Dictionary:
 		data.floor = trial.floor
 		data.domains = trial.domains
 		data.nodes = trial.nodes
+		relocation = _relocation_context(data)
 	var final_centers: Dictionary = _centers(data)
 	for operation in metadata.operations:
 		var measured: Dictionary = _transition_route(data.floor, final_centers[operation.from], final_centers[operation.to])
@@ -1232,5 +1746,10 @@ func _snapshot(data: Dictionary, seed: String, map_id: String, floor_index: int)
 		var id: String = "boss-1" if node.type == "boss" else node.id
 		var unlocks: Array = node.unlock_gates.duplicate()
 		unlocks.sort()
-		result.nodes.append({"id": id, "type": node.type, "coord": _point(node.coord), "footprint": _points(node.footprint), "is_route_gate": node.is_route_gate, "revisitable": node.revisitable, "unlock_gates": unlocks, "event_kind": node.event_kind, "content_id": node.content_id})
+		var clean := {"id": id, "type": node.type, "coord": _point(node.coord), "footprint": _points(node.footprint), "is_route_gate": node.is_route_gate, "revisitable": node.revisitable, "unlock_gates": unlocks, "event_kind": node.event_kind, "content_id": node.content_id}
+		if node.has("body_radius"):
+			clean.body_radius = node.body_radius
+		if node.has("body_capsule"):
+			clean.body_capsule = node.body_capsule.duplicate(true)
+		result.nodes.append(clean)
 	return result

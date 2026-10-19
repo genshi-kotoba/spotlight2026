@@ -1,109 +1,154 @@
-[gd_scene format=3 uid="uid://d1eo6vl0u7jxt"]
+[gd_scene load_steps=7 format=3]
 
-[ext_resource type="Script" uid="uid://deykt7bion6l4" path="res://ui/main_menu/main_menu.gd" id="1_menu"]
+[ext_resource type="Script" path="res://ui/main_menu/main_menu.gd" id="1_menu"]
 [ext_resource type="PackedScene" path="res://ui/main_menu/message_bar.tscn" id="2_bar"]
 [ext_resource type="PackedScene" path="res://ui/main_menu/confirm_dialog.tscn" id="3_dialog"]
+[ext_resource type="Texture2D" path="res://assets/env/ENV-003/ENV-003.JPG" id="4_bg"]
+[ext_resource type="Theme" path="res://ui/theme/menu_theme.tres" id="5_theme"]
 
-[node name="主菜单" type="Control" unique_id=10436680]
-layout_mode = 3
-anchors_preset = 15
+[sub_resource type="StyleBoxFlat" id="Shade"]
+bg_color = Color(0.035, 0.03, 0.028, 0.62)
+
+[sub_resource type="StyleBoxFlat" id="Rule"]
+bg_color = Color(0.91, 0.706, 0.333, 0.55)
+
+[sub_resource type="StyleBoxFlat" id="MenuCard"]
+bg_color = Color(0.035, 0.03, 0.026, 0.55)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+border_width_left = 1
+border_color = Color(0.91, 0.706, 0.333, 0.16)
+
+[node name="主菜单" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("5_theme")
 script = ExtResource("1_menu")
 
-[node name="背景" type="TextureRect" parent="." unique_id=403133895]
-layout_mode = 0
+[node name="背景" type="TextureRect" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("4_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="标题" type="Label" parent="." unique_id=946314542]
-layout_mode = 0
-offset_left = 80.0
-offset_top = 48.0
-offset_right = 900.0
-offset_bottom = 168.0
-theme_override_font_sizes/font_size = 76
-text = "这里是标题"
+[node name="压暗" type="Panel" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Shade")
 
-[node name="按钮列" type="VBoxContainer" parent="." unique_id=1785208115]
-layout_mode = 0
-offset_left = 80.0
-offset_top = 220.0
-offset_right = 460.0
+[node name="标题" type="Label" parent="."]
+offset_left = 78.0
+offset_top = 62.0
+offset_right = 980.0
+offset_bottom = 178.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.941, 0.902, 0.804, 1)
+theme_override_colors/font_shadow_color = Color(0.06, 0.04, 0.02, 0.85)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 92
+text = "聚光灯"
+
+[node name="副标题" type="Label" parent="."]
+offset_left = 84.0
+offset_top = 182.0
+offset_right = 980.0
+offset_bottom = 216.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.784, 0.706, 0.549, 0.92)
+theme_override_font_sizes/font_size = 22
+text = "SPOTLIGHT 2026 · 中世纪克苏鲁卡牌构筑"
+
+[node name="分割线" type="Panel" parent="."]
+offset_left = 84.0
+offset_top = 236.0
+offset_right = 520.0
+offset_bottom = 238.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Rule")
+
+[node name="按钮底板" type="Panel" parent="."]
+offset_left = 62.0
+offset_top = 250.0
+offset_right = 462.0
+offset_bottom = 812.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("MenuCard")
+
+[node name="按钮列" type="VBoxContainer" parent="."]
+offset_left = 82.0
+offset_top = 272.0
+offset_right = 442.0
 offset_bottom = 900.0
-theme_override_constants/separation = 18
+theme_override_constants/separation = 12
 
-[node name="继续游戏" type="Button" parent="按钮列" unique_id=1898619110]
-custom_minimum_size = Vector2(360, 76)
-layout_mode = 2
+[node name="继续游戏" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 64)
 text = "继续游戏"
 
-[node name="新游戏" type="Button" parent="按钮列" unique_id=360731266]
-custom_minimum_size = Vector2(360, 76)
-layout_mode = 2
+[node name="新游戏" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 64)
 text = "新游戏"
 
-[node name="设置" type="Button" parent="按钮列" unique_id=1240905972]
-custom_minimum_size = Vector2(360, 76)
-layout_mode = 2
+[node name="设置" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 64)
 text = "设置"
 
-[node name="成就" type="Button" parent="按钮列" unique_id=725686030]
-custom_minimum_size = Vector2(360, 76)
-layout_mode = 2
+[node name="成就" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 64)
 text = "成就"
 
-[node name="图鉴" type="Button" parent="按钮列" unique_id=415225385]
-custom_minimum_size = Vector2(360, 76)
-layout_mode = 2
+[node name="图鉴" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 64)
 text = "图鉴"
 
-[node name="感谢名单" type="Button" parent="按钮列" unique_id=697662123]
-custom_minimum_size = Vector2(360, 76)
-layout_mode = 2
+[node name="感谢名单" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 64)
 text = "感谢名单"
 
-[node name="退出游戏" type="Button" parent="按钮列" unique_id=1578851987]
-custom_minimum_size = Vector2(360, 76)
-layout_mode = 2
+[node name="退出游戏" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 64)
 text = "退出游戏"
 
-[node name="档案" type="Button" parent="." unique_id=1957839211]
-layout_mode = 0
+[node name="档案" type="Button" parent="."]
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -360.0
+offset_left = -340.0
 offset_top = 48.0
 offset_right = -80.0
-offset_bottom = 116.0
+offset_bottom = 112.0
 grow_horizontal = 0
+theme_override_font_sizes/font_size = 22
 text = "当前档案 1 ▾"
 
-[node name="版本" type="Label" parent="." unique_id=2087022411]
-layout_mode = 0
+[node name="版本" type="Label" parent="."]
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -240.0
+offset_left = -260.0
 offset_top = -76.0
 offset_right = -80.0
 offset_bottom = -40.0
 grow_horizontal = 0
 grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.62, 0.58, 0.5, 0.85)
 theme_override_font_sizes/font_size = 20
 text = "v0.1.0"
 horizontal_alignment = 2
 
-[node name="提示条" parent="." unique_id=9159116 instance=ExtResource("2_bar")]
-layout_mode = 0
+[node name="提示条" parent="." instance=ExtResource("2_bar")]
 
-[node name="确认弹窗" parent="." unique_id=253508925 instance=ExtResource("3_dialog")]
-anchors_preset = 0
+[node name="确认弹窗" parent="." instance=ExtResource("3_dialog")]

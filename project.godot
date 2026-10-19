@@ -27,6 +27,10 @@ GlobalState="*res://state_machines/global/global_state_machine.gd"
 MapEvents="*res://core/signals/map_events.gd"
 SaveGateway="*res://autoload/save_gateway.gd"
 TextCatalog="*res://systems/text/text_catalog.gd"
+EncounterFlow="*res://systems/map/encounter_flow.gd"
+MapPresentation="*res://autoload/map_presentation.gd"
+SceneTransition="*res://autoload/scene_transition.gd"
+ScenePreloader="*res://autoload/scene_preloader.gd"
 WwiseRuntimeManager="*uid://dwd3a80scqotq"
 AudioService="*res://autoload/audio_service.gd"
 
@@ -45,7 +49,7 @@ project/assembly_name="spotlight2026"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/card_preview/plugin.cfg")
+enabled=PackedStringArray("res://addons/card_preview/plugin.cfg", "res://addons/monster_battle_text/plugin.cfg")
 
 [physics]
 
