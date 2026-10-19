@@ -139,12 +139,17 @@ func _render_pack() -> void:
 		row.add_child(column)
 		var title := id
 		if pack.kind == "fragment_pack":
-			var data: RelicFragmentData = fragments[id]
-			title = data.display_name
-			var detail := _label("%s\n\n%s\n\n%s" % [data.display_name, data.kind_name(), data.description], 24)
+			var data: RelicFragmentData = RelicCatalog.resolve(id, fragments)
+			title = data.display_name if data != null else "未知残片"
+			var detail := RichTextLabel.new()
+			CommonUiSkin.setup_relic_text(detail, 24)
+			detail.bbcode_enabled = data != null
+			detail.text = data.rich_text() if data != null else "残片说明暂不可用。"
 			detail.custom_minimum_size = Vector2(360, 330)
 			detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			detail.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			detail.add_theme_color_override("default_color", Color("ecd7ab"))
+			detail.focus_mode = Control.FOCUS_NONE
 			column.add_child(detail)
 		else:
 			var data: CardData = cards.cards[id]
@@ -168,6 +173,10 @@ func _render_pack() -> void:
 			hit.pressed.connect(_choose.bind(id))
 			slot.add_child(hit)
 		var choose := _button("选择 · " + title)
+		if pack.kind == "fragment_pack":
+			var fragment: RelicFragmentData = RelicCatalog.resolve(id, fragments)
+			if fragment != null:
+				choose.add_theme_color_override("font_color", fragment.tint())
 		choose.name = "Choose_" + id
 		choose.pressed.connect(_choose.bind(id))
 		column.add_child(choose)

@@ -3,6 +3,7 @@ extends Node
 
 ## 典籍是规则提供者，使用战斗统一队列；自身不再维护第二套结算循环。
 signal fragment_activated(trigger_cell: int, effect_cell: int, description: String)
+signal trigger_activated(cell: int, chained: bool)
 signal chain_limited
 
 const MAX_CHAIN_EFFECTS := 128
@@ -15,16 +16,21 @@ var _buff_catalog: Dictionary = {}
 var _counts: Dictionary = {}
 var _pending: Dictionary = {}
 var _limited: Dictionary = {}
+var _propagations: Dictionary = {}
 
 
 func attach_to_battle(battle: BattleStateMachine, configured_board: RelicBoard,
 		definitions: Dictionary, buff_definitions: Dictionary) -> Error:
 	if _battle != null or battle == null or configured_board == null:
 		return ERR_INVALID_PARAMETER
+	if not BattleStateMachine._valid_relic_runtime(battle.player.get("relic_runtime", {})):
+		return ERR_INVALID_DATA
 	var error := board.restore(configured_board.to_dictionary(), definitions)
 	if error != OK:
 		return error
 	catalog = definitions.duplicate()
+	for id: String in board.cells:
+		if not id.is_empty(): catalog[id] = RelicCatalog.resolve(id, catalog)
 	_buff_catalog = buff_definitions
 	_battle = battle
 	_battle.rules.register_rule("relics.draw", "card.drawn", _on_card_gained)
@@ -32,12 +38,19 @@ func attach_to_battle(battle: BattleStateMachine, configured_board: RelicBoard,
 	_battle.rules.register_rule("relics.turn", "player.turn_started", _on_player_turn_started)
 	_battle.rules.register_rule("relics.custom", "relic.event", _on_custom_event)
 	_battle.rules.register_rule("relics.activate", "relic.activate", _execute)
+	_battle.rules.register_rule("relics.propagate", "relic.propagate", _spread)
 	_battle.rules.register_rule("relics.completed", "relic.completed", _completed)
 	for type: String in ["pointer.moved", "card.discarded", "enemy.died", "cards.sequence_committed", "card.effect_requested", "flow.enemy.begin"]:
 		_battle.rules.register_rule("relics." + type, type, _event, 60)
 	_battle.rules.register_rule("relics.damage_bonus", "action.damage", _damage_bonus, 7)
 	_battle.rules.register_rule("relics.attack_count", "action.damage", _count_attack, 110)
 	if not _battle.player.has("relic_runtime"): _battle.player["relic_runtime"] = {}
+	# Relay credits belong to a battle and survive a safe-boundary battle save.
+	# Only the fragment's own condition rearms one; a new root/turn does not.
+	if not state().get("chain_charges") is Dictionary:
+		state()["chain_charges"] = {}
+	for index in RelicBoard.CELL_COUNT:
+		if not state().chain_charges.has(str(index)): state().chain_charges[str(index)] = true
 	_battle.player["hand_limit"] = maxi(1, 10 - _curse_count("hand_limit") * 2)
 	return OK
 
@@ -59,6 +72,7 @@ func _on_player_turn_started(event: BattleEvent) -> void:
 	_counts.clear()
 	_pending.clear()
 	_limited.clear()
+	_propagations.clear()
 	var runtime := state()
 	runtime.merge({"distance": 0, "attacks": 0, "extra_used": 0, "extra_pointers": 0, "extra_pointer_active": false,
 		"turn_damage": 0, "next_damage": 0, "next_bonus_card": "", "next_bonus": 0, "committed": 0,
@@ -128,7 +142,7 @@ func _presence_count(action: String) -> int:
 	var count := 0
 	for id: String in board.cells:
 		var data: RelicFragmentData = catalog.get(id)
-		if data != null and data.kind == RelicFragmentData.Kind.PRESENCE and data.action_id == action: count += 1
+		if data != null and ((data.kind == RelicFragmentData.Kind.PRESENCE and data.action_id == action) or data.presence_action == action): count += 1
 	return count
 
 
@@ -171,28 +185,60 @@ func _on_custom_event(event: BattleEvent) -> void:
 func _trigger(event_id: String, target_id: String, event: BattleEvent) -> void:
 	if not _battle.active:
 		return
-	var ancestry: Array = event.metadata.get("relic_ancestry", [])
 	for index in RelicBoard.CELL_COUNT:
 		var data: RelicFragmentData = catalog.get(board.cells[index])
-		if data == null or data.event_id != event_id:
-			continue
-		if data.kind == RelicFragmentData.Kind.PRESENCE:
-			_enqueue(index, index, target_id, ancestry, event.root_id)
-		elif data.kind == RelicFragmentData.Kind.TRIGGER and not ancestry.has(index):
-			var descendants := ancestry.duplicate()
-			descendants.append(index)
-			for neighbor: int in board.neighbors(index, data.reach):
-				var effect: RelicFragmentData = catalog.get(board.cells[neighbor])
-				if effect != null and effect.kind == RelicFragmentData.Kind.EFFECT:
-					_enqueue(index, neighbor, target_id, descendants, event.root_id)
+		if data == null: continue
+		if not data.presence_action.is_empty() and data.presence_event == event_id:
+			_enqueue(index, index, target_id, [], event.root_id, true)
+		if data.event_id == event_id:
+			if data.kind == RelicFragmentData.Kind.PRESENCE:
+				_enqueue(index, index, target_id, [], event.root_id)
+			elif data.kind == RelicFragmentData.Kind.TRIGGER:
+				state().chain_charges[str(index)] = true
+				_queue_spread(index, false, target_id, event.root_id)
 
 
-func _enqueue(trigger: int, effect: int, target: String, ancestry: Array, root_id: int) -> void:
-	if int(_pending.get(root_id, 0)) >= MAX_CHAIN_EFFECTS:
+func _limit(root_id: int) -> void:
+	if not _limited.has(root_id):
+		_limited[root_id] = true
+		chain_limited.emit()
+
+
+func _queue_spread(cell: int, chained: bool, target: String, root_id: int) -> void:
+	if _limited.has(root_id): return
+	if int(_propagations.get(root_id, 0)) >= MAX_CHAIN_EFFECTS * 4:
+		_limit(root_id)
+		return
+	_propagations[root_id] = int(_propagations.get(root_id, 0)) + 1
+	# Nonempty ancestry marks derived facts as the same root for the event engine.
+	# It is provenance only; relay eligibility uses the persistent credit above.
+	_battle.rules.publish("relic.propagate", {"cell":cell, "chained":chained, "target":target}, {"relic_ancestry":[cell]})
+
+
+func _spread(event: BattleEvent) -> void:
+	if not _battle.active or _limited.has(event.root_id): return
+	var cell := int(event.payload.cell)
+	var data: RelicFragmentData = catalog.get(board.cells[cell])
+	if data == null or data.kind != RelicFragmentData.Kind.TRIGGER: return
+	trigger_activated.emit(cell, bool(event.payload.chained))
+	_curse_on_trigger(data.negative_action)
+	for neighbor: int in board.neighbors(cell, data.reach):
+		var nearby: RelicFragmentData = catalog.get(board.cells[neighbor])
+		if nearby == null: continue
+		if nearby.kind == RelicFragmentData.Kind.EFFECT:
+			_enqueue(cell, neighbor, str(event.payload.target), [cell], event.root_id)
+		elif nearby.kind == RelicFragmentData.Kind.TRIGGER and bool(state().chain_charges.get(str(neighbor), false)):
+			# Reserve at enqueue time so multiple parents cannot spend the same credit.
+			state().chain_charges[str(neighbor)] = false
+			_queue_spread(neighbor, true, str(event.payload.target), event.root_id)
+
+
+func _enqueue(trigger: int, effect: int, target: String, ancestry: Array, root_id: int, presence: bool = false) -> void:
+	if _limited.has(root_id) or int(_pending.get(root_id, 0)) >= MAX_CHAIN_EFFECTS:
 		return
 	_pending[root_id] = int(_pending.get(root_id, 0)) + 1
-	_battle.rules.publish("relic.activate", {"trigger": trigger, "effect": effect, "target": target},
-		{"relic_ancestry": ancestry.duplicate()})
+	_battle.rules.publish("relic.activate", {"trigger": trigger, "effect": effect, "target": target, "presence":presence},
+		{"relic_ancestry": ancestry.duplicate() if not ancestry.is_empty() else [effect]})
 
 
 func _execute(event: BattleEvent) -> void:
@@ -200,13 +246,17 @@ func _execute(event: BattleEvent) -> void:
 		return
 	var root_id := event.root_id
 	_pending[root_id] = maxi(0, int(_pending.get(root_id, 0)) - 1)
-	if int(_counts.get(root_id, 0)) >= MAX_CHAIN_EFFECTS:
-		if not _limited.has(root_id):
-			_limited[root_id] = true
-			chain_limited.emit()
+	if _limited.has(root_id) or int(_counts.get(root_id, 0)) >= MAX_CHAIN_EFFECTS:
+		_limit(root_id)
 		return
 	var job := event.payload
 	var data: RelicFragmentData = catalog[board.cells[int(job.effect)]]
+	if bool(job.get("presence", false)):
+		data = data.duplicate(true)
+		data.action_id = data.presence_action
+		data.amount = data.presence_amount
+		data.description = data.extra_description
+		data.negative_action = ""
 	var target := _living_target(String(job.target))
 	var context := BattleEffectContext.new(_battle, target, _buff_catalog)
 	event.metadata["relic_effect"] = true
@@ -271,9 +321,6 @@ func _execute(event: BattleEvent) -> void:
 		_:
 			return
 	_curse_on_trigger(data.negative_action)
-	if int(job.trigger) != int(job.effect):
-		var trigger: RelicFragmentData = catalog[board.cells[int(job.trigger)]]
-		_curse_on_trigger(trigger.negative_action)
 	_counts[root_id] = int(_counts.get(root_id, 0)) + 1
 	_battle.rules.publish("relic.completed", {"trigger": job.trigger, "effect": job.effect, "description": data.description})
 

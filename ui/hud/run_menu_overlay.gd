@@ -29,11 +29,11 @@ const ITEM_GAP := 8.0
 ## 立绘比内容区更大，允许越出背包边框；右侧栏位后绘制，不会被压住。
 const BAG_PORTRAIT_RECT := Rect2(-110, -30, 440, 940)
 ## 中栏上下两段：典籍在上、背包在下，两段左缘对齐。
-## 典籍 4 列 × 3 行 96 的格子；背包 7 列 × 3 行 78 的格子，21 格一屏全见。
+## 典籍 4 列 × 5 行 96 的格子；背包 7 列 × 3 行 78 的格子，21 格一屏全见。
 const BAG_RELIC_RECT := Rect2(330, 0, 612, 560)
 const BAG_ITEM_RECT := Rect2(330, 566, 612, 294)
 const BAG_DECK_RECT := Rect2(942, 0, 738, 860)
-## 典籍格接近方形，4 列 × 3 行拼成一张整纸。
+## 典籍格接近方形，4 列 × 5 行按原始画布顺序排列。
 const RELIC_CELL_SIZE := Vector2(96, 96)
 const RELIC_GAP := Vector2(8, 8)
 const RELIC_SHEET_COLUMNS := 4
@@ -42,24 +42,12 @@ const PEEK_CARD_SCALE := 0.79
 const CARD_SCENE := preload("res://ui/components/card/card_view.tscn")
 const PORTRAIT_TEXTURE := "res://assets/chr/CHR-001/IMG_20261012_212919.png"
 const PORTRAIT_REGION := Rect2(164, 48, 742, 1856)
-const RELIC_SCRAP_DIR := "res://assets/ui/UI-020"
 const ITEM_ICON_SCRIPT := "res://ui/components/item_icon.gd"
 const HOVER_TIP_SCRIPT := "res://ui/components/hover_tip.gd"
 const RELIC_DRAG_ITEM_SCRIPT := "res://ui/hud/relic_drag_item.gd"
 const RELIC_DROP_CELL_SCRIPT := "res://ui/hud/relic_drop_cell.gd"
 const ITEM_CAPACITY := ITEM_COLUMNS * ITEM_VISIBLE_ROWS # 一屏容量，不改变 main 背包规则。
 ## 立绘越出面板左/下边框，是刻意的出血。
-## 每张 UI-020 都画在同一张 773×951 画布上，内容只占一个格子；按各自墨迹裁切。
-## 画布本身是 4 列×5 行，拼回去必须按 4 列排，否则接缝错位。
-const RELIC_SCRAP_REGIONS: Array[Rect2] = [
-	Rect2(23, 18, 199, 199), Rect2(201, 18, 201, 197), Rect2(388, 18, 193, 194),
-	Rect2(560, 18, 195, 196), Rect2(23, 191, 199, 207), Rect2(201, 191, 199, 204),
-	Rect2(381, 192, 201, 202), Rect2(565, 194, 190, 196), Rect2(23, 373, 196, 200),
-	Rect2(194, 376, 209, 201), Rect2(384, 376, 192, 197), Rect2(560, 375, 195, 196),
-	Rect2(23, 555, 193, 206), Rect2(199, 556, 202, 202), Rect2(381, 558, 202, 198),
-	Rect2(565, 553, 190, 201), Rect2(23, 741, 185, 188), Rect2(192, 742, 202, 187),
-	Rect2(378, 735, 206, 194), Rect2(572, 735, 183, 194),
-]
 const SLOT_FRAME_A := "res://assets/ui/UI-004/物品边框1.png"
 const SLOT_FRAME_B := "res://assets/ui/UI-004/物品边框2.png"
 
@@ -89,6 +77,9 @@ var _drag_fragment := ""
 var _drag_item_id := ""
 var _drag_origin := -1
 var _highlighted_cell: RelicDropCell
+var _range_highlighted_cells: Array[int] = []
+var _hovered_relic_cell := -1
+var _relic_preview_board: RelicBoard
 var _bag_highlight: Panel
 var _abandon_button: Button
 var _abandon_confirm_row: HBoxContainer
@@ -326,7 +317,7 @@ func _reload_items(run: RunStateMachine) -> void:
 			slot = _item_slot_empty(index)
 		else:
 			var item: Variant = items[index]
-			var fragment: RelicFragmentData = catalog.get(str(item.get("fragment_id", ""))) if item is Dictionary and item.get("kind") == "fragment" else null
+			var fragment: RelicFragmentData = RelicCatalog.resolve(str(item.get("fragment_id", "")), catalog) if item is Dictionary and item.get("kind") == "fragment" else null
 			if fragment != null:
 				slot = _relic_slot_item(fragment, index)
 				slot.item_id = str(item.item_id)
@@ -335,7 +326,7 @@ func _reload_items(run: RunStateMachine) -> void:
 		_item_grid.add_child(slot)
 
 
-func _show_item_tip(anchor: Control, text: String) -> void:
+func _show_item_tip(anchor: Control, text: String, rich: bool = false) -> void:
 	if _drag_ghost != null:
 		return
 	if _item_tip == null:
@@ -344,7 +335,7 @@ func _show_item_tip(anchor: Control, text: String) -> void:
 		_item_tip.name = "ItemTip"
 		_item_tip.z_index = 140
 		add_child(_item_tip)
-	_item_tip.show_for(anchor, text)
+	_item_tip.show_for(anchor, text, rich)
 
 
 func _hide_item_tip() -> void:
@@ -371,11 +362,14 @@ func _item_tooltip(item_id: String, record: Dictionary) -> String:
 
 
 func _reload_relics() -> void:
+	_clear_relic_range()
+	_hovered_relic_cell = -1
 	var catalog := RelicCatalog.load_definitions()
 	var board := _battle_board if _battle_board != null else (RunRewards.board_for_run(_active_run()) if _active_run() != null else RelicBoard.new())
+	_relic_preview_board = board
 	var filled := 0
 	for index in _relic_cells.size():
-		var data: RelicFragmentData = catalog.get(board.cells[index]) if index < board.cells.size() else null
+		var data: RelicFragmentData = RelicCatalog.resolve(board.cells[index], catalog) if index < board.cells.size() else null
 		var label := _relic_cells[index]
 		label.text = "" if data == null else data.display_name
 		# 悬停文案挂在格子上，格子建的时候已经连好浮层，这里只换内容。
@@ -383,13 +377,19 @@ func _reload_relics() -> void:
 		if cell != null:
 			cell.fragment_id = "" if data == null else data.fragment_id
 			cell.editable = _can_edit_relics()
-			cell.set_meta("relic_tip", "" if data == null else "%s（%s）\n%s" % [
-				data.display_name, data.kind_name(), data.description,
-			])
+			cell.set_unlocked(board.is_unlocked(index))
+			cell.set_meta("relic_tip", "" if data == null else data.rich_text(20))
+			var cue := cell.get_node_or_null("FragmentTint") as Panel
+			if cue != null:
+				cue.visible = data != null
+				if data != null:
+					cue.add_theme_stylebox_override("panel", _fragment_style(data.tint()))
 		if data != null:
 			filled += 1
 		label.add_theme_color_override("font_color",
-			Color(0.23, 0.17, 0.10, 0.82) if data == null else Color(0.165, 0.129, 0.094))
+			Color(0.23, 0.17, 0.10, 0.82) if data == null else data.tint())
+		label.add_theme_color_override("font_outline_color", Color(0.09, 0.07, 0.05, 0.95))
+		label.add_theme_constant_override("outline_size", 0 if data == null else 3)
 	_relic_title.text = "典籍 %d / %d" % [filled, RelicBoard.CELL_COUNT]
 
 
@@ -533,12 +533,15 @@ func _build_item_zone(page: Control) -> void:
 		BAG_ITEM_RECT.position.y)
 
 	_resources = _label("", 20, Color(0.949, 0.89, 0.776))
-	_resources.position = Vector2(BAG_ITEM_RECT.position.x, BAG_ITEM_RECT.position.y - 72)
-	_resources.size = Vector2(BAG_ITEM_RECT.size.x, 28)
+	# 五行典籍占满原来的上方留白，资源与提示各自留在标题行。
+	_resources.position = Vector2(BAG_RELIC_RECT.position.x + 260.0, BAG_RELIC_RECT.position.y + 2.0)
+	_resources.size = Vector2(BAG_RELIC_RECT.size.x - 260.0, 28)
+	_resources.add_theme_font_size_override("font_size", 18)
 	page.add_child(_resources)
-	_bag_hint = _label("", 16, Color(0.749, 0.682, 0.553))
-	_bag_hint.position = Vector2(BAG_ITEM_RECT.position.x, BAG_ITEM_RECT.position.y - 42)
-	_bag_hint.size = Vector2(BAG_ITEM_RECT.size.x, 38)
+	_bag_hint = _label("", 13, Color(0.749, 0.682, 0.553))
+	_bag_hint.position = Vector2(BAG_ITEM_RECT.position.x + 166.0, BAG_ITEM_RECT.position.y + 2.0)
+	_bag_hint.size = Vector2(BAG_ITEM_RECT.size.x - 166.0, 34)
+	_bag_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	page.add_child(_bag_hint)
 	var scroll := ScrollContainer.new()
 	_item_scroll = scroll
@@ -583,11 +586,19 @@ func _build_relic_zone(page: Control) -> void:
 		cell.size = RELIC_CELL_SIZE
 		# 格子只有图和名字，名字和效果走和战斗 HUD 同一个悬停浮层。
 		cell.mouse_filter = Control.MOUSE_FILTER_STOP
-		cell.mouse_entered.connect(_show_relic_tip.bind(cell))
-		cell.mouse_exited.connect(_hide_item_tip)
+		cell.mouse_entered.connect(_on_relic_cell_hovered.bind(cell))
+		cell.mouse_exited.connect(_on_relic_cell_hover_exited.bind(cell))
 		cell.drag_requested.connect(_begin_relic_drag)
 		cell.remove_requested.connect(_on_relic_remove_requested)
-		cell.add_child(_texture_rect(_relic_scrap(index + 1), Vector2.ZERO, RELIC_CELL_SIZE))
+		var piece := _texture_rect(RelicPieceArt.slot_texture(index), Vector2.ZERO, RELIC_CELL_SIZE)
+		piece.name = "PieceArt"
+		cell.add_child(piece)
+		var cue := Panel.new()
+		cue.name = "FragmentTint"
+		cue.size = RELIC_CELL_SIZE
+		cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cue.visible = false
+		cell.add_child(cue)
 		var label := Label.new()
 		label.text = "—"
 		label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -838,13 +849,6 @@ func _slot_plate() -> Panel:
 	return plate
 
 
-func _relic_scrap(index: int) -> AtlasTexture:
-	var atlas := AtlasTexture.new()
-	atlas.atlas = load("%s/%d.png" % [RELIC_SCRAP_DIR, index])
-	atlas.region = RELIC_SCRAP_REGIONS[clampi(index - 1, 0, RELIC_SCRAP_REGIONS.size() - 1)]
-	return atlas
-
-
 func _slot(size: Vector2, color: Color, edge: Color) -> Panel:
 	var panel := Panel.new()
 	panel.custom_minimum_size = size
@@ -856,6 +860,15 @@ func _slot(size: Vector2, color: Color, edge: Color) -> Panel:
 	style.set_corner_radius_all(4)
 	panel.add_theme_stylebox_override("panel", style)
 	return panel
+
+
+func _fragment_style(tint: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(tint, 0.18)
+	style.border_color = Color(tint, 0.9)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(4)
+	return style
 
 
 func _on_shade_input(event: InputEvent) -> void:
@@ -926,8 +939,8 @@ func _input(event: InputEvent) -> void:
 	if not is_visible_in_tree() or _drag_ghost == null:
 		return
 	if event is InputEventMouseMotion:
-		_drag_ghost.position = event.position - _drag_ghost.size * 0.5
 		_highlight_relic_cell(_relic_cell_at(event.position))
+		_position_relic_drag_preview(event.position)
 		_highlight_bag_slot(event.position)
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 		_drop_relic_at(event.position)
@@ -1023,7 +1036,7 @@ func _bag_highlight_style(full: bool) -> StyleBoxFlat:
 func _relic_cell_at(screen_position: Vector2) -> int:
 	for cell in _relic_drop_cells:
 		if cell != null and is_instance_valid(cell) and cell.is_visible_in_tree() \
-			and cell.get_global_rect().has_point(screen_position):
+			and cell.unlocked and cell.get_global_rect().has_point(screen_position):
 			return cell.index
 	return -1
 
@@ -1032,19 +1045,45 @@ func _relic_cell_at(screen_position: Vector2) -> int:
 
 func _highlight_relic_cell(index: int) -> void:
 	var cell: RelicDropCell = _relic_drop_cells[index] if index >= 0 and index < _relic_drop_cells.size() else null
+	if cell == null or not cell.unlocked:
+		cell = null
+		index = -1
 	if cell == _highlighted_cell:
 		return
 	if _highlighted_cell != null and is_instance_valid(_highlighted_cell):
 		_highlighted_cell.set_highlight(false)
+		_set_relic_slot_preview(_highlighted_cell, false)
 	_highlighted_cell = cell
 	if _highlighted_cell != null:
-		_highlighted_cell.set_highlight(true)
+		_set_relic_slot_preview(_highlighted_cell, true)
+	_update_relic_drag_art(index)
+	_preview_relic_range(index, _drag_fragment)
+
+
+func _set_relic_slot_preview(cell: RelicDropCell, previewing: bool) -> void:
+	# 预览直接覆盖目标拼片，暂藏旧内容；离开后恢复，不改物品或棋盘。
+	cell.get_node("PieceArt").visible = not previewing
+	cell.get_node("FragmentTint").visible = not previewing and not cell.fragment_id.is_empty()
+	_relic_cells[cell.index].visible = not previewing
+
+
+func _position_relic_drag_preview(screen_position: Vector2) -> void:
+	if _drag_ghost == null:
+		return
+	if is_instance_valid(_highlighted_cell):
+		_drag_ghost.global_position = _highlighted_cell.global_position
+		_drag_ghost.scale = _highlighted_cell.get_global_transform().get_scale() / get_global_transform().get_scale()
+	else:
+		_drag_ghost.scale = Vector2.ONE
+		_drag_ghost.position = screen_position - _drag_ghost.size * 0.5
 
 
 
 
 func _end_relic_drag(restore: bool) -> void:
 	_highlight_relic_cell(-1)
+	_clear_relic_range()
+	_hovered_relic_cell = -1
 	_hide_bag_highlight()
 	if _drag_ghost != null and is_instance_valid(_drag_ghost):
 		_drag_ghost.queue_free()
@@ -1062,30 +1101,92 @@ func _end_relic_drag(restore: bool) -> void:
 	_drag_origin = -1
 
 
-## 跟手的幽灵块：只写残片名字，块的大小跟着字走。
+## 跟手的残片保留身份；进入可装配槽位时只替换该槽位的外形。
 
 
 func _relic_drag_ghost(fragment_id: String) -> Panel:
 	var catalog := RelicCatalog.load_definitions()
-	var data: RelicFragmentData = catalog.get(fragment_id)
+	var data: RelicFragmentData = RelicCatalog.resolve(fragment_id, catalog)
 	var title := data.display_name if data != null else fragment_id
-	var font := ThemeDB.fallback_font
-	var text_width := font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 17).x
+	var tint := data.tint() if data != null else Color(0.945, 0.867, 0.706)
 	var ghost := Panel.new()
 	ghost.z_index = 160
 	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ghost.size = Vector2(maxf(76.0, text_width + 28.0), 40)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.11, 0.09, 0.07, 0.94)
-	style.border_color = Color(0.945, 0.867, 0.706, 0.85)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(4)
-	ghost.add_theme_stylebox_override("panel", style)
-	var label := _label(title, 17, Color(0.945, 0.867, 0.706))
-	label.position = Vector2(14, 8)
-	label.size = Vector2(ghost.size.x - 28.0, 24)
+	ghost.size = RELIC_CELL_SIZE
+	ghost.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	var piece := _texture_rect(RelicPieceArt.template_texture(), Vector2.ZERO, RELIC_CELL_SIZE)
+	piece.name = "PieceArt"
+	piece.modulate = tint.lightened(0.35)
+	ghost.add_child(piece)
+	var label := _label(title, 21, tint)
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.add_theme_color_override("font_outline_color", Color(0.09, 0.07, 0.05, 0.95))
+	label.add_theme_constant_override("outline_size", 3)
 	ghost.add_child(label)
 	return ghost
+
+
+func _update_relic_drag_art(index: int) -> void:
+	if _drag_ghost == null or not is_instance_valid(_drag_ghost):
+		return
+	var piece := _drag_ghost.get_node_or_null("PieceArt") as TextureRect
+	if piece != null:
+		piece.texture = RelicPieceArt.slot_texture(index) if index >= 0 else RelicPieceArt.template_texture()
+	_drag_ghost.set_meta("piece_slot", index)
+
+
+func _clear_relic_range() -> void:
+	for index in _range_highlighted_cells:
+		if index >= 0 and index < _relic_drop_cells.size():
+			var cell := _relic_drop_cells[index]
+			if cell != null and is_instance_valid(cell):
+				cell.set_range_highlight(false)
+	_range_highlighted_cells.clear()
+
+
+func _preview_relic_range(index: int, fragment_id: String) -> void:
+	_clear_relic_range()
+	if _relic_preview_board == null or not _relic_preview_board.is_unlocked(index):
+		return
+	var data := RelicCatalog.resolve(fragment_id)
+	if data == null or data.kind != RelicFragmentData.Kind.TRIGGER:
+		return
+	# 只看当前残片的一跳范围，空的已解锁格也属于可影响范围。
+	for neighbor in _relic_preview_board.neighbors(index, data.reach):
+		if neighbor >= 0 and neighbor < _relic_drop_cells.size() \
+				and _relic_preview_board.is_unlocked(neighbor):
+			_relic_drop_cells[neighbor].set_range_highlight(true)
+			_range_highlighted_cells.append(neighbor)
+
+
+func _on_relic_cell_hovered(cell: RelicDropCell) -> void:
+	if _drag_ghost != null:
+		return
+	_hovered_relic_cell = cell.index
+	_preview_relic_range(cell.index, cell.fragment_id)
+	_show_relic_tip(cell)
+
+
+func _on_relic_cell_hover_exited(cell: RelicDropCell) -> void:
+	_hide_item_tip()
+	if _drag_ghost == null and _hovered_relic_cell == cell.index:
+		_hovered_relic_cell = -1
+		_clear_relic_range()
+
+
+func _restore_relic_hover_at_pointer(screen_position: Vector2) -> void:
+	if not is_inside_tree() or not is_visible_in_tree() or is_queued_for_deletion() \
+			or _current_page != 1 or _drag_ghost != null:
+		return
+	var index := _relic_cell_at(screen_position)
+	if index < 0:
+		return
+	var cell := _relic_drop_cells[index]
+	if not cell.fragment_id.is_empty():
+		_on_relic_cell_hovered(cell)
 
 
 ## 落格：从典籍格里拖来的走换位，从背包拖来的直接装。
@@ -1095,7 +1196,7 @@ func _show_relic_tip(cell: Control) -> void:
 	var text := str(cell.get_meta("relic_tip", ""))
 	if text.is_empty():
 		return
-	_show_item_tip(cell, text)
+	_show_item_tip(cell, text, true)
 
 
 
@@ -1104,7 +1205,7 @@ func _relic_slot_item(fragment: RelicFragmentData, index: int) -> Control:
 	var slot: RelicDragItem = load(RELIC_DRAG_ITEM_SCRIPT).new()
 	slot.fragment_id = fragment.fragment_id
 	slot.editable = _can_edit_relics()
-	slot.mouse_entered.connect(_show_item_tip.bind(slot, "%s（%s）\n%s" % [fragment.display_name, fragment.kind_name(), fragment.description]))
+	slot.mouse_entered.connect(_show_item_tip.bind(slot, fragment.rich_text(20), true))
 	slot.mouse_exited.connect(_hide_item_tip)
 	slot.custom_minimum_size = ITEM_SLOT_SIZE
 	slot.size = ITEM_SLOT_SIZE
@@ -1113,12 +1214,22 @@ func _relic_slot_item(fragment: RelicFragmentData, index: int) -> Control:
 	slot.drag_requested.connect(_begin_relic_drag)
 	slot.add_child(_slot_plate())
 	slot.add_child(_texture_rect(_slot_frame(index % 2 == 0), Vector2.ZERO, ITEM_SLOT_SIZE))
-	var name_label := _label(fragment.display_name, 17, Color(0.945, 0.867, 0.706))
+	var piece := _texture_rect(RelicPieceArt.template_texture(), Vector2.ZERO, ITEM_SLOT_SIZE)
+	piece.name = "PieceArt"
+	slot.add_child(piece)
+	var cue := Panel.new()
+	cue.size = ITEM_SLOT_SIZE
+	cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cue.add_theme_stylebox_override("panel", _fragment_style(fragment.tint()))
+	slot.add_child(cue)
+	var name_label := _label(fragment.display_name, 17, fragment.tint())
 	name_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name_label.clip_text = true
+	name_label.add_theme_color_override("font_outline_color", Color(0.09, 0.07, 0.05, 0.95))
+	name_label.add_theme_constant_override("outline_size", 3)
 	slot.set_name_label(name_label)
 	slot.add_child(name_label)
 	return slot
@@ -1198,6 +1309,8 @@ func _begin_relic_drag(source: Control, fragment_id: String) -> void:
 	_drag_ghost = _relic_drag_ghost(fragment_id)
 	add_child(_drag_ghost)
 	_drag_ghost.position = get_local_mouse_position() - _drag_ghost.size * 0.5
+	_highlight_relic_cell(_relic_cell_at(get_global_mouse_position()))
+	_position_relic_drag_preview(get_global_mouse_position())
 	_hide_item_tip()
 
 
@@ -1209,12 +1322,12 @@ func _drop_relic_at(screen_position: Vector2) -> void:
 	_end_relic_drag(true)
 	if target >= 0:
 		_selected_fragment_id = ""
-		_apply_relic_drop(origin, target, fragment_id, item_id)
+		_apply_relic_drop(origin, target, fragment_id, item_id, screen_position)
 	elif origin >= 0 and _in_item_zone(screen_position):
 		_unmount_relic(origin)
 
 
-func _apply_relic_drop(origin: int, target: int, fragment_id: String, item_id: String = "") -> void:
+func _apply_relic_drop(origin: int, target: int, fragment_id: String, item_id: String = "", screen_position: Vector2 = Vector2.INF) -> void:
 	if not _can_edit_relics() or fragment_id.is_empty():
 		return
 	var run := _active_run()
@@ -1231,6 +1344,9 @@ func _apply_relic_drop(origin: int, target: int, fragment_id: String, item_id: S
 		return
 	_refresh_data()
 	relic_board_updated.emit()
+	# 指针在拖拽中已经进入此格，松手后不会再发一次 mouse_entered。
+	# 成功刷新后的格子保持原位置，在这里一次性恢复当前指针的悬停。
+	_restore_relic_hover_at_pointer(screen_position)
 
 
 func _on_relic_remove_requested(index: int) -> void:

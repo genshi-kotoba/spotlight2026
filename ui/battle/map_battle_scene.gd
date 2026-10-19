@@ -81,6 +81,7 @@ func _start_test_battle() -> void:
 		error = _relics.attach_to_battle(_battle, _relic_board, _relic_catalog, _resolver.buff_catalog)
 	if error == OK:
 		_relics.fragment_activated.connect(_on_relic_activated)
+		_relics.trigger_activated.connect(_on_relic_triggered)
 		_relics.chain_limited.connect(_on_relic_chain_limited)
 		_refresh_relic_hud()
 		if _relic_board.cells.count("") == RelicBoard.CELL_COUNT:

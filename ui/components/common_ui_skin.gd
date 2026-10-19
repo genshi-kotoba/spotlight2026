@@ -4,9 +4,39 @@ extends RefCounted
 
 const FRAME := preload("res://ui/components/common_frame_style.gd")
 const BUTTON := preload("res://ui/components/common_button_style.gd")
+const RELIC_MOTION := preload("res://ui/components/relic_text_motion.gd")
 const TEXT := Color("fff5e8")
 const DARK_TEXT := Color("211f1d")
 static var _button_textures: Dictionary = {}
+static var _relic_font: SystemFont
+static var _relic_bold_font: SystemFont
+
+static func relic_font() -> Font:
+	if _relic_font == null:
+		_relic_font = SystemFont.new()
+		_relic_font.font_names = PackedStringArray([
+			"Microsoft YaHei", "Noto Sans CJK SC", "Heiti SC", "PingFang SC", "sans-serif",
+		])
+		_relic_font.allow_system_fallback = true
+	return _relic_font
+
+static func relic_bold_font() -> Font:
+	if _relic_bold_font == null:
+		_relic_bold_font = SystemFont.new()
+		_relic_bold_font.font_names = (relic_font() as SystemFont).font_names
+		_relic_bold_font.font_weight = 700
+		_relic_bold_font.allow_system_fallback = true
+	return _relic_bold_font
+
+static func setup_relic_text(label: RichTextLabel, font_size: int) -> void:
+	label.add_theme_font_override("normal_font", relic_font())
+	label.add_theme_font_override("bold_font", relic_bold_font())
+	label.add_theme_font_size_override("normal_font_size", font_size)
+	label.add_theme_font_size_override("bold_font_size", font_size)
+	for effect: Variant in label.custom_effects:
+		if effect is RichTextEffect and effect.get_script() == RELIC_MOTION:
+			return
+	label.install_effect(RELIC_MOTION.new())
 
 static func panel(kind: String = "panel", margins: Vector4 = Vector4.ZERO) -> StyleBox:
 	var style := FRAME.new()

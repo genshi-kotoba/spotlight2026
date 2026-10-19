@@ -227,6 +227,10 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 	pointer_index = saved_pointer
 	pointer_resolutions = saved_resolutions
 	player = saved_player.duplicate(true)
+	if player.has("encounter_relic_board"):
+		var saved_board := RelicBoard.new()
+		saved_board.restore(player.encounter_relic_board, RelicCatalog.load_definitions())
+		player.encounter_relic_board = saved_board.to_dictionary()
 	enemies = _copy_dictionary_array(saved_enemies)
 	draw_pile = _copy_dictionary_array(saved_draw)
 	discard_pile = _copy_dictionary_array(saved_discard)
@@ -1158,6 +1162,10 @@ func _prepare_config(config: Dictionary) -> Dictionary:
 
 
 static func _valid_player(value: Dictionary) -> bool:
+	if value.has("encounter_relic_board"):
+		if not value.encounter_relic_board is Dictionary: return false
+		var saved_board := RelicBoard.new()
+		if saved_board.restore(value.encounter_relic_board, RelicCatalog.load_definitions()) != OK: return false
 	var health: Variant = _integer_value(value.get("health"))
 	var maximum: Variant = _integer_value(value.get("max_health"))
 	var block: Variant = _integer_value(value.get("block", 0))
@@ -1165,7 +1173,18 @@ static func _valid_player(value: Dictionary) -> bool:
 	return health != null and maximum != null and block != null and maximum > 0 \
 		and health >= 0 and health <= maximum and block >= 0 and buffs is Array \
 		and _valid_buff_array(buffs) and value.get("card_rules", {}) is Dictionary \
-		and _json_safe(value.get("card_rules", {}))
+		and _json_safe(value.get("card_rules", {})) and _valid_relic_runtime(value.get("relic_runtime", {}))
+
+
+static func _valid_relic_runtime(value: Variant) -> bool:
+	if not value is Dictionary or not _json_safe(value): return false
+	if not value.has("chain_charges"): return true
+	if not value.chain_charges is Dictionary: return false
+	for key: Variant in value.chain_charges:
+		if not key is String or not key.is_valid_int() or str(int(key)) != key \
+				or int(key) < 0 or int(key) >= RelicBoard.CELL_COUNT or not value.chain_charges[key] is bool:
+			return false
+	return true
 
 
 static func _valid_enemy_array(values: Array) -> bool:

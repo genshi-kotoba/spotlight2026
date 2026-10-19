@@ -27,6 +27,7 @@ var _error_notice := ""
 
 func _ready() -> void:
 	_state = get_node("/root/GlobalState") as GlobalStateMachine
+	_state.save_on_window_close = false
 	_state.save_failed.connect(_forward_error)
 	get_tree().auto_accept_quit = false
 	var profile := _read_json(profile_path)
@@ -39,7 +40,7 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST and not _closing:
-		# GlobalState 的原退出通知先完成；随后保存含地图的完整检查点再退出。
+		# 窗口关闭只安装一次含地图的完整存档，失败则留在游戏内。
 		_closing = true
 		call_deferred("quit_game")
 
@@ -273,6 +274,18 @@ func _validate_slot(slot: int) -> Error:
 	if loaded.error != OK:
 		return loaded.error
 	var extension: Variant = loaded.data.get(MAP_KEY)
+	var node_loot: Variant = {}
+	var active_data: Variant = loaded.data.get("active_run")
+	if active_data is Dictionary and active_data.get("run_snapshot") is Dictionary:
+		if not RunRewards.valid_items(active_data.run_snapshot.get("items")): return ERR_INVALID_DATA
+		var inventory: Variant = active_data.run_snapshot.get("inventory_state", {})
+		if not inventory is Dictionary or not RunStateMachine._valid_inventory_state(inventory): return ERR_INVALID_DATA
+		var saved_battle: Variant = active_data.run_snapshot.get("current_battle")
+		if saved_battle != null:
+			if not saved_battle is Dictionary or not saved_battle.get("player") is Dictionary \
+					or not BattleStateMachine._valid_player(saved_battle.player): return ERR_INVALID_DATA
+		node_loot = inventory.get("node_loot", {})
+		if not RunNodeLoot.valid_records(node_loot): return ERR_INVALID_DATA
 	if extension != null:
 		var active: Variant = loaded.data.get("active_run")
 		if not extension is Dictionary or not extension.get("snapshot") is Dictionary \
@@ -285,6 +298,10 @@ func _validate_slot(slot: int) -> Error:
 			return ERR_INVALID_DATA
 		if JSON.stringify(extension.snapshot.get("seed_snapshot")) != JSON.stringify(active.get("seed_snapshot")):
 			return ERR_INVALID_DATA
+		if not RunNodeLoot.valid_map_records(node_loot, extension.snapshot.floors):
+			return ERR_INVALID_DATA
+	elif not node_loot.is_empty():
+		return ERR_INVALID_DATA
 	return OK
 
 

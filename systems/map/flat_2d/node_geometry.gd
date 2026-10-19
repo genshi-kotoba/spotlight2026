@@ -11,9 +11,9 @@ const ALCHEMY_BODY_RADII := {
 	"battle": 0.34, "boss": 0.42, "shop": 0.38,
 	# Retain the earlier event-circle dimension for explicit old circle callers.
 	# New event snapshots use event_capsule() instead.
-	"chest": 0.34, "event": 0.30,
+	"chest": 0.34, "pile": 0.30, "event": 0.30,
 }
-const RELEASED_TYPES := ["battle", "elite", "boss", "chest"]
+const RELEASED_TYPES := ["battle", "elite", "boss", "chest", "pile"]
 
 static func alchemy_radius(type: String) -> float:
 	return float(ALCHEMY_BODY_RADII.get(type, 0.0))

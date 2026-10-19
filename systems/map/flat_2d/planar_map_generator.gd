@@ -46,11 +46,14 @@ func normalize_config(input: Dictionary) -> Dictionary:
 		return _fail("layout_profile must be legacy or compact")
 	if c.route_profile not in ["legacy", "switchback"]:
 		return _fail("route_profile must be legacy or switchback")
-	if c.content_profile not in ["legacy", "alchemy_floor1"]:
-		return _fail("content_profile must be legacy or alchemy_floor1")
+	if c.content_profile not in ["legacy", "alchemy_floor1", "alchemy_floor1_pile"]:
+		return _fail("content_profile must be legacy, alchemy_floor1, or alchemy_floor1_pile")
 	if c.content_profile == "alchemy_floor1":
 		if c.normal != 3 or c.elite != 0 or c.events != 4 or c.min_boss_content_nodes != 4:
 			return _fail("alchemy_floor1 requires normal=3, elite=0, events=4, min_boss_content_nodes=4")
+	elif c.content_profile == "alchemy_floor1_pile":
+		if c.normal != 3 or c.elite != 0 or c.events != 5 or c.min_boss_content_nodes != 4:
+			return _fail("alchemy_floor1_pile requires normal=3, elite=0, events=5, min_boss_content_nodes=4")
 	elif c.normal < 2 or c.normal > 8 or c.elite < 1 or c.elite > 5 or c.normal + c.elite < 4:
 		return _fail("Use 2..8 normal, 1..5 elite, and at least four combat nodes")
 	if c.events < 4 or c.events > 16:
@@ -1152,6 +1155,8 @@ func _assign_types(data: Dictionary, rng, c: Dictionary) -> bool:
 			event_ids.append(id)
 	if c.get("content_profile", "legacy") == "alchemy_floor1":
 		return _assign_alchemy_content(data, rng, chosen.shop, boss, combat_types, event_ids)
+	if c.get("content_profile", "legacy") == "alchemy_floor1_pile":
+		return _assign_alchemy_pile_content(data, rng, chosen.shop, boss, combat_types, event_ids)
 	var subtypes: Array = ["herbs", "forge", "alchemy"]
 	for i in c.events - 4:
 		subtypes.append("random")
@@ -1175,6 +1180,36 @@ func _assign_alchemy_content(data: Dictionary, rng, shop_id: String, boss_id: St
 	var event_index := 0
 	for node in data.nodes:
 		node.type = "boss" if node.id == boss_id else "shop" if node.id == shop_id else "chest" if node.id == chest_id else str(combat_types.get(node.id, "event"))
+		node.event_kind = ""
+		node.content_id = "flat_2d/" + node.type
+		if node.type == "event":
+			node.event_kind = kinds[event_index]
+			node.content_id = "alchemy/events/" + node.event_kind
+			event_index += 1
+		elif node.type == "shop":
+			node.event_kind = "shop"
+		node.revisitable = node.type in ["event", "shop"]
+		if node.type == "event":
+			node.body_capsule = NodeGeometry.event_capsule()
+		else:
+			node.body_radius = NodeGeometry.alchemy_radius(node.type)
+	return event_index == 2
+
+
+func _assign_alchemy_pile_content(data: Dictionary, rng, shop_id: String, boss_id: String, combat_types: Dictionary, service_ids: Array) -> bool:
+	# The new profile adds one independent pile to the original content quota.
+	# Pick both loot nodes before drawing the two actual event identities.
+	if service_ids.size() != 4:
+		return false
+	var chest_id: String = rng.pick(service_ids)
+	var pile_candidates: Array = service_ids.duplicate()
+	pile_candidates.erase(chest_id)
+	var pile_id: String = rng.pick(pile_candidates)
+	var kinds: Array = AlchemyEvents.ids()
+	rng.shuffle_in_place(kinds)
+	var event_index := 0
+	for node in data.nodes:
+		node.type = "boss" if node.id == boss_id else "shop" if node.id == shop_id else "chest" if node.id == chest_id else "pile" if node.id == pile_id else str(combat_types.get(node.id, "event"))
 		node.event_kind = ""
 		node.content_id = "flat_2d/" + node.type
 		if node.type == "event":
@@ -1345,9 +1380,12 @@ func _validate(data: Dictionary, c: Dictionary) -> Dictionary:
 		return {"ok": false, "error": "Actual owner graph differs from the selected WALK tree"}
 	var gates: Array = []
 	var counts: Dictionary = {"battle": 0, "elite": 0, "event": 0, "shop": 0, "boss": 0}
-	var alchemy: bool = c.get("content_profile", "legacy") == "alchemy_floor1"
+	var alchemy_pile: bool = c.get("content_profile", "legacy") == "alchemy_floor1_pile"
+	var alchemy: bool = c.get("content_profile", "legacy") in ["alchemy_floor1", "alchemy_floor1_pile"]
 	if alchemy:
 		counts.chest = 0
+	if alchemy_pile:
+		counts.pile = 0
 	var events: Dictionary = {}
 	var boss: Dictionary = {}
 	for node in data.nodes:
@@ -1367,8 +1405,8 @@ func _validate(data: Dictionary, c: Dictionary) -> Dictionary:
 			footprint_cells[k] = true
 		if _flood(footprint_cells, node.coord).size() != footprint_cells.size():
 			return {"ok": false, "error": "Node footprint is disconnected"}
-	var expected_events: int = c.events - (2 if alchemy else 1)
-	if counts.battle != c.normal or counts.elite != c.elite or counts.shop != 1 or counts.event != expected_events or counts.boss != 1 or gates.size() != 2 or (alchemy and counts.chest != 1):
+	var expected_events: int = c.events - (3 if alchemy_pile else 2 if alchemy else 1)
+	if counts.battle != c.normal or counts.elite != c.elite or counts.shop != 1 or counts.event != expected_events or counts.boss != 1 or gates.size() != 2 or (alchemy and counts.chest != 1) or (alchemy_pile and counts.pile != 1):
 		return {"ok": false, "error": "Content quota mismatch"}
 	var event_run: int = _event_run(graph.adjacency, events)
 	if event_run > 3:

@@ -10,7 +10,7 @@ const RunMenu = preload("res://ui/hud/run_menu_overlay.gd")
 const MapViewerScript = preload("res://ui/world_map/map_viewer.gd")
 const MAP_PATH := "res://data/config/flat_2d/demo_map.json"
 const SETTINGS_PATH := "res://data/config/flat_2d/demo_settings.json"
-const LABELS := {"battle": "普通战斗", "elite": "精英战斗", "shop": "商店", "boss": "Boss", "event": "随机事件", "chest": "宝箱"}
+const LABELS := {"battle": "普通战斗", "elite": "精英战斗", "shop": "商店", "boss": "Boss", "event": "随机事件", "chest": "宝箱", "pile": "残堆"}
 const WALK_ACCELERATION_DELAY := 2.0
 const WALK_ACCELERATION_DURATION := 1.0
 const WALK_ACCELERATION_MAX := 1.5
@@ -664,12 +664,12 @@ func _node_label(node: Dictionary) -> String:
 	return LABELS.get(node.type, "节点")
 
 func _configure_node_dialog(request: Dictionary) -> void:
-	var presentation_only: bool = session.floor_index == 1 and (request.type == "chest" or (request.type == "event" and str(request.content_id).begins_with("alchemy/events/")))
+	var presentation_only: bool = session.floor_index == 1 and (request.type in ["chest", "pile"] or (request.type == "event" and str(request.content_id).begins_with("alchemy/events/")))
 	_dialog.get_ok_button().visible = not presentation_only
 	_dialog.cancel_button_text = "返回地图" if presentation_only else "取消并返回地图"
 	if presentation_only:
 		_dialog.title = _node_label(session.nodes[request.node_id])
-		_dialog.dialog_text = "已开启此事件，可以离开并稍后再次访问。\n本轮仅接入地图节点展示，事件选项与效果待后续接入。" if request.type == "event" else "宝箱节点已接入地图。\n本轮暂不处理宝箱奖励。"
+		_dialog.dialog_text = "已开启此事件，可以离开并稍后再次访问。\n本轮仅接入地图节点展示，事件选项与效果待后续接入。" if request.type == "event" else "%s节点已接入地图。\n节点奖励由正式游戏入口处理。" % LABELS.get(request.type, "战利品")
 	else:
 		_dialog.title = "路线关口 · 完成后开放后方" if request.is_route_gate else "节点接入演示"
 		_dialog.dialog_text = "%s · %s\n\n这里只演示节点请求与结果回传。\n正式战斗、商店和事件由各自模块处理。\n%s" % [LABELS.get(request.type,"节点"), request.node_id, "完成本关口将揭开后方迷雾并允许通行；取消不解锁。" if request.is_route_gate else "此节点不是路线关口；完成不改变后方区域的可达性。"]

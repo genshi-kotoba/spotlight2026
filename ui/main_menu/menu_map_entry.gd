@@ -6,6 +6,7 @@ var _gateway: Node
 var _saved_entry_state: Dictionary = {}
 var _reward_popup: LootPopup
 var _shop_popup: ShopPopup
+var _node_loot_popup: NodeLootPopup
 
 # PRG-002 已经安装了真实随机快照；地图恢复仅验证同一个快照，不能再次安装
 # SeedService，否则会使 main 的战斗/奖励等已经持有的 RandomStream 失效。
@@ -57,6 +58,8 @@ func _ready() -> void:
 		call_deferred("_show_shop", session.pending.duplicate(true))
 	elif session.pending.get("type") == "event":
 		call_deferred("_show_random_event")
+	elif session.pending.get("type") in ["chest", "pile"]:
+		call_deferred("_show_node_loot", session.pending.duplicate(true))
 	elif EncounterFlow.waiting_for_fourth_floor():
 		_show_fourth_floor_notice()
 	# 放弃本局的二次确认在设置面板里完成，这里只负责落地。
@@ -119,7 +122,7 @@ func _enable_monster_assignments() -> bool:
 	return true
 
 func _uses_demo_dialog(request: Dictionary) -> bool:
-	return request.get("type") not in ["battle", "elite", "boss", "shop", "event"]
+	return request.get("type") not in ["battle", "elite", "boss", "shop", "event", "chest", "pile"]
 
 func _on_world_node_requested(request: Dictionary) -> void:
 	if request.get("map_id") != session.map_id or _uses_demo_dialog(request):
@@ -133,6 +136,9 @@ func _on_world_node_requested(request: Dictionary) -> void:
 	if request.get("type") == "shop":
 		_show_shop(request)
 		return
+	if request.get("type") in ["chest", "pile"]:
+		_show_node_loot(request)
+		return
 	if not EncounterFlow.begin_encounter(request):
 		_show_toast(EncounterFlow.last_error)
 
@@ -142,6 +148,9 @@ func _interact() -> void:
 		return
 	if EncounterFlow.waiting_for_fourth_floor():
 		_show_toast("前三层已完成，第四层暂未开放")
+		return
+	if session.pending.get("type") in ["chest", "pile"]:
+		_show_node_loot(session.pending.duplicate(true))
 		return
 	if not session.pending.is_empty() and _gateway.current_run().current_battle != null:
 		if _gateway.save_current() == OK:
@@ -162,6 +171,29 @@ func _show_shop(request: Dictionary) -> void:
 	add_child(_shop_popup)
 	_shop_popup.close_handler = _close_shop
 	_shop_popup.show_shop(request)
+
+func _show_node_loot(request: Dictionary) -> void:
+	if is_instance_valid(_node_loot_popup): return
+	_set_paused(true)
+	_node_loot_popup = NodeLootPopup.new()
+	add_child(_node_loot_popup)
+	_node_loot_popup.close_handler = _close_node_loot
+	_node_loot_popup.claimed.connect(_on_node_loot_claimed)
+	_node_loot_popup.finished.connect(func(): _set_paused(false), CONNECT_DEFERRED)
+	_node_loot_popup.show_loot(request)
+
+func _on_node_loot_claimed(request: Dictionary) -> void:
+	_sync_view()
+	_sync_actor()
+	MapEvents.map_state_changed.emit(str(request.map_id), session.capture_state())
+	MapEvents.node_interaction_resolved.emit(str(request.request_id), str(request.node_id), "completed")
+
+func _close_node_loot(request: Dictionary) -> Error:
+	var error := RunNodeLoot.cancel(_gateway.current_run(), request)
+	if error == OK:
+		MapEvents.map_state_changed.emit(str(request.map_id), session.capture_state())
+		MapEvents.node_interaction_resolved.emit(str(request.request_id), str(request.node_id), "cancelled")
+	return error
 
 func _show_random_event() -> void:
 	if _gateway.save_current() != OK:
@@ -189,7 +221,7 @@ func _close_shop() -> Error:
 	return OK
 
 func _handle_menu_hotkeys(event: InputEvent) -> bool:
-	if is_instance_valid(_shop_popup) or is_instance_valid(_reward_popup):
+	if is_instance_valid(_shop_popup) or is_instance_valid(_reward_popup) or is_instance_valid(_node_loot_popup):
 		return false
 	return super._handle_menu_hotkeys(event)
 

@@ -1,9 +1,10 @@
 class_name RelicBookView
 extends Control
+signal open_requested
 
-## 战斗与跑图共用的典籍书：UI-026 书页 + main 的 4×3 色块格。
+## 战斗与跑图共用的典籍书：UI-026完整4×5格，封锁状态跟随棋盘。
 ## 没有残片的格子什么都不画，露出书页上画死的网格；装上了才铺色块。
-## 色块按行列奇偶走棋盘格，和背包页的典籍格用同一套取色。
+## 已装残片使用各自持久化颜色，空格仍露出原书页。
 ## 只负责展示，不处理拖放；编排在背包页完成。
 
 const BOOK_SIZE := Vector2(140, 181)
@@ -28,10 +29,14 @@ var _book_size := BOOK_SIZE
 var _texture: Texture2D = load(BOOK_TEXTURE)
 var _names := PackedStringArray()
 var _tips := PackedStringArray()
+var _tints := PackedColorArray()
 var _flash := PackedFloat32Array()
 var _flash_tweens := {}
 var _hovered := -1
 var _hide_timer: Timer
+var _board := RelicBoard.new()
+var _catalog: Dictionary = {}
+var _range_cells: Array[int] = []
 
 
 func _ready() -> void:
@@ -72,8 +77,11 @@ func _exit_tree() -> void:
 
 func set_board(catalog: Dictionary, board: RelicBoard) -> void:
 	# 刷新快照不重置触发动画。
+	_catalog = catalog.duplicate()
+	if board != null: _board.restore(board.to_dictionary(), catalog)
 	_names.fill("")
 	_tips.fill("")
+	_tints.fill(Color.TRANSPARENT)
 	for label: Label in _cells:
 		label.text = ""
 	for index in RelicBookGeometry.CELL_COUNT:
@@ -82,14 +90,14 @@ func set_board(catalog: Dictionary, board: RelicBoard) -> void:
 			fragment_id = board.cells[index]
 		if fragment_id.is_empty():
 			continue
-		var fragment: RelicFragmentData = catalog.get(fragment_id)
+		var fragment: RelicFragmentData = RelicCatalog.resolve(fragment_id, catalog)
 		if fragment == null:
 			continue
 		_names[index] = fragment.display_name
 		_cells[index].text = fragment.display_name
-		_tips[index] = "%s（%s）\n%s" % [
-			fragment.display_name, fragment.kind_name(), fragment.description,
-		]
+		_tips[index] = fragment.rich_text(20)
+		_tints[index] = fragment.tint()
+	_refresh_range()
 	queue_redraw()
 
 
@@ -118,14 +126,33 @@ func _draw_cell(index: int) -> void:
 		return
 	var filled := not _names[index].is_empty()
 	# 空格一笔不画：书页上本来就画着网格，铺色块反而把它盖掉。
-	if filled:
-		draw_colored_polygon(quad, cell_color(index))
+	if not _board.is_unlocked(index):
+		draw_colored_polygon(quad, Color(0.15, 0.15, 0.15, 0.80))
+		draw_polyline(_closed(quad), Color(0.38, 0.38, 0.38, 0.75), 1.0, true)
+	elif filled:
+		_draw_piece(quad, index, _tints[index])
 		draw_polyline(_closed(quad), OUTLINE_COLOR, 1.0, true)
+	if _range_cells.has(index):
+		draw_colored_polygon(quad, Color(0.40, 0.93, 0.56, 0.30))
+		draw_polyline(_closed(quad), Color(0.55, 1.0, 0.67, 0.95), 1.2, true)
 	if index == _hovered and filled:
 		draw_colored_polygon(quad, HOVER_TINT)
 		draw_polyline(_closed(quad), HOVER_OUTLINE, 1.5, true)
 	if _flash.size() == RelicBookGeometry.CELL_COUNT and _flash[index] > 0.0:
 		_draw_burst(quad, _flash[index])
+
+
+func _draw_piece(quad: PackedVector2Array, index: int, tint: Color) -> void:
+	var texture := RelicPieceArt.slot_texture(index) as AtlasTexture
+	if texture == null or texture.atlas == null:
+		draw_colored_polygon(quad, tint)
+		return
+	var region := texture.region
+	var source_size := texture.atlas.get_size()
+	var uv := PackedVector2Array([region.position / source_size,
+		Vector2(region.end.x, region.position.y) / source_size, region.end / source_size,
+		Vector2(region.position.x, region.end.y) / source_size])
+	draw_polygon(quad, PackedColorArray([tint.lightened(0.35)]), uv, texture.atlas)
 
 
 ## 触发特效：格子亮一下，同时一圈光沿格子轮廓扩出去。
@@ -150,7 +177,7 @@ func _scaled(quad: PackedVector2Array, factor: float) -> PackedVector2Array:
 	return result
 
 
-## 棋盘格取色：按行列奇偶交替。背包页的典籍格也调这个。
+## 旧调用方保留的取色入口；正式已装格使用 _tints 中的残片颜色。
 static func cell_color(index: int) -> Color:
 	var row := index / RelicBookGeometry.COLUMNS
 	var column := index % RelicBookGeometry.COLUMNS
@@ -174,10 +201,12 @@ func _apply_size() -> void:
 func _clear_cells() -> void:
 	_names.resize(RelicBookGeometry.CELL_COUNT)
 	_tips.resize(RelicBookGeometry.CELL_COUNT)
+	_tints.resize(RelicBookGeometry.CELL_COUNT)
 	_flash.resize(RelicBookGeometry.CELL_COUNT)
 	for index in RelicBookGeometry.CELL_COUNT:
 		_names[index] = ""
 		_tips[index] = ""
+		_tints[index] = Color.TRANSPARENT
 		_flash[index] = 0.0
 
 
@@ -189,6 +218,13 @@ func _set_flash(value: float, index: int) -> void:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		_set_hovered(RelicBookGeometry.cell_at(event.position, _book_size))
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		# 按下会打开菜单，但鼠标捕获仍可能在松开前给典籍发一次移动。
+		# 松开也清理，避免菜单下留下悬停提示或范围。
+		_hide_tip()
+		if event.pressed:
+			open_requested.emit()
+		accept_event()
 
 
 func _notification(what: int) -> void:
@@ -200,6 +236,7 @@ func _set_hovered(index: int) -> void:
 	if index == _hovered:
 		return
 	_hovered = index
+	_refresh_range()
 	queue_redraw()
 	if _hide_timer == null:
 		return
@@ -210,13 +247,25 @@ func _set_hovered(index: int) -> void:
 	_show_tip(index)
 
 
+func _refresh_range() -> void:
+	_range_cells.clear()
+	if not _board.is_unlocked(_hovered): return
+	var data := RelicCatalog.resolve(_board.cells[_hovered], _catalog)
+	if data == null or data.kind != RelicFragmentData.Kind.TRIGGER: return
+	for neighbor: int in _board.neighbors(_hovered, data.reach):
+		if _board.is_unlocked(neighbor): _range_cells.append(neighbor)
+
+
 func _show_tip(index: int) -> void:
 	if hover_tip == null or not is_instance_valid(hover_tip):
 		return
-	hover_tip.show_at_rect(_cell_rect(index), _tips[index])
+	hover_tip.show_at_rect(_cell_rect(index), _tips[index], true)
 
 
 func _hide_tip() -> void:
+	_range_cells.clear()
+	_hovered = -1
+	queue_redraw()
 	if hover_tip != null and is_instance_valid(hover_tip):
 		hover_tip.hide_tip()
 

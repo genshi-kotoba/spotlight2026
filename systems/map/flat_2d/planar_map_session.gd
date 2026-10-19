@@ -4,7 +4,7 @@ const Hex = preload("res://systems/map/hex_coord.gd")
 const HeightRecipe = preload("res://systems/map/flat_2d/height_recipe.gd")
 const AlchemyEvents = preload("res://systems/map/flat_2d/alchemy_event_catalog.gd")
 const NodeGeometry = preload("res://systems/map/flat_2d/node_geometry.gd")
-const TYPES := ["battle", "elite", "shop", "boss", "event", "chest"]
+const TYPES := ["battle", "elite", "shop", "boss", "event", "chest", "pile"]
 const FOOT_RADIUS := 0.18
 var map_id := ""
 var seed := ""
@@ -469,7 +469,7 @@ func get_view() -> Dictionary:
 	for node in _snapshot.get("nodes", []):
 		var visible: bool = _node_visible(node)
 		var event_kind := ""
-		var display_name: String = {"battle": "普通战斗", "elite": "精英战斗", "shop": "商店", "boss": "首领", "chest": "宝箱"}.get(node.type, "随机事件")
+		var display_name: String = {"battle": "普通战斗", "elite": "精英战斗", "shop": "商店", "boss": "首领", "chest": "宝箱", "pile": "残堆"}.get(node.type, "随机事件")
 		if node.type == "event" and visible and opened.has(node.id):
 			event_kind = node.event_kind
 			var event_name: String = AlchemyEvents.display_name(event_kind)

@@ -22,6 +22,7 @@ const MARGIN := 4.0
 const READABLE_SIZE := 24.0 # 实际显示字号优先目标；长句仍按空间等比适配。
 const MIN_SIZING_CHARACTERS := 15 # 短句按至少15个汉字的空间计算显示缩放。
 const SENTENCE_ENDINGS := ["。", "｡", ".", "．", "！", "!", "？", "?"]
+const GLYPH_MOTION := preload("res://ui/components/text_glyph_motion.gd")
 
 var sentences: Array[String] = []
 var context_provider: Callable
@@ -418,10 +419,7 @@ static func _placement_origins(choice: Dictionary, center_gap: Rect2) -> Rect2:
 
 ## 按句/字/离散时间片寻址的32位混合；绘制不推进随机流，帧率不改变抖动。
 static func _motion_unit(seed_value: int, index: int, tick: int, channel: int) -> float:
-	var value := (seed_value ^ (index * 0x9e3779b9) ^ (tick * 0x85ebca6b) ^ (channel * 0xc2b2ae35)) & 0xffffffff
-	value = ((value ^ (value >> 16)) * 0x45d9f3b) & 0xffffffff
-	value = ((value ^ (value >> 16)) * 0x45d9f3b) & 0xffffffff
-	return float(value ^ (value >> 16)) / 4294967296.0
+	return GLYPH_MOTION.unit(seed_value, index, tick, channel)
 
 
 static func sentence_alpha(sentence: Dictionary, at_time: float) -> float:
@@ -439,10 +437,7 @@ func glyph_pose(sentence: Dictionary, index: int, at_time: float) -> Dictionary:
 	var tick := maxi(0, int(floor((at_time - float(sentence.started)) / perturb_interval + 0.000001)))
 	var changed: bool = sentence.change_ticks.has(tick)
 	var motion_seed := int(sentence.motion_seed)
-	return {"offset": Vector2(_motion_unit(motion_seed, index, tick, 0) * 2.0 - 1.0,
-		_motion_unit(motion_seed, index, tick, 1) * 2.0 - 1.0) * curve_scale,
-		"angle": deg_to_rad((_motion_unit(motion_seed, index, tick, 2) * 10.0 - 5.0) * angle_multiplier),
-		"scale": 1.0 + _motion_unit(motion_seed, 0, tick, 3) * 0.2 if changed else 1.0}
+	return GLYPH_MOTION.sample(motion_seed, index, tick, curve_scale, angle_multiplier, changed)
 
 
 func _visible_widths(sentence: Dictionary, at_time: float) -> PackedFloat32Array:

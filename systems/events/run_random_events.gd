@@ -17,6 +17,13 @@ static func valid_events(value: Variant) -> bool:
 		if current.get("stage") not in ["choice", "inputs", "reward", "result", "done"] or not current.get("result") is String or not current.get("finished") is bool: return false
 		if bool(current.finished) != (current.stage == "done"): return false
 		if not RunStateMachine._string_array_valid(current.get("inputs")) or not RunStateMachine._unique_string_array_valid(current.get("offers")): return false
+		if int(index) == 8:
+			for offer: String in current.offers:
+				if RelicCatalog.resolve(offer) == null: return false
+		if current.has("result_fragments"):
+			if not current.result_fragments is Array: return false
+			for fragment: Variant in current.result_fragments:
+				if not fragment is String or RelicCatalog.resolve(fragment) == null: return false
 	return true
 
 static func state(run: Node, request: Dictionary) -> Dictionary:
@@ -44,20 +51,25 @@ static func selectables(run: Node, request: Dictionary) -> Array:
 		for id: String in current.offers:
 			var label := id
 			if int(current.index) == 8:
-				var data: RelicFragmentData = RelicCatalog.load_definitions().get(id)
+				var data: RelicFragmentData = RelicCatalog.resolve(id)
 				if data != null: label = data.display_name + "\n" + data.description
 			else:
 				var card := TextCatalog.entry("cards", id)
 				label = str(card.get("name", id)) + "\n" + str(card.get("effect", ""))
-			result.append({"id": id, "label": label})
+			var entry := {"id": id, "label": label}
+			if int(current.index) == 8 and RelicCatalog.resolve(id) != null: entry["rich_label"] = RelicCatalog.resolve(id).rich_text()
+			result.append(entry)
 	elif int(current.index) == 8:
 		var catalog := RelicCatalog.load_definitions()
 		for cell in RelicBoard.CELL_COUNT:
 			var id := str(run.inventory_state.relic_board.cells[cell])
-			if not id.is_empty(): result.append({"id": "cell:%d" % cell, "label": "已装备：" + catalog[id].display_name + "\n" + catalog[id].description})
+			if not id.is_empty():
+				var data := RelicCatalog.resolve(id, catalog)
+				if data != null: result.append({"id": "cell:%d" % cell, "label": "已装备：" + data.display_name + "\n" + data.description, "rich_label":"已装备：" + data.rich_text()})
 		for item: Variant in run.items:
 			if item is Dictionary and item.get("kind") == "fragment":
-				result.append({"id": "item:" + str(item.item_id), "label": catalog[str(item.fragment_id)].display_name + "\n" + catalog[str(item.fragment_id)].description})
+				var data := RelicCatalog.resolve(str(item.fragment_id), catalog)
+				if data != null: result.append({"id": "item:" + str(item.item_id), "label": data.display_name + "\n" + data.description, "rich_label":data.rich_text()})
 	else:
 		run.ensure_deck_cards()
 		for card: Dictionary in run.deck_cards:
@@ -104,7 +116,7 @@ static func choose(run: Node, request: Dictionary, option: int) -> Error:
 				if error == OK:
 					current.plays = int(current.plays) + 1
 					match int(rng.int_range(0, 6)):
-						0: give_fragment(run, str(rng.pick(RelicCatalog.reward_ids())), result)
+						0: give_fragment(run, RelicCatalog.generate(rng), result)
 						1: give(run, "common_pack", result)
 						2: give(run, "rare_pack", result)
 						3: give_potion(run, int(rng.int_range(0, 4)), result)
@@ -114,7 +126,7 @@ static func choose(run: Node, request: Dictionary, option: int) -> Error:
 				error = pay(run, 0, 10 if option == 0 else 20)
 				if error == OK:
 					if option == 0: give(run, "common_pack", result)
-					else: give_fragment(run, str(rng.pick(RelicCatalog.reward_ids())), result)
+					else: give_fragment(run, RelicCatalog.generate(rng), result)
 			4:
 				if option == 0: run.gold += 300; result.append("获得300银币")
 				else:
@@ -142,10 +154,12 @@ static func choose(run: Node, request: Dictionary, option: int) -> Error:
 					result.append("下场战斗：牌位-1；胜利额外获得稀有卡包")
 				elif option == 1: give(run, "common_pack", result)
 				else:
-					var id := str(rng.pick(RelicCatalog.reward_ids())) + "~" + str(rng.pick(RelicCatalog.negative_ids(RelicCatalog.load_definitions())))
+					var id := RelicCatalog.generate(rng, "", str(rng.pick(RelicCatalog.negative_ids(RelicCatalog.load_definitions()))))
 					give_fragment(run, id, result)
 	if error != OK: restore(run, before); return error
-	if not result.is_empty(): current.stage = "result"; current.result = "\n".join(result)
+	if not result.is_empty():
+		current.stage = "result"; current.result = "\n".join(result)
+		current["result_fragments"] = _new_fragments(run, before)
 	run.inventory_state.events[key(request)] = current
 	return commit(run, before)
 
@@ -186,12 +200,18 @@ static func select(run: Node, request: Dictionary, ids: Array, rollback: Diction
 			var pool: Array = RelicCatalog.reward_ids() if index == 8 else RunRewards._card_pool("rare_pack" if int(rng.int_range(0, 100)) < 20 else "common_pack")
 			if index == 8:
 				var consumed := fragment_at(run, str(ids[0]))
-				pool.erase(consumed.get_slice("~", 0))
+				var data := RelicCatalog.resolve(consumed)
+				pool = pool.filter(func(id: String) -> bool: return RelicCatalog.resolve(id).kind in [RelicFragmentData.Kind.TRIGGER, RelicFragmentData.Kind.EFFECT])
+				if data != null: pool.erase(data.base_fragment_id if not data.base_fragment_id.is_empty() else consumed.get_slice("~", 0))
 			rng.shuffle_in_place(pool)
 			current.offers = pool.slice(0, mini(pool.size(), 3 + RelicCatalog.choice_bonus(run.inventory_state.relic_board.cells)))
+			if index == 8:
+				for position in current.offers.size():
+					current.offers[position] = RelicCatalog.generate(rng, str(current.offers[position]))
 			current.stage = "reward"
 	else:
 		if index == 8:
+			if RelicCatalog.resolve(str(ids[0])) == null: return ERR_INVALID_DATA
 			var token := str(current.inputs[0])
 			if fragment_at(run, token).is_empty(): return ERR_INVALID_DATA
 			if token.begins_with("cell:"): run.inventory_state.relic_board.cells[int(token.trim_prefix("cell:"))] = ""
@@ -203,14 +223,17 @@ static func select(run: Node, request: Dictionary, ids: Array, rollback: Diction
 				if current.inputs.has(str(run.deck_cards[position].copy_id)): run.remove_card_at(position); removed += 1
 			if removed != 2: restore(run, before); return ERR_INVALID_DATA
 			add_card(run, str(ids[0])); result.append("合成获得：" + str(TextCatalog.entry("cards", str(ids[0])).get("name", ids[0])))
-	if not result.is_empty(): current.stage = "result"; current.result = "\n".join(result)
+	if not result.is_empty():
+		current.stage = "result"; current.result = "\n".join(result)
+		current["result_fragments"] = _new_fragments(run, before)
 	run.inventory_state.events[key(request)] = current
 	return commit(run, before)
 
 static func fragment_at(run: Node, token: String) -> String:
 	if token.begins_with("cell:"):
 		var cell := int(token.trim_prefix("cell:"))
-		return str(run.inventory_state.relic_board.cells[cell]) if cell >= 0 and cell < 12 else ""
+		var board := RunRewards.board_for_run(run)
+		return str(board.cells[cell]) if board.is_unlocked(cell) else ""
 	var item := RunRewards.item(run, token.trim_prefix("item:"))
 	return str(item.get("fragment_id", ""))
 
@@ -243,10 +266,21 @@ static func give(run: Node, kind: String, result: Array[String]) -> void:
 	result.append("获得：" + str(RunRewards.NAMES.get(kind, kind)))
 
 static func give_fragment(run: Node, id: String, result: Array[String]) -> void:
+	var data: RelicFragmentData = RelicCatalog.resolve(id)
+	if data == null: return
 	run.inventory_state.next_item = int(run.inventory_state.next_item) + 1
 	run.items.append({"item_id": "event-fragment-%d" % int(run.inventory_state.next_item), "kind": "fragment", "fragment_id": id})
-	var data: RelicFragmentData = RelicCatalog.load_definitions()[id]
 	result.append("获得典籍残片：%s\n%s" % [data.display_name, data.description])
+
+static func _new_fragments(run: Node, before: Dictionary) -> Array[String]:
+	var previous := {}
+	for item: Variant in before.items:
+		if item is Dictionary: previous[str(item.get("item_id", ""))] = true
+	var result: Array[String] = []
+	for item: Variant in run.items:
+		if item is Dictionary and item.get("kind") == "fragment" and not previous.has(str(item.get("item_id", ""))):
+			result.append(str(item.fragment_id))
+	return result
 
 static func give_potion(run: Node, index: int, result: Array[String]) -> void:
 	run.inventory_state.next_item = int(run.inventory_state.next_item) + 1

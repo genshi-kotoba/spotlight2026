@@ -250,7 +250,7 @@ static func _prepare_uncached(source, next_faces: Array) -> Array:
 			buffer.flush_mesh()
 			var visual: Dictionary = face.get("node_display", {"label":"?", "texture":"", "completed":false})
 			var tint := Color(.93, .85, .73)
-			if visual.get("completed", false) and face.node_type in ["battle", "elite", "boss", "chest"]: tint.a = .42
+			if visual.get("completed", false) and face.node_type in ["battle", "elite", "boss", "chest", "pile"]: tint.a = .42
 			buffer.commands.append({"node_marker":true, "rect":face.bounds, "visual":visual, "tint":tint, "contact":face.get("node_contact", PackedVector2Array())})
 			continue
 		buffer.begin_face(source, face)

@@ -187,6 +187,8 @@ func _node_label(node_type: String) -> String:
 			return "E"
 		"chest":
 			return "箱"
+		"pile":
+			return "堆"
 		"shop":
 			return "$"
 		"boss":
@@ -203,6 +205,8 @@ func _node_color(node_type: String) -> Color:
 			return Color("#c987d2")
 		"chest":
 			return Color("#dfb970")
+		"pile":
+			return Color("#b8afa0")
 		"shop":
 			return Color("#e5c36d")
 		"boss":

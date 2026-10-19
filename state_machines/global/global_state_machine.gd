@@ -29,6 +29,8 @@ var run_history: Array[Dictionary] = []
 var current_run: RunStateMachine
 var run_active := false
 var last_error: Error = OK
+## 独立状态机保留自动保存；装配完整地图网关时由网关独占窗口关闭。
+var save_on_window_close := true
 
 ## 启动时读入、但要等玩家点击“继续游戏”才安装的快照。
 var _saved_active_run: Dictionary = {}
@@ -39,7 +41,7 @@ func _ready() -> void:
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and save_on_window_close:
 		save_game()
 
 

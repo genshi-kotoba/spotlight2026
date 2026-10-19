@@ -229,6 +229,7 @@ func _build_backpack() -> void:
 
 func _build_relics() -> void:
 	_relic_book = RelicBookView.new()
+	_relic_book.open_requested.connect(func(): menu_requested.emit())
 	_relic_book.position = RELIC_POSITION
 	add_child(_relic_book)
 	_relic_book.attach_tip(self, 120)

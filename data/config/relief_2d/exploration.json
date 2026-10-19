@@ -4,13 +4,13 @@
     {
       "normal": 3,
       "elite": 0,
-      "events": 4,
+      "events": 5,
       "cell_space": 3,
       "space_jitter": true,
       "layout_candidates": 2,
       "layout_profile": "compact",
       "route_profile": "switchback",
-      "content_profile": "alchemy_floor1",
+      "content_profile": "alchemy_floor1_pile",
       "min_boss_content_nodes": 4
     },
     {

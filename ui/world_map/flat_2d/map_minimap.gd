@@ -139,7 +139,14 @@ class StaticCanvas extends Control:
 		var node_type := String(node.get("type", "event"))
 		var color := _node_color(node_type)
 		var radius := 2.5 / _draw_scale
-		if bool(node.get("completed", false)):
+		if node_type == "pile":
+			var diamond := PackedVector2Array([center + Vector2(0.0, -radius), center + Vector2(radius, 0.0), center + Vector2(0.0, radius), center + Vector2(-radius, 0.0)])
+			if bool(node.get("completed", false)):
+				diamond.append(diamond[0])
+				draw_polyline(diamond, color.lerp(Color("#c2d0d0"), 0.48), line_width * 1.25, true)
+			else:
+				draw_colored_polygon(diamond, color)
+		elif bool(node.get("completed", false)):
 			draw_circle(center, radius, color.lerp(Color("#c2d0d0"), 0.48), false, line_width * 1.25, true)
 		else:
 			draw_circle(center, radius, color)
@@ -155,6 +162,8 @@ class StaticCanvas extends Control:
 				return Color("#c987d2")
 			"chest":
 				return Color("#dfb970")
+			"pile":
+				return Color("#b8afa0")
 			"shop":
 				return Color("#e5c36d")
 			"boss":

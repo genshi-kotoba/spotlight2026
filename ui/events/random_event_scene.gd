@@ -80,6 +80,8 @@ func _refresh() -> void:
 			_status.text += "\n请选择 %d 项；同名卡牌的不同副本可以分别选择。" % count
 			for entry: Dictionary in RunRandomEvents.selectables(run, request):
 				var button := _button(str(entry.label), func(): pass)
+				if not str(entry.get("rich_label", "")).is_empty():
+					_fragment_option(button, str(entry.rich_label))
 				button.toggle_mode = true
 				button.toggled.connect(func(pressed: bool):
 					if pressed: _selected.append(str(entry.id))
@@ -88,7 +90,11 @@ func _refresh() -> void:
 			_button("确认选择", _confirm)
 			if current.stage == "inputs": _button("取消并离开", _cancel)
 		"result":
-			_status.text += "\n\n" + str(current.result)
+			_status.text += "\n\n" + _result_summary(current)
+			for fragment_id: String in current.get("result_fragments", []):
+				var fragment: RelicFragmentData = RelicCatalog.resolve(fragment_id)
+				if fragment != null:
+					_content.add_child(_fragment_detail(fragment.rich_text()))
 			if index == 2 and int(current.plays) < 3 and not str(current.result).begins_with("已离开"):
 				_button("继续抽取", _gamble_again)
 				_button("结束事件并返回地图", _finish)
@@ -96,6 +102,54 @@ func _refresh() -> void:
 				_status.text += "\n\n事件结果已保存，正在返回地图……"
 				_auto_finish(_generation)
 		"done": call_deferred("_leave")
+
+func _result_summary(current: Dictionary) -> String:
+	var summary := str(current.get("result", ""))
+	for fragment_id: String in current.get("result_fragments", []):
+		var fragment: RelicFragmentData = RelicCatalog.resolve(fragment_id)
+		if fragment == null:
+			continue
+		var heading := "获得典籍残片：" + fragment.display_name
+		summary = summary.replace(heading + "\n" + fragment.description, heading)
+	return summary
+
+func _fragment_option(button: Button, rich_text: String) -> void:
+	# 原按钮仍负责勾选；残片效果单列展示，避免按钮重复显示无颜色的辅助说明。
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 18)
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_content.remove_child(button)
+	_content.add_child(row)
+	row.add_child(_fragment_detail(rich_text))
+	button.text = button.text.get_slice("\n", 0)
+	button.custom_minimum_size.x = 240
+	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(button)
+
+func _fragment_detail(rich_text: String) -> RichTextLabel:
+	var detail := RichTextLabel.new()
+	CommonUiSkin.setup_relic_text(detail, 23)
+	detail.name = "FragmentDetails"
+	detail.bbcode_enabled = true
+	detail.text = rich_text
+	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	detail.custom_minimum_size.y = 96
+	detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	detail.scroll_active = false
+	detail.focus_mode = Control.FOCUS_NONE
+	detail.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	detail.add_theme_color_override("default_color", CommonUiSkin.TEXT)
+	detail.resized.connect(_resize_fragment_detail.bind(detail))
+	_resize_fragment_detail.call_deferred(detail)
+	return detail
+
+func _resize_fragment_detail(detail: RichTextLabel) -> void:
+	if not is_instance_valid(detail) or detail.is_queued_for_deletion():
+		return
+	# 容器先决定换行宽度，再用内容高度扩展行；外层滚动区负责长列表。
+	var height := maxf(1.0, float(detail.get_content_height()))
+	if not is_equal_approx(detail.custom_minimum_size.y, height):
+		detail.custom_minimum_size.y = height
 
 func _button(label: String, callback: Callable) -> Button:
 	var button := Button.new()

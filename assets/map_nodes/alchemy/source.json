@@ -2,7 +2,7 @@
   "asset_id": "UI-018",
   "record_id": "reczz28Ial4LO7a1",
   "source_package_sha256": "f0253b0a2910cf31950753f388da2579077264e511a2fb3c91476ac846d69b5c",
-  "processing": "Trim transparent margins and resample to max 512px; original art unchanged. Elite/pile stay outside first-floor pool.",
+  "processing": "Trim transparent margins and resample to max 512px; original art unchanged. Elite stays outside first-floor pool; pile is included only by alchemy_floor1_pile.",
   "files": [
     {
       "id": "battle",
@@ -79,6 +79,25 @@
         463
       ],
       "source_sha256": "9782d23f96c348838f80790b22a67fb859f0e01e6231cf30f22da37ebaf78d81"
+    },
+    {
+      "id": "pile",
+      "source_file": "残堆.png",
+      "source_size": [
+        4096,
+        3686
+      ],
+      "alpha_bounds": [
+        1017,
+        1709,
+        3445,
+        2846
+      ],
+      "runtime_size": [
+        512,
+        240
+      ],
+      "source_sha256": "ee93427cd5bf251505c7847ecd6d925f58c12a599ceecdc6a59b2243377d3eee"
     }
   ]
 }

@@ -7,6 +7,10 @@ const NAMES := {"silver": "银币", "elixir": "万灵药", "fragment_pack": "典
 
 static func ensure_state(run: Node, legacy_path: String = RelicBoard.SAVE_PATH) -> void:
 	if not run.inventory_state.is_empty():
+		# v1 twelve-slot saves keep all former slots open; only the eight new slots lock.
+		var current := RelicBoard.new()
+		if run.inventory_state.get("relic_board") is Dictionary and current.restore(run.inventory_state.relic_board, RelicCatalog.load_definitions()) == OK:
+			run.inventory_state.relic_board = current.to_dictionary()
 		return
 	# 仅老存档迁移原典籍。新局已由状态机创建空棋盘，绝不读取测试配置。
 	var board := RelicBoard.new()
@@ -124,7 +128,7 @@ static func choose(run: Node, item_id: String, choice: String) -> Error:
 		return ERR_INVALID_PARAMETER
 	var before := _capture(run)
 	if pack.kind == "fragment_pack":
-		if not RelicCatalog.load_definitions().has(choice):
+		if RelicCatalog.resolve(choice) == null:
 			return ERR_DOES_NOT_EXIST
 		run.items[index] = {"item_id": item_id + "/fragment", "kind": "fragment", "fragment_id": choice}
 	else:
@@ -140,9 +144,12 @@ static func choose(run: Node, item_id: String, choice: String) -> Error:
 static func equip_fragment(run: Node, item_id: String, cell: int) -> Error:
 	if not _can_edit(run) or cell < 0 or cell >= RelicBoard.CELL_COUNT:
 		return ERR_INVALID_PARAMETER
+	if not board_for_run(run).is_unlocked(cell): return ERR_UNAUTHORIZED
 	var index := _item_index(run, item_id)
 	if index < 0 or run.items[index].get("kind") != "fragment":
 		return ERR_DOES_NOT_EXIST
+	if RelicCatalog.resolve(str(run.items[index].get("fragment_id", ""))) == null:
+		return ERR_INVALID_DATA
 	var before := _capture(run)
 	var cells: Array = run.inventory_state.relic_board.cells
 	var previous := str(cells[cell])
@@ -159,6 +166,8 @@ static func move_fragment(run: Node, source: int, destination: int) -> Error:
 		return ERR_BUSY
 	if source < 0 or source >= RelicBoard.CELL_COUNT or destination < 0 or destination >= RelicBoard.CELL_COUNT:
 		return ERR_INVALID_PARAMETER
+	var board := board_for_run(run)
+	if not board.is_unlocked(source) or not board.is_unlocked(destination): return ERR_UNAUTHORIZED
 	var cells: Array = run.inventory_state.relic_board.cells
 	if str(cells[source]).is_empty():
 		return ERR_DOES_NOT_EXIST
@@ -174,6 +183,7 @@ static func move_fragment(run: Node, source: int, destination: int) -> Error:
 static func unequip_fragment(run: Node, cell: int) -> Error:
 	if not _can_edit(run) or cell < 0 or cell >= RelicBoard.CELL_COUNT:
 		return ERR_INVALID_PARAMETER
+	if not board_for_run(run).is_unlocked(cell): return ERR_UNAUTHORIZED
 	var cells: Array = run.inventory_state.relic_board.cells
 	if str(cells[cell]).is_empty():
 		return ERR_DOES_NOT_EXIST
@@ -185,10 +195,17 @@ static func unequip_fragment(run: Node, cell: int) -> Error:
 
 static func _generate_offer(run: Node, index: int, refresh: bool) -> Error:
 	var pack: Dictionary = run.items[index]
-	var pool: Array = RelicCatalog.reward_ids() if pack.kind == "fragment_pack" else _card_pool(str(pack.kind))
+	var fragment_pack: bool = pack.kind == "fragment_pack"
+	var pool: Array = RelicCatalog.reward_ids() if fragment_pack else _card_pool(str(pack.kind))
+	if fragment_pack:
+		pool = pool.filter(func(id: String) -> bool: return RelicCatalog.resolve(id).kind in [RelicFragmentData.Kind.TRIGGER, RelicFragmentData.Kind.EFFECT])
 	pool.sort()
 	if refresh:
-		pool = pool.filter(func(id: Variant) -> bool: return id not in pack.options)
+		var previous: Array = []
+		for option: String in pack.options:
+			var data := RelicCatalog.resolve(option) if fragment_pack else null
+			previous.append((data.base_fragment_id if not data.base_fragment_id.is_empty() else data.fragment_id.get_slice("~", 0)) if data != null else option)
+		pool = pool.filter(func(id: Variant) -> bool: return id not in previous)
 	var count := 2 if pack.kind == "fragment_pack" else 3
 	count += RelicCatalog.choice_bonus(run.inventory_state.relic_board.cells)
 	if pool.size() < count:
@@ -200,9 +217,33 @@ static func _generate_offer(run: Node, index: int, refresh: bool) -> Error:
 	if stream == null or stream.shuffle_in_place(pool) != OK:
 		return ERR_UNCONFIGURED
 	var before := _capture(run)
-	pack.options = pool.slice(0, count)
+	var options: Array = pool.slice(0, count)
+	if fragment_pack:
+		for option in options.size():
+			options[option] = RelicCatalog.generate(stream, str(options[option]))
+			if str(options[option]).is_empty(): return ERR_INVALID_DATA
+	pack.options = options
 	pack.rerolled = refresh
 	return _commit(run, before)
+
+
+static func valid_items(values: Variant) -> bool:
+	if not values is Array: return false
+	var seen_ids := {}
+	for item: Variant in values:
+		if not item is Dictionary: continue # Historical non-fragment inventory remains compatible.
+		if item.get("kind") in ["fragment", "fragment_pack"]:
+			if not item.get("item_id") is String or item.item_id.is_empty() or seen_ids.has(item.item_id): return false
+			seen_ids[item.item_id] = true
+		if item.get("kind") == "fragment":
+			if not item.get("fragment_id") is String or RelicCatalog.resolve(item.fragment_id) == null: return false
+		elif item.get("kind") == "fragment_pack":
+			if not item.get("options") is Array or not item.get("rerolled") is bool: return false
+			var seen := {}
+			for option: Variant in item.options:
+				if not option is String or RelicCatalog.resolve(option) == null or seen.has(option): return false
+				seen[option] = true
+	return true
 
 static func _card_pool(kind: String) -> Array[String]:
 	var result: Array[String] = []

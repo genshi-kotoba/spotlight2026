@@ -341,6 +341,7 @@ func _start_test_battle() -> void:
 		_relics.name = "RelicBattleSystem"
 		add_child(_relics)
 		_relics.fragment_activated.connect(_on_relic_activated)
+		_relics.trigger_activated.connect(_on_relic_triggered)
 		_relics.chain_limited.connect(_on_relic_chain_limited)
 		error = _relics.attach_to_battle(_battle, _relic_board, _relic_catalog, _resolver.buff_catalog)
 		_refresh_relic_hud()
@@ -367,8 +368,9 @@ func _build_settings_button() -> void:
 
 
 func _build_relic_hud() -> void:
-	# 复用新版书页表现，规则仍为 main 的 4×3。
+	# 共用完整20格书页，已开区域来自本场战斗构筑。
 	_relic_book = RelicBookView.new()
+	_relic_book.open_requested.connect(_open_run_menu.bind(1))
 	_relic_book.name = "RelicBook"
 	_relic_book.position = RELIC_BOOK_POSITION
 	add_child(_relic_book)
@@ -534,6 +536,11 @@ func _refresh_relic_hud() -> void:
 	if _relic_book != null:
 		_relic_book.set_board(_relic_catalog, _relic_board)
 	_relic_title.text = "典籍 · 生效 %d 次" % (_relics.activation_count if _relics != null else 0)
+
+
+func _on_relic_triggered(cell: int, _chained: bool) -> void:
+	if _relic_book != null:
+		_relic_book.flash_cell(cell)
 
 
 func _on_relic_activated(trigger: int, effect: int, description: String) -> void:

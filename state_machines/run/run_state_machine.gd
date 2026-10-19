@@ -67,7 +67,9 @@ func initialize_new(seed_text: String, config: Dictionary,
 	ensure_deck_cards()
 	card_pool.assign(prepared["card_pool"])
 	items = prepared["items"].duplicate(true)
-	inventory_state = {"version": 1, "elixir": 0, "relic_board": RelicBoard.new().to_dictionary(),
+	var starting_board := RelicBoard.new()
+	starting_board.set_unlocked_cells(prepared.relic_unlocked_cells)
+	inventory_state = {"version": 1, "elixir": 0, "relic_board": starting_board.to_dictionary(),
 		"pending_rewards": {}, "rewarded_battles": {}, "next_item": 0}
 	map_ids.assign(prepared["map_ids"])
 	current_map_id = map_ids[0]
@@ -147,7 +149,7 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 			or saved_battles == null or saved_stages == null or saved_max <= 0 \
 			or saved_health < 0 or saved_health > saved_max or saved_gold < 0 \
 			or saved_battles < 0 or saved_stages < 0 or not saved_maps.has(saved_current_map) \
-			or not _json_safe(saved_result) or not _json_safe(saved_items) \
+			or not _json_safe(saved_result) or not _json_safe(saved_items) or not RunRewards.valid_items(saved_items) \
 			or not _unique_string_array_valid(saved_maps) or saved_maps.size() != 3 \
 			or not _valid_map_states(saved_map_states, saved_maps) \
 			or not _valid_nonnegative_int_dictionary(saved_indices) \
@@ -156,6 +158,9 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 			or (not saved_active and saved_battle != null) \
 			or (saved_battle != null and saved_battle.get("map_id") != saved_current_map):
 		return _fail(ERR_INVALID_DATA, "Run snapshot values are invalid")
+	if saved_battle != null and (not saved_battle.get("player") is Dictionary \
+			or not BattleStateMachine._valid_player(saved_battle.player)):
+		return _fail(ERR_INVALID_DATA, "Battle player snapshot is invalid")
 
 	run_id = saved_run_id
 	main_seed = saved_seed
@@ -174,6 +179,10 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 	card_pool.assign(saved_cards)
 	items = saved_items.duplicate(true)
 	inventory_state = saved_inventory.duplicate(true)
+	if not inventory_state.is_empty():
+		var restored_board := RelicBoard.new()
+		restored_board.restore(inventory_state.relic_board, RelicCatalog.load_definitions())
+		inventory_state.relic_board = restored_board.to_dictionary()
 	map_ids.assign(saved_maps)
 	current_map_id = saved_current_map
 	map_states = saved_map_states.duplicate(true)
@@ -434,6 +443,11 @@ func _prepare_new_config(config: Dictionary, unlocked_cards: Array) -> Dictionar
 	var rewards: Variant = config.get("reward_pool", [])
 	var shops: Variant = config.get("shop_pool", [])
 	var events: Variant = config.get("event_pool", [])
+	var open_cells: Variant = config.get("relic_unlocked_cells", RelicBoard.DEFAULT_UNLOCKED)
+	var starting_board := RelicBoard.new()
+	if not open_cells is Array or starting_board.set_unlocked_cells(open_cells) != OK:
+		_fail(ERR_INVALID_PARAMETER, "Initial relic unlock configuration is invalid")
+		return {}
 	if not configured_run_id is String or configured_run_id.strip_edges().is_empty() \
 			or configured_max == null or configured_health == null or configured_gold == null \
 			or configured_max <= 0 or configured_health <= 0 or configured_health > configured_max \
@@ -460,6 +474,7 @@ func _prepare_new_config(config: Dictionary, unlocked_cards: Array) -> Dictionar
 			return {}
 	return {
 		"run_id": configured_run_id,
+		"relic_unlocked_cells": starting_board.unlocked_cells.duplicate(),
 		"max_health": configured_max,
 		"health": configured_health,
 		"gold": configured_gold,
@@ -625,6 +640,7 @@ static func _valid_inventory_state(data: Dictionary) -> bool:
 	if data.has("shops") and not RunShop.valid_shops(data.shops):
 		return false
 	if data.has("events") and not RunRandomEvents.valid_events(data.events): return false
+	if data.has("node_loot") and not RunNodeLoot.valid_records(data.node_loot): return false
 	var board := RelicBoard.new()
 	if board.restore(data.relic_board, RelicCatalog.load_definitions()) != OK:
 		return false

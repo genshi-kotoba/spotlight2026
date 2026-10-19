@@ -27,8 +27,8 @@ static func describe(node: Dictionary) -> Dictionary:
 			texture = EVENT_ART.get(str(node.get("event_kind", "")), "")
 			if label.is_empty(): label = "事件"
 	else:
-		texture = ROOT + kind + ".png" if kind in ["battle", "boss", "shop", "chest"] else ""
-		if label.is_empty(): label = {"battle":"战斗", "boss":"首领", "shop":"商店", "chest":"宝箱", "elite":"精英"}.get(kind, "事件")
+		texture = ROOT + kind + ".png" if kind in ["battle", "boss", "shop", "chest", "pile"] else ""
+		if label.is_empty(): label = {"battle":"战斗", "boss":"首领", "shop":"商店", "chest":"宝箱", "pile":"残堆", "elite":"精英"}.get(kind, "事件")
 	return {"texture":texture, "label":label, "completed":bool(node.get("completed", false)), "type":kind, "body_radius":float(node.get("body_radius", 0.0)), "body_capsule":node.get("body_capsule", {}).duplicate(true)}
 
 static func texture(path: String) -> Texture2D:
@@ -55,9 +55,9 @@ static func target_rect(bounds: Rect2, dimensions: Vector2) -> Rect2:
 	return Rect2(Vector2(bounds.get_center().x - size.x * .5, bounds.end.y - size.y), size)
 
 static func is_actor_occluder(visual: Dictionary) -> bool:
-	# Released battle/chest artwork is visibly translucent; binary clipping
+	# Released combat and loot artwork is visibly translucent; binary clipping
 	# would turn those faded pixels back into an invisible opaque obstacle.
-	return not str(visual.get("texture", "")).is_empty() and not (visual.get("completed", false) and visual.get("type", "") in ["battle", "elite", "boss", "chest"])
+	return not str(visual.get("texture", "")).is_empty() and not (visual.get("completed", false) and visual.get("type", "") in ["battle", "elite", "boss", "chest", "pile"])
 
 static func opaque_rects(path: String) -> Array[Rect2]:
 	if not _textures.has(path): texture(path)
