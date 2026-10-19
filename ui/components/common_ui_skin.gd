@@ -5,6 +5,7 @@ extends RefCounted
 const FRAME := preload("res://ui/components/common_frame_style.gd")
 const BUTTON := preload("res://ui/components/common_button_style.gd")
 const RELIC_MOTION := preload("res://ui/components/relic_text_motion.gd")
+const FEEL := preload("res://ui/components/feel_curve.gd")
 const TEXT := Color("fff5e8")
 const DARK_TEXT := Color("211f1d")
 static var _button_textures: Dictionary = {}
@@ -85,6 +86,7 @@ static func style_button(button: Button, margins: Vector4 = Vector4(18, 8, 18, 8
 	button.add_theme_color_override("font_hover_color", TEXT)
 	button.add_theme_color_override("font_pressed_color", DARK_TEXT)
 	button.add_theme_color_override("font_disabled_color", Color("aaa395"))
+	bind_press_feel(button)
 
 ## UI-006：只显式应用到关闭／返回控件，保留按钮原有的信号和行为。
 static func style_navigation_button(button: Button, kind: String, icon_only: bool = false) -> void:
@@ -134,3 +136,44 @@ static func style_dialog(dialog: AcceptDialog) -> void:
 	style_button(dialog.get_ok_button())
 	if dialog is ConfirmationDialog:
 		style_button((dialog as ConfirmationDialog).get_cancel_button())
+
+const _FEEL_BOUND := "_feel_bound"
+const _FEEL_BASE_SCALE := "_feel_base_scale"
+const _FEEL_TWEEN := "_feel_tween"
+
+## 给控件挂上悬停与按下的形变反馈，重复调用只挂一次。
+## 用缩放而不是位移，是因为按钮多在容器里，容器每帧会覆盖 position。
+static func bind_press_feel(button: BaseButton) -> void:
+	if button.has_meta(_FEEL_BOUND):
+		return
+	button.set_meta(_FEEL_BOUND, true)
+	button.set_meta(_FEEL_BASE_SCALE, button.scale)
+	_center_pivot(button)
+	button.resized.connect(_center_pivot.bind(button))
+	button.mouse_entered.connect(
+		_play_feel.bind(button, FEEL.SCALE_HOVER, FEEL.HOVER_IN, FEEL.CURVE_HOVER)
+	)
+	button.mouse_exited.connect(
+		_play_feel.bind(button, 1.0, FEEL.HOVER_OUT, FEEL.CURVE_HOVER)
+	)
+	button.button_down.connect(
+		_play_feel.bind(button, FEEL.SCALE_PRESS, FEEL.PRESS_BACK, FEEL.CURVE_BACK)
+	)
+	button.button_up.connect(
+		_play_feel.bind(button, FEEL.SCALE_HOVER, FEEL.PRESS_BACK, FEEL.CURVE_BACK)
+	)
+
+static func _center_pivot(button: BaseButton) -> void:
+	button.pivot_offset = button.size * 0.5
+
+static func _play_feel(button: BaseButton, factor: float, duration: float, curve: int) -> void:
+	if not is_instance_valid(button) or button.disabled:
+		return
+	var base: Vector2 = button.get_meta(_FEEL_BASE_SCALE, Vector2.ONE)
+	var previous: Variant = button.get_meta(_FEEL_TWEEN, null)
+	if previous is Tween and (previous as Tween).is_valid():
+		(previous as Tween).kill()
+	var tween := button.create_tween()
+	button.set_meta(_FEEL_TWEEN, tween)
+	tween.set_trans(curve).set_ease(FEEL.EASE_OUT)
+	tween.tween_property(button, "scale", base * factor, duration)

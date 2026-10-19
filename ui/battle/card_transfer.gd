@@ -2,9 +2,10 @@ extends Control
 ## 仅表现层的飞牌。目标每帧读取，允许出牌列重建、插牌和滚动，不阻塞规则队列。
 signal completed
 
-const SHRINK_TIME := 0.07
-const FLIGHT_TIME := 0.18
-const LAND_TIME := 0.09
+## 弃牌飞行动画。试玩判定原 0.34s 整体偏慢，压到 0.18s。
+const SHRINK_TIME := 0.04
+const FLIGHT_TIME := 0.09
+const LAND_TIME := 0.05
 const DURATION := SHRINK_TIME + FLIGHT_TIME + LAND_TIME
 const TRAVEL_SCALE := 0.09
 

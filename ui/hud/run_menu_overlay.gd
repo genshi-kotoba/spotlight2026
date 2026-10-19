@@ -46,6 +46,8 @@ const ITEM_ICON_SCRIPT := "res://ui/components/item_icon.gd"
 const HOVER_TIP_SCRIPT := "res://ui/components/hover_tip.gd"
 const RELIC_DRAG_ITEM_SCRIPT := "res://ui/hud/relic_drag_item.gd"
 const RELIC_DROP_CELL_SCRIPT := "res://ui/hud/relic_drop_cell.gd"
+const USE_DISCARD_MENU_SCRIPT := "res://ui/components/use_discard_menu.gd"
+const HOVER_LIFT := preload("res://ui/components/hover_lift.gd")
 const ITEM_CAPACITY := ITEM_COLUMNS * ITEM_VISIBLE_ROWS # 一屏容量，不改变 main 背包规则。
 ## 立绘越出面板左/下边框，是刻意的出血。
 const SLOT_FRAME_A := "res://assets/ui/UI-004/物品边框1.png"
@@ -65,6 +67,7 @@ var _peek_layer: Control
 var _peek_view: CardView
 var _deck_title: Label
 var _item_tip: Control
+var _item_menu: Control
 var _item_grid: GridContainer
 var _item_title: Label
 var _relic_title: Label
@@ -87,6 +90,8 @@ var _current_page := 1
 var _open_tween: Tween
 ## 测试装配用：非空时背包页读它，不读 GlobalState，也不落存档。
 var run_override: RunStateMachine = null
+## 战斗测试场景专用开关：打开后战斗中仍可编辑典籍。生产模式下保持 false，战斗中仍是仅查看。
+var allow_edit_in_battle := false
 
 
 const MENU_ACTIONS := {"menu_map": KEY_M}
@@ -155,6 +160,7 @@ func close() -> void:
 	_end_relic_drag(true)
 	_selected_fragment_id = ""
 	_hide_item_tip()
+	_close_item_menu()
 	if _peek_layer != null:
 		_peek_layer.visible = false
 	visible = false
@@ -169,6 +175,7 @@ func set_page(index: int) -> void:
 	_end_relic_drag(true)
 	_selected_fragment_id = ""
 	_hide_item_tip()
+	_close_item_menu()
 	_current_page = clampi(index, 0, PAGES.size() - 1)
 	for page_index in _pages.size():
 		var page: Control = _pages[page_index]
@@ -248,6 +255,8 @@ func _reload_deck(deck_ids: Array[String], copies: Array[Dictionary] = []) -> vo
 		peek.tooltip_text = view.tooltip_text
 		peek.pressed.connect(_peek_card.bind(card_id))
 		slot.add_child(peek)
+		# 卡面整体放大提亮，命中区仍是那张全幅 peek 按钮。
+		HOVER_LIFT.attach(view, peek)
 		_deck_grid.add_child(slot)
 
 
@@ -309,7 +318,8 @@ func _reload_items(run: RunStateMachine) -> void:
 		RunRewards.ensure_state(run)
 	_resources.text = "银币 %d  ·  万灵药 %d" % [run.gold, int(run.inventory_state.elixir)] if run != null else "银币 0  ·  万灵药 0"
 	if is_instance_valid(_battle) and run != null: _resources.text = "银币 %d  ·  万灵药 %d" % [int(_battle.player.get("silver", run.gold)), int(run.inventory_state.elixir)]
-	_bag_hint.text = "拖拽残片安装、换位或拖回背包；右键/Shift点击卸下。\n点击卡包打开；也可先点击残片，再点击典籍格安装。" if _can_edit_relics() else "战斗中仅查看，卡包与典籍编辑在战后开放。"
+	# 这一栏不写操作说明，只留给限制与失败提示。
+	_bag_hint.text = "" if _can_edit_relics() else "战斗中仅查看，卡包与典籍编辑在战后开放。"
 	var catalog := RelicCatalog.load_definitions()
 	for index in maxi(ITEM_CAPACITY, items.size()):
 		var slot: Control
@@ -585,6 +595,7 @@ func _build_relic_zone(page: Control) -> void:
 		cell.mouse_exited.connect(_on_relic_cell_hover_exited.bind(cell))
 		cell.drag_requested.connect(_begin_relic_drag)
 		cell.remove_requested.connect(_on_relic_remove_requested)
+		HOVER_LIFT.attach(cell)
 		var piece := _texture_rect(RelicPieceArt.slot_texture(index), Vector2.ZERO, RELIC_CELL_SIZE)
 		piece.name = "PieceArt"
 		cell.add_child(piece)
@@ -881,6 +892,58 @@ func _on_item_pressed(item_id: String) -> void:
 		add_child(_pack_popup)
 		_pack_popup.finished.connect(_refresh_data, CONNECT_DEFERRED)
 		_pack_popup.show_pack(item_id)
+
+
+## 背包与场景快捷栏共用的选项菜单，规则也共用：卡包要能改存档才能用，药水要真在战斗里才能用。
+func _open_item_menu(anchor: Control, item_id: String, kind: String) -> void:
+	if item_id.is_empty():
+		return
+	# 选项菜单与说明浮层占同一块位置，弹菜单前先收说明，避免两者叠在一起。
+	_hide_item_tip()
+	_ensure_item_menu().show_for(anchor, _item_rows(kind, item_id))
+
+
+func _item_rows(kind: String, item_id: String) -> Array:
+	if kind == "fragment":
+		# 残片的使用是拖到典籍书上，菜单里只剩丢弃。
+		return [_discard_row(item_id)]
+	if kind in RunRewards.PACKS:
+		return [{"label": "使用", "enabled": _can_edit_relics(), "action": _on_item_pressed.bind(item_id)},
+			_discard_row(item_id)]
+	if kind == "potion":
+		return [{"label": "使用", "enabled": is_instance_valid(_battle), "action": _on_item_pressed.bind(item_id)},
+			_discard_row(item_id)]
+	return [_discard_row(item_id)]
+
+
+func _discard_row(item_id: String) -> Dictionary:
+	return {"label": "丢弃", "enabled": _can_edit_relics(), "danger": true,
+		"action": _discard_item.bind(item_id)}
+
+
+func _discard_item(item_id: String) -> void:
+	var error := RunRewards.discard_item(_active_run(), item_id)
+	if error != OK:
+		_bag_hint.text = "丢弃失败，背包未改变。错误码：%d" % error
+		return
+	_selected_fragment_id = ""
+	_refresh_data()
+	relic_board_updated.emit()
+
+
+func _ensure_item_menu() -> Control:
+	if _item_menu == null:
+		var menu_script := load(USE_DISCARD_MENU_SCRIPT)
+		_item_menu = menu_script.new()
+		_item_menu.name = "ItemMenu"
+		_item_menu.z_index = 160
+		add_child(_item_menu)
+	return _item_menu
+
+
+func _close_item_menu() -> void:
+	if _item_menu != null and is_instance_valid(_item_menu):
+		_item_menu.close()
 
 func _equip_selected(cell: int) -> void:
 	if not _can_edit_relics() or _selected_fragment_id.is_empty():
@@ -1192,6 +1255,8 @@ func _relic_slot_item(fragment: RelicFragmentData, index: int) -> Control:
 	piece.name = "PieceArt"
 	piece.modulate = fragment.tint().lightened(0.35)
 	slot.add_child(piece)
+	# 只放大残片图形，格子底板与边框原地不动，避免悬停时挤到邻格。
+	HOVER_LIFT.attach(piece, slot)
 	var name_label := _label(fragment.display_name, 17, fragment.tint())
 	name_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1224,17 +1289,18 @@ func _item_slot(run: RunStateMachine, item_index: int, slot_index: int) -> Contr
 	var icon: Control = icon_script.make_item(item, 46.0, str(record.get("icon_path", "")))
 	icon.position = Vector2(16, 16)
 	slot.add_child(icon)
+	# 只放大道具图标，格子底板与边框原地不动。
+	HOVER_LIFT.attach(icon, slot)
 	# 图标占格子，名字与效果走和战斗 HUD 同一个悬停浮层。
 	slot.mouse_filter = Control.MOUSE_FILTER_STOP
 	var tip := _item_tooltip(display, record)
-	if kind in RunRewards.PACKS:
-		tip += "\n点击打开（选项不重复，可刷新一次）"
 	slot.mouse_entered.connect(_show_item_tip.bind(slot, tip))
 	slot.mouse_exited.connect(_hide_item_tip)
 	if kind in RunRewards.PACKS or kind == "potion":
+		# 单击出选项菜单：能用的那行才响应，具体能不能用交给 _item_rows 判。
 		slot.gui_input.connect(func(event: InputEvent):
-			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and (_can_edit_relics() or (kind == "potion" and is_instance_valid(_battle))):
-				_on_item_pressed(item_id)
+			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+				_open_item_menu(slot, item_id, kind)
 				slot.accept_event())
 	return slot
 
@@ -1247,7 +1313,22 @@ func _active_run() -> RunStateMachine:
 
 func _can_edit_relics() -> bool:
 	var run := _active_run()
-	return run != null and run.active and run == SaveGateway.current_run() and run.current_battle == null and not is_instance_valid(_battle)
+	if run == null or not run.active:
+		return false
+	# 生产模式：战斗中只查看，且只认存档槽位里那一局，不接受界面传入的 run。
+	if not allow_edit_in_battle:
+		return run == SaveGateway.current_run() and run.current_battle == null and not is_instance_valid(_battle)
+	return true
+
+
+## 战斗内编辑要让显示的那块盘跟上 run：显示读 _battle_board，编辑写的是 run 的盘。
+func _sync_battle_board() -> void:
+	if not allow_edit_in_battle or _battle_board == null:
+		return
+	var run := _active_run()
+	if run == null or run.inventory_state.is_empty():
+		return
+	_battle_board.restore(run.inventory_state.relic_board, RelicCatalog.load_definitions())
 
 
 func _bag_used(run: RunStateMachine) -> int:
@@ -1289,12 +1370,17 @@ func _drop_relic_at(screen_position: Vector2) -> void:
 	var fragment_id := _drag_fragment
 	var item_id := _drag_item_id
 	var origin := _drag_origin
+	var source := _drag_source
 	_end_relic_drag(true)
 	if target >= 0:
 		_selected_fragment_id = ""
 		_apply_relic_drop(origin, target, fragment_id, item_id, screen_position)
 	elif origin >= 0 and _in_item_zone(screen_position):
 		_unmount_relic(origin)
+	elif origin < 0 and is_instance_valid(source) and source is RelicDragItem \
+			and source.get_global_rect().has_point(screen_position):
+		# 原地松手是单击不是拖拽：给残片弹出丢弃选项，和场景快捷栏一致。
+		_open_item_menu(source, item_id, "fragment")
 
 
 func _apply_relic_drop(origin: int, target: int, fragment_id: String, item_id: String = "", screen_position: Vector2 = Vector2.INF) -> void:
@@ -1312,6 +1398,7 @@ func _apply_relic_drop(origin: int, target: int, fragment_id: String, item_id: S
 	if error != OK:
 		_bag_hint.text = "装配保存失败，配置未改变。错误码：%d" % error
 		return
+	_sync_battle_board()
 	_refresh_data()
 	relic_board_updated.emit()
 	# 指针在拖拽中已经进入此格，松手后不会再发一次 mouse_entered。
@@ -1331,5 +1418,6 @@ func _unmount_relic(index: int) -> void:
 		_bag_hint.text = "卸下失败，配置未改变。错误码：%d" % error
 		return
 	_selected_fragment_id = ""
+	_sync_battle_board()
 	_refresh_data()
 	relic_board_updated.emit()

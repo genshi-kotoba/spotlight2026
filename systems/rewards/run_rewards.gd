@@ -193,6 +193,19 @@ static func unequip_fragment(run: Node, cell: int) -> Error:
 	cells[cell] = ""
 	return _commit(run, before)
 
+## 从背包丢掉一件物品。药水、卡包、残片都能丢，装到典籍书上的残片走 unequip_fragment。
+## 这是界面侧唯一会缩短 run.items 的生产入口，和装配共用同一套快照事务，存档失败就回滚。
+static func discard_item(run: Node, item_id: String) -> Error:
+	if not _can_edit(run):
+		return ERR_BUSY
+	var index := _item_index(run, item_id)
+	if index < 0:
+		return ERR_DOES_NOT_EXIST
+	var before := _capture(run)
+	run.items.remove_at(index)
+	return _commit(run, before)
+
+
 static func _generate_offer(run: Node, index: int, refresh: bool) -> Error:
 	var pack: Dictionary = run.items[index]
 	var fragment_pack: bool = pack.kind == "fragment_pack"
@@ -258,8 +271,14 @@ static func _item_index(run: Node, item_id: String) -> int:
 			return index
 	return -1
 
+## 战斗测试场景装配时打开：允许对脱离存档槽位的 run 做残片事务。生产模式保持 false。
+static var allow_detached_edit := false
+
+
 static func _can_edit(run: Node) -> bool:
-	if not is_instance_valid(run) or not run.active or run.current_battle != null or run != SaveGateway.current_run():
+	if not is_instance_valid(run) or not run.active or run.current_battle != null:
+		return false
+	if not allow_detached_edit and run != SaveGateway.current_run():
 		return false
 	ensure_state(run)
 	return true

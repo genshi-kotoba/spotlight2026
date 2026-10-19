@@ -4,6 +4,8 @@ extends Node2D
 const VeilShader = preload("res://systems/map/relief_2d/fog_veil.gdshader")
 const BoundaryShader = preload("res://systems/map/relief_2d/fog_boundary_distance.gdshader")
 const TRANSITION_SECONDS := 0.18
+## 进入新图时角色光从全暗拉到目标强度的时长。
+const FOCUS_FADE_SECONDS := 0.35
 const TARGET_TEXEL_SIZE := 3.0
 const MAX_MASK_AXIS := 1536
 const BOUNDARY_DISTANCE := 36.0
@@ -23,6 +25,8 @@ var polygon_count := 0
 var _cloud_texture: ImageTexture
 var _focus_position := Vector2(INF, INF)
 var _focus_strength := -1.0
+## 焦点强度的入场渐变进度，1 表示已经到位。
+var _focus_fade := 1.0
 var _focus_radius := 260.0
 var _atmosphere_enabled := true
 
@@ -106,7 +110,7 @@ func sync(source, animate: bool = true) -> void:
  _material.set_shader_parameter("previous_mask",_distance_views[before][1].get_texture())
  _material.set_shader_parameter("previous_bounds",Vector4(old.position.x,old.position.y,old.size.x,old.size.y))
  _material.set_shader_parameter("transition",_elapsed/TRANSITION_SECONDS)
- set_process(_elapsed<TRANSITION_SECONDS);show();queue_redraw();sync_count+=1
+ set_process(_elapsed<TRANSITION_SECONDS or _focus_fade<1.0);show();queue_redraw();sync_count+=1
  build_ms=(Time.get_ticks_usec()-start)/1000.0
 
 func _known_step(source, face: Dictionary) -> bool:
@@ -131,7 +135,17 @@ func set_focus(position: Vector2, strength: float) -> void:
   _material.set_shader_parameter("actor_position",position)
  if not is_equal_approx(strength,_focus_strength):
   _focus_strength=clampf(strength,0.0,1.0)
-  _material.set_shader_parameter("light_strength",_focus_strength)
+  _apply_focus()
+
+## 进入新图时把角色光从全暗拉起，免得光圈硬切上来。
+func fade_focus_in() -> void:
+ if _material==null:return
+ _focus_fade=0.0
+ _apply_focus()
+ set_process(true)
+
+func _apply_focus() -> void:
+ _material.set_shader_parameter("light_strength",clampf(_focus_strength,0.0,1.0)*_focus_fade)
 
 func set_visibility_radius(radius: float) -> void:
  _focus_radius=clampf(radius,180.0,420.0)
@@ -143,9 +157,13 @@ func set_atmosphere_enabled(enabled: bool) -> void:
  _material.set_shader_parameter("atmosphere_enabled",enabled)
 
 func _process(delta: float) -> void:
- _elapsed=minf(TRANSITION_SECONDS,_elapsed+delta)
- _material.set_shader_parameter("transition",smoothstep(0.0,1.0,_elapsed/TRANSITION_SECONDS))
- if _elapsed>=TRANSITION_SECONDS:set_process(false)
+ if _elapsed<TRANSITION_SECONDS:
+  _elapsed=minf(TRANSITION_SECONDS,_elapsed+delta)
+  _material.set_shader_parameter("transition",smoothstep(0.0,1.0,_elapsed/TRANSITION_SECONDS))
+ if _focus_fade<1.0:
+  _focus_fade=minf(1.0,_focus_fade+delta/FOCUS_FADE_SECONDS)
+  _apply_focus()
+ if _elapsed>=TRANSITION_SECONDS and _focus_fade>=1.0:set_process(false)
 
 func _draw() -> void:
  draw_rect(_view_rectangle,Color.WHITE)

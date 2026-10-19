@@ -14,8 +14,7 @@ const SUPPORT_COLOR := Color("71b8cb")
 const OUTLINE_COLOR := Color(0.235, 0.169, 0.102, 0.6)
 const HOVER_TINT := Color(1.0, 0.96, 0.86, 0.22)
 const HOVER_OUTLINE := Color(1.0, 0.94, 0.76, 0.9)
-const FLASH_TINT := Color(1.0, 0.97, 0.84)
-## 触发特效一次走完的时间，和落点高亮的时长对齐。
+## 触发高亮一次走完的时间，和落点高亮的时长对齐。
 const FLASH_TIME := 0.55
 ## 鼠标掠过格缝时不要立刻收浮层，否则一格一格地闪。
 const HIDE_DELAY := 0.08
@@ -110,8 +109,9 @@ func flash_cell(index: int) -> Tween:
 		previous.kill()
 	var tween := create_tween()
 	_flash_tweens[index] = tween
+	# EASE_IN 让格子先亮住再收，读得出「这一格亮了」而不是一路暗下去。
 	tween.tween_method(_set_flash.bind(index), 1.0, 0.0, FLASH_TIME) \
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	return tween
 
 
@@ -139,8 +139,8 @@ func _draw_cell(index: int) -> void:
 	if index == _hovered and filled:
 		draw_colored_polygon(quad, HOVER_TINT)
 		draw_polyline(_closed(quad), HOVER_OUTLINE, 1.5, true)
-	if _flash.size() == RelicBookGeometry.CELL_COUNT and _flash[index] > 0.0:
-		_draw_burst(quad, _flash[index])
+	if filled and _flash.size() == RelicBookGeometry.CELL_COUNT and _flash[index] > 0.0:
+		_draw_highlight(quad, _flash[index])
 
 
 func _draw_piece(quad: PackedVector2Array, index: int, tint: Color) -> void:
@@ -156,26 +156,10 @@ func _draw_piece(quad: PackedVector2Array, index: int, tint: Color) -> void:
 	draw_polygon(quad, PackedColorArray([tint.lightened(0.35)]), uv, texture.atlas)
 
 
-## 触发特效：格子亮一下，同时一圈光沿格子轮廓扩出去。
-func _draw_burst(quad: PackedVector2Array, energy: float) -> void:
-	draw_colored_polygon(quad, Color(FLASH_TINT, energy * 0.55))
-	var spread := 1.0 - energy
-	draw_polyline(_closed(_scaled(quad, 1.0 + 0.55 * spread)),
-		Color(FLASH_TINT, energy * 0.8), maxf(1.0, 2.5 * energy), true)
-	draw_polyline(_closed(_scaled(quad, 1.0 + 0.85 * spread)),
-		Color(FLASH_TINT, energy * 0.35), 1.0, true)
-
-
-## 绕格子重心缩放，用来画往外扩的光圈。
-func _scaled(quad: PackedVector2Array, factor: float) -> PackedVector2Array:
-	var center := Vector2.ZERO
-	for point in quad:
-		center += point
-	center /= float(quad.size())
-	var result := PackedVector2Array()
-	for point in quad:
-		result.append(center + (point - center) * factor)
-	return result
+## 触发特效：与悬停同一套高亮，按能量淡出，能量高时看着就是被悬停的那一格。
+func _draw_highlight(quad: PackedVector2Array, energy: float) -> void:
+	draw_colored_polygon(quad, Color(HOVER_TINT, HOVER_TINT.a * energy))
+	draw_polyline(_closed(quad), Color(HOVER_OUTLINE, HOVER_OUTLINE.a * energy), 1.5, true)
 
 
 ## 旧调用方保留的取色入口；正式已装格使用 _tints 中的残片颜色。

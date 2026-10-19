@@ -133,7 +133,7 @@ func _test_world_flow() -> void:
 	_check("敌人匹配种子分配且图片名称正确", battle.enemies[0].enemy_id == expected_id and ui.get_node("EnemyName").text == TextCatalog.entry("monsters", expected_id).name and ui.get_node("EnemyPortrait").texture != null)
 	_check("地图战斗加载对应怪物TXT", ui._monster_text.source_path == TextCatalog.entry("monsters", expected_id).battle_text_path and not ui._monster_text.sentences.is_empty())
 	_check("真实牌组生命进入战斗，不使用临时测试牌", battle.hand.size() == 10 and int(battle.player.health) == 200 and not bool(battle.player.temporary_deck))
-	_check("不能重开战斗或修改战斗中的典籍", not ui._restart_button.visible and not ui._relic_edit_button.visible)
+	_check("生产战斗不显示重开测试按钮", not ui._restart_button.visible)
 	for card: Dictionary in battle.hand:
 		if card.card_id == "1":
 			ui._on_hand_card_pressed(str(card.instance_id))

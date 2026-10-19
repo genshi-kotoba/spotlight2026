@@ -56,6 +56,7 @@ func _process(delta: float) -> void:
 	super._process(delta)
 	if is_instance_valid(_floor_label):
 		_refresh_run_controls()
+	_sync_run_panel()
 
 func _physics_process(delta: float) -> void:
 	if map_run == null or map_run.current_floor == 0:
@@ -94,5 +95,6 @@ func _change_floor(index: int) -> void:
 	if entry.is_empty():
 		_show_toast(map_run.last_error)
 		return
-	load_map(entry.snapshot, entry.state)
+	# 走黑场节拍：淡出的那一拍再重建地图。
+	load_map_with_beat(entry.snapshot, entry.state)
 	_show_toast("第 %d 层 · 回访保留探索和节点状态" % index)

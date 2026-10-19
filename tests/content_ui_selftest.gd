@@ -21,10 +21,10 @@ func _run() -> void:
 	scene._battle.player["potions"] = [{"item_id": "fixture-potion", "potion": 1}]
 	scene._queue_refresh()
 	await _frames(8)
-	_check("多敌人目标列表与药水均可见", scene._enemy_selector.get_child_count() == 4)
-	scene._enemy_selector.get_child(1).pressed.emit()
+	_check("多敌人同屏槽位与目标指示就绪", scene.enemy_rack.slots.size() == 3)
+	scene.enemy_rack.slots[1].selected.emit(scene.enemy_rack.slots[1].enemy_id)
 	await _frames(5)
-	_check("点击随从可切换伤害目标", scene._chosen_enemy_id() == "knight")
+	_check("点击战场上的随从可切换伤害目标", scene._chosen_enemy_id() == "knight")
 	await _capture("multi-enemy.png")
 	scene._battle.request_battle_choice("nullify", scene._battle.hand.duplicate(true), 1)
 	await _frames(5)

@@ -1,8 +1,10 @@
 extends "res://tests/map_entry_input_selftest.gd"
 ## 使用曾导致首抽秒杀的布局，验证自然抽牌不触发典籍；只写隔离夹具。
+## 棋盘固定 4x5 共 20 格，`restore` 要求长度严格相等；前 12 格是连锁布局，其余留空。
 const BOARD_CELLS := ["turn_strength", "on_card_gained", "gain_block", "deal_damage",
 	"on_card_gained", "deal_damage", "on_enemy_damaged", "deal_damage",
-	"deal_damage", "gain_block", "gain_block", "turn_strength"]
+	"deal_damage", "gain_block", "gain_block", "turn_strength",
+	"", "", "", "", "", "", "", ""]
 
 func _run() -> void:
 	fixture_root = "res://.godot/map-relic-entry-%d" % Time.get_ticks_usec()
@@ -14,6 +16,9 @@ func _run() -> void:
 	EncounterFlow.relic_board_path = fixture_root.path_join("board.json")
 	var board := RelicBoard.new()
 	board.cells.assign(BOARD_CELLS)
+	# 布局占用了 3/7/11 号格，它们不在默认开放集里；整盘按测试约定开放 12 格，
+	# 否则棋盘校验会以「内容落在封锁格」拒绝恢复。
+	board.unlocked_cells.assign(range(12))
 	_check("复刻首抽连锁棋盘", board.save_to_file(EncounterFlow.relic_board_path) == OK)
 	var config: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
 	config.run_id = "map-relic-entry"
@@ -32,6 +37,8 @@ func _run() -> void:
 	print("DIAG after E: scene=%s current_battle=%s completed=%s" % [scene.scene_file_path, SaveGateway.current_run().current_battle, EncounterFlow.session.completed.has(target)])
 	_check("原秒杀棋盘仍正常进入战斗界面", scene.scene_file_path == EncounterFlow.BATTLE_SCENE)
 	if scene.scene_file_path == EncounterFlow.BATTLE_SCENE:
+		# 首抽与开局表现要跑完才轮到玩家操作；表现未收时 hint 还是「正在准备首回合」。
+		await preload("res://tests/support/presentation_test_helper.gd").battle_settled(scene)
 		var initial_health := int(scene._battle.enemies[0].max_health)
 		_check("首抽受10张上限约束且不触发伤害格挡，玩家仍可出牌", scene._battle.active and scene._battle.hand.size() == 10 and int(scene._battle.enemies[0].health) == initial_health and int(scene._battle.player.block) == 0 and not scene._busy)
 		_check("仅两个存在类力量生效，不弹胜利窗口", scene._relics.activation_count == 2 and scene.get_node_or_null("OpeningBattleResult") == null)
@@ -55,6 +62,7 @@ func _run() -> void:
 		var context := BattleEffectContext.new(scene._battle, str(scene._battle.enemies[0].enemy_id), scene._resolver.buff_catalog)
 		context.draw(1)
 		_check("效果抽牌仍正常触发连锁并击败敌人", not scene._battle.active and scene._battle_result == "victory" and scene._relics.activation_count > 4)
+		await preload("res://tests/support/presentation_test_helper.gd").battle_settled(scene)
 		await _frames(10)
 		await preload("res://tests/support/reward_test_helper.gd").collect(get_tree())
 		_check("效果胜利仍完成节点并返回地图", get_tree().current_scene.scene_file_path == EncounterFlow.MAP_SCENE and get_tree().current_scene.session.completed.has(target))

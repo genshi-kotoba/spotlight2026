@@ -1,4 +1,4 @@
-extends BattleTestScene
+extends "res://ui/battle/battle_test_scene.gd"
 ## 正式节点入口复用已有卡牌、动画、事件队列；不创建第二场测试战斗。
 var _leaving := false
 var _opening := false
@@ -19,6 +19,8 @@ func _ready() -> void:
 		SceneTransition.call_deferred("change_scene_to_file", MENU_SCENE)
 		return
 	super._ready()
+	# 战斗内改典籍、开卡包只属于测试装配点，生产战斗必须关掉；药水走的是 _battle 引用，不受此开关影响。
+	_run_menu.allow_edit_in_battle = false
 	if EncounterFlow.debug_victory_enabled():
 		_debug_victory_button = Button.new()
 		_debug_victory_button.name = "DebugInstantVictory"
@@ -87,15 +89,8 @@ func _start_test_battle() -> void:
 		_relics.chain_limited.connect(_on_relic_chain_limited)
 		_refresh_relic_hud()
 		if _relic_board.cells.count("") == RelicBoard.CELL_COUNT:
-			_relic_log.text = "尚未安装残片。战斗胜利后可领取残片包，在背包中打开并安装。"
-	_relic_edit_button.hide()
+			_relic_hints.push("尚未安装残片。战斗胜利后可领取残片包，在背包中打开并安装。", 6.0)
 	_restart_button.hide()
-	var enemy: Dictionary = _battle.enemies[0]
-	$EnemyPortrait.texture = TextCatalogService.art_texture(str(enemy.art_path))
-	$EnemyName.text = str(enemy.name)
-	var frame_name: String = {"普通": "小怪", "精英": "精英", "BOSS": "boss"}.get(str(enemy.get("grade", "")), "boss")
-	$EnemyHPBar/Frame.texture = load("res://assets/ui/UI-015/超长-%s血条框.png" % frame_name)
-	$IntentValue.text = str(enemy.actions[0].get("damage", 0))
 	if error != OK:
 		hint_label.text = "节点战斗初始化失败：%d" % error
 		_busy = true
@@ -207,7 +202,6 @@ func _map_snapshot_data() -> Dictionary:
 func _refresh_header() -> void:
 	super._refresh_header()
 	_refresh_debug_victory_button()
-	_relic_edit_button.hide()
 	_restart_button.hide()
 	if is_instance_valid(_reward_popup):
 		hint_label.text = "战斗胜利，请领取奖励后继续探索。"

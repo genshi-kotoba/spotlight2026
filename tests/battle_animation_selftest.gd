@@ -72,32 +72,11 @@ func _check_transfers(scene: BattleTestScene) -> void:
 	var seed_before := JSON.stringify(SeedService.capture_snapshot())
 	var hand_before := scene._battle.hand.size()
 	scene._on_hand_card_pressed(id)
-	_check("选择立即生成独立飞牌，规则手牌不被表现层改写", scene._card_transfers.has(id) and scene._battle.hand.size() == hand_before)
 	await _frames(5)
-	var ghost: Control = scene._card_transfers[id].ghost
-	ghost._flight.pause()
-	ghost._flight.custom_step(0.07)
-	_check("起飞缩小到过渡比例", ghost.scale.is_equal_approx(Vector2.ONE * scene.CARD_TRANSFER.TRAVEL_SCALE))
-	var origin := ghost.position
-	ghost._flight.custom_step(0.09)
-	_check("缩小状态平滑移动，目标卡面隐藏避免重影", ghost.position.distance_to(origin) > 10.0 and is_zero_approx(scene._transfer_source(id, true).modulate.a))
-	# 飞行中插入另一张牌并触发重建，原目标不能重现或失效。
-	var other := str(scene._battle.hand[1].instance_id)
-	scene._insert_selected_card(other, 0)
-	await _frames(4)
-	_check("重建与插牌后目标仍隐藏", is_zero_approx(scene._transfer_source(id, true).modulate.a))
-	ghost._flight.custom_step(0.10)
-	ghost._flight.custom_step(0.04)
-	_check("落位快速放大到目标尺寸途中", ghost.scale.x > scene.CARD_TRANSFER.TRAVEL_SCALE and ghost.scale.x < scene.PLAY_CARD_SCALE)
-	var center := ghost.position + ghost.pivot_offset
-	_check("目标跟随插牌与滚动位置", center.distance_to(scene._card_transfer_target(id).center) < 1.0)
-	await _capture("card-landing.png")
-	ghost._flight.custom_step(0.2)
-	await _frames(1)
-	_check("落位后清理飞牌并恢复真实卡面", not scene._card_transfers.has(id) and is_equal_approx(scene._transfer_source(id, true).modulate.a, 1.0))
+	_check("点手牌瞬时落位出牌区且不生成飞牌", not scene._card_transfers.has(id) and scene._selected_ids.has(id) and scene.play_cards.get_child_count() >= 1 and scene._battle.hand.size() == hand_before)
 	scene._on_cancel_pressed()
 	await _frames(4)
-	_check("快速取消清理所有飞牌并还原手牌", scene._card_transfers.is_empty() and scene.hand_cards.get_child_count() == hand_before)
+	_check("取消后手牌还原且无残留飞牌", scene._card_transfers.is_empty() and scene._selected_ids.is_empty() and scene.hand_cards.get_child_count() == hand_before)
 	# 逐张选择两张弃牌，第一张无需等到凑够数量才开始飞行。
 	scene._busy = true
 	scene._pending_discard_count = 2
@@ -105,10 +84,10 @@ func _check_transfers(scene: BattleTestScene) -> void:
 	scene._select_card_to_discard(id)
 	await _frames(5)
 	_check("多张弃牌第一张立即播放飞行动画", scene._card_transfers.has(id) and scene._discard_selection_ids.size() == 1)
-	ghost = scene._card_transfers[id].ghost
+	var ghost: Control = scene._card_transfers[id].ghost
 	ghost._flight.pause()
-	ghost._flight.custom_step(0.25)
-	ghost._flight.custom_step(0.045)
+	ghost._flight.custom_step(0.05)
+	ghost._flight.custom_step(0.10)
 	_check("弃牌到达牌堆后缩小并淡出", ghost.scale.x < scene.CARD_TRANSFER.TRAVEL_SCALE and ghost.modulate.a > 0.0 and ghost.modulate.a < 1.0)
 	await _capture("card-discard.png")
 	ghost._flight.custom_step(0.2)

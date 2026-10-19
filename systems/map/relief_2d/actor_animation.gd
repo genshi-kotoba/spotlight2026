@@ -3,10 +3,13 @@ extends RefCounted
 ## Actual displacement drives walk frames, so collision cannot animate sliding.
 const Profile = preload("res://systems/map/relief_2d/actor_profile.gd")
 const DIRECTIONS := ["e", "se", "s", "sw", "w", "nw", "n", "ne"]
+## 扇区边界上的滞回，约 10°。不设它时朝向会在 45° 边界上来回跳。
+const FACING_HYSTERESIS := 0.17
 var config: Dictionary = {}
 var textures: Dictionary = {}
 var facing := "s"
 var walking := false
+var _last_move_angle := PI / 2.0
 var walk_phase := 0.0
 var idle_time := 0.0
 var frame_index := 0
@@ -37,17 +40,31 @@ func load_config(path: String, target_height: float) -> bool:
 
 func advance(plane_delta: Vector2, screen_delta: Vector2, delta: float) -> bool:
 	var old := "%s:%s:%d" % [facing, walking, frame_index]
+	var was_walking := walking
 	walking = plane_delta.length_squared() > 0.00000001
 	if walking:
-		var index := posmod(int(round(screen_delta.angle() / (PI / 4.0))), 8)
-		facing = DIRECTIONS[index]
+		_last_move_angle = screen_delta.angle()
+		facing = _resolve_facing(_last_move_angle)
 		walk_phase = fposmod(walk_phase + plane_delta.length() / Profile.STRIDE_DISTANCE, 1.0)
 		idle_time = 0.0
 	else:
 		idle_time += delta
+		if was_walking:
+			# 停下时对准最终移动方向，别停在滞回留住的旧扇区。
+			facing = DIRECTIONS[posmod(int(round(_last_move_angle / (PI / 4.0))), 8)]
 	var frames: Array = config.get("animations", {}).get(animation_name(), [])
 	frame_index = mini(frames.size() - 1, int(walk_phase * frames.size())) if walking else 0
 	return old != "%s:%s:%d" % [facing, walking, frame_index]
+
+func _resolve_facing(angle: float) -> String:
+	var current := DIRECTIONS.find(facing)
+	if current < 0:
+		current = 0
+	var offset := wrapf(angle - current * (PI / 4.0), -PI, PI)
+	# 扇区边界在 ±22.5°，滞回加在这条边界上，不是加在扇区中心。
+	if absf(offset) <= PI / 8.0 + FACING_HYSTERESIS:
+		return facing
+	return DIRECTIONS[posmod(int(round(angle / (PI / 4.0))), 8)]
 
 func animation_name() -> String:
 	return ("walk_" if walking else "idle_") + facing
