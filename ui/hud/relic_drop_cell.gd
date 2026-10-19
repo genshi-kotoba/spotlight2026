@@ -16,6 +16,7 @@ var unlocked := true
 var _highlight: Panel
 var _range_highlight: Panel
 var _locked_cover: Panel
+static var _locked_piece_material: ShaderMaterial
 
 
 func _ready() -> void:
@@ -36,12 +37,8 @@ func _ready() -> void:
 	_locked_cover.name = "LockedCover"
 	_locked_cover.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_locked_cover.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var locked_style := StyleBoxFlat.new()
-	locked_style.bg_color = Color(0.19, 0.20, 0.22, 0.78)
-	locked_style.border_color = Color(0.44, 0.45, 0.47, 0.78)
-	locked_style.set_border_width_all(1)
-	locked_style.set_corner_radius_all(4)
-	_locked_cover.add_theme_stylebox_override("panel", locked_style)
+	# 灰显直接作用在拼片 alpha 轮廓上，不再用一块常驻矩形盖住拼片。
+	_locked_cover.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	var locked_label := Label.new()
 	locked_label.text = "未解锁"
 	locked_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -83,9 +80,26 @@ func set_unlocked(value: bool) -> void:
 	unlocked = value
 	if _locked_cover != null:
 		_locked_cover.visible = not unlocked
+	var piece := get_node_or_null("PieceArt") as TextureRect
+	if piece != null:
+		piece.material = null if unlocked else _locked_material()
 	if not unlocked:
 		set_highlight(false)
 		set_range_highlight(false)
+
+
+static func _locked_material() -> ShaderMaterial:
+	if _locked_piece_material == null:
+		var shader := Shader.new()
+		shader.code = """shader_type canvas_item;
+void fragment() {
+	float gray = dot(COLOR.rgb, vec3(0.299, 0.587, 0.114));
+	COLOR.rgb = vec3(gray * 0.48);
+}
+"""
+		_locked_piece_material = ShaderMaterial.new()
+		_locked_piece_material.shader = shader
+	return _locked_piece_material
 
 
 func _gui_input(event: InputEvent) -> void:

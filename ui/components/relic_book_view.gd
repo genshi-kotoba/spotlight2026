@@ -101,9 +101,9 @@ func set_board(catalog: Dictionary, board: RelicBoard) -> void:
 	queue_redraw()
 
 
-func flash_cell(index: int) -> void:
+func flash_cell(index: int) -> Tween:
 	if index < 0 or index >= RelicBookGeometry.CELL_COUNT:
-		return
+		return null
 	# 同一格连着触发两次（触发位和效果位挨着）时，新的盖掉旧的，别叠着抖。
 	var previous: Tween = _flash_tweens.get(index)
 	if previous != null and previous.is_valid():
@@ -112,6 +112,7 @@ func flash_cell(index: int) -> void:
 	_flash_tweens[index] = tween
 	tween.tween_method(_set_flash.bind(index), 1.0, 0.0, FLASH_TIME) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	return tween
 
 
 func _draw() -> void:

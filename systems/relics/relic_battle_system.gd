@@ -242,6 +242,9 @@ func _enqueue(trigger: int, effect: int, target: String, ancestry: Array, root_i
 
 
 func _execute(event: BattleEvent) -> void:
+	# 该观测位按本次实际执行重置，不能继承父残片的成功状态。
+	# UI 在致死取消 completed 时仍可展示此动作，跳过的预算项则不闪光。
+	event.metadata["relic_activation_started"] = false
 	if not _battle.active:
 		return
 	var root_id := event.root_id
@@ -320,6 +323,7 @@ func _execute(event: BattleEvent) -> void:
 					elif str(buff.buff_id) in ["weak", "vulnerable"]: buff.duration = int(buff.duration) + data.amount
 		_:
 			return
+	event.metadata["relic_activation_started"] = true
 	_curse_on_trigger(data.negative_action)
 	_counts[root_id] = int(_counts.get(root_id, 0)) + 1
 	_battle.rules.publish("relic.completed", {"trigger": job.trigger, "effect": job.effect, "description": data.description})

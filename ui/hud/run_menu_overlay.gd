@@ -379,11 +379,9 @@ func _reload_relics() -> void:
 			cell.editable = _can_edit_relics()
 			cell.set_unlocked(board.is_unlocked(index))
 			cell.set_meta("relic_tip", "" if data == null else data.rich_text(20))
-			var cue := cell.get_node_or_null("FragmentTint") as Panel
-			if cue != null:
-				cue.visible = data != null
-				if data != null:
-					cue.add_theme_stylebox_override("panel", _fragment_style(data.tint()))
+			var piece := cell.get_node_or_null("PieceArt") as TextureRect
+			if piece != null:
+				piece.modulate = data.tint().lightened(0.35) if data != null else Color.WHITE
 		if data != null:
 			filled += 1
 		label.add_theme_color_override("font_color",
@@ -593,12 +591,6 @@ func _build_relic_zone(page: Control) -> void:
 		var piece := _texture_rect(RelicPieceArt.slot_texture(index), Vector2.ZERO, RELIC_CELL_SIZE)
 		piece.name = "PieceArt"
 		cell.add_child(piece)
-		var cue := Panel.new()
-		cue.name = "FragmentTint"
-		cue.size = RELIC_CELL_SIZE
-		cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		cue.visible = false
-		cell.add_child(cue)
 		var label := Label.new()
 		label.text = "—"
 		label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -862,15 +854,6 @@ func _slot(size: Vector2, color: Color, edge: Color) -> Panel:
 	return panel
 
 
-func _fragment_style(tint: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(tint, 0.18)
-	style.border_color = Color(tint, 0.9)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(4)
-	return style
-
-
 func _on_shade_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		close()
@@ -1063,7 +1046,6 @@ func _highlight_relic_cell(index: int) -> void:
 func _set_relic_slot_preview(cell: RelicDropCell, previewing: bool) -> void:
 	# 预览直接覆盖目标拼片，暂藏旧内容；离开后恢复，不改物品或棋盘。
 	cell.get_node("PieceArt").visible = not previewing
-	cell.get_node("FragmentTint").visible = not previewing and not cell.fragment_id.is_empty()
 	_relic_cells[cell.index].visible = not previewing
 
 
@@ -1216,12 +1198,8 @@ func _relic_slot_item(fragment: RelicFragmentData, index: int) -> Control:
 	slot.add_child(_texture_rect(_slot_frame(index % 2 == 0), Vector2.ZERO, ITEM_SLOT_SIZE))
 	var piece := _texture_rect(RelicPieceArt.template_texture(), Vector2.ZERO, ITEM_SLOT_SIZE)
 	piece.name = "PieceArt"
+	piece.modulate = fragment.tint().lightened(0.35)
 	slot.add_child(piece)
-	var cue := Panel.new()
-	cue.size = ITEM_SLOT_SIZE
-	cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	cue.add_theme_stylebox_override("panel", _fragment_style(fragment.tint()))
-	slot.add_child(cue)
 	var name_label := _label(fragment.display_name, 17, fragment.tint())
 	name_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1251,7 +1229,7 @@ func _item_slot(run: RunStateMachine, item_index: int, slot_index: int) -> Contr
 	if kind == "potion": display = "药水 · " + str(RunRandomEvents.POTIONS[int(item.get("potion", 0))])
 	var record: Dictionary = _item_record(item_id, display)
 	var icon_script := load(ITEM_ICON_SCRIPT)
-	var icon: Control = icon_script.make(str(record.get("icon_path", "")), 46.0)
+	var icon: Control = icon_script.make_item(item, 46.0, str(record.get("icon_path", "")))
 	icon.position = Vector2(16, 16)
 	slot.add_child(icon)
 	# 图标占格子，名字与效果走和战斗 HUD 同一个悬停浮层。

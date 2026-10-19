@@ -148,6 +148,17 @@ var _discard_selection_ids: Array[String] = []
 var _pending_discard_count := 0
 var _pending_discard_card_id := ""
 var _resolution_events: Array[Dictionary] = []
+## 只记录真实规则已发出的事实；不以伤害预览或未来战斗状态推进画面。
+var _presentation_kind := ""
+var _presentation_turn := 0
+var _presented_hand: Array[Dictionary] = []
+var _presented_draw_count := 0
+var _presented_discard_count := 0
+var _presented_relic_count := 0
+var _relic_flash_tweens: Dictionary = {}
+var _pending_pile_presentation: Dictionary = {}
+var _pending_battle_presentation: Dictionary = {}
+var _queued_card_end: Dictionary = {}
 var _display_pointer_id := ""
 var _settle_pointer: TextureRect
 var _pointer_tween: Tween
@@ -244,9 +255,9 @@ func _ready() -> void:
 	_build_feedback()
 	_start_test_battle()
 	if _battle != null:
-		_battle.battle_choice_requested.connect(_show_battle_choice)
+		_battle.battle_choice_requested.connect(_on_battle_choice_requested)
 		var pending_choice: Dictionary = _battle.player.get("battle_choice", {})
-		if not pending_choice.is_empty(): _show_battle_choice(str(pending_choice.mode), int(pending_choice.count), pending_choice.candidates)
+		if not pending_choice.is_empty(): _on_battle_choice_requested(str(pending_choice.mode), int(pending_choice.count), pending_choice.candidates)
 	_build_battle_actions()
 	$Background.texture = BATTLE_ENVIRONMENT.texture_for_floor(_battle_environment_floor())
 	_refresh_coin()
@@ -265,6 +276,21 @@ func _build_feedback() -> void:
 		PLAYER_FLOAT_ANCHOR, ENEMY_FLOAT_ANCHOR)
 
 
+func _exit_tree() -> void:
+	# 全部临时状态只属于此场景；退出不碰真实战斗队列与保存状态。
+	for animation: Tween in _relic_flash_tweens.values():
+		if animation != null and animation.is_valid(): animation.kill()
+	_relic_flash_tweens.clear()
+	_resolution_events.clear()
+	_resolved_discards.clear()
+	_pending_pile_presentation.clear()
+	_pending_battle_presentation.clear()
+	_queued_card_end.clear()
+	_busy = false
+	_animating = false
+	_presentation_kind = ""
+
+
 func _refresh_coin() -> void:
 	var run := SaveGateway.current_run()
 	var silver := test_silver
@@ -273,7 +299,9 @@ func _refresh_coin() -> void:
 		RunRewards.ensure_state(run)
 		silver = run.gold
 		elixir = int(run.inventory_state.elixir)
-	if is_instance_valid(_battle): silver = int(_battle.player.get("silver", silver))
+	if is_instance_valid(_battle):
+		var shown: Dictionary = _presented_player if _busy and not _presented_player.is_empty() else _battle.player
+		silver = int(shown.get("silver", silver))
 	$Coin/Count.text = str(silver)
 	$Elixir/Count.text = str(elixir)
 
@@ -286,6 +314,7 @@ func _start_test_battle() -> void:
 	_battle.name = "BattleStateMachine"
 	add_child(_battle)
 	_battle.turn_started.connect(_on_turn_started)
+	_battle.card_effect_requested.connect(_on_card_effect_requested)
 	_battle.card_resolved.connect(_on_card_resolved)
 	_connect_combat_feedback()
 	_battle.discard_choice_requested.connect(_on_discard_choice_requested)
@@ -404,6 +433,7 @@ func _build_test_controls() -> void:
 
 
 func _connect_combat_feedback() -> void:
+	_battle.rules.queue.event_processed.connect(_on_rule_event_processed)
 	_battle.combatant_damaged.connect(_on_combatant_damaged)
 	_battle.combatant_healed.connect(_on_combatant_healed)
 	_battle.block_changed.connect(_on_block_changed)
@@ -480,7 +510,7 @@ func _refresh_backpack() -> void:
 			continue
 		var record := _item_record(text, text)
 		var icon_script := load(ITEM_ICON_SCRIPT)
-		var icon: Control = icon_script.make(str(record.get("icon_path", "")), 26.0)
+		var icon: Control = icon_script.make_item(item, 26.0, str(record.get("icon_path", "")))
 		icon.name = "ItemIcon"
 		icon.position = Vector2(6, 6)
 		(slots[index] as Control).add_child(icon)
@@ -535,37 +565,117 @@ func _atlas_texture(path: String, region: Rect2) -> AtlasTexture:
 func _refresh_relic_hud() -> void:
 	if _relic_book != null:
 		_relic_book.set_board(_relic_catalog, _relic_board)
-	_relic_title.text = "典籍 · 生效 %d 次" % (_relics.activation_count if _relics != null else 0)
+	var count: int = _presented_relic_count if _busy else (_relics.activation_count if _relics != null else 0)
+	_relic_title.text = "典籍 · 生效 %d 次" % count
 
 
-func _on_relic_triggered(cell: int, _chained: bool) -> void:
-	if _relic_book != null:
-		_relic_book.flash_cell(cell)
+## 同一段同步规则结算对应一条表现队列。这里从不暂停或改写业务队列，
+## 因而交互暂停、致死取消、存档与随机流仍由原规则拥有。
+func _begin_presentation() -> void:
+	if _busy:
+		return
+	_refresh_combat_status()
+	_busy = true
+	_presentation_turn = _battle.turn_number
+	_presented_hand.assign(_battle.hand.duplicate(true))
+	_presented_draw_count = _battle.draw_pile.size()
+	_presented_discard_count = _battle.discard_pile.size()
+	_presented_relic_count = _relics.activation_count if _relics != null else 0
+	_display_cards.assign(_battle.play_zone.duplicate(true))
+	_display_cards.append_array(_selected_cards.duplicate(true))
+
+
+## terminal 本身不算待播放项：此谓词表示终局之前仍需完成的展示或输入。
+func _presentation_pending() -> bool:
+	return _busy or _animating or not _resolution_events.is_empty() \
+		or not _relic_flash_tweens.is_empty() or not _resolved_discards.is_empty() \
+		or not _card_transfers.is_empty() or not _queued_card_end.is_empty()
+
+
+func _queue_presentation(kind: String, fields: Dictionary = {}) -> void:
+	var begin := not _busy
+	if begin:
+		_begin_presentation()
+	var enemy_snapshot: Dictionary = {}
+	if not _battle.enemies.is_empty():
+		var index := maxi(0, _battle._find_enemy_index(_chosen_enemy_id()))
+		enemy_snapshot = _battle.enemies[index].duplicate(true)
+	var current: BattleEvent = _battle.rules.queue.current
+	var from_relic: bool = current != null and (not current.metadata.get("relic_ancestry", []).is_empty() \
+		or bool(current.metadata.get("relic_effect", false)))
+	var event := {
+		"kind": kind,
+		"from_relic": from_relic,
+		"turn": _battle.turn_number,
+		"player": _battle.player.duplicate(true),
+		"enemy": enemy_snapshot,
+		"hand": _battle.hand.duplicate(true),
+		"draw_count": _battle.draw_pile.size(),
+		"discard_count": _battle.discard_pile.size(),
+		"activation_count": _relics.activation_count if _relics != null else 0,
+		"play_zone": _battle.play_zone.duplicate(true),
+	}
+	event.merge(fields, true)
+	_resolution_events.append(event)
+	if begin:
+		# 先收齐当前同步调用产生的事实，再开始异步回放。
+		call_deferred("_drain_resolution_events")
+
+
+func _apply_presentation_snapshot(event: Dictionary) -> void:
+	_presentation_turn = int(event["turn"])
+	_presented_hand.assign(event["hand"])
+	_presented_draw_count = int(event["draw_count"])
+	_presented_discard_count = int(event["discard_count"])
+	_presented_relic_count = int(event["activation_count"])
+	if not event["enemy"].is_empty():
+		_render_combat_snapshot(event["player"], event["enemy"])
+
+
+func _on_relic_triggered(cell: int, chained: bool) -> void:
+	_queue_presentation("relic_trigger", {"cell": cell, "chained": chained})
 
 
 func _on_relic_activated(trigger: int, effect: int, description: String) -> void:
-	_relic_events.append("[%d→%d] %s" % [trigger + 1, effect + 1, description])
-	if _relic_events.size() > 4:
-		_relic_events.pop_front()
-	_relic_log.text = "\n".join(_relic_events)
-	if _relic_book != null:
-		_relic_book.flash_cell(trigger)
-		_relic_book.flash_cell(effect)
-	_refresh_relic_hud()
+	_queue_presentation("relic_completed", {"trigger": trigger, "effect": effect, "description": description})
+
+
+func _on_rule_event_processed(event: BattleEvent) -> void:
+	# activate 在动作之前，completed 在动作之后；致死会取消 completed，
+	# 仍必须让确实执行过的残片亮起并收尾。
+	if event.type == &"relic.activate" and bool(event.metadata.get("relic_activation_started", false)):
+		_queue_presentation("relic_effect", {
+			"trigger": int(event.payload.trigger), "effect": int(event.payload.effect),
+		})
+	elif event.type == &"flow.enemy.begin":
+		_flush_card_end()
+		_queue_presentation("enemy_turn")
+	elif event.type == &"effect.execute":
+		_queue_presentation("card_effect")
 
 
 func _on_relic_chain_limited() -> void:
-	_relic_log.text += "\n本条连锁已达到安全上限。"
+	_queue_presentation("relic_limited")
 
 
 func _on_battle_ended(result: Dictionary) -> void:
 	_battle_result = String(result.status)
-	if is_instance_valid(_monster_text):
-		_monster_text.stop()
+	_flush_card_end()
+	# 这里只记真实结果；标题、怪物文本停止与奖励须等前序展示全部完成。
+	if not _busy:
+		_begin_presentation()
+		call_deferred("_drain_resolution_events")
 	_queue_refresh()
 
 
+func _present_battle_ended() -> void:
+	if is_instance_valid(_monster_text):
+		_monster_text.stop()
+	hint_label.text = "战斗结束，可以返回典籍页面调整残片。"
+
+
 func _on_turn_started(turn_number: int) -> void:
+	_queue_presentation("turn_started")
 	# 首回合在 start_battle 返回后按 initial_draw_count 抽牌；后续回合在
 	# PLAYER_ACTION 信号期间同步调用，符合 BattleStateMachine 的接口约束。
 	if turn_number > 1 and per_turn_draw_count > 0:
@@ -575,32 +685,38 @@ func _on_turn_started(turn_number: int) -> void:
 			push_error("BattleTestScene: turn draw failed: %d" % error)
 
 
+func _on_card_effect_requested(card: Dictionary, _target: Variant, pointer: int) -> void:
+	_flush_card_end()
+	_queue_presentation("card_start", {"instance_id": str(card.instance_id), "pointer": pointer})
+
+
 func _on_card_resolved(card: Dictionary, pointer: int) -> void:
-	var enemy_snapshot: Dictionary = {}
-	if not _battle.enemies.is_empty():
-		var index := maxi(0, _battle._find_enemy_index(_chosen_enemy_id()))
-		enemy_snapshot = _battle.enemies[index].duplicate(true)
-	_resolution_events.append({
-		"instance_id": String(card.get("instance_id", "")),
-		"pointer": pointer,
-		"player": _battle.player.duplicate(true),
-		"enemy": enemy_snapshot,
-		"play_zone": _battle.play_zone.duplicate(true),
-	})
+	_flush_card_end()
+	# card.resolved / pointer.moved 仍可派生残片。到下一续接点才展示完成，
+	# 让这些反应也属于当前卡牌的可见收尾。
+	_queued_card_end = {"instance_id": str(card.instance_id), "pointer": pointer}
+
+
+func _flush_card_end() -> void:
+	if _queued_card_end.is_empty():
+		return
+	var completed := _queued_card_end
+	_queued_card_end = {}
+	_queue_presentation("card_end", completed)
 
 
 func _on_combatant_damaged(side: StringName, _entity_id: String, damage: int,
 		blocked: int, _health_after: int) -> void:
-	_feedback.on_damaged(side, damage, blocked)
+	_queue_presentation("damage", {"side": side, "damage": damage, "blocked": blocked})
 
 
 func _on_combatant_healed(side: StringName, _entity_id: String, amount: int,
 		_health_after: int) -> void:
-	_feedback.on_healed(side, amount)
+	_queue_presentation("heal", {"side": side, "amount": amount})
 
 
 func _on_block_changed(side: StringName, _entity_id: String, block: int) -> void:
-	_feedback.on_block_changed(side, block)
+	_queue_presentation("block", {"side": side, "block": block})
 
 
 func _on_discard_choice_requested(card: Dictionary, count: int,
@@ -612,6 +728,8 @@ func _on_discard_choice_requested(card: Dictionary, count: int,
 
 
 func _on_hand_card_pressed(instance_id: String) -> void:
+	if _animating:
+		return
 	if not _battle.active:
 		hint_label.text = "战斗已结束，请点击重开战斗；测试敌人生命可在检查器调整。"
 		return
@@ -654,6 +772,8 @@ func _select_card_to_discard(instance_id: String) -> void:
 
 
 func _submit_discard_selection() -> void:
+	if _animating:
+		return
 	var chosen: Array[String] = _discard_selection_ids.duplicate()
 	var previous_count := _pending_discard_count
 	var previous_card := _pending_discard_card_id
@@ -690,11 +810,7 @@ func _on_play_pressed() -> void:
 	if _busy or not _battle.active or (_selected_ids.is_empty() and _battle.play_zone.is_empty()):
 		return
 	# 必须在同步推进规则队列之前保存初始画面，避免刷新提前显示致死的最终快照。
-	_refresh_combat_status()
-	_busy = true
-	_display_cards.assign(_battle.play_zone)
-	_display_cards.append_array(_selected_cards)
-	_resolution_events.clear()
+	_begin_presentation()
 	hint_label.text = "开始结算……"
 	_refresh_header()
 
@@ -704,78 +820,157 @@ func _on_play_pressed() -> void:
 		targets[instance_id] = _chosen_enemy_id()
 	var error := _battle.commit_player_sequence(sequence, targets)
 	if error != OK:
-		_busy = false
+		# 规则预算错误也可能已有部分真实事实；先收尾展示，避免遗留锁。
+		if not _resolution_events.is_empty():
+			_drain_resolution_events()
+		else:
+			_busy = false
 		hint_label.text = "提交出牌序列失败：%d" % error
 		_refresh_header()
 		return
 	_drain_resolution_events()
 
 
-func _drain_resolution_events() -> void:
-	if _animating:
+## 同一张牌内相邻残片事实批量亮起，日志与反馈仍按真实顺序消费。
+## 每格仅等待最后一条 Tween，重复触发不会累加成数十秒的固定等待。
+func _flash_relic_cell(cell: int) -> void:
+	if not is_instance_valid(_relic_book):
 		return
+	var animation: Tween = _relic_book.flash_cell(cell)
+	if animation != null:
+		_relic_flash_tweens[cell] = animation
+
+
+func _wait_relic_presentation() -> void:
+	if _relic_flash_tweens.is_empty():
+		return
+	_presentation_kind = "relic_wait"
+	# kill() 不保证发 finished；退出场景也不能遗留业务锁或等待旧 Tween。
+	while is_inside_tree():
+		var running := false
+		for animation: Tween in _relic_flash_tweens.values():
+			if animation != null and animation.is_valid() and animation.is_running():
+				running = true
+				break
+		if not running:
+			break
+		await get_tree().process_frame
+	_relic_flash_tweens.clear()
+
+
+func _drain_resolution_events() -> void:
+	if _animating or not _busy or not is_inside_tree():
+		return
+	# 队列预算错误等短路也要把已完成牌的表现收尾，不等待不存在的续接。
+	if not _battle.rules.queue.paused:
+		_flush_card_end()
 	_animating = true
 	while not _resolution_events.is_empty():
 		var event: Dictionary = _resolution_events.pop_front()
-		var instance_id := String(event["instance_id"])
-		_display_cards.assign(event.get("play_zone", _selected_cards))
+		var kind := str(event["kind"])
+		var ordinary_effect := kind in ["card_effect", "damage", "heal", "block", "card_discarded"] \
+			and not bool(event.get("from_relic", false))
+		if ordinary_effect or kind in ["card_start", "card_end", "enemy_turn", "turn_started"]:
+			await _wait_relic_presentation()
+			if not is_inside_tree(): return
+		_presentation_kind = kind
+		_apply_presentation_snapshot(event)
+		match kind:
+			"card_start":
+				var instance_id := str(event["instance_id"])
+				_display_cards.assign(event["play_zone"])
+				_queue_refresh()
+				await get_tree().process_frame
+				if not is_inside_tree(): return
+				await _move_pointer_to(instance_id)
+				if not is_inside_tree(): return
+				phase_label.text = "玩家回合 · 指针位置 %d" % (int(event["pointer"]) + 1)
+				hint_label.text = "正在结算：%s" % _card_display_name(instance_id)
+			"card_end":
+				hint_label.text = "已结算：%s" % _card_display_name(str(event["instance_id"]))
+				await get_tree().create_timer(resolution_delay).timeout
+				if not is_inside_tree(): return
+			"relic_trigger":
+				_flash_relic_cell(int(event["cell"]))
+			"relic_effect":
+				_flash_relic_cell(int(event["effect"]))
+			"relic_completed":
+				_relic_events.append("[%d→%d] %s" % [int(event["trigger"]) + 1, int(event["effect"]) + 1, str(event["description"])])
+				if _relic_events.size() > 4: _relic_events.pop_front()
+				_relic_log.text = "\n".join(_relic_events)
+				_refresh_relic_hud()
+			"relic_limited":
+				_relic_log.text += "\n本条连锁已达到安全上限。"
+			"damage":
+				_feedback.on_damaged(event["side"], int(event["damage"]), int(event["blocked"]))
+			"heal":
+				_feedback.on_healed(event["side"], int(event["amount"]))
+			"block":
+				_feedback.on_block_changed(event["side"], int(event["block"]))
+			"card_discarded":
+				var card: Dictionary = event["card"]
+				if not _card_transfers.has(str(card.instance_id)):
+					_begin_card_transfer(card, "discard")
+			"enemy_turn":
+				_set_pointer("")
+				phase_label.text = "怪物回合"
+				hint_label.text = "怪物行动；格挡在敌方回合末清零"
+				await get_tree().create_timer(enemy_turn_delay).timeout
+				if not is_inside_tree(): return
+			"turn_started":
+				phase_label.text = "玩家回合 · 回合开始"
 		_queue_refresh()
-		await get_tree().process_frame
-		await _move_pointer_to(instance_id)
-		phase_label.text = "玩家回合 · 指针位置 %d" % (int(event["pointer"]) + 1)
-		hint_label.text = "UI-017 正在结算：%s" % _card_display_name(instance_id)
-		_render_combat_snapshot(event["player"], event["enemy"])
-		await get_tree().create_timer(resolution_delay).timeout
 
+	await _wait_relic_presentation()
+	if not is_inside_tree(): return
 	if _battle.has_pending_discard_choice():
 		_set_pointer(_pending_discard_card_id)
 		phase_label.text = "玩家回合 · 等待弃牌"
 		hint_label.text = "请点击手牌弃置 %d 张（已选 %d 张）" % [
 			_pending_discard_count, _discard_selection_ids.size(),
 		]
+		_presentation_kind = "choice"
 		_animating = false
 		_queue_refresh()
 		return
 	if _battle.pending_pile_count() > 0:
+		_presentation_kind = "choice"
 		_animating = false
+		if not _pending_pile_presentation.is_empty():
+			var pending := _pending_pile_presentation
+			_pending_pile_presentation = {}
+			_show_pile_choice(int(pending["count"]), pending["candidates"])
 		_queue_refresh()
 		return
 	if not _battle.player.get("battle_choice", {}).is_empty():
+		_presentation_kind = "choice"
 		_animating = false
+		if not _pending_battle_presentation.is_empty():
+			var pending := _pending_battle_presentation
+			_pending_battle_presentation = {}
+			_show_battle_choice(str(pending["mode"]), int(pending["count"]), pending["candidates"])
 		_queue_refresh()
 		return
 	if not _resolved_discards.is_empty():
-		var departures: Array[String] = []
 		for card: Dictionary in _resolved_discards.values():
 			_begin_card_transfer(card, "discard", true)
-			departures.append(str(card.instance_id))
 		_resolved_discards.clear()
-		while departures.any(func(id: String): return _card_transfers.has(id)):
-			await get_tree().process_frame
-		_display_cards.assign(_battle.play_zone)
-		_queue_refresh()
-	if not _battle.active:
-		_selected_ids.clear()
-		_selected_cards.clear()
-		_busy = false
-		_animating = false
-		_set_pointer("")
-		hint_label.text = "战斗结束，可以返回典籍页面调整残片。"
-		_queue_refresh()
-		return
-
-	_set_pointer("")
-	phase_label.text = "怪物回合"
-	hint_label.text = "%s 行动；格挡在敌方回合末清零" % str(_battle.enemies[0].get("name", "CHR-025"))
-	_render_combat_snapshot(_battle.player, _battle.enemies[0])
-	await get_tree().create_timer(enemy_turn_delay).timeout
-
+	# 包含玩家快速点牌后仍在飞行的入场与弃牌，不能在收尾前开放奖励。
+	_presentation_kind = "transfers"
+	while not _card_transfers.is_empty():
+		await get_tree().process_frame
+		if not is_inside_tree(): return
 	_selected_ids.clear()
 	_selected_cards.clear()
 	_display_cards.clear()
 	_busy = false
 	_animating = false
-	hint_label.text = "玩家回合开始：请选择手牌编排到右侧"
+	_presentation_kind = ""
+	_set_pointer("")
+	if not _battle.active:
+		_present_battle_ended()
+	else:
+		hint_label.text = "玩家回合开始：请选择手牌编排到右侧"
 	_queue_refresh()
 
 
@@ -1092,6 +1287,8 @@ func _on_card_discarded_visual(card: Dictionary, reason: StringName) -> void:
 	if reason == &"resolved" and _busy:
 		# 同步规则已入弃，仍须等指针播放完整个出牌序列后再飞走。
 		_resolved_discards[str(card.instance_id)] = card.duplicate(true)
+	elif _busy:
+		_queue_presentation("card_discarded", {"card": card.duplicate(true)})
 	else:
 		if not _card_transfers.has(str(card.instance_id)):
 			_begin_card_transfer(card, "discard")
@@ -1148,7 +1345,9 @@ func _begin_card_transfer(card: Dictionary, destination: String, from_play := fa
 
 func _launch_card_transfer(instance_id: String, ghost: Control, source_transform: Transform2D) -> void:
 	await get_tree().process_frame
+	if not is_inside_tree(): return
 	await get_tree().process_frame
+	if not is_inside_tree(): return
 	if not _card_transfers.has(instance_id) or _card_transfers[instance_id].ghost != ghost:
 		return
 	var discard := str(_card_transfers[instance_id].destination) == "discard"
@@ -1211,7 +1410,8 @@ func _refresh_zones() -> void:
 
 	var hand_slots: Array[Control] = []
 	_fan_target = null
-	for card: Dictionary in _battle.hand:
+	var displayed_hand: Array[Dictionary] = _presented_hand if _busy else _battle.hand
+	for card: Dictionary in displayed_hand:
 		var instance_id := String(card["instance_id"])
 		if not _selected_ids.has(instance_id) and not _discard_selection_ids.has(instance_id):
 			var slot := _make_card_slot(card, HAND_CARD_SCALE, true)
@@ -1302,13 +1502,13 @@ func _animate_new_play_row(count: int) -> void:
 func _refresh_header() -> void:
 	if _battle == null:
 		return
-	var next_turn := "回合 %d" % _battle.turn_number
+	var next_turn := "回合 %d" % (_presentation_turn if _busy else _battle.turn_number)
 	turn_label.text = next_turn
 	if next_turn != _turn_pop_text:
 		_turn_pop_text = next_turn
 		_pop_turn_label()
 	_refresh_coin()
-	if not _battle.active:
+	if not _battle.active and not _presentation_pending():
 		phase_label.text = "战斗胜利" if _battle.phase == BattleStateMachine.Phase.VICTORY else "战斗结束"
 		if not _busy:
 			hint_label.text = "战斗%s，点击左侧重开战斗。效果抽牌仍可触发典籍。" % ("胜利" if _battle_result == "victory" else "结束")
@@ -1317,8 +1517,8 @@ func _refresh_header() -> void:
 	count_label.text = "首抽 %d  |  每回合抽 %d  |  出牌上限 %d" % [
 		initial_draw_count, per_turn_draw_count, _battle.effective_play_limit(),
 	]
-	draw_pile_count.text = str(_battle.draw_pile.size())
-	discard_pile_count.text = str(_battle.discard_pile.size())
+	draw_pile_count.text = str(_presented_draw_count if _busy else _battle.draw_pile.size())
+	discard_pile_count.text = str(_presented_discard_count if _busy else _battle.discard_pile.size())
 	draw_button.disabled = _busy
 	discard_button.disabled = _busy
 	cancel_button.disabled = _busy or _selected_ids.is_empty()
@@ -1548,7 +1748,7 @@ func _buff_icon(buff_id: String) -> Texture2D:
 
 
 func _can_click_hand() -> bool:
-	return _battle != null and _battle.active and (_pending_discard_count > 0 \
+	return _battle != null and _battle.active and not _animating and (_pending_discard_count > 0 \
 		or (not _busy and _battle.phase == BattleStateMachine.Phase.PLAYER_ACTION))
 
 
@@ -2240,7 +2440,10 @@ func _used_slots() -> int:
 
 func _on_pile_choice_requested(count: int, candidates: Array[Dictionary]) -> void:
 	_pile_selection_ids.clear()
-	call_deferred("_show_pile_choice", count, candidates)
+	if _busy:
+		_pending_pile_presentation = {"count": count, "candidates": candidates.duplicate(true)}
+	else:
+		call_deferred("_show_pile_choice", count, candidates)
 
 
 func _show_pile_choice(count: int, candidates: Array[Dictionary]) -> void:
@@ -2270,6 +2473,8 @@ func _choose_pile_card(id: String, button: Button) -> void:
 
 
 func _submit_pile_selection() -> void:
+	if _animating:
+		return
 	var chosen: Array[String] = _pile_selection_ids.duplicate()
 	_pile_selection_ids.clear()
 	pile_modal.visible = false
@@ -2449,6 +2654,13 @@ func _use_potion(item_id: String) -> void:
 	SaveGateway.save_current()
 
 
+func _on_battle_choice_requested(mode: String, count: int, candidates: Array) -> void:
+	if _busy:
+		_pending_battle_presentation = {"mode": mode, "count": count, "candidates": candidates.duplicate(true)}
+	else:
+		_show_battle_choice(mode, count, candidates)
+
+
 func _show_battle_choice(mode: String, _count: int, candidates: Array) -> void:
 	if is_instance_valid(_battle_choice_layer): _battle_choice_layer.queue_free()
 	_battle_choice_layer = CanvasLayer.new()
@@ -2492,6 +2704,8 @@ func _show_battle_choice(mode: String, _count: int, candidates: Array) -> void:
 
 
 func _submit_battle_choice(id: String) -> void:
+	if _animating:
+		return
 	var old := _battle_choice_layer
 	_battle_choice_layer = null
 	var ids: Array[String] = [id]
