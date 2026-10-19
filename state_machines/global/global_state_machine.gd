@@ -107,11 +107,25 @@ func continue_saved_run() -> Error:
 
 ## 主动保存检查点；UI 的“保存并返回”与平台退出都调用同一入口。
 func save_game() -> Error:
+	var prepared := build_save_payload()
+	if prepared.error != OK:
+		return _fail(prepared.error, "Could not capture random state")
+	var json := JSON.stringify(prepared.payload, "\t")
+	var error := _write_atomic(json)
+	if error != OK:
+		return _fail(error, "Could not write save file")
+	last_error = OK
+	return OK
+
+
+## 只构建完整的 JSON 载荷，不写文件、不安装状态、不发保存信号。
+## 网关可补入地图检查点后一次原子写入；错误由调用者沿原保存入口报告。
+func build_save_payload() -> Dictionary:
 	var active_payload: Variant = null
 	if run_active and current_run != null:
 		var seed_snapshot := SeedService.capture_snapshot()
 		if seed_snapshot.is_empty():
-			return _fail(SeedService.last_error, "Could not capture random state")
+			return {"error": SeedService.last_error, "payload": {}}
 		active_payload = {
 			"run_snapshot": current_run.to_dictionary(),
 			"seed_snapshot": seed_snapshot,
@@ -129,12 +143,7 @@ func save_game() -> Error:
 		"run_history": run_history.duplicate(true),
 		"active_run": active_payload,
 	}
-	var json := JSON.stringify(payload, "\t")
-	var error := _write_atomic(json)
-	if error != OK:
-		return _fail(error, "Could not write save file")
-	last_error = OK
-	return OK
+	return {"error": OK, "payload": payload}
 
 
 func load_save() -> Error:

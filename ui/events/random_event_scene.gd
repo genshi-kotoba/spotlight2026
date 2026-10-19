@@ -99,7 +99,9 @@ func _refresh() -> void:
 				_button("继续抽取", _gamble_again)
 				_button("结束事件并返回地图", _finish)
 			else:
-				_status.text += "\n\n事件结果已保存，正在返回地图……"
+				_status.text += "\n\n事件结果已保存，稍后自动返回地图，也可立即返回。"
+				var return_button := _button("返回地图", _finish)
+				return_button.name = "EventReturnNow"
 				_auto_finish(_generation)
 		"done": call_deferred("_leave")
 
@@ -189,6 +191,10 @@ func _auto_finish(generation: int) -> void:
 	if is_inside_tree() and generation == _generation: _finish()
 
 func _finish() -> void:
+	# A click and the reading timer may arrive in the same frame. Acknowledge
+	# only a result, and invalidate the timer before committing it once.
+	if _leaving or RunRandomEvents.state(run, request).get("stage") != "result": return
+	_generation += 1
 	_result(RunRandomEvents.acknowledge(run, request))
 
 func _leave() -> void:

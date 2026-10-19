@@ -7,6 +7,10 @@ const Domains = preload("res://systems/random/random_domains.gd")
 const SpaceRefiner = preload("res://systems/map/flat_2d/hex_space_refiner.gd")
 const AlchemyEvents = preload("res://systems/map/flat_2d/alchemy_event_catalog.gd")
 const NodeGeometry = preload("res://systems/map/flat_2d/node_geometry.gd")
+const _LEXICOGRAPHIC_DIRS: Array[Vector2i] = [
+	Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, -1),
+	Vector2i(0, 1), Vector2i(1, -1), Vector2i(1, 0),
+]
 const DEFAULT_CONFIG := {
 	"size": "small", "normal": 3, "elite": 1, "events": 8,
 	"min_boss_content_nodes": 4, "transition_count": 6,
@@ -1573,10 +1577,11 @@ func _relocate(data: Dictionary, node_id: String, delta: Vector2i, context: Dict
 		var parents: Dictionary = {centers[a]: centers[a]}
 		var index := 0
 		while index < queue.size() and not parents.has(centers[b]):
-			var neighbors: Dictionary = {}
-			for n in Hex.neighbors(queue[index]):
-				neighbors[n] = true
-			for n in _sorted(neighbors):
+			# Translation preserves axial lexicographic order. This is the exact
+			# order of _sorted(Hex.neighbors(queue[index])) without a temporary
+			# Dictionary, keys Array, and comparator sort at every BFS step.
+			for direction: Vector2i in _LEXICOGRAPHIC_DIRS:
+				var n: Vector2i = queue[index] + direction
 				if not parents.has(n) and _joint_safe(n, trial, mask, endpoints, empty_incident, moving.unlock_gates):
 					parents[n] = queue[index]
 					queue.append(n)

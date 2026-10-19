@@ -111,7 +111,7 @@ func _ready() -> void:
 	_bus.node_result_submitted.connect(submit_node_result)
 	get_viewport().size_changed.connect(_update_camera)
 	var data := _initial_snapshot()
-	if data.is_empty() or not load_map(data):
+	if data.is_empty() or not load_map(data, _initial_state()):
 		_toast = "地图加载失败：" + session.last_error
 		push_error(_toast)
 	set_process(true)
@@ -226,6 +226,9 @@ func _refresh_run_panel() -> void:
 func _initial_snapshot() -> Dictionary:
 	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
 	return data if data is Dictionary else {}
+
+func _initial_state() -> Dictionary:
+	return {}
 
 func _register_input() -> void:
 	var actions := {"map2d_left": [KEY_A, KEY_LEFT], "map2d_right": [KEY_D, KEY_RIGHT], "map2d_up": [KEY_W, KEY_UP], "map2d_down": [KEY_S, KEY_DOWN], "map2d_interact": [KEY_E], "map2d_pause": [KEY_ESCAPE], "map2d_cycle": [KEY_Q]}

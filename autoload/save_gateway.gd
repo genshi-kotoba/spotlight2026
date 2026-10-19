@@ -228,24 +228,19 @@ func save_current() -> Error:
 	var error := _ensure_parent(path)
 	if error != OK:
 		return _fail(error, "无法创建存档目录。")
-	# main 的状态机负责序列化原有字段；先写独立中间件，最后一次原子安装完整文件。
-	var staging := path + ".menu-staging"
-	var previous_path := _state.save_path
-	_state.save_path = staging
-	error = _state.save_game()
-	_state.save_path = previous_path
-	if error != OK:
-		return error
-	var prepared := _read_json(staging)
+	# 状态机只构建原有完整载荷，补入地图后直接走既有最终原子安装。
+	# 不再把同一份状态先写盘、读回解析再写一次，也不更改状态机的保存路径。
+	var prepared := _state.build_save_payload()
 	if prepared.error != OK:
-		return _fail(prepared.error, "存档中间件读取失败。")
-	var data: Dictionary = prepared.data
+		return _state._fail(prepared.error, "Could not capture random state")
+	# 对齐旧中间保存成功后的状态；最终安装失败仍由网关报告。
+	_state.last_error = OK
+	var data: Dictionary = prepared.payload
 	# 尚未点击继续时 current_run 为 null，但磁盘仍有进行中的局；不能丢掉它的地图。
 	var saved_active: Variant = data.get("active_run")
 	if not checkpoint.is_empty() and saved_active is Dictionary and saved_active.get("run_snapshot") is Dictionary:
 		data[MAP_KEY] = {"run_id": saved_active.run_snapshot.run_id, "snapshot": checkpoint}
 	error = _write_json(path, data)
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(staging))
 	if error != OK:
 		return _fail(error, "保存失败，原存档已保留。")
 	_map_checkpoint = checkpoint

@@ -40,7 +40,6 @@ func _ready() -> void:
 	MapEvents.node_interaction_requested.connect(_on_world_node_requested)
 	super._ready()
 	if not _saved_entry_state.is_empty():
-		load_map(_map_snapshot, _saved_entry_state)
 		if not session.pending.is_empty() and demo_interactions_enabled and _uses_demo_dialog(session.pending):
 			_dialog_request_id = str(session.pending.request_id)
 			_configure_node_dialog(session.pending)
@@ -112,6 +111,9 @@ func _initial_snapshot() -> Dictionary:
 	var floor_index := run.map_ids.find(run.current_map_id) + 1
 	var entry: Dictionary = map_run.enter_floor(maxi(1, floor_index))
 	return entry.get("snapshot", {})
+
+func _initial_state() -> Dictionary:
+	return _saved_entry_state
 
 func _enable_monster_assignments() -> bool:
 	var policy = preload("res://systems/map/flat_2d/monster_encounters.gd")
