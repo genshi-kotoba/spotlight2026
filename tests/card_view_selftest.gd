@@ -41,11 +41,10 @@ const FACE_SIZE := Vector2(480, 818)
 const ANCHOR_TOLERANCE := 0.001
 const IMPORT_MAX_EDGE := 1024
 
-## 与 card_view.tscn 里的锚点一致。底部面板整块是 0.7190..0.9190，场景里由
-## Effect（上半）与 Intro（下半）对半分。
+## 新版卡面把效果区扩展到 0.700..0.975；介绍默认隐藏，只在手写预览中按需展示。
 const ART_ANCHORS := Rect2(0.1192, 0.2087, 0.7534, 0.3581)
 const TITLE_ANCHORS := Rect2(0.0959, 0.5749, 0.8001, 0.1211)
-const EFFECT_ANCHORS := Rect2(0.1223, 0.719, 0.7473, 0.1)
+const EFFECT_ANCHORS := Rect2(0.1223, 0.700, 0.7473, 0.275)
 const INTRO_ANCHORS := Rect2(0.1223, 0.819, 0.7473, 0.1)
 
 ## 脚本里一旦出现这些写法，说明几何被搬进了代码，编辑器里拖不动。
@@ -73,6 +72,7 @@ func _initialize() -> void:
 	_test_clear_and_signal()
 	_test_tool_and_exported_data()
 	_test_not_ready_safety()
+	_test_compact_layout()
 	_test_card_data_drives_face()
 	_test_editor_preview()
 	_test_card_stage()
@@ -351,6 +351,30 @@ func _test_not_ready_safety() -> void:
 		str(frame.texture.resource_path)
 	)
 	card.queue_free()
+
+
+func _test_compact_layout() -> void:
+	print("[新版紧凑卡面与main数据兼容]")
+	var data := CardData.new()
+	data.card_id = &"compact-fixture"
+	data.card_name = "紧凑测试卡"
+	data.description = "造成5点伤害。"
+	data.rarity = CardData.Rarity.RARE
+	data.face_tint = CardData.FaceTint.RED
+	for factor: float in [0.1425, 0.285, 0.5]:
+		var card: CardView = load(CARD_SCENE_PATH).instantiate()
+		card.scale = Vector2.ONE * factor
+		card.set_card(data)
+		card.apply_compact_layout(factor)
+		root.add_child(card)
+		var title: Label = card.get_node("%卡名")
+		var effect: Label = card.get_node("%效果文本")
+		_check("入树前设置紧凑布局可保留 %.4f" % factor,
+			title.text == data.card_name and title.get_theme_font_size("font_size") == CardView.LOCAL_TITLE_PX
+			and effect.get_theme_font_size("font_size") == CardView.LOCAL_BODY_PX)
+		_check("小卡文案只做展示处理，不修改main数据", not effect.text.ends_with("。") and data.description == "造成5点伤害。")
+		_check("紧凑排版保留main类型和稀有度底图", card.get_node("%卡框").texture == card.底图集.texture_for(data.rarity, data.face_tint))
+		card.queue_free()
 
 
 func _test_card_data_drives_face() -> void:

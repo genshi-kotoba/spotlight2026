@@ -18,7 +18,7 @@ var _detail_fields: VBoxContainer
 
 
 func _ready() -> void:
-	var body := CatalogUi.shell(self, "图鉴", "按编号排列 · 点击查看详情 · 解锁状态属于当前档案")
+	var body := CatalogUi.shell(self, "图鉴", "解锁状态属于当前档案")
 	var navigation := HBoxContainer.new()
 	navigation.name = "Categories"
 	navigation.add_theme_constant_override("separation", 16)
@@ -88,9 +88,10 @@ func refresh() -> void:
 	var error := TextCatalog.error_message(category)
 	_status.text = "%s · %s · %d 项" % [CATEGORY_LABELS[category], MODE_LABELS[int(display_mode)], visible_entries.size()]
 	if not error.is_empty():
-		_status.text = "数据读取失败：" + error
+		_status.text = "暂时无法读取图鉴。"
+		push_warning("图鉴读取失败：" + error)
 	elif visible_entries.is_empty():
-		_status.text += "\n暂无条目。CSV 未填写，或当前筛选没有符合的条目。"
+		_status.text += "\n暂无条目。"
 	for record: Dictionary in visible_entries:
 		var tile := VBoxContainer.new()
 		tile.name = "Entry_" + record.id

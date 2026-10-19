@@ -19,19 +19,20 @@ func _run() -> void:
 	_check("正式目录导入成功", TextCatalog.reload() == OK and TextCatalog.error_message("monsters").is_empty())
 	var entries := TextCatalog.entries("monsters")
 	_check("导入怪物表全部23条记录", entries.size() == 23)
-	var names := ["“后巷骑士”", "窃贼与骗子", "鼠王", "壹叁伍零年", "后巷公爵·无底坑之王", "腐化圣骑士", "彩衣笛手", "史莱姆", "腐化学徒", "实验耗材", "强化恶犬", "解刨者", "遗言", "躯壳", "炼金术士·贤者之石", "福音唱诗班", "三位一体", "哀悼圣母", "代为赎罪", "修女", "苦修士", "虔诚匍匐", "人造之神，方舟缔造者"]
-	var elites := [6, 7, 12, 14, 18, 19]
-	var bosses := [3, 4, 5, 15, 16, 17, 23]
+	var names := ["炼金术士·贤者之石", "躯壳", "修格斯", "腐化学徒", "实验耗材", "强化恶犬", "解刨者", "遗言", "鼠王", "壹叁伍零，拾骨之年", "后巷公爵，无底坑之王", "腐化圣骑士", "彩衣笛手", "“后巷骑士”", "窃贼与骗子", "福音唱诗班", "三位一体", "哀悼圣母", "代为赎罪", "修女", "苦修士", "虔诚匍匐", "人造之神，方舟缔造者"]
+	var elites := [2, 9, 12, 13, 18, 19]
+	var bosses := [1, 10, 11, 16, 17, 23]
 	for index in entries.size():
 		var record: Dictionary = entries[index]
 		var number := index + 1
-		var floor_number := 2 if number <= 7 else (1 if number <= 15 else (3 if number <= 22 else 4))
+		var floor_number := 1 if number <= 8 else (2 if number <= 15 else (3 if number <= 22 else 4))
 		var rank := "BOSS" if number in bosses else ("精英" if number in elites else "普通")
 		_check("%d号字段、原名、自然排序与类型出现层数" % number,
-			record.size() == 6 and record.id == str(number) and record.name == names[index]
+			record.size() == 7 and record.id == str(number) and record.name == names[index]
 			and record.art_path == "res://assets/chr/CHR-%03d.png" % (number + 2)
 			and record.type == "%s · 第%d层" % [rank, floor_number]
-			and record.effect == "暂无" and record.text == "暂无")
+			and record.effect == "暂无" and record.text != "暂无"
+			and record.battle_text_path == "res://assets/chr/CHR-%03d.txt" % (number + 2))
 		var texture := TextCatalogService.art_texture(record.art_path)
 		_check("%d号实际图片可加载" % number, texture != null and texture.get_width() > 0 and texture.get_height() > 0)
 	_check("缺省状态全部未解锁，不自动授予进度", TextCatalog.entries("monsters", TextCatalogService.DisplayMode.LOCKED).size() == 23 and TextCatalog.entries("monsters", TextCatalogService.DisplayMode.UNLOCKED).is_empty())
@@ -45,7 +46,7 @@ func _run() -> void:
 	await _click(page._grid.get_child(0).get_node("OpenDetail"))
 	_check("真实鼠标点击怪物打开详情", page._detail.visible and page.detail_entry.id == "1")
 	_check("详情左预览右完整七属性", page._detail_card.get_child_count() == 1 and page._detail_fields.get_child_count() == 7)
-	_check("详情正确显示空白占位和类型出现地", page._detail_fields.get_node("effect").text == "能力文本\n暂无" and page._detail_fields.get_node("text").text == "文本\n暂无" and page._detail_fields.get_node("type").text == "类型与出现地\n普通 · 第2层")
+	_check("详情显示表格图鉴文本而非战斗台词", page._detail_fields.get_node("effect").text == "能力文本\n暂无" and page._detail_fields.get_node("text").text == "文本\n" + entries[0].text and page._detail_fields.get_node("type").text == "类型与出现地\nBOSS · 第1层")
 	_check("未解锁条目仍可查看详情", page._detail_fields.get_node("unlock_state").text == "解锁状态\n未解锁")
 	await _click(page._detail.get_node("Panel/Content/Heading/Close"))
 	_check("真实鼠标关闭详情", not page._detail.visible)
@@ -77,7 +78,7 @@ func _run() -> void:
 	_check("切空档不继承怪物进度", gateway.set_active_slot(2) == OK and TextCatalog.entries("monsters", TextCatalogService.DisplayMode.UNLOCKED).is_empty())
 	_check("回原档恢复怪物解锁", gateway.set_active_slot(1) == OK and TextCatalog.is_unlocked("monsters", "23"))
 	_check("图片资产编号不能冒充图鉴编号", TextCatalog.unlock_entry("monsters", "CHR-025") == ERR_INVALID_PARAMETER)
-	_check("卡牌残片成就数量保持不变", TextCatalog.entries("cards").size() == 81 and TextCatalog.entries("fragments").is_empty() and TextCatalog.entries("achievements").is_empty())
+	_check("卡牌保留新版70条、残片33条且成就未变", TextCatalog.entries("cards").size() == 70 and TextCatalog.entries("fragments").size() == 33 and TextCatalog.entries("achievements").is_empty())
 	page.queue_free()
 	await _frames(3)
 	print("怪物图鉴自测：全部通过" if failures == 0 else "怪物图鉴自测：%d 项失败" % failures)

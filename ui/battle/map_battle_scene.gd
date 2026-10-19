@@ -6,11 +6,14 @@ var _opening_resolved := false
 var _opening_result: AcceptDialog
 var _reward_popup: LootPopup
 
+func _battle_environment_floor() -> int:
+	return BATTLE_ENVIRONMENT.floor_for_battle(_battle.player, _battle.map_id)
+
 func _ready() -> void:
 	var run := SaveGateway.current_run()
 	if run == null or run.current_battle == null:
 		# 此场景必须从地图进入；单独 F6 时回菜单，不留下可点击的空战斗。
-		get_tree().call_deferred("change_scene_to_file", MENU_SCENE)
+		SceneTransition.call_deferred("change_scene_to_file", MENU_SCENE)
 		return
 	super._ready()
 
@@ -32,6 +35,7 @@ func _start_test_battle() -> void:
 			_relics = child
 	_battle.turn_started.connect(_on_turn_started)
 	_battle.card_resolved.connect(_on_card_resolved)
+	_connect_combat_feedback()
 	_battle.discard_choice_requested.connect(_on_discard_choice_requested)
 	_battle.pile_choice_requested.connect(_on_pile_choice_requested)
 	_battle.battle_ended.connect(_on_battle_ended)
@@ -52,7 +56,9 @@ func _start_test_battle() -> void:
 	var enemy: Dictionary = _battle.enemies[0]
 	$EnemyPortrait.texture = TextCatalogService.art_texture(str(enemy.art_path))
 	$EnemyName.text = str(enemy.name)
-	$IntentBadge/Value.text = str(enemy.actions[0].get("damage", 0))
+	var frame_name: String = {"普通": "小怪", "精英": "精英", "BOSS": "boss"}.get(str(enemy.get("grade", "")), "boss")
+	$EnemyHPBar/Frame.texture = load("res://assets/ui/UI-015/超长-%s血条框.png" % frame_name)
+	$IntentValue.text = str(enemy.actions[0].get("damage", 0))
 	if error != OK:
 		hint_label.text = "节点战斗初始化失败：%d" % error
 		_busy = true
@@ -65,6 +71,9 @@ func _start_test_battle() -> void:
 		call_deferred("_begin_opening")
 	_queue_refresh()
 
+func is_scene_transition_ready() -> bool:
+	return not _opening and not _refresh_queued
+
 func _begin_opening() -> void:
 	await get_tree().process_frame
 	# 无窗口回归不产生绘制信号；图形模式则确保开局效果前已显示战场。
@@ -74,7 +83,7 @@ func _begin_opening() -> void:
 		return
 	var error := _battle.start_battle()
 	if error == OK and _battle.active:
-		error = _battle.draw_cards(initial_draw_count, BattleStateMachine.DrawReason.BATTLE_START)
+		error = _battle.draw_cards(_relics.natural_draw_count(initial_draw_count), BattleStateMachine.DrawReason.BATTLE_START)
 	_opening = false
 	_busy = false
 	if error != OK:
@@ -138,8 +147,8 @@ func _leave_after_resolution() -> void:
 	_return_after_rewards()
 
 func _return_after_rewards() -> void:
-	var path := EncounterFlow.MAP_SCENE if _battle_result == "victory" else MENU_SCENE
-	var error := get_tree().change_scene_to_file(path)
+	var path := EncounterFlow.MAP_SCENE if _battle_result in ["victory", "escaped"] else MENU_SCENE
+	var error := SceneTransition.change_scene_to_file(path)
 	if error != OK:
 		_leaving = false
 		hint_label.text = "返回场景失败：%d" % error

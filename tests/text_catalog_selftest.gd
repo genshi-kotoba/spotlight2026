@@ -26,7 +26,7 @@ func _run() -> void:
 	original_paths = TextCatalog.paths.duplicate()
 	_check("四份正式 CSV 都可导入", TextCatalog.reload() == OK)
 	for category: String in TextCatalogService.CATEGORIES:
-		var expected := int({"cards": 81, "monsters": 23}.get(category, 0))
+		var expected := int({"cards": 70, "monsters": 23, "items": 7, "fragments": 33}.get(category, 0))
 		_check(category + " 正式数据数量", TextCatalog.entries(category).size() == expected)
 	_parser_checks()
 	_fixture_tables()
@@ -174,7 +174,7 @@ func _fixture_tables() -> void:
 		["R-010", "", "测试触发残片", "周围四格", "触发", "残片详情"],
 		["R-002", "", "测试效果残片", "获得格挡", "效果", "残片说明"],
 	])
-	_write_table("monsters", TextCatalogService.MONSTER_HEADERS, [
+	_write_table("monsters", TextCatalogService.LEGACY_MONSTER_HEADERS, [
 		["M-010", "", "测试怪物十", "无能力", "普通 / 第一地区", "详情"],
 		["M-002", "res://assets/battle_test/CHR-025.png", "测试怪物二", "测试能力", "精英 / 第二地区", "怪物背景文本"],
 	])
@@ -204,6 +204,7 @@ func _scene(path: String) -> Control:
 func _frames() -> void:
 	for i: int in 4:
 		await get_tree().process_frame
+	await preload("res://tests/support/presentation_test_helper.gd").map_ready(get_tree())
 
 
 func _click(point: Vector2) -> void:

@@ -25,6 +25,8 @@ SaveGateway="*res://autoload/save_gateway.gd"
 TextCatalog="*res://systems/text/text_catalog.gd"
 EncounterFlow="*res://systems/map/encounter_flow.gd"
 MapPresentation="*res://autoload/map_presentation.gd"
+SceneTransition="*res://autoload/scene_transition.gd"
+ScenePreloader="*res://autoload/scene_preloader.gd"
 
 [display]
 
@@ -37,7 +39,7 @@ window/stretch/aspect="expand"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/card_preview/plugin.cfg")
+enabled=PackedStringArray("res://addons/card_preview/plugin.cfg", "res://addons/monster_battle_text/plugin.cfg")
 
 [physics]
 

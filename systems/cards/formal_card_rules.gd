@@ -98,11 +98,13 @@ func _target(raw: Variant) -> String:
 
 
 func _schedule(instruction: Dictionary, card: Dictionary, target: String) -> void:
+	if _nullified(card): return
 	battle.rules.publish("action.card_program", {"instruction": instruction, "card": card, "target": target},
 		{"source_card": str(card.instance_id), "heal_ratio": 0.0, "block_ratio": 0.0, "restore_amount": 0})
 
 
 func _execute(op: Dictionary, card: Dictionary, target: String) -> void:
+	if _nullified(card): return
 	var id := str(card.instance_id)
 	var n := _value(op.get("amount", 0), card, target)
 	match str(op.op):
@@ -322,11 +324,15 @@ func _live_card(id: String) -> Dictionary:
 	return {}
 
 
+func _nullified(card: Dictionary) -> bool:
+	return bool(card.get("nullified", false)) or bool(_live_card(str(card.instance_id)).get("nullified", false))
+
+
 func _react(trigger: String, event: BattleEvent) -> void:
 	var ancestry: Array = event.metadata.get("formal_ancestry", [])
 	for aura: Dictionary in state().get("auras", []).duplicate(true):
 		var key := str(aura.card.instance_id) + ":" + trigger
-		if aura.event != trigger or ancestry.has(key):
+		if aura.event != trigger or ancestry.has(key) or _nullified(aura.card):
 			continue
 		var next := ancestry.duplicate()
 		next.append(key)
@@ -344,7 +350,7 @@ func _damaged(event: BattleEvent) -> void:
 			if battle.phase == BattleStateMachine.Phase.ENEMY_ACTION:
 				state()["enemy_loss"] = int(state().get("enemy_loss", 0)) + loss
 			for card: Dictionary in battle.hand:
-				if str(card.card_id) == "54":
+				if str(card.card_id) == "54" and not _nullified(card):
 					battle.update_card_properties(str(card.instance_id), {"received": int(card.get("received", 0)) + loss * (2 if bool(event.metadata.get("self_source", false)) else 1)})
 	else:
 		var direct := event.parent_id == int(event.metadata.get("damage_program_id", -1))
@@ -377,7 +383,7 @@ func _damage_adjust(event: BattleEvent) -> void:
 	var movers: Array[String] = []
 	if source_index >= 0:
 		for card: Dictionary in battle.hand:
-			if str(card.card_id) != "70":
+			if str(card.card_id) != "70" or _nullified(card):
 				continue
 			var anchor := layout.find(str(card.instance_id))
 			if anchor < 0:
@@ -410,13 +416,13 @@ func _poison_adjust(event: BattleEvent) -> void:
 	if str(event.payload.buff_id) != "poison" or int(event.payload.layers) <= 0:
 		return
 	for aura: Dictionary in state().get("auras", []):
-		if str(aura.event) == "poison_add":
+		if str(aura.event) == "poison_add" and not _nullified(aura.card):
 			event.payload["layers"] = int(event.payload.layers) + int(aura.effect.amount)
 
 
 func _turn_end(_event: BattleEvent) -> void:
 	for card: Dictionary in battle.hand.duplicate(true):
-		if str(card.card_id) == "68":
+		if str(card.card_id) == "68" and not _nullified(card):
 			battle.rules.publish("action.damage", {"side": "player", "target": "player", "amount": 3,
 				"ignore_block": false, "use_stats": false}, {"source_card": str(card.instance_id), "self_source": true, "formal_damage": false})
 	_right_curse()
@@ -431,5 +437,5 @@ func _enemy_end(_event: BattleEvent) -> void:
 	if int(state().get("enemy_loss", 0)) > 0:
 		return
 	for card: Dictionary in battle.hand:
-		if str(card.card_id) == "67":
+		if str(card.card_id) == "67" and not _nullified(card):
 			battle.update_card_properties(str(card.instance_id), {"recorded_block": int(card.get("recorded_block", 0)) + int(battle.player.block)})

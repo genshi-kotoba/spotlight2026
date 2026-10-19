@@ -16,7 +16,7 @@ func _init(p_battle: BattleStateMachine, p_buffs: Dictionary) -> void:
 
 
 func _execute(event: BattleEvent) -> void:
-	if not battle.active:
+	if not battle.active or bool(event.payload.get("skip", false)):
 		return
 	var data := event.payload
 	match event.type:
@@ -42,8 +42,9 @@ func _execute(event: BattleEvent) -> void:
 			var layers := int(data.layers)
 			if event.type == "action.buff_set":
 				layers -= _layers(StringName(data.side), String(data.target), String(data.buff_id))
+			var duration := int(data.get("duration", -1))
 			battle.change_buff_layers(StringName(data.side), String(data.target),
-				String(data.buff_id), layers, definition.duration)
+				String(data.buff_id), layers, definition.duration if duration < 0 else duration)
 		"action.buff_duration":
 			var layers := _layers(StringName(data.side), String(data.target), String(data.buff_id))
 			if layers > 0:

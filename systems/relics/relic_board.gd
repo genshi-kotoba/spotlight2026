@@ -45,6 +45,11 @@ func neighbors(index: int, reach: RelicFragmentData.Reach) -> Array[int]:
 			result.append(candidate)
 		elif reach == RelicFragmentData.Reach.EIGHT and maxi(delta.x, delta.y) == 1:
 			result.append(candidate)
+		elif (reach == RelicFragmentData.Reach.ROW and delta.y == 0) \
+				or (reach == RelicFragmentData.Reach.COLUMN and delta.x == 0) \
+				or (reach == RelicFragmentData.Reach.VERTICAL and delta.x == 0 and delta.y == 1) \
+				or reach == RelicFragmentData.Reach.ALL:
+			result.append(candidate)
 	return result
 
 

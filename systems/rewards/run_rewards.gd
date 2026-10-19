@@ -50,7 +50,9 @@ static func claim(run: Node, reward_id: String) -> Error:
 	var rewards := pending(run)
 	if rewards.is_empty():
 		return ERR_DOES_NOT_EXIST
-	for entry: Dictionary in run.inventory_state.pending_rewards.entries:
+	var entries: Array = run.inventory_state.pending_rewards.entries.duplicate()
+	entries.append_array(run.inventory_state.pending_rewards.get("bonus_entries", []))
+	for entry: Dictionary in entries:
 		if entry.id != reward_id:
 			continue
 		if entry.claimed:
@@ -62,8 +64,9 @@ static func claim(run: Node, reward_id: String) -> Error:
 			_:
 				if str(entry.kind) not in PACKS:
 					return ERR_INVALID_DATA
-				run.items.append({"item_id": str(rewards.battle_key) + "/" + str(entry.id),
-					"kind": str(entry.kind), "options": [], "rerolled": false})
+				for copy in int(entry.amount):
+					run.items.append({"item_id": str(rewards.battle_key) + "/" + str(entry.id) + "/%d" % copy,
+						"kind": str(entry.kind), "options": [], "rerolled": false})
 		entry.claimed = true
 		return _commit(run, before)
 	return ERR_DOES_NOT_EXIST
@@ -74,7 +77,9 @@ static func finish_rewards(run: Node) -> Error:
 	var rewards := pending(run)
 	if rewards.is_empty():
 		return ERR_DOES_NOT_EXIST
-	for entry: Dictionary in rewards.entries:
+	var entries: Array = rewards.entries.duplicate()
+	entries.append_array(rewards.get("bonus_entries", []))
+	for entry: Dictionary in entries:
 		if not entry.claimed:
 			return ERR_BUSY
 	var before := _capture(run)
@@ -148,6 +153,24 @@ static func equip_fragment(run: Node, item_id: String, cell: int) -> Error:
 		run.items[index].fragment_id = previous
 	return _commit(run, before)
 
+## 界面换位也使用主线事务，不能把被交换的残片再复制进背包。
+static func move_fragment(run: Node, source: int, destination: int) -> Error:
+	if not _can_edit(run):
+		return ERR_BUSY
+	if source < 0 or source >= RelicBoard.CELL_COUNT or destination < 0 or destination >= RelicBoard.CELL_COUNT:
+		return ERR_INVALID_PARAMETER
+	var cells: Array = run.inventory_state.relic_board.cells
+	if str(cells[source]).is_empty():
+		return ERR_DOES_NOT_EXIST
+	if source == destination:
+		return OK
+	var before := _capture(run)
+	var previous: String = cells[destination]
+	cells[destination] = cells[source]
+	cells[source] = previous
+	return _commit(run, before)
+
+
 static func unequip_fragment(run: Node, cell: int) -> Error:
 	if not _can_edit(run) or cell < 0 or cell >= RelicBoard.CELL_COUNT:
 		return ERR_INVALID_PARAMETER
@@ -162,11 +185,12 @@ static func unequip_fragment(run: Node, cell: int) -> Error:
 
 static func _generate_offer(run: Node, index: int, refresh: bool) -> Error:
 	var pack: Dictionary = run.items[index]
-	var pool: Array = RelicCatalog.load_definitions().keys() if pack.kind == "fragment_pack" else _card_pool(str(pack.kind))
+	var pool: Array = RelicCatalog.reward_ids() if pack.kind == "fragment_pack" else _card_pool(str(pack.kind))
 	pool.sort()
 	if refresh:
 		pool = pool.filter(func(id: Variant) -> bool: return id not in pack.options)
 	var count := 2 if pack.kind == "fragment_pack" else 3
+	count += RelicCatalog.choice_bonus(run.inventory_state.relic_board.cells)
 	if pool.size() < count:
 		return ERR_UNAVAILABLE
 	# 按主种子与包身份派生一次性子上下文，开包顺序、失败重试不消费其他随机流。

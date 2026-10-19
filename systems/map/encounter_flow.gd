@@ -41,7 +41,15 @@ func bind_map(view: Node) -> bool:
 		# 兼容旧版已用 demo 完成本层 Boss 的检查点。
 		if not _advance_after_boss():
 			return false
+	_preload_floor(session.get_snapshot())
 	return true
+
+func _preload_floor(snapshot: Dictionary) -> void:
+	var monsters := {}
+	for node: Dictionary in snapshot.get("nodes", []):
+		if node.type in ["battle", "elite", "boss"]:
+			monsters[str(node.content_id)] = map_run.monster_definition(str(node.content_id))
+	ScenePreloader.prepare_map(snapshot, run.run_id, monsters)
 
 func begin_encounter(request: Dictionary) -> bool:
 	last_error = ""
@@ -61,10 +69,9 @@ func begin_encounter(request: Dictionary) -> bool:
 	var board_error := board.restore(run.inventory_state.relic_board, catalog)
 	if board_error != OK:
 		return _fail("读取典籍配置失败：%d" % board_error)
-	var maximum := int(test_rules.enemy_health[monster.grade])
-	var enemy := {"enemy_id": monster.id, "name": monster.name, "art_path": monster.art_path,
-		"grade": monster.grade, "health": maximum, "max_health": maximum, "block": 0,
-		"buffs": [], "actions": [{"action_id": "placeholder-attack", "damage": int(test_rules.enemy_damage)}]}
+	var enemy := MonsterCatalog.create(str(monster.id), map_run.current_floor)
+	if enemy.is_empty(): return _fail("未找到怪物正式战斗配置：" + str(monster.id))
+	enemy.grade = monster.grade
 	# 只在原牌组为空时使用临时联调牌，不改变正式牌组或任何解锁状态。
 	var temporary: Array = test_rules.empty_deck_fallback if run.deck.is_empty() else []
 	var error := run.start_battle(str(session.pending.node_id), [enemy], 0, false,
@@ -72,8 +79,12 @@ func begin_encounter(request: Dictionary) -> bool:
 	if error != OK:
 		return _fail("创建节点战斗失败：%d" % error)
 	var battle := run.current_battle
+	# 固定本场战场外观，随战斗快照保存；Boss 推进楼层不影响旧战场。
+	battle.player["encounter_floor"] = map_run.current_floor
 	battle.player["encounter_rules"] = test_rules.duplicate(true)
 	battle.player["temporary_deck"] = run.deck.is_empty()
+	battle.player["conch_bound"] = int(run.inventory_state.get("conch_bound", 0))
+	battle.player["potions"] = run.items.filter(func(value: Variant): return value is Dictionary and value.get("kind") == "potion").duplicate(true)
 	# 棋盘跟随本场战斗保存；回菜单或冷恢复时不会重复施加首回合效果。
 	battle.player["encounter_relic_board"] = board.to_dictionary()
 	if SaveGateway.save_current() != OK:
@@ -83,13 +94,13 @@ func begin_encounter(request: Dictionary) -> bool:
 
 func open_battle() -> void:
 	if is_instance_valid(run) and run == SaveGateway.current_run() and run.current_battle != null:
-		var error := get_tree().change_scene_to_file(BATTLE_SCENE)
+		var error := SceneTransition.change_scene_to_file(BATTLE_SCENE)
 		if error != OK:
 			_fail("打开战斗界面失败：%d" % error)
 
 func _matches_battle(battle: BattleStateMachine) -> bool:
 	return session != null and not session.pending.is_empty() \
-		and battle.enemies.size() == 1 and session.pending.type in ["battle", "elite", "boss"] \
+		and battle.enemies.size() >= 1 and session.pending.type in ["battle", "elite", "boss"] \
 		and session.pending.node_id == battle.node_id and session.map_id == battle.map_id \
 		and session.pending.content_id == battle.enemies[0].enemy_id
 
@@ -100,7 +111,8 @@ func _on_battle_finished(result: Dictionary) -> void:
 		return
 	var pending: Dictionary = session.pending.duplicate(true)
 	var victory: bool = result.get("status") == "victory"
-	if not session.resolve_request({"request_id": pending.request_id, "status": "completed" if victory else "failed"}):
+	var completed: bool = victory or result.get("status") == "escaped"
+	if not session.resolve_request({"request_id": pending.request_id, "status": "completed" if completed else "failed"}):
 		_fail(session.last_error)
 		return
 	if not map_run.store_current(session.capture_state()):
@@ -113,6 +125,14 @@ func _on_battle_finished(result: Dictionary) -> void:
 		if reward_error != OK:
 			_fail("创建战斗奖励失败：%d" % reward_error)
 			return
+		run.inventory_state.pending_rewards["stolen_refund"] = int(result.get("stolen_refund", 0))
+		run.inventory_state.pending_rewards["conch_bonus"] = int(result.get("conch_bound", 0))
+		var bonus: Array = []
+		if int(result.get("stolen_refund", 0)) > 0:
+			bonus.append({"id": "stolen_silver", "kind": "silver", "amount": int(result.stolen_refund), "claimed": false})
+		if int(result.get("conch_bound", 0)) > 0:
+			bonus.append({"id": "conch_rare", "kind": "rare_pack", "amount": int(result.conch_bound), "claimed": false})
+		run.inventory_state.pending_rewards["bonus_entries"] = bonus
 		run.update_map_node(session.map_id, str(pending.node_id), {"completed": true, "enemy_id": pending.content_id})
 		if pending.type == "boss" and not _advance_after_boss():
 			return
@@ -120,7 +140,7 @@ func _on_battle_finished(result: Dictionary) -> void:
 	if SaveGateway.save_current() != OK:
 		_fail("战斗结果保存失败，请在退出前重试保存")
 	MapEvents.map_state_changed.emit(str(pending.map_id), completed_state)
-	MapEvents.node_interaction_resolved.emit(str(pending.request_id), str(pending.node_id), "completed" if victory else "failed")
+	MapEvents.node_interaction_resolved.emit(str(pending.request_id), str(pending.node_id), "completed" if completed else "failed")
 	if victory and pending.type == "boss":
 		MapEvents.boss_cleared.emit(str(pending.map_id), str(pending.node_id))
 
@@ -144,6 +164,8 @@ func _advance_after_boss() -> bool:
 		return _fail(next_session.last_error)
 	session = next_session
 	run.set_current_map(str(entry.snapshot.map_id))
+	# 领取 Boss 奖励期间就预热下一层全部节点，不等玩家回到地图才读贴图。
+	_preload_floor(entry.snapshot)
 	return true
 
 func capture_menu_checkpoint() -> Dictionary:

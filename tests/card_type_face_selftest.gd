@@ -12,7 +12,7 @@ func _run() -> void:
 	var result := FormalCardCatalog.load_definitions()
 	_check("正式卡牌加载成功", result.error == OK)
 	var samples := {"1": CardData.FaceTint.RED, "11": CardData.FaceTint.BLUE,
-		"40": CardData.FaceTint.YELLOW, "6": CardData.FaceTint.GRAY, "71": CardData.FaceTint.GRAY}
+		"40": CardData.FaceTint.YELLOW, "6": CardData.FaceTint.GRAY, "70": CardData.FaceTint.GRAY}
 	for id: String in samples:
 		var data: CardData = result.cards[id]
 		_check("正式卡牌%s分类颜色" % id, data.face_tint == samples[id])

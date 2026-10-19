@@ -2,7 +2,7 @@ class_name RunStatusPanel
 extends Control
 
 ## 跑图与战斗共用的左上状态列：头像、血条、buff 芯片、背包 16 格、典籍面板与触发日志。
-## 坐标与尺寸与 PRG-017 的战斗界面规格一致（见 docs/13-PRG-017-018界面定向整合说明.md），
+## 坐标与尺寸与 PRG-017 的战斗界面规格一致（见 docs/12-战斗界面排版交付说明.md），
 ## 换场景时不要把常量抄成两份：要用这一份。
 
 signal menu_requested
@@ -21,22 +21,20 @@ const BACKPACK_STEP := 44.0
 const BACKPACK_COLUMNS := 8
 const BACKPACK_ROWS := 2
 const RELIC_POSITION := Vector2(24, 268)
-const RELIC_WIDTH := 240.0
-const RELIC_CELL_SIZE := Vector2(45, 44)
-const RELIC_GRID_ORIGIN := Vector2(21, 14)
-const RELIC_GRID_SEPARATION := Vector2(6, 4)
+const RELIC_LOG_SIZE := Vector2(240, 72)
+const AVATAR_TEXTURE := "res://assets/ui/UI-015/金-主角血条-主角头像.png"
+const AVATAR_REGION := Rect2(400, 190, 640, 630)
 const BLOCK_MARKER_WIDTH := 16.0
+const HP_COLOR := Color(0.756863, 0.239216, 0.262745)
 const COLOR_TEXT := Color(0.949, 0.89, 0.776)
 const COLOR_PLAYER := Color(0.812, 0.890, 1.0)
 const COLOR_ENEMY := Color(1.0, 0.769, 0.690)
-const COLOR_PAPER := Color(0.851, 0.788, 0.639)
-const COLOR_INK := Color(0.165, 0.129, 0.094)
 
 var _hp_fill: ColorRect
 var _hp_block: ColorRect
 var _hp_number: Label
 var _buff_row: HBoxContainer
-var _relic_cells: Array[Label] = []
+var _relic_book: RelicBookView
 var _relic_log: Label
 var _relic_events: Array[String] = []
 
@@ -63,17 +61,8 @@ func set_health(health: int, max_health: int, block: int = 0, buffs: Array = [])
 
 
 func set_relic_board(catalog: Dictionary, board: RelicBoard) -> void:
-	for index in _relic_cells.size():
-		var data: RelicFragmentData = catalog.get(board.cells[index]) if index < board.cells.size() else null
-		var label := _relic_cells[index]
-		label.text = "—" if data == null else data.display_name
-		label.tooltip_text = "空格" if data == null else "%s · %s" % [data.kind_name(), data.description]
-		label.add_theme_color_override("font_color",
-			Color(0.66, 0.6, 0.49) if data == null else COLOR_INK)
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.937, 0.886, 0.741) if data != null else Color(0.886, 0.831, 0.682)
-		style.set_corner_radius_all(3)
-		label.add_theme_stylebox_override("normal", style)
+	if _relic_book != null:
+		_relic_book.set_board(catalog, board)
 
 
 func set_relic_log(lines: Array) -> void:
@@ -90,16 +79,8 @@ func append_relic_log(line: String) -> void:
 
 
 func flash_relic_cell(index: int) -> void:
-	if index < 0 or index >= _relic_cells.size():
-		return
-	var label := _relic_cells[index]
-	var previous: Variant = label.get_meta("flash") if label.has_meta("flash") else null
-	if previous is Tween and previous.is_valid():
-		previous.kill()
-	label.modulate = Color(1.8, 1.8, 1.8)
-	var flash := label.create_tween()
-	flash.tween_property(label, "modulate", Color.WHITE, 0.45).set_trans(Tween.TRANS_SPRING)
-	label.set_meta("flash", flash)
+	if _relic_book != null:
+		_relic_book.flash_cell(index)
 
 
 func _label(text: String, size: int, color: Color) -> Label:
@@ -135,11 +116,17 @@ func _build_avatar() -> void:
 	ring.set_corner_radius_all(56)
 	var holder := avatar as Panel
 	holder.add_theme_stylebox_override("panel", ring)
-	var text := _label("CHR-002\n头像占位", 12, Color(0.788, 0.725, 0.561))
-	text.size = AVATAR_SIZE
-	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	avatar.add_child(text)
+	var atlas := AtlasTexture.new()
+	atlas.atlas = load(AVATAR_TEXTURE)
+	atlas.region = AVATAR_REGION
+	var portrait := TextureRect.new()
+	portrait.texture = atlas
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.position = Vector2(4, 4)
+	portrait.size = AVATAR_SIZE - Vector2(8, 8)
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	avatar.add_child(portrait)
 
 	# 头像即入口：点开冒险菜单（地图 / 背包 / 设置）。
 	var hit := Button.new()
@@ -164,7 +151,7 @@ func _build_health() -> void:
 	board_panel.add_theme_stylebox_override("panel", board_style)
 
 	_hp_fill = ColorRect.new()
-	_hp_fill.color = Color(0.557, 0.184, 0.149)
+	_hp_fill.color = HP_COLOR
 	_hp_fill.position = Vector2(1, 1)
 	_hp_fill.size = Vector2(HP_BAR_WIDTH - 2.0, HP_BAR_HEIGHT - 2.0)
 	_hp_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -203,10 +190,9 @@ func _set_buffs(buffs: Array, block: int) -> void:
 			"edge": Color(0.561, 0.659, 0.769, 0.6)})
 	for buff: Dictionary in buffs:
 		var buff_id := String(buff.get("buff_id", ""))
-		var debuff := buff_id in ["poison", "weak", "vulnerable"]
+		var debuff := buff_id in ["poison", "weak"]
 		entries.append({
-			"text": "%s %d" % [String({"poison": "中毒", "strength": "力量", "weak": "虚弱",
-				"vulnerable": "易伤", "tenacity": "坚韧"}.get(buff_id, buff_id)),
+			"text": "%s %d" % [String({"poison": "中毒", "strength": "力量", "weak": "虚弱"}.get(buff_id, buff_id)),
 				int(buff.get("layers", 0))],
 			"color": Color(0.81, 0.89, 0.66) if debuff else COLOR_TEXT,
 			"edge": Color(0.62, 0.75, 0.42, 0.6) if debuff else Color(0.910, 0.706, 0.333, 0.45),
@@ -242,29 +228,15 @@ func _build_backpack() -> void:
 
 
 func _build_relics() -> void:
-	var panel_height := RELIC_GRID_ORIGIN.y * 2.0 + RelicBoard.ROWS * RELIC_CELL_SIZE.y \
-		+ (RelicBoard.ROWS - 1) * RELIC_GRID_SEPARATION.y
-	var paper := _panel(RELIC_POSITION, Vector2(RELIC_WIDTH, panel_height), COLOR_PAPER, 6)
-	var grid := GridContainer.new()
-	grid.columns = RelicBoard.COLUMNS
-	grid.position = RELIC_POSITION + RELIC_GRID_ORIGIN
-	grid.add_theme_constant_override("h_separation", int(RELIC_GRID_SEPARATION.x))
-	grid.add_theme_constant_override("v_separation", int(RELIC_GRID_SEPARATION.y))
-	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(grid)
-	for index in RelicBoard.CELL_COUNT:
-		var label := _label("—", 16, Color(0.66, 0.6, 0.49))
-		label.custom_minimum_size = RELIC_CELL_SIZE
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		label.clip_text = true
-		_relic_cells.append(label)
-		grid.add_child(label)
+	_relic_book = RelicBookView.new()
+	_relic_book.position = RELIC_POSITION
+	add_child(_relic_book)
+	_relic_book.attach_tip(self, 120)
 
 	_relic_log = _label("", 16, Color(0.749, 0.682, 0.553))
-	_relic_log.position = Vector2(RELIC_POSITION.x, RELIC_POSITION.y + panel_height + 8.0)
-	_relic_log.size = Vector2(RELIC_WIDTH, 72)
+	_relic_log.position = Vector2(RELIC_POSITION.x,
+		RELIC_POSITION.y + RelicBookView.BOOK_SIZE.y + 8.0)
+	_relic_log.size = RELIC_LOG_SIZE
 	_relic_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_relic_log.clip_text = true
 	_relic_log.visible = false

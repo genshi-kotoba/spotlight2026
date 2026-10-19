@@ -82,7 +82,7 @@ func damage_player(amount: int, ignore_block: bool = false) -> void:
 	var current := battle.rules.queue.current
 	var self_source := current == null or not current.type.begins_with("buff.")
 	battle.rules.submit("action.damage", {"side": "player", "target": "player", "amount": amount,
-		"ignore_block": ignore_block, "use_stats": false}, {"self_source": self_source})
+		"ignore_block": ignore_block, "use_stats": false}, {"self_source": self_source, "dot": not self_source})
 
 
 func damage_player_from(source_id: String, amount: int, ignore_block: bool = false) -> void:
@@ -153,6 +153,8 @@ func repeat_next_card(extra_triggers: int) -> void:
 
 func _submit(type: String, data: Dictionary) -> void:
 	var event := battle.rules.publish("action." + type, data)
+	if type == "damage" and battle.rules.queue.current != null and battle.rules.queue.current.type.begins_with("buff."):
+		event.metadata["dot"] = true
 	var parent := battle.rules.queue.current
 	if type == "damage" and parent != null and parent.type == "effect.execute" and parent.payload.get("effect") is CardEffect:
 		event.metadata["damage_program_id"] = event.id

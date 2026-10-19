@@ -111,6 +111,7 @@ func _test_world_flow() -> void:
 	get_tree().current_scene = view
 	await _frames(5)
 	_check("正式地图自动分配怪物且不显示手动换层", view.map_run.current_floor == 1 and not view._next.visible and not view._previous.visible)
+	_check("正式地图全部节点已登记预加载", int(ScenePreloader.stats().nodes) == view.session.nodes.size() and ScenePreloader.stats().map_id == view.session.map_id)
 	var first := _approach(view, ["battle", "elite"])
 	_check("找到可交互的真实战斗节点", not first.is_empty())
 	if first.is_empty():
@@ -122,12 +123,15 @@ func _test_world_flow() -> void:
 	await _frames(8)
 	var ui: Node = get_tree().current_scene
 	_check("节点交互进入已有战斗UI", ui.scene_file_path == EncounterFlow.BATTLE_SCENE)
+	print("PERF first node transition ", SceneTransition.last_metrics)
 	if ui.scene_file_path != EncounterFlow.BATTLE_SCENE:
 		return
 	ui.resolution_delay = 0.05
 	ui.enemy_turn_delay = 0.05
 	var battle: BattleStateMachine = ui._battle
+	_check("第一层战斗使用场景一并保存开战楼层", int(battle.player.encounter_floor) == 1 and ui.get_node("Background").texture.resource_path == "res://assets/env/ENV-001/ENV-001.PNG")
 	_check("敌人匹配种子分配且图片名称正确", battle.enemies[0].enemy_id == expected_id and ui.get_node("EnemyName").text == TextCatalog.entry("monsters", expected_id).name and ui.get_node("EnemyPortrait").texture != null)
+	_check("地图战斗加载对应怪物TXT", ui._monster_text.source_path == TextCatalog.entry("monsters", expected_id).battle_text_path and not ui._monster_text.sentences.is_empty())
 	_check("真实牌组生命进入战斗，不使用临时测试牌", battle.hand.size() == 10 and int(battle.player.health) == 200 and not bool(battle.player.temporary_deck))
 	_check("不能重开战斗或修改战斗中的典籍", not ui._restart_button.visible and not ui._relic_edit_button.visible)
 	for card: Dictionary in battle.hand:
@@ -135,8 +139,14 @@ func _test_world_flow() -> void:
 			ui._on_hand_card_pressed(str(card.instance_id))
 			break
 	ui._on_play_pressed()
+	_finish_monster_choices(ui)
 	await get_tree().create_timer(0.3).timeout
-	_check("出牌目标不是固定CHR025且敌人经队列攻击", int(battle.enemies[0].health) == int(battle.enemies[0].max_health) - 5 and int(battle.player.health) == 194 and not ui._busy)
+	await preload("res://tests/support/presentation_test_helper.gd").battle_settled(ui)
+	var damage_taken := 0
+	for event: Dictionary in battle.rules.queue.history:
+		if event.type == "combatant.damaged" and event.payload.side == "player": damage_taken += int(event.payload.health_loss)
+	var expected_health := int(battle.player.health)
+	_check("出牌目标不是固定CHR025且正式怪物经队列攻击", int(battle.enemies[0].health) < int(battle.enemies[0].max_health) and damage_taken > 0 and expected_health == 200 - damage_taken and not ui._busy)
 	var battle_snapshot := _json(battle.to_dictionary())
 	var seed_snapshot := _json(SeedService.capture_snapshot())
 	ui._on_menu_return()
@@ -151,6 +161,8 @@ func _test_world_flow() -> void:
 		return
 	battle = ui._battle
 	_check("恢复不重抽牌、不重选敌人、不重复回合开始", _json(battle.to_dictionary()) == battle_snapshot and _json(SeedService.capture_snapshot()) == seed_snapshot)
+	_check("冷恢复重新绑定对应怪物台词且不改玩法随机流", ui._monster_text.source_path == TextCatalog.entry("monsters", expected_id).battle_text_path)
+	_check("冷恢复保留本场楼层背景", int(battle.player.encounter_floor) == 1 and ui.get_node("Background").texture.resource_path == "res://assets/env/ENV-001/ENV-001.PNG")
 	_check("战斗地图仍不包含怪物身份字段", not _json(ui._map_snapshot_data()).contains("content_id"))
 	var context := BattleEffectContext.new(battle, expected_id, ui._resolver.buff_catalog)
 	context.damage_enemy(expected_id, int(battle.enemies[0].health) - 5)
@@ -169,7 +181,7 @@ func _test_world_flow() -> void:
 	_check("胜利自动回地图并完成节点", view.scene_file_path == MAP and view.session.completed.has(first) and view.session.pending.is_empty())
 	if view.scene_file_path != MAP:
 		return
-	_check("返回地图保持血量并保留原敌人分配", SaveGateway.current_run().health == 194 and _json(view.map_run.get_floor(1).snapshot) == old_snapshot)
+	_check("返回地图保持血量并保留原敌人分配", SaveGateway.current_run().health == expected_health and _json(view.map_run.get_floor(1).snapshot) == old_snapshot)
 	_check("相同结果不能二次完成节点", not EncounterFlow.begin_encounter({"request_id": "stale", "type": "battle"}))
 	# 战斗数值通过事件队列清场夹具；地图位置只移到合法可达的交互格。
 	for floor_number in [1, 2, 3]:
@@ -179,13 +191,19 @@ func _test_world_flow() -> void:
 			var target := _approach(view, ["boss", "battle", "elite"])
 			if target.is_empty():
 				break
+			await preload("res://tests/support/presentation_test_helper.gd").map_ready(get_tree())
 			view._interact()
 			await _frames(8)
 			ui = get_tree().current_scene
 			if ui.scene_file_path != EncounterFlow.BATTLE_SCENE:
 				break
+			var expected_background := preload("res://ui/battle/battle_environment.gd").texture_for_floor(floor_number)
+			_check("第%d层战斗复用公共场景缓存" % floor_number, ScenePreloader.cached_resource(EncounterFlow.BATTLE_SCENE) is PackedScene)
+			_check("第%d层正式节点绑定对应战场" % floor_number, int(ui._battle.player.encounter_floor) == floor_number and ui.get_node("Background").texture == expected_background)
 			var target_context := BattleEffectContext.new(ui._battle, ui._battle.enemies[0].enemy_id, ui._resolver.buff_catalog)
-			target_context.damage_enemy(ui._battle.enemies[0].enemy_id, 999)
+			_clear_monsters(ui)
+			_check("节点或Boss结算后旧战场不变", ui.get_node("Background").texture == expected_background and ui._battle_environment_floor() == floor_number)
+			_check("Boss奖励阶段已预热目标楼层全部节点", ScenePreloader.stats().map_id == EncounterFlow.session.map_id and int(ScenePreloader.stats().nodes) == EncounterFlow.session.nodes.size())
 			await _frames(10)
 			await preload("res://tests/support/reward_test_helper.gd").collect(get_tree())
 			view = get_tree().current_scene
@@ -208,7 +226,7 @@ func _test_world_flow() -> void:
 	view._interact()
 	await _frames(8)
 	ui = get_tree().current_scene
-	_check("空牌组临时使用20张牌，不更改正式牌组", bool(ui._battle.player.temporary_deck) and GlobalState.current_run.deck.is_empty() and ui._battle.hand.size() == 12)
+	_check("空牌组临时使用20张牌，首抽受10张上限限制且不更改正式牌组", bool(ui._battle.player.temporary_deck) and GlobalState.current_run.deck.is_empty() and ui._battle.hand.size() == 10)
 	await _capture("node-battle.png")
 	var defeat_context := BattleEffectContext.new(ui._battle, "player", ui._resolver.buff_catalog)
 	defeat_context.damage_player(999, true)
@@ -237,6 +255,21 @@ func _approach(view: Node, types: Array) -> String:
 						return id
 	return ""
 
+func _finish_monster_choices(ui: Node) -> void:
+	for index in 10:
+		var choice: Dictionary = ui._battle.player.get("battle_choice", {})
+		if choice.is_empty(): break
+		ui._submit_battle_choice(str(choice.candidates[0].instance_id))
+
+func _clear_monsters(ui: Node) -> void:
+	for index in 20:
+		if not ui._battle.active: break
+		var context := BattleEffectContext.new(ui._battle, null, ui._resolver.buff_catalog)
+		for enemy: Dictionary in ui._battle.enemies:
+			if int(enemy.health) > 0:
+				context.damage_enemy(str(enemy.enemy_id), 999)
+				break
+
 func _available_request(session: RefCounted) -> Dictionary:
 	var reachable: Dictionary = session.reachable()
 	for id: String in session.nodes:
@@ -260,6 +293,7 @@ func _capture(filename: String) -> void:
 func _frames(count: int) -> void:
 	for index in count:
 		await get_tree().process_frame
+	await preload("res://tests/support/presentation_test_helper.gd").map_ready(get_tree())
 
 func _json(value: Variant) -> String:
 	return JSON.stringify(JSON.parse_string(JSON.stringify(value)))

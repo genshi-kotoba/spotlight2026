@@ -81,7 +81,7 @@ func _on_switch_pressed() -> void:
 
 
 func _return_to_menu() -> void:
-	var error := get_tree().change_scene_to_file(main_menu_scene)
+	var error := SceneTransition.change_scene_to_file(main_menu_scene)
 	if error != OK:
 		_message_bar.show_message("返回开始界面失败：%d" % error)
 

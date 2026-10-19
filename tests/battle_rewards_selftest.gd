@@ -56,7 +56,7 @@ func _run() -> void:
 	view._open_run_menu(1)
 	await _frames(4)
 	var bag: RunMenuOverlay = view._run_menu
-	_check("背包显示银币万灵药与实际物品", bag._resources.text.contains("100") and bag._item_grid.get_child_count() == 2 and bag._relic_cells[0].text == "—")
+	_check("背包显示真实资源及21格空位，不注入额外物品", bag._resources.text.contains("100") and bag._item_grid.get_child_count() == 21 and run.items.size() == 2 and bag._relic_cells[0].text.is_empty())
 	var fragment_pack_id := _pack_id(run, "fragment_pack")
 	await _click(bag._item_grid.get_child(0))
 	popup = bag._pack_popup
@@ -172,7 +172,7 @@ func _cold_continue() -> void:
 	get_tree().current_scene._on_continue_pressed()
 	await _frames(12)
 
-func _click(button: Button) -> void:
+func _click(button: Control) -> void:
 	if button == null:
 		_check("需要点击的控件存在", false)
 		return

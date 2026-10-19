@@ -170,6 +170,8 @@ func _on_minimap_input(event: InputEvent) -> void:
 func _open_run_menu(page: int = 1) -> void:
 	if _run_menu == null:
 		return
+	if _run_panel != null and _run_panel._relic_book != null:
+		_run_panel._relic_book._hide_tip()
 	if _menu_map == null:
 		# 地图页里是真正的 MapView 渲染：滚轮缩放、拖动平移，角色不动。
 		# 先挂进浮层再喂数据，查看器内部节点在 _ready 里才建好。
@@ -255,6 +257,7 @@ func _build_hud() -> void:
 	_run_menu.name = "RunMenuOverlay"
 	root.add_child(_run_menu)
 	_run_menu.closed.connect(_on_run_menu_closed)
+	_run_menu.relic_board_updated.connect(_refresh_run_panel)
 	# 地图信息与调试控件放右下角，与左下的操作提示同高、左右对称。
 	var top := PanelContainer.new()
 	top.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)

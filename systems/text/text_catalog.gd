@@ -5,18 +5,23 @@ extends Node
 signal catalog_changed
 signal progress_changed
 
-const CATEGORIES := ["cards", "fragments", "monsters", "achievements"]
+const CATEGORIES := ["cards", "fragments", "monsters", "achievements", "items"]
 const DEFAULT_PATHS := {
 	"cards": "res://data/text/cards.csv", "fragments": "res://data/text/fragments.csv",
 	"monsters": "res://data/text/monsters.csv", "achievements": "res://data/text/achievements.csv",
+	"items": "res://data/text/items.csv",
 }
 const FRAGMENT_HEADERS := ["编号", "卡图资源路径", "卡名", "效果文本", "类型", "文本"]
 const CARD_HEADERS := ["编号", "卡图资源路径", "卡名", "效果文本", "类型", "文本", "稀有度"]
-const MONSTER_HEADERS := ["编号", "怪物图资源路径", "怪物名", "能力文本", "类型与出现地", "文本"]
+const LEGACY_MONSTER_HEADERS := ["编号", "怪物图资源路径", "怪物名", "能力文本", "类型与出现地", "文本"]
+const MONSTER_HEADERS := ["编号", "怪物图资源路径", "怪物名", "能力文本", "类型与出现地", "文本", "战斗中文本资源路径"]
+const MONSTER_KEYS := ["id", "art_path", "name", "effect", "type", "text", "battle_text_path"]
 const ACHIEVEMENT_HEADERS := ["编号", "成就名", "要求文本", "奖励"]
 const ENTRY_KEYS := ["id", "art_path", "name", "effect", "type", "text"]
 const CARD_KEYS := ["id", "art_path", "name", "effect", "type", "text", "rarity"]
 const ACHIEVEMENT_KEYS := ["id", "name", "requirement", "reward"]
+const ITEM_HEADERS := ["编号", "物品名", "图标路径", "效果文本"]
+const ITEM_KEYS := ["id", "name", "icon_path", "effect"]
 
 enum DisplayMode { ALL, UNLOCKED, LOCKED }
 
@@ -38,8 +43,14 @@ func reload() -> Error:
 	for category: String in CATEGORIES:
 		var headers: Array = ACHIEVEMENT_HEADERS if category == "achievements" else (
 			MONSTER_HEADERS if category == "monsters" else (CARD_HEADERS if category == "cards" else FRAGMENT_HEADERS))
-		var keys: Array = ACHIEVEMENT_KEYS if category == "achievements" else (CARD_KEYS if category == "cards" else ENTRY_KEYS)
+		var keys: Array = ACHIEVEMENT_KEYS if category == "achievements" else (CARD_KEYS if category == "cards" else (MONSTER_KEYS if category == "monsters" else ENTRY_KEYS))
+		if category == "items":
+			headers = ITEM_HEADERS
+			keys = ITEM_KEYS
 		var result := CsvTextTable.read(str(paths.get(category, "")), headers, keys)
+		if category == "monsters" and result.error == ERR_INVALID_DATA:
+			# 兼容旧工具/旧测试的六列 CSV；旧数据不猜测 TXT 路径。
+			result = CsvTextTable.read(str(paths.get(category, "")), LEGACY_MONSTER_HEADERS, ENTRY_KEYS)
 		_tables[category] = result.records
 		_errors[category] = result.message
 		if result.error != OK and first_error == OK:
@@ -87,6 +98,16 @@ func display_name(category: String, id: String, fallback: String = "") -> String
 	return str(record.get("name", "")) if not record.is_empty() else fallback
 
 
+func monster_battle_text_path(enemy: Dictionary) -> String:
+	# 旧地图保存了旧编号；优先用稳定的图片路径对应，避免读到其他怪物台词。
+	var art := str(enemy.get("art_path", ""))
+	if not art.is_empty():
+		for record: Dictionary in _tables.get("monsters", []):
+			if record.art_path == art:
+				return str(record.get("battle_text_path", ""))
+	return str(entry("monsters", str(enemy.get("enemy_id", ""))).get("battle_text_path", ""))
+
+
 ## 游戏规则显式调用；CSV 不携带状态，文本不是自动判定条件/奖励脚本。
 func unlock_entry(category: String, id: String) -> Error:
 	if category not in ["cards", "fragments", "monsters"] or entry(category, id).is_empty():
@@ -106,6 +127,9 @@ func complete_achievement(id: String, metadata: Dictionary = {}) -> Error:
 func read_text(path: String, parameters: Dictionary = {}) -> Dictionary:
 	if not path.begins_with("res://") or path.get_extension().to_lower() != "txt" or ".." in path:
 		return {"error": ERR_INVALID_PARAMETER, "text": ""}
+	var cached: Variant = ScenePreloader.cached_text(path)
+	if cached is String:
+		return {"error": OK, "text": format_text(cached, parameters)}
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		return {"error": FileAccess.get_open_error(), "text": ""}

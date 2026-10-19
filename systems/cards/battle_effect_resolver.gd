@@ -11,6 +11,7 @@ var buff_catalog: Dictionary = {}
 var _actions: BattleActionRules
 var _stats: BattleStatRules
 var formal_rules: FormalCardRules
+var monster_rules: MonsterBattleRules
 
 
 func attach_to_battle(p_battle: BattleStateMachine) -> Error:
@@ -29,6 +30,7 @@ func attach_to_battle(p_battle: BattleStateMachine) -> Error:
 	_actions = BattleActionRules.new(battle, buff_catalog)
 	_stats = BattleStatRules.new(battle, buff_catalog)
 	formal_rules = FormalCardRules.new(battle, card_catalog, buff_catalog)
+	monster_rules = MonsterBattleRules.new(battle, card_catalog, buff_catalog)
 	battle.rules.register_rule("cards.compile", "card.effect_requested", _on_card_effect_requested)
 	battle.rules.register_rule("enchantments.damage", "action.damage", _enchantment_damage, 15)
 	battle.rules.register_rule("cards.effect", "effect.execute", _execute_effect)
@@ -45,6 +47,7 @@ func _exit_tree() -> void:
 		battle.rules.remove_rules_for(_actions)
 		battle.rules.remove_rules_for(_stats)
 		battle.rules.remove_rules_for(formal_rules)
+		battle.rules.remove_rules_for(monster_rules)
 
 
 func _load_catalogs() -> Error:
@@ -93,7 +96,7 @@ func _on_card_effect_requested(event: BattleEvent) -> void:
 	if not battle.active:
 		return
 	var card: Dictionary = event.payload.card
-	if bool(card.get("slot_empty", false)) or formal_rules.is_disabled(str(card.instance_id)):
+	if bool(card.get("slot_empty", false)) or bool(card.get("nullified", false)) or formal_rules.is_disabled(str(card.instance_id)):
 		return
 	var data: CardData = card_catalog.get(String(card.get("card_id", "")))
 	if data == null:
@@ -138,7 +141,7 @@ func _enchantment_damage(event: BattleEvent) -> void:
 
 
 func _on_enemy_action_requested(event: BattleEvent) -> void:
-	if not battle.active:
+	if not battle.active or bool(event.payload.get("handled", false)):
 		return
 	var action: Dictionary = event.payload.action
 	var raw_damage: Variant = action.get("damage", 0)
@@ -175,7 +178,12 @@ func _step_buff_effect(event: BattleEvent) -> void:
 	var effect: GameEffect = data.effects[index]
 	if effect is BuffEffect:
 		var modifier: BuffEffect = effect
+		var previous_layers := int(working.layers)
 		working["layers"] = modifier.on_turn_update(context, data.entity_id, working)
+		if modifier is BuffEffectPoison and int(working.get("decay_delay", 0)) > 0:
+			working["layers"] = previous_layers
+			for live: Dictionary in battle._combatant(StringName(data.side), str(data.entity_id)).get("buffs", []):
+				if str(live.buff_id) == "poison": live.decay_delay = maxi(0, int(live.get("decay_delay", 0)) - 1)
 		modifier.tick_duration(working)
 		if modifier.is_expired(working) or (bool(data.limited) and int(working.duration) == 0):
 			modifier.end(context, data.entity_id, working)

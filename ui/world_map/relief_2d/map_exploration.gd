@@ -219,6 +219,11 @@ func _presentation_committed() -> void:
 func is_map_ready() -> bool:
 	return not height_layer.is_empty() and _prepare_error.is_empty() and not _discovery_prepare_queued and is_instance_valid(_view) and not _view.is_rebuilding() and not _view.is_presentation_cache_preparing()
 
+func scene_transition_error() -> String:
+	if not _prepare_error.is_empty():
+		return _prepare_error
+	return session.last_error if height_layer.is_empty() else ""
+
 func _physics_process(delta: float) -> void:
 	if not is_map_ready():
 		_advance_motion(Vector2.ZERO, delta)

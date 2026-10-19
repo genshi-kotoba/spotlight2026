@@ -11,7 +11,7 @@ func _run() -> void:
 	EncounterFlow.relic_board_path = fixture_root.path_join("empty-board.json")
 	_config = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
 	_config.run_id = "shop-fixture"
-	_check("新局", SaveGateway.start_new_run("shop-fixed", _config) == OK)
+	_check("新局", SaveGateway.start_new_run(_seed_with_both_enchantments(), _config) == OK)
 	var run := SaveGateway.current_run()
 	_check("同名卡有不同永久身份", run.deck_cards.size() == 8 and run.deck_cards[0].copy_id != run.deck_cards[1].copy_id)
 	_generation()
@@ -184,6 +184,12 @@ func _approach_shop(view: Node) -> String:
 		var node: Dictionary = view.session.nodes[id]
 		if node.type != "shop":
 			continue
+		# 地图更新会改变节点编号；夹具选含两种附魔的真实商店，不假设第一家必有两种。
+		var run := SaveGateway.current_run()
+		var shelf := RunShop.generate(run.main_seed, view.session.map_id, id, view.session.floor_index)
+		var enchant_ids: Array = shelf.enchantments.map(func(offer: Dictionary): return str(offer.id))
+		if not enchant_ids.has("damage_50") or not enchant_ids.has("repeat_2"):
+			continue
 		for point: Array in node.footprint:
 			for cell: Vector2i in Hex.neighbors(Session.coord(point)):
 				var plane := Hex.to_plane(cell, 1.0)
@@ -196,6 +202,27 @@ func _approach_shop(view: Node) -> String:
 					view._selection_origin = plane
 					return id
 	return ""
+
+func _seed_with_both_enchantments() -> String:
+	# 双槽交易测试需要同店含两种测试附魔，选合法种子而不篡改真实货架或生产随机规则。
+	var version := str(ProjectSettings.get_setting("application/config/seed_content_version", ""))
+	var settings: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/relief_2d/exploration.json"))
+	for attempt in 20:
+		var candidate := "shop-fixed-%d" % attempt
+		var source := SeedRegistry.new(version)
+		var map_run = preload("res://state_machines/run/planar_map_run.gd").new(source, version)
+		if not map_run.start_new_run(candidate, settings.floors):
+			continue
+		var entry: Dictionary = map_run.enter_floor(1)
+		for node: Dictionary in entry.get("snapshot", {}).get("nodes", []):
+			if node.type != "shop":
+				continue
+			var shelf := RunShop.generate(candidate, str(entry.snapshot.map_id), str(node.id), 1)
+			var ids: Array = shelf.enchantments.map(func(offer: Dictionary): return str(offer.id))
+			if ids.has("damage_50") and ids.has("repeat_2"):
+				return candidate
+	push_error("测试未找到含两种附魔的商店种子")
+	return "shop-fixed"
 
 func _fixture(ids: Array[String], enchantments: Array) -> BattleStateMachine:
 	var b := BattleStateMachine.new()

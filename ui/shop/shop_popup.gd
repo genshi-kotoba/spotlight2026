@@ -4,6 +4,7 @@ extends LootPopup
 var request: Dictionary = {}
 var _enchant_index := -1
 var close_handler: Callable
+var _card_definitions: Dictionary = {}
 
 func show_shop(value: Dictionary) -> void:
 	request = value.duplicate(true)
@@ -124,7 +125,9 @@ func _card(parent: Control, card: Dictionary, factor: float, selected: Callable 
 	var view: CardView = CARD_SCENE.instantiate()
 	view.scale = Vector2.ONE * factor
 	view.size = Vector2(480, 818)
-	view.set_card(FormalCardCatalog.load_definitions().cards[str(card.card_id)])
+	if _card_definitions.is_empty():
+		_card_definitions = FormalCardCatalog.load_definitions().cards
+	view.set_card(_card_definitions[str(card.card_id)])
 	view.tooltip_text = CardEnchantments.describe(card)
 	slot.add_child(view)
 	if selected.is_valid():
