@@ -1,0 +1,13 @@
+{
+  "max_health": 100,
+  "initial_health": 100,
+  "initial_gold": 0,
+  "initial_deck": ["1", "1", "1", "50", "50", "50", "40", "40"],
+  "starter_cards": ["1", "50", "40"],
+  "card_catalog": ["1", "50", "40"],
+  "initial_items": [],
+  "map_ids": ["world:floor-001", "world:floor-002", "world:floor-003"],
+  "reward_pool": [],
+  "shop_pool": [],
+  "event_pool": []
+}

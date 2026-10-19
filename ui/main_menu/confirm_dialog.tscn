@@ -1,0 +1,65 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ui/main_menu/confirm_dialog.gd" id="1_dialog"]
+
+[node name="确认弹窗" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+visible = false
+script = ExtResource("1_dialog")
+
+[node name="遮罩" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.55)
+
+[node name="面板" type="Panel" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -150.0
+offset_right = 280.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="标题" type="Label" parent="面板"]
+offset_left = 24.0
+offset_top = 20.0
+offset_right = 536.0
+offset_bottom = 60.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 26
+text = "确认"
+
+[node name="正文" type="Label" parent="面板"]
+offset_left = 24.0
+offset_top = 68.0
+offset_right = 536.0
+offset_bottom = 196.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 3
+
+[node name="按钮行" type="HBoxContainer" parent="面板"]
+offset_left = 24.0
+offset_top = 240.0
+offset_right = 536.0
+offset_bottom = 292.0
+alignment = 2
+theme_override_constants/separation = 16
+
+[node name="取消" type="Button" parent="面板/按钮行"]
+custom_minimum_size = Vector2(140, 52)
+text = "取消"
+
+[node name="确定" type="Button" parent="面板/按钮行"]
+custom_minimum_size = Vector2(140, 52)
+text = "确定"

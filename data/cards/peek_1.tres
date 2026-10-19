@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_bmdt8"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_draw.gd" id="2_0s3ns"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_7kwuh"]
+
+[sub_resource type="Resource" id="Resource_aio7w"]
+script = ExtResource("2_0s3ns")
+
+[resource]
+script = ExtResource("3_7kwuh")
+card_id = &"peek"
+card_name = "我看一眼"
+description = "我看一眼（原型卡第 1 份，同名两份用于验证实例区分）"
+kind = 3
+face_tint = 3
+effects = Array[ExtResource("1_bmdt8")]([SubResource("Resource_aio7w")])

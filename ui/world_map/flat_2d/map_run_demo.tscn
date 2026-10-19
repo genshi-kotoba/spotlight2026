@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://ui/main_menu/menu_map_entry.tscn" id="1"]
+
+[node name="MapRunDemo" instance=ExtResource("1")]

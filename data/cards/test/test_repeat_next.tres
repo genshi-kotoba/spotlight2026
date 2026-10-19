@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_base"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_repeat_next.gd" id="2_effect"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_card"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("2_effect")
+extra_triggers = 2
+
+[resource]
+script = ExtResource("3_card")
+card_id = &"test_repeat_next"
+card_name = "测试·重复后牌"
+description = "使出牌区后一张牌额外触发 2 次，即正常触发加两次重复。"
+kind = 2
+face_tint = 3
+effects = Array[ExtResource("1_base")]([SubResource("Effect")])

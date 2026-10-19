@@ -1,0 +1,60 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://ui/main_menu/profile_switch.gd" id="1_switch"]
+[ext_resource type="PackedScene" path="res://ui/main_menu/slot_card.tscn" id="2_card"]
+[ext_resource type="PackedScene" path="res://ui/main_menu/message_bar.tscn" id="3_bar"]
+[ext_resource type="PackedScene" path="res://ui/main_menu/confirm_dialog.tscn" id="4_dialog"]
+
+[node name="切换档案" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_switch")
+
+[node name="标题" type="Label" parent="."]
+offset_left = 80.0
+offset_top = 48.0
+offset_right = 700.0
+offset_bottom = 128.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 56
+text = "切换档案"
+
+[node name="卡片行" type="HBoxContainer" parent="."]
+anchor_right = 1.0
+offset_left = 80.0
+offset_top = 240.0
+offset_right = -80.0
+offset_bottom = 450.0
+grow_horizontal = 2
+theme_override_constants/separation = 28
+
+[node name="档案卡1" parent="卡片行" instance=ExtResource("2_card")]
+
+[node name="档案卡2" parent="卡片行" instance=ExtResource("2_card")]
+
+[node name="档案卡3" parent="卡片行" instance=ExtResource("2_card")]
+
+[node name="按钮行" type="HBoxContainer" parent="."]
+offset_left = 80.0
+offset_top = 560.0
+offset_right = 700.0
+offset_bottom = 636.0
+theme_override_constants/separation = 24
+
+[node name="切换档案" type="Button" parent="按钮行"]
+custom_minimum_size = Vector2(220, 76)
+text = "切换档案"
+
+[node name="删除存档" type="Button" parent="按钮行"]
+custom_minimum_size = Vector2(220, 76)
+text = "删除存档"
+
+[node name="返回" type="Button" parent="按钮行"]
+custom_minimum_size = Vector2(160, 76)
+text = "返回"
+
+[node name="提示条" parent="." instance=ExtResource("3_bar")]
+
+[node name="确认弹窗" parent="." instance=ExtResource("4_dialog")]

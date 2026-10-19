@@ -1,0 +1,931 @@
+{
+  "1": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 5
+      }
+    ]
+  },
+  "2": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 4,
+        "all": true
+      }
+    ]
+  },
+  "3": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 3
+      },
+      {
+        "op": "buff",
+        "buff": "weak",
+        "amount": 1,
+        "scope": "target"
+      }
+    ]
+  },
+  "4": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 4
+      },
+      {
+        "op": "buff",
+        "buff": "vulnerable",
+        "amount": 1,
+        "scope": "target"
+      }
+    ]
+  },
+  "5": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 4,
+        "heal_ratio": 0.25
+      }
+    ]
+  },
+  "6": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "heal",
+        "amount": 2
+      }
+    ]
+  },
+  "7": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "repeat",
+        "count": 2,
+        "body": [
+          {
+            "op": "damage",
+            "amount": 3
+          }
+        ]
+      }
+    ]
+  },
+  "8": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "repeat",
+        "count": 2,
+        "body": [
+          {
+            "op": "block",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  },
+  "9": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "repeat",
+        "count": 4,
+        "body": [
+          {
+            "op": "block",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  "10": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "repeat",
+        "count": 4,
+        "body": [
+          {
+            "op": "damage",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  "11": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "aura",
+        "event": "damage_enemy",
+        "effect": {
+          "op": "block",
+          "amount": 1
+        }
+      }
+    ]
+  },
+  "12": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 2
+      },
+      {
+        "op": "next_damage",
+        "amount": 1
+      }
+    ]
+  },
+  "13": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "buff",
+        "buff": "strength",
+        "amount": "loss_count",
+        "scope": "player"
+      }
+    ]
+  },
+  "14": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "loss",
+        "amount": 2
+      },
+      {
+        "op": "damage",
+        "amount": 10
+      }
+    ]
+  },
+  "15": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "loss",
+        "amount": 4
+      },
+      {
+        "op": "buff",
+        "buff": "strength",
+        "amount": 2,
+        "scope": "player"
+      }
+    ]
+  },
+  "16": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "loss",
+        "amount": 5
+      },
+      {
+        "op": "draw",
+        "count": 3
+      }
+    ]
+  },
+  "17": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "loss",
+        "amount": 3
+      },
+      {
+        "op": "block",
+        "amount": 8
+      }
+    ]
+  },
+  "18": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "loss",
+        "amount": 5
+      },
+      {
+        "op": "pointer",
+        "steps": 0,
+        "start": true
+      }
+    ]
+  },
+  "19": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 3
+      },
+      {
+        "op": "slots",
+        "amount": 1,
+        "next": true
+      }
+    ]
+  },
+  "20": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "lock_next"
+      },
+      {
+        "op": "slots",
+        "amount": 1,
+        "next": true
+      }
+    ]
+  },
+  "21": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 5
+      },
+      {
+        "op": "slots",
+        "amount": -1,
+        "next": false
+      },
+      {
+        "op": "slots",
+        "amount": 1,
+        "next": true
+      }
+    ]
+  },
+  "22": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 1
+      },
+      {
+        "op": "repeat_last"
+      }
+    ]
+  },
+  "23": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "block",
+        "amount": "poison_target"
+      }
+    ]
+  },
+  "24": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 4
+      },
+      {
+        "op": "buff",
+        "buff": "poison",
+        "amount": 1,
+        "scope": "target"
+      }
+    ]
+  },
+  "25": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "buff",
+        "buff": "poison",
+        "amount": 2,
+        "scope": "all"
+      }
+    ]
+  },
+  "26": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "buff",
+        "buff": "poison",
+        "amount": 5,
+        "scope": "target"
+      }
+    ]
+  },
+  "27": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "poison_tick",
+        "all": false,
+        "consume": true
+      }
+    ]
+  },
+  "28": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 3,
+        "all": true
+      },
+      {
+        "op": "buff",
+        "buff": "poison",
+        "amount": 1,
+        "scope": "all"
+      }
+    ]
+  },
+  "29": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "merge_poison"
+      }
+    ]
+  },
+  "30": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "aura",
+        "event": "poison_add",
+        "effect": {
+          "op": "buff",
+          "amount": 1
+        }
+      }
+    ]
+  },
+  "31": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "aura",
+        "event": "draw",
+        "effect": {
+          "op": "buff",
+          "buff": "poison",
+          "amount": 1,
+          "scope": "target"
+        }
+      }
+    ]
+  },
+  "32": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "discard",
+        "count": 1
+      },
+      {
+        "op": "damage",
+        "amount": 8
+      }
+    ]
+  },
+  "33": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "discard",
+        "count": 1
+      },
+      {
+        "op": "block",
+        "amount": 7
+      }
+    ]
+  },
+  "34": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "aura",
+        "event": "discard",
+        "effect": {
+          "op": "block",
+          "amount": 2
+        }
+      }
+    ]
+  },
+  "35": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "aura",
+        "event": "discard",
+        "effect": {
+          "op": "damage",
+          "amount": 2
+        }
+      }
+    ]
+  },
+  "36": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "discard",
+        "count": 2
+      },
+      {
+        "op": "pointer",
+        "steps": -3
+      },
+      {
+        "op": "disable"
+      }
+    ]
+  },
+  "37": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "recover",
+        "count": 1
+      },
+      {
+        "op": "remove"
+      }
+    ]
+  },
+  "38": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "discard",
+        "count": 2
+      },
+      {
+        "op": "draw",
+        "count": 3
+      }
+    ]
+  },
+  "39": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "aura",
+        "event": "draw",
+        "effect": {
+          "op": "damage",
+          "amount": 2
+        }
+      }
+    ]
+  },
+  "40": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "pointer",
+        "steps": -2,
+        "disable": true
+      }
+    ]
+  },
+  "41": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "repeat",
+        "count": 2,
+        "body": [
+          {
+            "op": "pointer",
+            "steps": -1,
+            "disable": true
+          }
+        ]
+      }
+    ]
+  },
+  "42": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": "pointer_damage"
+      }
+    ]
+  },
+  "43": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "repeat",
+        "count": "nonshift",
+        "body": [
+          {
+            "op": "pointer",
+            "steps": -1,
+            "disable": true
+          }
+        ]
+      },
+      {
+        "op": "disable"
+      }
+    ]
+  },
+  "44": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "pointer",
+        "steps": -2,
+        "budget": "shift"
+      }
+    ]
+  },
+  "45": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "swap_neighbors"
+      }
+    ]
+  },
+  "46": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "47": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "48": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 5
+      },
+      {
+        "op": "pointer",
+        "steps": 2,
+        "skip": true
+      }
+    ]
+  },
+  "49": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": "block"
+      }
+    ]
+  },
+  "50": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "block",
+        "amount": 4
+      }
+    ]
+  },
+  "51": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 4,
+        "block_double": true
+      }
+    ]
+  },
+  "52": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 4,
+        "block_ratio": 0.5
+      }
+    ]
+  },
+  "53": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "boost_repeat"
+      },
+      {
+        "op": "disable"
+      }
+    ]
+  },
+  "54": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": "received",
+        "all": true
+      }
+    ]
+  },
+  "55": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "refund_life"
+      }
+    ]
+  },
+  "56": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": "extra_slots"
+      }
+    ]
+  },
+  "57": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": "empty_slots"
+      }
+    ]
+  },
+  "58": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "spread_poison"
+      }
+    ]
+  },
+  "59": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "poison_tick",
+        "all": true,
+        "consume": false
+      },
+      {
+        "op": "remove"
+      }
+    ]
+  },
+  "60": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": "coins"
+      }
+    ]
+  },
+  "61": {
+    "status": "partial",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": 5
+      }
+    ]
+  },
+  "62": {
+    "status": "ready",
+    "occupies_slot": false,
+    "instructions": [
+      {
+        "op": "recover",
+        "count": 2
+      },
+      {
+        "op": "remove"
+      }
+    ]
+  },
+  "63": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "pointer",
+        "steps": 2,
+        "anchor": true
+      },
+      {
+        "op": "swap_next"
+      }
+    ]
+  },
+  "64": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "copy_previous"
+      }
+    ]
+  },
+  "65": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": "skip_damage"
+      }
+    ]
+  },
+  "66": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "consume_block"
+      },
+      {
+        "op": "damage",
+        "amount": "consumed_block",
+        "all": true,
+        "restore_on_kill": true
+      }
+    ]
+  },
+  "67": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "damage",
+        "amount": "recorded_block"
+      }
+    ]
+  },
+  "68": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "69": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": [
+      {
+        "op": "curse"
+      }
+    ]
+  },
+  "70": {
+    "status": "ready",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "71": {
+    "status": "placeholder",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "72": {
+    "status": "placeholder",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "73": {
+    "status": "placeholder",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "74": {
+    "status": "placeholder",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "75": {
+    "status": "placeholder",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "76": {
+    "status": "placeholder",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "77": {
+    "status": "placeholder",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "78": {
+    "status": "placeholder",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "79": {
+    "status": "placeholder",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "80": {
+    "status": "placeholder",
+    "occupies_slot": true,
+    "instructions": []
+  },
+  "81": {
+    "status": "placeholder",
+    "occupies_slot": true,
+    "instructions": []
+  }
+}
