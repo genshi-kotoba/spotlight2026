@@ -6,6 +6,8 @@ signal transition_failed(path: String, error: Error)
 
 const READY_TIMEOUT_MS := 120000
 const MAX_REDIRECTS := 8
+const FADE_OUT_SECONDS := 0.12
+const FADE_IN_SECONDS := 0.16
 var _busy := false
 var _installing := false
 var _target := ""
@@ -14,8 +16,6 @@ var _was_paused := false
 var _presentation_mode: Node.ProcessMode
 var _previous_focus: WeakRef
 var _blocker: ColorRect
-var _label: Label
-var _elapsed := 0.0
 var _failure_dialog: AcceptDialog
 ## 调试用阶段耗时，资源等待与场景准备分开记录，避免把加载假快当成优化。
 var last_metrics: Dictionary = {}
@@ -25,33 +25,12 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 2048 # 高于普通 CanvasLayer 和嵌入式弹窗。
 	_blocker = ColorRect.new()
-	_blocker.name = "LoadingOverlay"
-	_blocker.color = Color(0.0, 0.0, 0.0, 0.72)
+	_blocker.name = "TransitionFade"
+	_blocker.color = Color(0.0, 0.0, 0.0, 0.0)
 	_blocker.mouse_filter = Control.MOUSE_FILTER_STOP
 	_blocker.focus_mode = Control.FOCUS_ALL
 	add_child(_blocker)
 	_blocker.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var center := CenterContainer.new()
-	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_blocker.add_child(center)
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var panel := PanelContainer.new()
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := CommonUiSkin.panel("strip", Vector4(48, 28, 48, 28))
-	panel.add_theme_stylebox_override("panel", style)
-	center.add_child(panel)
-	_label = Label.new()
-	_label.name = "LoadingLabel"
-	_label.text = "正在加载…"
-	_label.custom_minimum_size.x = 280
-	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["Microsoft YaHei", "SimHei", "Noto Sans CJK SC"])
-	_label.add_theme_font_override("font", font)
-	_label.add_theme_font_size_override("font_size", 40)
-	_label.add_theme_color_override("font_color", Color("e8bc58"))
-	panel.add_child(_label)
 	_blocker.hide()
 	_failure_dialog = AcceptDialog.new()
 	CommonUiSkin.style_dialog(_failure_dialog)
@@ -78,7 +57,7 @@ func change_scene_to_file(path: String) -> Error:
 			return OK
 		return ERR_BUSY
 	_busy = true
-	last_metrics = {"path": path, "started_usec": Time.get_ticks_usec(), "resource_ms": 0.0, "prepare_ms": 0.0}
+	last_metrics = {"path": path, "started_usec": Time.get_ticks_usec(), "resource_ms": 0.0, "prepare_ms": 0.0, "fade_out_ms": 0.0, "fade_in_ms": 0.0}
 	_target = path
 	_redirect = ""
 	_was_paused = get_tree().paused
@@ -86,20 +65,23 @@ func change_scene_to_file(path: String) -> Error:
 	var focus := get_viewport().gui_get_focus_owner()
 	_previous_focus = weakref(focus) if focus != null else null
 	get_tree().paused = true
-	_elapsed = 0.0
-	_label.text = "正在加载…"
+	_blocker.color.a = 0.0
 	_blocker.show()
 	_blocker.grab_focus()
-	set_process(true)
 	set_process_input(true)
 	transition_started.emit(path)
 	_perform.call_deferred(path)
 	return OK
 
 
-func _process(delta: float) -> void:
-	_elapsed += delta
-	_label.text = "正在加载" + ".".repeat(1 + int(_elapsed / 0.4) % 3)
+func _fade_to(alpha: float, duration: float) -> void:
+	# Start after a drawn frame, so a cold/deferred creation does not consume
+	# the elapsed time before this animation and jump straight to its end.
+	await _draw_frame()
+	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).set_ignore_time_scale(true)
+	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(_blocker, "color:a", alpha, duration)
+	await tween.finished
 
 
 func _input(_event: InputEvent) -> void:
@@ -115,7 +97,11 @@ func _draw_frame() -> void:
 
 
 func _perform(path: String) -> void:
-	# 必须先把遮罩真正绘制出来，再启动资源读取/实例化/同步 _ready。
+	# Keep cold resource submission/installation after the fade, under full black.
+	# Existing menu/node prewarming remains owned by ScenePreloader.
+	var fade_started := Time.get_ticks_usec()
+	await _fade_to(1.0, FADE_OUT_SECONDS)
+	last_metrics.fade_out_ms = (Time.get_ticks_usec() - fade_started) / 1000.0
 	await _draw_frame()
 	for redirect_index in MAX_REDIRECTS:
 		_target = path
@@ -125,7 +111,7 @@ func _perform(path: String) -> void:
 		var packed := await ScenePreloader.load_scene(path)
 		last_metrics.resource_ms += (Time.get_ticks_usec() - resource_started) / 1000.0
 		if packed == null:
-			_fail(path, ERR_CANT_OPEN)
+			await _fail(path, ERR_CANT_OPEN)
 			return
 		var prepare_started := Time.get_ticks_usec()
 		_installing = true
@@ -133,7 +119,7 @@ func _perform(path: String) -> void:
 		MapPresentation.process_mode = Node.PROCESS_MODE_ALWAYS
 		var error := get_tree().change_scene_to_packed(packed)
 		if error != OK:
-			_fail(path, error)
+			await _fail(path, error)
 			return
 		await get_tree().scene_changed
 		# 包含 _ready 中 call_deferred 的恢复/跳转，以及首轮 UI 布局。
@@ -143,26 +129,32 @@ func _perform(path: String) -> void:
 		while _redirect.is_empty() and is_instance_valid(scene):
 			var message := _preparation_error(scene)
 			if not message.is_empty():
-				_fail(path, ERR_CANT_CREATE, message)
+				await _fail(path, ERR_CANT_CREATE, message)
 				return
 			if _scene_prepared(scene):
 				break
 			if Time.get_ticks_msec() - started >= READY_TIMEOUT_MS:
-				_fail(path, ERR_TIMEOUT, "场景准备超时，请返回开始界面后重试。")
+				await _fail(path, ERR_TIMEOUT, "场景准备超时，请返回开始界面后重试。")
 				return
 			await get_tree().process_frame
 		if not is_instance_valid(scene) and _redirect.is_empty():
-			_fail(path, ERR_DOES_NOT_EXIST, "场景在准备期间已退出，请重试。")
+			await _fail(path, ERR_DOES_NOT_EXIST, "场景在准备期间已退出，请重试。")
 			return
 		await _draw_frame()
 		last_metrics.prepare_ms += (Time.get_ticks_usec() - prepare_started) / 1000.0
 		if not _redirect.is_empty():
 			path = _redirect
 			continue
+		# Preparation/redirect handling is complete. Further requests remain busy
+		# during the reveal, rather than accepting a redirect that would be lost.
+		_installing = false
+		fade_started = Time.get_ticks_usec()
+		await _fade_to(0.0, FADE_IN_SECONDS)
+		last_metrics.fade_in_ms = (Time.get_ticks_usec() - fade_started) / 1000.0
 		_finish()
 		transition_finished.emit(path)
 		return
-	_fail(path, ERR_CYCLIC_LINK, "场景连续跳转过多，已停止加载。")
+	await _fail(path, ERR_CYCLIC_LINK, "场景连续跳转过多，已停止加载。")
 
 
 func _scene_prepared(scene: Node) -> bool:
@@ -184,6 +176,7 @@ func _finish() -> void:
 	_busy = false
 	_installing = false
 	_redirect = ""
+	_blocker.color.a = 0.0
 	_blocker.hide()
 	set_process(false)
 	set_process_input(false)
@@ -196,6 +189,11 @@ func _finish() -> void:
 
 
 func _fail(path: String, error: Error, message := "") -> void:
+	_installing = false
+	_redirect = ""
+	var fade_started := Time.get_ticks_usec()
+	await _fade_to(0.0, FADE_IN_SECONDS)
+	last_metrics.fade_in_ms = (Time.get_ticks_usec() - fade_started) / 1000.0
 	_finish()
 	_failure_dialog.dialog_text = "无法加载场景：%s\n%s（错误 %d）" % [path,
 		message if not message.is_empty() else "请重试；当前操作锁定已解除。", error]
