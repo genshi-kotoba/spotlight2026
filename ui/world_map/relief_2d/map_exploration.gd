@@ -330,8 +330,12 @@ func _sync_node_mist(nodes: Array) -> void:
 			"palette": "gold" if kind in ["event", "shop", "chest", "pile"] else "red"})
 	_node_mist.set_bases(bases)
 
+## Current support/geometry is usable independently of future discovery variants.
+func is_current_map_ready() -> bool:
+	return not height_layer.is_empty() and _prepare_error.is_empty() and not _discovery_prepare_queued and is_instance_valid(_view) and not _view.is_rebuilding()
+
 func is_map_ready() -> bool:
-	return not height_layer.is_empty() and _prepare_error.is_empty() and not _discovery_prepare_queued and is_instance_valid(_view) and not _view.is_rebuilding() and not _view.is_presentation_cache_preparing()
+	return is_current_map_ready() and not _view.is_presentation_cache_preparing()
 
 func scene_transition_error() -> String:
 	if not _prepare_error.is_empty():

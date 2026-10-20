@@ -14,6 +14,14 @@ var _packet_count := 0
 var _node_count := 0
 var _shadow_packets: Dictionary = {}
 var _shadow_count := 0
+# Immutable CPU projections shared by exact caster geometry and receiver plane.
+# Bounds cover both entries and vertices; empty results are useful cache hits.
+var _projection_packets: Dictionary = {}
+var _projection_count := 0
+var _projection_vertices := 0
+var projection_hits := 0
+var projection_misses := 0
+var projection_peak := 0
 var shadow_hits := 0
 var shadow_misses := 0
 var _caster_geometry: Dictionary = {}
@@ -90,6 +98,7 @@ func clear_packets() -> void:
 	_mutex.lock()
 	_packets.clear();_packet_count=0
 	_shadow_packets.clear();_shadow_count=0
+	_projection_packets.clear();_projection_count=0;_projection_vertices=0
 	_caster_geometry.clear()
 	_material_contexts.clear()
 	# Do not recycle ids: a cancelled worker may still own ids from before
@@ -138,7 +147,7 @@ func store_shadows(signature: Array, shadows: Array[PackedVector2Array]) -> void
 
 func report() -> Dictionary:
 	_mutex.lock()
-	var result:={"packet_rows":_packet_count,"packet_peak":packet_peak,"packet_hits":packet_hits,"packet_misses":packet_misses,"shadow_rows":_shadow_count,"shadow_hits":shadow_hits,"shadow_misses":shadow_misses,"input_copies":1,"shared_floor_cells":cells.size()}
+	var result:={"packet_rows":_packet_count,"packet_peak":packet_peak,"packet_hits":packet_hits,"packet_misses":packet_misses,"shadow_rows":_shadow_count,"projection_rows":_projection_count,"projection_vertices":_projection_vertices,"projection_hits":projection_hits,"projection_misses":projection_misses,"projection_peak":projection_peak,"shadow_hits":shadow_hits,"shadow_misses":shadow_misses,"input_copies":1,"shared_floor_cells":cells.size()}
 	_mutex.unlock()
 	return result
 
@@ -156,3 +165,33 @@ func material_context_id(signature: Array) -> int:
 	if not _material_contexts.has(identity):_material_contexts[identity]=[]
 	_material_contexts[identity].append({"signature":signature.duplicate(true),"id":id})
 	_mutex.unlock();return id
+
+func find_projection(signature: Array) -> Variant:
+	var identity := hash(signature)
+	_mutex.lock()
+	for row: Dictionary in _projection_packets.get(identity, []):
+		if row.signature == signature:
+			projection_hits += 1
+			var result: Dictionary = row.result
+			_mutex.unlock()
+			return result
+	projection_misses += 1
+	_mutex.unlock()
+	return null
+
+func store_projection(signature: Array, polygon: PackedVector2Array, bounds: Rect2) -> void:
+	var identity := hash(signature)
+	_mutex.lock()
+	if _projection_count < 20000 and _projection_vertices + polygon.size() <= 128000:
+		for row: Dictionary in _projection_packets.get(identity, []):
+			if row.signature == signature:
+				_mutex.unlock()
+				return
+		if not _projection_packets.has(identity): _projection_packets[identity] = []
+		var result := {"polygon": polygon, "bounds": bounds}
+		result.make_read_only()
+		_projection_packets[identity].append({"signature": signature.duplicate(true), "result": result})
+		_projection_count += 1
+		_projection_vertices += polygon.size()
+		projection_peak = maxi(projection_peak, _projection_count)
+	_mutex.unlock()
