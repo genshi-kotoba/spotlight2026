@@ -16,6 +16,10 @@ config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 config/seed_content_version="jam-map-seed-v1"
 
+[audio]
+
+buses/default_bus_layout="res://default_bus_layout.tres"
+
 [autoload]
 
 SeedService="*res://autoload/seed_service.gd"
@@ -28,6 +32,8 @@ MapPresentation="*res://autoload/map_presentation.gd"
 SceneTransition="*res://autoload/scene_transition.gd"
 ScenePreloader="*res://autoload/scene_preloader.gd"
 RunResults="*res://autoload/run_results.gd"
+WwiseRuntimeManager="*res://addons/Wwise/runtime/wwise_runtime_manager.gd"
+AudioService="*res://autoload/audio_service.gd"
 
 [display]
 
@@ -51,3 +57,9 @@ enabled=PackedStringArray("res://addons/card_preview/plugin.cfg", "res://addons/
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="mobile"
 anti_aliasing/quality/msaa_3d=3
+
+[wwise]
+
+common_user_settings/root_output_path="res://wwise_soundbanks"
+project_settings/windows_platform_info="res://Wwise/resources/Windows.tres"
+project_settings/android_platform_info="res://Wwise/resources/Android.tres"

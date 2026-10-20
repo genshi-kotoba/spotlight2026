@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Android",
+  "BasePlatform": "Android",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1225611939",
+    "Type": "Bus",
+    "GUID": "{8BA0662E-326F-440C-AFE1-FE45799C682D}",
+    "Language": "SFX",
+    "Hash": "{34DBDB1A-108C-8DFD-1D55-69F59D598E38}",
+    "ObjectPath": "Reverb_Slum",
+    "ShortName": "Reverb_Slum",
+    "Path": "Bus/Reverb_Slum.bnk",
+    "Plugins": {
+     "ShareSets": [
+      {
+       "Id": "1346364472",
+       "Name": "Rev_Slum",
+       "ObjectPath": "\\Effects\\Default Work Unit\\Reverb\\Rev_Slum",
+       "GUID": "{4C7D6973-7177-4DC2-9C22-63204F63EAEB}",
+       "LibName": "Wwise RoomVerb",
+       "LibId": "7733251"
+      }
+     ]
+    },
+    "AuxBusses": [
+     {
+      "Id": "1225611939",
+      "Name": "Reverb_Slum",
+      "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus\\Reverb_Slum",
+      "GUID": "{8BA0662E-326F-440C-AFE1-FE45799C682D}",
+      "PluginRefs": {
+       "ShareSets": [
+        {
+         "Id": "1346364472"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ],
+  "FileHash": "{736FCA74-07DD-5927-9C88-BD0FCBE692FC}"
+ }
+}

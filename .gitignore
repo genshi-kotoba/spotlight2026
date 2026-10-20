@@ -39,3 +39,10 @@ reference/
 test_scene.tscn
 lark_login_qr*.png
 /_local/
+
+# Audio workspace and local harness temporary files
+.dsh-acl-recovery/
+.dsh/
+_work/
+*.rpp-bak
+*.bak
