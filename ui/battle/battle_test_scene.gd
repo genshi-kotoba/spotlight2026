@@ -181,6 +181,9 @@ var _buff_icon_cache: Dictionary = {}
 var _buff_text_by_id: Dictionary = {}
 var _buff_tip: PanelContainer
 var _buff_tip_label: Label
+var intent_board: MonsterIntentBoard
+var _intent_tip: HoverTip
+var _intent_tip_source: MonsterIntentStrip
 var player_block_shield: Control
 var _run_menu: RunMenuOverlay
 ## 战斗测试场景自带的一局，用于战斗内编辑残片；生产场景没有它。
@@ -328,6 +331,7 @@ func _ready() -> void:
 	_build_peek()
 	_build_relic_hints()
 	_build_feedback()
+	_build_intent_board()
 	_start_test_battle()
 	if _battle != null:
 		_battle.battle_choice_requested.connect(_on_battle_choice_requested)
@@ -650,6 +654,16 @@ func _connect_combat_feedback() -> void:
 	_battle.card_destroyed.connect(_on_card_destroyed_visual)
 
 
+func _build_intent_board() -> void:
+	intent_board = MonsterIntentBoard.new()
+	add_child(intent_board)
+	_intent_tip = HoverTip.new()
+	_intent_tip.name = "IntentTip"
+	_intent_tip.z_index = 80
+	add_child(_intent_tip)
+	_intent_tip.get_node("TipLabel").add_theme_font_size_override("normal_font_size", 18)
+
+
 func _build_block_shields() -> void:
 	# 玩家侧的盾贴在血条尾端，位置与玩家立绘一样唯一；敌方的盾归 EnemySlot 自己持有，
 	# 因为它随敌人数量与槽宽变化。
@@ -867,6 +881,8 @@ func _on_rule_event_processed(event: BattleEvent) -> void:
 		_queue_presentation("enemy_spawned")
 	elif event.type == &"enemy.action_requested":
 		_queue_presentation("enemy_action", {"entity_id": str(event.payload.get("enemy_id", ""))})
+	elif event.type in [&"enemy.intents_ready", &"enemy.intents_changed"]:
+		_queue_presentation("intent_updated")
 
 
 func _on_relic_chain_limited() -> void:
@@ -1940,6 +1956,8 @@ func _render_combat_snapshot(player_data: Dictionary, enemies: Array) -> void:
 		int(player_data.get("block", 0)), _format_buffs(player_data.get("buffs", [])),
 	]
 	enemy_rack.refresh(enemy_list, _chosen_enemy_id())
+	if intent_board != null:
+		intent_board.show_snapshot(player_data, enemy_list, _resolver.buff_catalog if _resolver != null else {}, _presentation_turn if _busy else _battle.turn_number)
 	var lines: Array[String] = []
 	for enemy: Dictionary in enemy_list:
 		_render_enemy_slot(enemy)
@@ -1955,6 +1973,9 @@ func _render_enemy_slot(enemy: Dictionary) -> void:
 	var slot := enemy_rack.slot_for(str(enemy.get("enemy_id", "")))
 	if slot == null:
 		return
+	if not slot.intent_strip.hint_requested.is_connected(_show_intent_tip):
+		slot.intent_strip.hint_requested.connect(_show_intent_tip)
+		slot.intent_strip.hint_hidden.connect(_hide_intent_tip)
 	var portrait := str(enemy.get("art_path", ""))
 	if not portrait.is_empty():
 		slot.set_portrait_texture(TextCatalogService.art_texture(portrait))
@@ -1966,7 +1987,7 @@ func _render_enemy_slot(enemy: Dictionary) -> void:
 		if int(candidate.get("health", 0)) > 0 and bool(candidate.get("taunt", false)):
 			taunt = str(candidate.enemy_id)
 			break
-	slot.show_snapshot_status(enemy, not _presented_enemies.is_empty() and str(_presented_enemies[0].enemy_id) == str(enemy.enemy_id), interactive and (taunt.is_empty() or taunt == str(enemy.enemy_id)))
+	slot.show_snapshot_status(enemy, not _presented_enemies.is_empty() and str(_presented_enemies[0].enemy_id) == str(enemy.enemy_id), interactive and (taunt.is_empty() or taunt == str(enemy.enemy_id)), intent_board.preview_for(str(enemy.enemy_id)) if intent_board != null else {})
 	_render_health(slot.fill, slot.block_marker, slot.number_label, enemy,
 		slot.fill_left(), slot.fill_width(), &"enemy", str(enemy.get("enemy_id", "")))
 	_render_buffs(slot.buff_row, enemy.get("buffs", []), 1.0)
@@ -2134,6 +2155,18 @@ func _show_buff_tip(anchor: Control, text: String) -> void:
 func _hide_buff_tip() -> void:
 	if _buff_tip != null:
 		_buff_tip.hide_tip()
+
+
+func _show_intent_tip(anchor: Control, text: String) -> void:
+	if _intent_tip == null or not is_instance_valid(anchor): return
+	_intent_tip_source = anchor.get_parent() as MonsterIntentStrip
+	_intent_tip.show_for(anchor, text)
+
+
+func _hide_intent_tip(source: MonsterIntentStrip) -> void:
+	if source != _intent_tip_source: return
+	_intent_tip_source = null
+	if is_instance_valid(_intent_tip): _intent_tip.hide_tip()
 
 
 
@@ -2793,7 +2826,7 @@ func _monster_text_context() -> Dictionary:
 	var blocked: Array[Rect2] = []
 	for child: Node in get_children():
 		if not child is Control or not child.is_visible_in_tree() or child == _monster_text \
-				or child.name in [&"Background", &"BackgroundDim", &"EnemyRack", &"RunMenuOverlay", &"PeekLayer", &"CombatFeedback", &"BuffTip"]:
+				or child.name in [&"Background", &"BackgroundDim", &"EnemyRack", &"RunMenuOverlay", &"PeekLayer", &"CombatFeedback", &"BuffTip", &"IntentTip"]:
 			continue
 		var rect: Rect2 = child.get_rect()
 		# 手持卡最大1.5倍及弹簧过冲的活动区域，一直保留而非仅避开当前小卡面。

@@ -41,12 +41,12 @@ func _run() -> void:
 	_check("本体与随从通过独立槽位同屏且不共享血条", scene.enemy_rack.slots.size() == 3 and main.visible and knight_view.visible and thief_view.visible and main.fill != knight_view.fill and knight_view.fill != thief_view.fill)
 	_check_road_lineup(scene, main, knight_view, thief_view)
 	var intent_data := knight.duplicate(true)
-	intent_data.actions = [{"block": 9}]
-	knight_view.show_snapshot_status(intent_data, false, true)
-	_check("防御意图显示防御资源和格挡值", knight_view._intent_badge.texture.atlas.resource_path.ends_with("/防御.png") and knight_view.intent_value.text == "9")
-	intent_data.actions = [{"summon": "4"}]
-	knight_view.show_snapshot_status(intent_data, false, true)
-	_check("特殊意图不显示错误的0点攻击", knight_view._intent_badge.texture.atlas.resource_path.ends_with("/特殊.png") and knight_view.intent_value.text == "—")
+	intent_data.intent_plan = [{"block": 9}]
+	knight_view.show_snapshot_status(intent_data, false, true, {"ready": true, "action_count": 1, "actions": [{"kinds": ["block"], "block": 9, "block_max": 9, "summary": "测试"}]})
+	_check("防御意图显示防御资源且角标表示动数", knight_view.intent_strip.cells[0].get_node("Icon").texture.atlas.resource_path.ends_with("/防御.png") and knight_view.intent_value.text == "1动")
+	intent_data.intent_plan = [{"summon": "4"}]
+	knight_view.show_snapshot_status(intent_data, false, true, {"ready": true, "action_count": 1, "actions": [{"kinds": ["special"], "block": -1, "block_max": -1, "summary": "测试"}]})
+	_check("特殊意图不显示错误的0点攻击", knight_view.intent_strip.cells[0].get_node("Icon").texture.atlas.resource_path.ends_with("/特殊.png") and knight_view.intent_value.text == "1动")
 	scene._refresh_combat_status()
 	await _click_enemy(knight_view)
 	_check("直接点击随从选择目标，其他槽仍显示自己的身份", scene._chosen_enemy_id() == knight_id and main.name_label.text == str(primary.name) and main.portrait.texture == TextCatalogService.art_texture(str(primary.art_path)))

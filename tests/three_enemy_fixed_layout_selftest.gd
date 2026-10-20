@@ -247,12 +247,12 @@ func _boss_eleven(resolution: Vector2i) -> bool:
 	if not await _settled(tag + " 格挡治疗buff表现"): return false
 	if not _expect(tag + " 血量格挡buff不串实体", int(_enemy(knight_id)["health"]) == health_before - 3 and int(knight.shield.get("value")) == 3 and int(main_slot.shield.get("value")) == 0 and int(thief.shield.get("value")) == 0 and knight.buff_row.get_child_count() > 0 and knight.buff_row.get_child_count() == _enemy(knight_id)["buffs"].size() and main_slot.buff_row.get_child_count() == main["buffs"].size() and thief.buff_row.get_child_count() == _enemy(thief_id)["buffs"].size() and knight.buff_row != main_slot.buff_row and knight.buff_row != thief.buff_row): return false
 	var intent: Dictionary = _enemy(knight_id).duplicate(true)
-	intent["actions"] = [{"block": 9}]
-	knight.show_snapshot_status(intent, false, true)
-	if not _expect(tag + " 防御意图为真实防御图标和数值", knight._intent_badge.texture.atlas.resource_path.ends_with("/防御.png") and knight.intent_value.text == "9"): return false
-	intent["actions"] = [{"summon": "4"}]
-	knight.show_snapshot_status(intent, false, true)
-	if not _expect(tag + " 特殊意图不会伪装成0攻击", knight._intent_badge.texture.atlas.resource_path.ends_with("/特殊.png") and knight.intent_value.text == "—"): return false
+	intent["intent_plan"] = [{"block": 9}]
+	knight.show_snapshot_status(intent, false, true, {"ready": true, "action_count": 1, "actions": [{"kinds": ["block"], "block": 9, "block_max": 9, "summary": "测试"}]})
+	if not _expect(tag + " 防御意图为真实防御图标和独立动数", knight.intent_strip.cells[0].get_node("Icon").texture.atlas.resource_path.ends_with("/防御.png") and knight.intent_value.text == "1动"): return false
+	intent["intent_plan"] = [{"summon": "4"}]
+	knight.show_snapshot_status(intent, false, true, {"ready": true, "action_count": 1, "actions": [{"kinds": ["special"], "block": -1, "block_max": -1, "summary": "测试"}]})
+	if not _expect(tag + " 特殊意图不会伪装成0攻击", knight.intent_strip.cells[0].get_node("Icon").texture.atlas.resource_path.ends_with("/特殊.png") and knight.intent_value.text == "1动"): return false
 	var random_before: String = JSON.stringify(SeedService.capture_snapshot())
 	for index: int in 3: scene._refresh_combat_status()
 	if not _expect(tag + " UI重复刷新不消耗随机", JSON.stringify(SeedService.capture_snapshot()) == random_before): return false

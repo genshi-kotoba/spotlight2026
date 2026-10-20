@@ -20,13 +20,13 @@ func _damage(event: BattleEvent) -> void:
 	if bool(data.get("use_stats", false)):
 		bonus = _bonus(StringName(data.source_side), String(data.source_id), BuffEffectStat.Stat.ATTACK)
 	data["base_amount"] = int(data.amount)
-	data["amount"] = maxi(0, int(data.amount) + bonus)
+	data["amount"] = adjusted_amount(int(data.amount), bonus)
 
 
 func _block(event: BattleEvent) -> void:
 	var data := event.payload
 	data["base_amount"] = int(data.amount)
-	data["amount"] = maxi(0, int(data.amount) + _bonus(StringName(data.side), String(data.target), BuffEffectStat.Stat.BLOCK))
+	data["amount"] = adjusted_amount(int(data.amount), _bonus(StringName(data.side), String(data.target), BuffEffectStat.Stat.BLOCK))
 
 
 func _vulnerable(event: BattleEvent) -> void:
@@ -36,16 +36,29 @@ func _vulnerable(event: BattleEvent) -> void:
 	var target := str(event.payload.target)
 	for buff: Dictionary in battle.get_combatant(side, target).get("buffs", []):
 		if str(buff.buff_id) == "vulnerable" and int(buff.layers) > 0:
-			event.payload["amount"] = int(floor(int(event.payload.amount) * 1.5))
+			event.payload["amount"] = vulnerable_amount(int(event.payload.amount))
 			battle.rules.publish("action.buff_set", {"side": String(side), "target": target,
 				"buff_id": "vulnerable", "layers": int(buff.layers) - 1})
 			return
 
 
 func _bonus(side: StringName, id: String, stat: int) -> int:
+	return stat_bonus(battle.get_combatant(side, id), catalog, stat)
+
+
+## Shared pure arithmetic. Intent projection must never execute action rules.
+static func adjusted_amount(base: int, bonus: int) -> int:
+	return maxi(0, base + bonus)
+
+
+static func vulnerable_amount(amount: int) -> int:
+	return int(floor(amount * 1.5))
+
+
+static func stat_bonus(combatant: Dictionary, definitions: Dictionary, stat: int) -> int:
 	var result := 0
-	for buff: Dictionary in battle.get_combatant(side, id).get("buffs", []):
-		var definition: BuffData = catalog.get(String(buff.buff_id))
+	for buff: Dictionary in combatant.get("buffs", []):
+		var definition: BuffData = definitions.get(String(buff.buff_id))
 		if definition == null:
 			continue
 		for effect: GameEffect in definition.effects:

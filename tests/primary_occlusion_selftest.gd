@@ -188,7 +188,10 @@ func _layers(owner: String, label: String) -> bool:
 		if not _expect(label + "/" + slot.enemy_id + " 后排Canvas树含模型光晕HUD盾牌文字", descendants.has(slot.portrait) and descendants.has(slot._glow) and descendants.has(slot.fill) and descendants.has(slot.name_label) and descendants.has(slot.intent_value) and descendants.has(slot.buff_row) and descendants.has(slot.shield) and slot.shield.get_child_count() > 0): return false
 		for item: CanvasItem in descendants:
 			var z: int = _effective_z(item)
-			if not _expect(label + "/" + slot.enemy_id + "/" + str(item.name) + " 实际有效Z低于主怪模型", z < main_z): return false
+			if item == slot.intent_strip or slot.intent_strip.is_ancestor_of(item):
+				if not _expect(label + "/" + slot.enemy_id + "/" + str(item.name) + " 意图作为可读前景且低于菜单", z > main_z and z < _effective_z(scene._run_menu)): return false
+			else:
+				if not _expect(label + "/" + slot.enemy_id + "/" + str(item.name) + " 实际有效Z低于主怪模型", z < main_z): return false
 			names.append(str(item.get_path()))
 	if not _expect(label + " 主怪HUD高于主怪模型且低于普通UI", _effective_z(main.name_label) > main_z and _effective_z(main.shield) > main_z and _effective_z(main.buff_row) > main_z and _effective_z(main.shield) < _effective_z(scene.hand_scroll)): return false
 	layer_samples.append({"label": label, "main_portrait_z": main_z, "rear_canvas_paths": names})
@@ -292,13 +295,12 @@ func _sentinel_fixture(resolution: Vector2i) -> bool:
 		slot.portrait.size = Vector2(240, 240)
 		slot._glow.global_position = Vector2(830, 370)
 		slot._glow.size = Vector2(280, 280)
-		var hud: Array[Control] = [slot._bar, slot._frame, slot.name_label, slot.number_label, slot._intent_badge, slot._intent_ring, slot.intent_value, slot.buff_row, slot.shield]
+		var hud: Array[Control] = [slot._bar, slot._frame, slot.name_label, slot.number_label, slot.buff_row, slot.shield]
 		for index: int in hud.size():
 			hud[index].global_position = Vector2(870 + (index % 3) * 35, 410 + floori(float(index) / 3.0) * 45)
 			hud[index].show()
 		slot.name_label.text = "REAR NAME"
 		slot.number_label.text = "999/999"
-		slot.intent_value.text = "999"
 		slot.name_label.add_theme_font_size_override("font_size", 48)
 		slot.shield.set("value", 999)
 		# Existing actual buff-row children are audited in real fixtures; this sentinel adds an explicit label at that inherited layer.
@@ -347,7 +349,11 @@ func _protected_points(main: EnemySlot) -> Array[Vector2]:
 	for y: int in range(int(rect.position.y) + 12, int(rect.end.y) - 12, 12):
 		for x: int in range(int(rect.position.x) + 12, int(rect.end.x) - 12, 12):
 			var point := Vector2(x, y)
-			if _portrait_alpha(main, point) > 0.98: points.append(point)
+			# 意图是有意独立在前景的场景UI，保留其余模型/HUD/反馈的像素保护。
+			var intent_ui := false
+			for slot: EnemySlot in scene.enemy_rack.slots:
+				if slot.intent_strip.get_global_rect().has_point(point): intent_ui = true
+			if not intent_ui and _portrait_alpha(main, point) > 0.98: points.append(point)
 	return points
 
 func _pixels_unchanged(before: Image, after: Image, points: Array[Vector2], label: String) -> bool:

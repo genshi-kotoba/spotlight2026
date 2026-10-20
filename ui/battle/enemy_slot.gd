@@ -44,9 +44,6 @@ static var _portrait_masks: Dictionary = {}
 
 const BAR_BASE_PATH := "res://assets/ui/UI-015/超长血条底图.png"
 const BAR_FRAME_PATH := "res://assets/ui/UI-015/超长-boss血条框.png"
-const INTENT_TEXTURE := "res://assets/ui/UI-016/攻击.png"
-const INTENT_REGION := Rect2(104, 125, 847, 863)
-const INTENT_RING := "res://assets/ui/UI-016/意图角标.png"
 const HEALTH_FILL_SCRIPT := preload("res://ui/battle/health_fill.gd")
 const BLOCK_SHIELD_SCRIPT := preload("res://ui/battle/block_shield.gd")
 
@@ -65,7 +62,7 @@ var selectable := true
 var _snapshot_initialized := false
 var _snapshot_dead := false
 var _death_tween: Tween
-var _intent_kind := "攻击"
+var intent_strip: MonsterIntentStrip
 
 var portrait: TextureRect
 var name_label: Label
@@ -78,8 +75,6 @@ var shield: Control
 
 var _bar: Control
 var _frame: TextureRect
-var _intent_badge: TextureRect
-var _intent_ring: TextureRect
 var _glow: TextureRect
 var _portrait_height := 0.0
 var _label_scale := 1.0
@@ -114,7 +109,7 @@ func _has_point(point: Vector2) -> bool:
 	var hit_top := minf(0.0, portrait.position.y) if _portrait_scale > 1.0 else 0.0
 	if not Rect2(Vector2(hit_left, hit_top), Vector2(hit_right-hit_left, click_height()-hit_top)).has_point(point): return false
 	if not _foreground_primary: return true
-	for item: Control in [_bar, name_label, number_label, buff_row, shield, _intent_badge, _intent_ring]:
+	for item: Control in [_bar, name_label, number_label, buff_row, shield, intent_strip]:
 		if is_instance_valid(item) and item.visible and item.get_rect().has_point(point): return true
 	if portrait.texture == null or _portrait_mask == null: return true
 	var texture_size := Vector2(_portrait_mask.get_size())
@@ -173,15 +168,7 @@ func layout_for(slot_width: float, slot_height: float, portrait_scale := 1.0) ->
 	buff_row.position = Vector2(slot_width * 0.125, 78.0 * v_scale)
 	buff_row.size = Vector2(slot_width * 0.782, 22.0 * _label_scale)
 	_apply_fonts()
-	# 意图角标在作者原版里越出血条右端；单个敌人（槽宽即原宽）时保持原位不动，
-	# 只有并排多个、槽被压窄时才把它收回槽内，免得压到旁边的敌人。
-	var badge_x := AUTHORED_WIDTH * 0.948 * ratio
-	if slot_width < AUTHORED_WIDTH * 0.9:
-		badge_x = minf(badge_x, slot_width - 111.0 - 8.0)
-	_intent_badge.position = Vector2(badge_x, -26.0)
-	_intent_ring.position = Vector2(badge_x + 64.0, 42.0 * v_scale)
-	intent_value.position = _intent_ring.position
-	intent_value.size = _intent_ring.size
+	_layout_intent_strip()
 	shield.position = Vector2(slot_width * 0.848, 6.0 * v_scale)
 
 
@@ -266,7 +253,6 @@ func arrow_corner() -> Vector2:
 func _apply_fonts() -> void:
 	name_label.add_theme_font_size_override("font_size", maxi(int(22.0 * _label_scale), 13))
 	number_label.add_theme_font_size_override("font_size", maxi(int(18.0 * _label_scale), 12))
-	intent_value.add_theme_font_size_override("font_size", maxi(int(26.0 * _label_scale), 15))
 	shield.set("number_px", maxi(int(24.0 * _label_scale), 14))
 
 
@@ -335,30 +321,13 @@ func _build() -> void:
 	add_child(number_label)
 	add_child(buff_row)
 
-	_intent_badge = TextureRect.new()
-	_intent_badge.name = "IntentBadge"
-	var atlas := AtlasTexture.new()
-	atlas.atlas = load(INTENT_TEXTURE)
-	atlas.region = INTENT_REGION
-	_intent_badge.texture = atlas
-	_intent_badge.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_intent_badge.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_intent_badge.size = Vector2(111.0, 113.0)
-	_intent_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_intent_badge)
-	_intent_ring = TextureRect.new()
-	_intent_ring.name = "IntentRing"
-	_intent_ring.texture = load(INTENT_RING)
-	_intent_ring.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_intent_ring.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_intent_ring.size = Vector2(60.0, 60.0)
-	_intent_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_intent_ring)
-	intent_value = _label(INTENT_COLOR)
-	intent_value.name = "IntentValue"
-	intent_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	intent_value.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	add_child(intent_value)
+	intent_strip = MonsterIntentStrip.new()
+	intent_strip.name = "IntentIcons"
+	# 意图必须可读，独立于前后排立绘的遮挡；立绘和其余 HUD 层级不变。
+	intent_strip.z_as_relative = false
+	intent_strip.z_index = 10
+	add_child(intent_strip)
+	intent_value = intent_strip.action_count_label
 
 	shield = BLOCK_SHIELD_SCRIPT.new()
 	shield.name = "EnemyBlockShield"
@@ -399,23 +368,14 @@ func _label(color: Color) -> Label:
 
 
 ## 沿用同一份事件快照处理意图、嘲讽和退场，不读取规则侧的最终状态。
-func show_snapshot_status(enemy: Dictionary, primary: bool, interactive: bool) -> void:
+func show_snapshot_status(enemy: Dictionary, primary: bool, interactive: bool, preview: Dictionary = {}) -> void:
 	_refresh_portrait_mask()
 	var dead := int(enemy.get("health", 0)) <= 0
 	selectable = interactive and not dead
-	var actions: Array = enemy.get("actions", [])
-	var action: Dictionary = actions[0] if not actions.is_empty() else {}
-	var kind := "攻击" if action.has("damage") else ("防御" if action.has("block") else "特殊")
-	if kind != _intent_kind:
-		var atlas := AtlasTexture.new()
-		atlas.atlas = TextCatalogService.art_texture("res://assets/ui/UI-016/%s.png" % kind)
-		atlas.region = INTENT_REGION
-		_intent_badge.texture = atlas
-		_intent_kind = kind
-	intent_value.text = str(action.damage) if action.has("damage") else (str(action.block) if action.has("block") else "—")
-	_intent_badge.visible = not dead
-	_intent_ring.visible = not dead
+	intent_strip.show_preview(preview)
+	intent_strip.visible = not dead
 	intent_value.visible = not dead
+	_layout_intent_strip()
 	var tint := Color(1, 1, 1, 0.25) if dead and primary else Color.WHITE
 	portrait.set_meta("base_tint", tint)
 	if not _snapshot_initialized:
@@ -436,3 +396,11 @@ func show_snapshot_status(enemy: Dictionary, primary: bool, interactive: bool) -
 		show()
 	_snapshot_initialized = true
 	_snapshot_dead = dead
+
+
+func _layout_intent_strip() -> void:
+	if intent_strip == null: return
+	# 主怪靠血条右端，侧怪靠外侧；都悬在各自血条上方。
+	var x := size.x - intent_strip.size.x - 48.0
+	if not _foreground_primary and position.x < 800.0: x = 45.0
+	intent_strip.position = Vector2(maxf(8.0, x), -68.0)
