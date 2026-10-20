@@ -13,8 +13,10 @@ namespace AK
 {
     namespace EVENTS
     {
+        static const AkUniqueID MUS_ALCHEMY = 3790302614U;
         static const AkUniqueID MUS_ALCHEMY_BATTLE = 2307077735U;
         static const AkUniqueID MUS_ALCHEMY_CALM = 3541367596U;
+        static const AkUniqueID MUS_CHURCH = 3406848652U;
         static const AkUniqueID MUS_CHURCH_BATTLE = 3016252705U;
         static const AkUniqueID MUS_CHURCH_CALM = 1707269606U;
         static const AkUniqueID MUS_STREET_BATTLE = 1226321073U;
@@ -161,6 +163,7 @@ namespace AK
     {
         static const AkUniqueID COMBO_COUNT = 1289759037U;
         static const AkUniqueID DECK_SIZE = 2312524586U;
+        static const AkUniqueID MUSIC_COMBAT = 3944980085U;
         static const AkUniqueID PLAYER_HEALTH = 215992295U;
         static const AkUniqueID PLAYER_SPEED = 1062779386U;
         static const AkUniqueID TENSION = 1571361561U;
@@ -182,6 +185,9 @@ namespace AK
         static const AkUniqueID AMBIENCE = 85412153U;
         static const AkUniqueID MAIN_AUDIO_BUS = 2246998526U;
         static const AkUniqueID MUSIC = 3991942870U;
+        static const AkUniqueID SCENE_CHURCH = 1050881735U;
+        static const AkUniqueID SCENE_SLUM = 76192297U;
+        static const AkUniqueID SCENE_WORKSHOP = 2277638669U;
         static const AkUniqueID SFX = 393239870U;
         static const AkUniqueID UI = 1551306167U;
         static const AkUniqueID VOICE = 3170124113U;

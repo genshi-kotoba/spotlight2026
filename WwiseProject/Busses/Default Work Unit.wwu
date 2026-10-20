@@ -21,6 +21,40 @@
 										</ReferenceList>
 									</EffectSlot>
 								</ObjectList>
+								<ObjectList Name="RTPC">
+									<RTPC Name="" ID="{D0792612-A07C-44CB-A5D5-932C07A835F5}" ShortID="52353300">
+										<PropertyList>
+											<Property Name="PropertyName" Type="string" Value="Volume"/>
+										</PropertyList>
+										<ReferenceList>
+											<Reference Name="ControlInput">
+												<ObjectRef Name="Volume_Music" ID="{1871E77C-2B0D-413B-A931-76B31717816A}" WorkUnitID="{C1317E2B-7418-4C64-A2FA-67AFA42E6ACF}"/>
+											</Reference>
+											<Reference Name="Curve">
+												<Custom>
+													<Curve Name="" ID="{380929F9-0BAA-43C6-821D-2E279BCC470E}">
+														<PropertyList>
+															<Property Name="Flags" Type="int32" Value="3"/>
+														</PropertyList>
+														<PointList>
+															<Point>
+																<XPos>0</XPos>
+																<YPos>-96</YPos>
+																<Flags>5</Flags>
+																<SegmentShape>Log3</SegmentShape>
+															</Point>
+															<Point>
+																<XPos>100</XPos>
+																<YPos>0</YPos>
+																<Flags>37</Flags>
+															</Point>
+														</PointList>
+													</Curve>
+												</Custom>
+											</Reference>
+										</ReferenceList>
+									</RTPC>
+								</ObjectList>
 							</ObjectLists>
 						</Bus>
 						<Bus Name="SFX" ID="{F1DF7CD4-2BB7-41E0-B42E-EAAF2D40B85B}">
@@ -34,10 +68,81 @@
 										</ReferenceList>
 									</EffectSlot>
 								</ObjectList>
+								<ObjectList Name="RTPC">
+									<RTPC Name="" ID="{211F26D4-AA66-472A-93A9-FFAB5B75ABAC}" ShortID="875071363">
+										<PropertyList>
+											<Property Name="PropertyName" Type="string" Value="Volume"/>
+										</PropertyList>
+										<ReferenceList>
+											<Reference Name="ControlInput">
+												<ObjectRef Name="Volume_SFX" ID="{85D77EAA-ED13-489C-85E1-4E840EE13CE2}" WorkUnitID="{C1317E2B-7418-4C64-A2FA-67AFA42E6ACF}"/>
+											</Reference>
+											<Reference Name="Curve">
+												<Custom>
+													<Curve Name="" ID="{BA7A3915-0A6C-42C6-855D-310949C32E9A}">
+														<PropertyList>
+															<Property Name="Flags" Type="int32" Value="3"/>
+														</PropertyList>
+														<PointList>
+															<Point>
+																<XPos>0</XPos>
+																<YPos>-96</YPos>
+																<Flags>5</Flags>
+																<SegmentShape>Log3</SegmentShape>
+															</Point>
+															<Point>
+																<XPos>100</XPos>
+																<YPos>0</YPos>
+																<Flags>37</Flags>
+															</Point>
+														</PointList>
+													</Curve>
+												</Custom>
+											</Reference>
+										</ReferenceList>
+									</RTPC>
+								</ObjectList>
 							</ObjectLists>
 						</Bus>
 						<Bus Name="UI" ID="{FD72B170-B360-4725-8677-1212456F9DA3}"/>
-						<Bus Name="Ambience" ID="{466C3A53-5754-480B-9235-88C369CBC4AF}"/>
+						<Bus Name="Ambience" ID="{466C3A53-5754-480B-9235-88C369CBC4AF}">
+							<ObjectLists>
+								<ObjectList Name="RTPC">
+									<RTPC Name="" ID="{A4C55A57-8BAF-4700-8BCF-024FFC5342EF}" ShortID="291057583">
+										<PropertyList>
+											<Property Name="PropertyName" Type="string" Value="Volume"/>
+										</PropertyList>
+										<ReferenceList>
+											<Reference Name="ControlInput">
+												<ObjectRef Name="Volume_Music" ID="{1871E77C-2B0D-413B-A931-76B31717816A}" WorkUnitID="{C1317E2B-7418-4C64-A2FA-67AFA42E6ACF}"/>
+											</Reference>
+											<Reference Name="Curve">
+												<Custom>
+													<Curve Name="" ID="{F825AB3D-2D31-425F-8B43-B1DBEFB0A1F4}">
+														<PropertyList>
+															<Property Name="Flags" Type="int32" Value="3"/>
+														</PropertyList>
+														<PointList>
+															<Point>
+																<XPos>0</XPos>
+																<YPos>-96</YPos>
+																<Flags>5</Flags>
+																<SegmentShape>Log3</SegmentShape>
+															</Point>
+															<Point>
+																<XPos>100</XPos>
+																<YPos>0</YPos>
+																<Flags>37</Flags>
+															</Point>
+														</PointList>
+													</Curve>
+												</Custom>
+											</Reference>
+										</ReferenceList>
+									</RTPC>
+								</ObjectList>
+							</ObjectLists>
+						</Bus>
 						<Bus Name="Voice" ID="{280A33C7-3E53-4EA4-8153-E797DA78A3B7}"/>
 						<AuxBus Name="Reverb_Workshop" ID="{DB38CA55-F3BB-4C9A-A4CF-FACFED221E9F}">
 							<ObjectLists>
@@ -78,6 +183,48 @@
 								</ObjectList>
 							</ObjectLists>
 						</AuxBus>
+						<Bus Name="Scene_Workshop" ID="{644968E5-090F-4D43-8438-8CFA808B9A91}">
+							<PropertyList>
+								<Property Name="UserAuxSendVolume0" Type="Real64">
+									<ValueList>
+										<Value>-6</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="UserAuxSend0">
+									<ObjectRef Name="Reverb_Workshop" ID="{DB38CA55-F3BB-4C9A-A4CF-FACFED221E9F}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+								</Reference>
+							</ReferenceList>
+						</Bus>
+						<Bus Name="Scene_Slum" ID="{8BD804F9-152A-404D-BBEE-24F7B224D091}">
+							<PropertyList>
+								<Property Name="UserAuxSendVolume0" Type="Real64">
+									<ValueList>
+										<Value>-6</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="UserAuxSend0">
+									<ObjectRef Name="Reverb_Slum" ID="{8BA0662E-326F-440C-AFE1-FE45799C682D}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+								</Reference>
+							</ReferenceList>
+						</Bus>
+						<Bus Name="Scene_Church" ID="{0AE28A0A-B550-49FF-965A-D41DE7188B89}">
+							<PropertyList>
+								<Property Name="UserAuxSendVolume0" Type="Real64">
+									<ValueList>
+										<Value>-6</Value>
+									</ValueList>
+								</Property>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="UserAuxSend0">
+									<ObjectRef Name="Reverb_Church" ID="{F6EA1BCD-832A-4EEA-AB9B-83EF8CCFAEF9}" WorkUnitID="{9076A15E-2499-44B5-9A24-5CDF395A7445}"/>
+								</Reference>
+							</ReferenceList>
+						</Bus>
 					</ChildrenList>
 				</Bus>
 			</ChildrenList>
