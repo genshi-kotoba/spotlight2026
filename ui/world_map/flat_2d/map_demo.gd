@@ -8,6 +8,8 @@ const MiniMap = preload("res://ui/world_map/flat_2d/map_minimap.gd")
 const RunPanel = preload("res://ui/hud/run_status_panel.gd")
 const RunMenu = preload("res://ui/hud/run_menu_overlay.gd")
 const MapViewerScript = preload("res://ui/world_map/map_viewer.gd")
+const FastTravel = preload("res://systems/map/flat_2d/map_fast_travel.gd")
+const TravelEffect = preload("res://ui/world_map/flat_2d/map_fast_travel_effect.gd")
 const StepDust = preload("res://systems/map/flat_2d/actor_step_dust.gd")
 const EntryFade = preload("res://ui/world_map/flat_2d/map_entry_fade.gd")
 const MAP_PATH := "res://data/config/flat_2d/demo_map.json"
@@ -76,6 +78,10 @@ var _step_dust: Node2D
 ## 原地重建地图的黑场节拍，见 load_map_with_beat。
 var _entry_fade: CanvasLayer
 var _dust_last_position := Vector2.ZERO
+var _travel_effect: CanvasLayer
+var _fast_travel_busy := false
+var _travel_failure := ""
+var _travel_return_paused := false
 
 class CircleActor extends Node2D:
 	var radius := 10.8
@@ -129,6 +135,10 @@ func _ready() -> void:
 	_entry_fade = EntryFade.new()
 	_entry_fade.name = "MapEntryFade"
 	add_child(_entry_fade)
+	_travel_effect = TravelEffect.new()
+	_travel_effect.name = "MapTravelEffect"
+	add_child(_travel_effect)
+	_travel_effect.finished.connect(_on_fast_travel_finished)
 	_bus = get_node("/root/MapEvents")
 	_bus.map_load_requested.connect(_on_map_load_requested)
 	_bus.node_result_submitted.connect(submit_node_result)
@@ -197,17 +207,24 @@ func _on_minimap_input(event: InputEvent) -> void:
 
 
 func _open_run_menu(page: int = 1) -> void:
-	if _run_menu == null:
+	if _run_menu == null or _fast_travel_busy:
 		return
 	if _run_panel != null and _run_panel._relic_book != null:
 		_run_panel._relic_book._hide_tip()
 	if _menu_map == null:
-		# 地图页里是真正的 MapView 渲染：滚轮缩放、拖动平移，角色不动。
+		# 查看器只发送节点请求；通行校验和传送由当前地图宿主处理。
 		# 先挂进浮层再喂数据，查看器内部节点在 _ready 里才建好。
 		_menu_map = MapViewerScript.new()
 		_run_menu.set_map_viewer(_menu_map)
+		_menu_map.fast_travel_requested.connect(_on_map_fast_travel)
 	# 每次打开都重新喂一份"已探索视图"：地形、迷雾、已解锁节点和小地图同源。
 	_menu_map.set_map(session.get_view(), cell_radius_px)
+	var destinations: Dictionary = FastTravel.options(session)
+	if not _fast_travel_ready():
+		for destination: Dictionary in destinations.values():
+			destination.ok = false
+			destination.reason = "presentation_pending"
+	_menu_map.set_travel_options(session.map_id, session.fingerprint, destinations)
 	_update_minimap()
 	if _menu_map != null and is_instance_valid(_menu_map):
 		_menu_map.set_actor(_render_actor_plane)
@@ -220,7 +237,107 @@ func _open_run_menu(page: int = 1) -> void:
 
 
 func _on_run_menu_closed() -> void:
-	_set_paused(_menu_paused_before)
+	if not _fast_travel_busy: _set_paused(_menu_paused_before)
+
+
+func _on_map_fast_travel(node_id: String, map_id: String, fingerprint: String) -> void:
+	if _fast_travel_busy: return
+	if not _run_menu.is_open() or _run_menu.current_page() != 0 or _dialog.visible:
+		_menu_map.show_feedback("请在地图页选择目的地")
+		return
+	if not _fast_travel_ready():
+		_menu_map.show_feedback("本层显示准备中，请稍候")
+		return
+	var preview: Dictionary = FastTravel.preview(session, node_id, map_id, fingerprint)
+	if not preview.ok:
+		_menu_map.show_feedback(MapViewerScript.reason_text(preview))
+		return
+	var point := Vector2(float(preview.actor_plane[0]), float(preview.actor_plane[1]))
+	var direction := _plane_to_display(point) - _plane_to_display(session.actor_plane)
+	_fast_travel_busy = true
+	_travel_failure = ""
+	_travel_return_paused = _menu_paused_before
+	_velocity = Vector2.ZERO
+	_sprint_held = false
+	_mouse_steering_held = false
+	_reset_walk_acceleration()
+	_run_menu.close()
+	if not _travel_effect.play(_fast_travel_portrait(), direction,
+			_commit_fast_travel.bind(node_id, map_id, fingerprint, session), _fast_travel_portrait):
+		_travel_failure = "传送效果未就绪，请重试"
+		_on_fast_travel_finished(false)
+
+
+func _commit_fast_travel(node_id: String, map_id: String, fingerprint: String, active) -> bool:
+	if session != active or not _fast_travel_ready():
+		_travel_failure = "地图状态已改变，请重新选择"
+		return false
+	var previous: Dictionary = session.capture_state()
+	var previous_path: Array[Vector2] = session.motion_path.duplicate()
+	var result: Dictionary = FastTravel.travel(session, node_id, map_id, fingerprint)
+	if not result.ok:
+		_travel_failure = MapViewerScript.reason_text(result)
+		return false
+	# Save before publishing the new position to the renderer. An IO failure
+	# leaves both the visible actor and the session at their original location.
+	if _persist_fast_travel(previous) != OK:
+		session.actor_plane = Vector2(float(previous.actor_plane[0]), float(previous.actor_plane[1]))
+		session.motion_path = previous_path
+		_travel_failure = "保存失败，仍停留原位置；请重试"
+		return false
+	_mouse_steering_held = false
+	_reset_walk_acceleration()
+	_selected = node_id if node_id in session.nearby_nodes() else ""
+	_manual_selection = not _selected.is_empty()
+	_selection_origin = session.actor_plane
+	_sync_actor(false)
+	_after_fast_travel()
+	_update_camera()
+	_bus.player_cell_entered.emit(active.map_id, _last_cell)
+	if session != active:
+		return false
+	_emit_state()
+	if session != active:
+		return false
+	return true
+
+
+func _on_fast_travel_finished(success: bool) -> void:
+	if not _fast_travel_busy: return
+	_fast_travel_busy = false
+	_set_paused(_travel_return_paused or not get_window().has_focus())
+	if not get_window().has_focus(): _resume_after_focus = not _travel_return_paused
+	if success:
+		_show_toast("已到达节点前方 · E 交互")
+	else:
+		_open_run_menu(0)
+		_menu_paused_before = _travel_return_paused
+		_menu_map.show_feedback(_travel_failure)
+
+
+func _cancel_fast_travel() -> void:
+	_fast_travel_busy = false
+	if is_instance_valid(_travel_effect): _travel_effect.cancel()
+
+
+func _fast_travel_portrait() -> Dictionary:
+	var feet := _player.get_global_transform_with_canvas().origin
+	var radius := Session.FOOT_RADIUS * cell_radius_px * _camera.zoom.x
+	return {"feet": feet, "body": Rect2(feet - Vector2.ONE * radius, Vector2.ONE * radius * 2.0)}
+
+
+## Formal hosts persist through their existing save gateway; flat demos remain
+## usable without a run/save dependency. No schema or random stream is added.
+func _persist_fast_travel(_previous_state: Dictionary) -> Error:
+	return OK
+
+
+func _fast_travel_ready() -> bool:
+	return not session.map_id.is_empty()
+
+
+func _after_fast_travel() -> void:
+	pass
 
 
 func _refresh_run_panel() -> void:
@@ -437,6 +554,7 @@ func load_map(snapshot: Dictionary, saved_state: Dictionary = {}) -> bool:
 		return false
 	if not _prepare_presentation(candidate):
 		return false
+	_cancel_fast_travel()
 	session = candidate
 	_map_snapshot = candidate.get_snapshot()
 	_selected = ""
@@ -561,6 +679,7 @@ func _update_minimap() -> void:
 		_menu_map.set_actor(_render_actor_plane)
 
 func _physics_process(delta: float) -> void:
+	if _fast_travel_busy: return
 	var direction := Vector2.ZERO
 	if not paused and session.pending.is_empty() and DisplayServer.window_is_focused():
 		direction = _movement_direction()
@@ -668,6 +787,9 @@ func _process(delta: float) -> void:
 		_status.text = "位置 (%d, %d) · 已完成 %d / %d · %.0f FPS%s" % [_last_cell.x, _last_cell.y, session.completed.size(), session.nodes.size(), Engine.get_frames_per_second(), " · " + _toast if _toast_left > 0 else ""]
 
 func _input(event: InputEvent) -> void:
+	if _fast_travel_busy:
+		get_viewport().set_input_as_handled()
+		return
 	if _handle_menu_hotkeys(event):
 		return
 	# Use viewport-local event positions, including the first button press.
@@ -679,6 +801,9 @@ func _input(event: InputEvent) -> void:
 		_mouse_steering_held = false
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _fast_travel_busy:
+		get_viewport().set_input_as_handled()
+		return
 	if _handle_menu_hotkeys(event):
 		return
 	if event.is_action_pressed("map2d_pause"):

@@ -261,6 +261,15 @@ func _save_run() -> void:
 	_show_toast("本局已保存到当前档案" if error == OK else "保存失败：%d" % error)
 
 
+func _persist_fast_travel(previous_state: Dictionary) -> Error:
+	var error: Error = _gateway.save_current()
+	if error != OK:
+		# Capturing a checkpoint also updates the run's in-memory floor cache.
+		# Restore it when the gateway refuses the atomic disk write.
+		map_run.capture_snapshot(previous_state)
+	return error
+
+
 func _build_run_controls() -> void:
 	# 换层控件并入右下信息面板；档案存盘由存档网关负责。
 	super._build_run_controls()

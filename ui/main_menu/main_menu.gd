@@ -3,6 +3,8 @@ extends Control
 ## 开始界面。只做三件事：把按钮接到 SaveGateway、把网关读到的状态画到屏上、失败时报提示条。
 ## 它不判任何游戏状态：有没有可继续的局问网关，开局之后的事归状态机。
 
+const AUDIO_SETTINGS := preload("res://systems/audio/audio_settings.gd")
+
 ## 薄装配层复用 main 的地图视图、生成器和存档状态机，不导入占位玩法。
 @export var game_scene: String = "res://ui/main_menu/menu_map_entry.tscn"
 @export var settings_scene: String = ""
@@ -28,6 +30,8 @@ var _pending_new_run := false
 
 
 func _ready() -> void:
+	# 启动就把存档里的音量推给 Wwise，否则上次调的音要等打开设置页才生效。
+	AUDIO_SETTINGS.install()
 	$按钮底板.add_theme_stylebox_override("panel", CommonUiSkin.panel("panel"))
 	for button: Button in [$按钮列/继续游戏, $按钮列/新游戏, $按钮列/设置, $按钮列/成就, $按钮列/图鉴, $按钮列/感谢名单, $按钮列/退出游戏]:
 		CommonUiSkin.style_button(button, Vector4(24, 12, 24, 12))

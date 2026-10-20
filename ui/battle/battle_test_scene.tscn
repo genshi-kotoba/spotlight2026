@@ -804,7 +804,7 @@ theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBtn")
 theme_override_styles/hover = SubResource("StyleBtnHover")
 theme_override_styles/pressed = SubResource("StyleBtnHover")
-theme_override_styles/disabled = SubResource("ButtonDisabled")
+theme_override_styles/disabled = SubResource("StyleBtn")
 text = "取消"
 
 [node name="HintLabel" type="Label" parent="."]

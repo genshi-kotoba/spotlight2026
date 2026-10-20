@@ -27,6 +27,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("5_theme")
+settings_scene = "res://ui/main_menu/main_menu_settings.tscn"
 script = ExtResource("1_menu")
 
 [node name="背景" type="TextureRect" parent="."]

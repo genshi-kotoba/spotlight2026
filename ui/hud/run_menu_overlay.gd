@@ -3,7 +3,7 @@ extends Control
 
 ## 冒险菜单浮层：点头像打开背包，点右上角齿轮打开设置，点小地图打开地图页，M 键也进地图。
 ## 三个页面用 open(page) 直接指定，不再在面板里摆分页按钮。
-## 地图页只查看：给小地图放大倍率，可拖动镜头，但不移动角色本体。
+## 地图页支持拖动、缩放；传送请求由地图宿主校验并处理。
 ## 背包使用 main 的真实牌组与物品，残片装配统一走 RunRewards 事务。
 
 signal closed
@@ -48,6 +48,7 @@ const RELIC_DRAG_ITEM_SCRIPT := "res://ui/hud/relic_drag_item.gd"
 const RELIC_DROP_CELL_SCRIPT := "res://ui/hud/relic_drop_cell.gd"
 const USE_DISCARD_MENU_SCRIPT := "res://ui/components/use_discard_menu.gd"
 const HOVER_LIFT := preload("res://ui/components/hover_lift.gd")
+const VOLUME_SETTINGS := preload("res://ui/components/volume_settings.gd")
 const ITEM_CAPACITY := ITEM_COLUMNS * ITEM_VISIBLE_ROWS # 一屏容量，不改变 main 背包规则。
 ## 立绘越出面板左/下边框，是刻意的出血。
 const SLOT_FRAME_A := "res://assets/ui/UI-004/物品边框1.png"
@@ -90,6 +91,8 @@ var _current_page := 1
 var _open_tween: Tween
 ## 测试装配用：非空时背包页读它，不读 GlobalState，也不落存档。
 var run_override: RunStateMachine = null
+## 当前已接上 state_changed 的那一局，换局或重载存档时要重新接。
+var _bound_run: RunStateMachine = null
 ## 战斗测试场景专用开关：打开后战斗中仍可编辑典籍。生产模式下保持 false，战斗中仍是仅查看。
 var allow_edit_in_battle := false
 var settlement_mode := false
@@ -135,6 +138,7 @@ func open(page: int = -1) -> void:
 	if page >= 0:
 		set_page(page)
 	_reset_abandon_confirm()
+	_bind_run_signals()
 	_refresh_data()
 	move_to_front()
 	_play_open_animation()
@@ -198,6 +202,7 @@ func set_page(index: int) -> void:
 
 func set_run_override(run: RunStateMachine) -> void:
 	run_override = run
+	_bind_run_signals()
 	_refresh_data()
 
 
@@ -493,11 +498,6 @@ func _build_map_page(page: Control) -> void:
 	_map_placeholder.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_map_placeholder.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_map_slot.add_child(_map_placeholder)
-	var map_hint := _label("滚轮缩放 · 拖动平移", 14, Color(0.749, 0.682, 0.553, 0.7))
-	map_hint.position = Vector2(CONTENT_RECT.position.x + 4.0,
-		CONTENT_RECT.size.y - 26.0)
-	map_hint.size = Vector2(320, 22)
-	page.add_child(map_hint)
 
 
 func _build_bag_page(page: Control) -> void:
@@ -649,33 +649,8 @@ func _build_deck_zone(page: Control) -> void:
 
 
 func _build_settings_page(page: Control) -> void:
-	var sound_head := _label("声音", 20, Color(0.910, 0.706, 0.333, 0.85))
-	sound_head.position = Vector2(580, 292)
-	sound_head.size = Vector2(200, 28)
-	page.add_child(sound_head)
-	var rows := [["音乐", "music_volume"], ["音效", "sfx_volume"]]
-	for index in rows.size():
-		var label := _label(rows[index][0], 18, Color(0.749, 0.682, 0.553))
-		label.position = Vector2(580, 344 + index * 64)
-		label.size = Vector2(120, 28)
-		page.add_child(label)
-		var slider := HSlider.new()
-		slider.min_value = 0.0
-		slider.max_value = 1.0
-		slider.step = 0.05
-		slider.value = _setting(String(rows[index][1]), 0.7)
-		slider.custom_minimum_size = Vector2(320, 24)
-		slider.position = Vector2(700, 346 + index * 64)
-		slider.focus_mode = Control.FOCUS_NONE
-		_skin_slider(slider)
-		slider.value_changed.connect(_on_volume_changed.bind(String(rows[index][1])))
-		page.add_child(slider)
-		var readout := _label("%d%%" % roundi(slider.value * 100.0), 16, Color(0.749, 0.682, 0.553))
-		readout.position = Vector2(1036, 346 + index * 64)
-		readout.size = Vector2(80, 28)
-		page.add_child(readout)
-		slider.value_changed.connect(func(value: float) -> void:
-			readout.text = "%d%%" % roundi(value * 100.0))
+	# 音量块与开始界面设置页共用一份，两处外观不会漂。
+	VOLUME_SETTINGS.build(page, Vector2(580, 292))
 
 	var divider := ColorRect.new()
 	divider.color = Color(0.910, 0.706, 0.333, 0.28)
@@ -712,46 +687,6 @@ func _build_settings_page(page: Control) -> void:
 	_build_abandon_row(page)
 
 
-static var _grabber_texture_cache: Texture2D
-
-
-static func _grabber_texture() -> Texture2D:
-	# 默认滑块圆点是引擎灰白样式，和这套暗金面板不搭，这里画一颗金色圆点。
-	if _grabber_texture_cache != null:
-		return _grabber_texture_cache
-	var side := 22
-	var image := Image.create(side, side, false, Image.FORMAT_RGBA8)
-	image.fill(Color(0, 0, 0, 0))
-	var center := Vector2(side, side) * 0.5
-	for y in side:
-		for x in side:
-			var distance := Vector2(x + 0.5, y + 0.5).distance_to(center)
-			if distance > 10.0:
-				continue
-			image.set_pixel(x, y, Color(0.396, 0.290, 0.145) if distance > 8.0
-				else Color(0.965, 0.784, 0.416))
-	_grabber_texture_cache = ImageTexture.create_from_image(image)
-	return _grabber_texture_cache
-
-
-func _skin_slider(slider: HSlider) -> void:
-	var track := StyleBoxFlat.new()
-	track.bg_color = Color(0.078, 0.063, 0.052, 0.95)
-	track.border_color = Color(0.910, 0.706, 0.333, 0.30)
-	track.set_border_width_all(1)
-	track.set_corner_radius_all(4)
-	track.content_margin_top = 6.0
-	track.content_margin_bottom = 6.0
-	slider.add_theme_stylebox_override("slider", track)
-	var filled := track.duplicate() as StyleBoxFlat
-	filled.bg_color = Color(0.639, 0.475, 0.196, 1.0)
-	filled.border_color = Color(0.910, 0.706, 0.333, 0.55)
-	slider.add_theme_stylebox_override("grabber_area", filled)
-	slider.add_theme_stylebox_override("grabber_area_highlight", filled)
-	slider.add_theme_icon_override("grabber", _grabber_texture())
-	slider.add_theme_icon_override("grabber_highlight", _grabber_texture())
-
-
 func _build_abandon_row(page: Control) -> void:
 	_abandon_button = Button.new()
 	_abandon_button.text = "放弃本局"
@@ -766,9 +701,9 @@ func _build_abandon_row(page: Control) -> void:
 	_abandon_button.pressed.connect(_on_abandon_pressed)
 	page.add_child(_abandon_button)
 
-	# 二次确认就在设置面板里完成，不再另弹窗。
+	# 二次确认就在设置面板里完成，不再另弹窗。位置与「放弃本局」同一条水平线。
 	_abandon_confirm_row = HBoxContainer.new()
-	_abandon_confirm_row.position = Vector2(700, 682)
+	_abandon_confirm_row.position = Vector2(700, 710)
 	_abandon_confirm_row.add_theme_constant_override("separation", 12)
 	_abandon_confirm_row.visible = false
 	page.add_child(_abandon_confirm_row)
@@ -805,17 +740,6 @@ func _reset_abandon_confirm() -> void:
 		_abandon_button.visible = true
 	if _abandon_confirm_row != null:
 		_abandon_confirm_row.visible = false
-
-func _setting(key: String, fallback: float) -> float:
-	if GlobalState != null:
-		return float(GlobalState.settings.get(key, fallback))
-	return fallback
-
-
-func _on_volume_changed(value: float, key: String) -> void:
-	if GlobalState != null:
-		GlobalState.set_setting(key, value)
-
 
 func _label(text: String, size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -1327,6 +1251,28 @@ func _item_slot(run: RunStateMachine, item_index: int, slot_index: int) -> Contr
 
 func _active_run() -> RunStateMachine:
 	return run_override if is_instance_valid(run_override) else SaveGateway.current_run()
+
+
+## 背包开着的时候，别人往这一局里塞东西（快捷栏开卡包、事件奖励、拾取）也要立刻看见。
+## 快捷栏那份 LootPopup 结算时只发 state_changed，背包不接就一直是旧内容。
+func _bind_run_signals() -> void:
+	var run := _active_run()
+	if run == _bound_run:
+		return
+	if is_instance_valid(_bound_run) and _bound_run.state_changed.is_connected(_on_run_state_changed):
+		_bound_run.state_changed.disconnect(_on_run_state_changed)
+	_bound_run = run
+	if is_instance_valid(run) and not run.state_changed.is_connected(_on_run_state_changed):
+		run.state_changed.connect(_on_run_state_changed)
+
+
+func _on_run_state_changed() -> void:
+	# 拖拽残片时刷新会抽掉正拖着的那一格，等这次交互收尾再刷。
+	if not visible or _drag_source != null:
+		return
+	# 数据变了，压在某格上的选项菜单也已经过期，先收掉再重建。
+	_close_item_menu()
+	_refresh_data()
 
 
 func _can_edit_relics() -> bool:
