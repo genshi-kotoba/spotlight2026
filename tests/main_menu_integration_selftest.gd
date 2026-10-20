@@ -28,6 +28,9 @@ func _run() -> void:
 	_check("空档案不能继续但能开新局", menu.get_node("按钮列/继续游戏").disabled and not menu.get_node("按钮列/新游戏").disabled)
 	_check("主菜单保留原入口并加入记录且不再有存档选择入口", menu.get_node("按钮列").get_child_count() == 8 and menu.has_node("按钮列/记录") and not menu.has_node("档案"))
 	_check("旧三槽位接口及场景已移除", not gateway.has_method("set_active_slot") and not gateway.has_method("list_slots") and not ResourceLoader.exists("res://ui/main_menu/profile_switch.tscn") and not ResourceLoader.exists("res://ui/main_menu/slot_card.tscn"))
+	# 设置页已随工程提供；这里把挂载点清空，单独验没配置时的兜底提示。
+	_check("开始界面设置页已随工程提供", ResourceLoader.exists("res://ui/main_menu/main_menu_settings.tscn"))
+	menu.settings_scene = ""
 	menu.get_node("按钮列/设置").pressed.emit()
 	_check("未导入设置页时给明确提示", menu.get_node("提示条/文本").text.contains("设置页尚未接入"))
 	menu.get_node("按钮列/新游戏").pressed.emit()

@@ -15,6 +15,7 @@ var _actions: HBoxContainer
 var _error: Label
 var _refresh_button: Button
 var _continue_button: Button
+var _cancel_button: Button
 var _run: RunStateMachine
 var _working := false
 var _enchantment_id := ""
@@ -72,6 +73,11 @@ func _ready() -> void:
 	_continue_button = _button("继续探索")
 	_continue_button.pressed.connect(_continue)
 	_actions.add_child(_continue_button)
+	# 只有扇形选择界面（卡包、典籍包）用得上，其余模式藏起来。
+	_cancel_button = _button("放弃")
+	_cancel_button.pressed.connect(_cancel_pack)
+	_cancel_button.hide()
+	_actions.add_child(_cancel_button)
 
 func show_rewards() -> void:
 	_run = SaveGateway.current_run()
@@ -216,6 +222,20 @@ func _choose(id: String) -> void:
 		_error.text = "选择未保存，请重试。错误码：%d" % error
 		_sync_choice_error()
 
+
+## 放弃整包：不选任何一项，卡包从背包里丢掉。走 discard_item 的事务，存档失败就回滚。
+func _cancel_pack() -> void:
+	if _working or _suspended or _finishing:
+		return
+	_working = true
+	var error := RunRewards.discard_item(_run, _item_id)
+	_working = false
+	if error == OK:
+		_finish()
+	else:
+		_error.text = "放弃失败，卡包保持不变。错误码：%d" % error
+		_sync_choice_error()
+
 func _continue() -> void:
 	if _selection_active:
 		_toggle_suspension()
@@ -324,7 +344,7 @@ func _render_choice_fan(pack: Dictionary) -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_choice_surface.add_child(title)
-	var hint := _label("点击选择 · 悬停放大 · 悬置后可查看背包，选择不会取消", 20)
+	var hint := _label("点击选择 · 悬停放大 · 悬置后可查看背包，放弃则丢掉整包", 20)
 	hint.name = "SelectionHint"
 	hint.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	hint.offset_top = 124
@@ -359,6 +379,8 @@ func _render_choice_fan(pack: Dictionary) -> void:
 	_continue_button.text = "悬置"
 	_continue_button.focus_mode = Control.FOCUS_NONE
 	_refresh_button.focus_mode = Control.FOCUS_NONE
+	_cancel_button.focus_mode = Control.FOCUS_NONE
+	_cancel_button.show()
 	_choice_error = _label("", 18)
 	_choice_error.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	_choice_error.offset_top = -100
@@ -375,6 +397,7 @@ func _toggle_suspension() -> void:
 	_suspended = not _suspended
 	_continue_button.text = "恢复选择" if _suspended else "悬置"
 	_refresh_button.visible = not _suspended and RunRewards.item(_run, _item_id).get("kind") in ["fragment_pack", "common_pack"]
+	_cancel_button.visible = not _suspended
 	_choice_spacer.visible = _refresh_button.visible
 	_choice_surface.get_node("SelectionTitle").visible = not _suspended
 	_choice_surface.get_node("SelectionHint").visible = not _suspended
@@ -413,6 +436,7 @@ func _reset_choice_presentation() -> void:
 		_actions.remove_child(_choice_spacer)
 		_choice_spacer.queue_free()
 	_choice_spacer = null
+	_cancel_button.hide()
 	if _shade_tween != null and _shade_tween.is_valid(): _shade_tween.kill()
 	_shade.modulate.a = 1.0
 	_shade.mouse_filter = Control.MOUSE_FILTER_STOP

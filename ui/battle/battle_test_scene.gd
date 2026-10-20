@@ -206,6 +206,9 @@ var _queued_card_end: Dictionary = {}
 ## 当前这张牌是否只动了指针位置。为真时收尾等待走 pointer_only_delay。
 var _card_pointer_only := false
 var _discard_focus_up := false
+## 蒙版只在结算真的走到「等待弃牌」那一步才抬起来。规则侧一发出弃牌请求就抬的话，
+## 只要结算队列里有弃牌牌，从头到尾都压着蒙版。与 pending 计数同时判断，收尾也一定落下。
+var _discard_focus_armed := false
 var _display_pointer_id := ""
 var _settle_pointer: TextureRect
 var _pointer_tween: Tween
@@ -925,6 +928,8 @@ func _on_discard_choice_requested(card: Dictionary, count: int,
 	_pending_discard_count = count
 	_pending_discard_card_id = String(card.get("instance_id", ""))
 	_discard_selection_ids.clear()
+	# 请求本身不抬蒙版：等结算播到这张牌、进入等待弃牌那一步再抬。
+	_discard_focus_armed = false
 	_queue_refresh()
 
 
@@ -961,7 +966,7 @@ func _on_hand_card_pressed(instance_id: String) -> void:
 ## 等待玩家弃牌时压一层蒙版，把要操作的东西抬到蒙版之上，提示范围收窄到「谁在等你」。
 ## 蒙版不拦输入：弃牌是逐张点手牌后自动提交，不需要点别的按钮，也就不该挡住误点。
 func _sync_discard_focus() -> void:
-	var focused := _pending_discard_count > 0
+	var focused := _discard_focus_armed and _pending_discard_count > 0
 	if focused == _discard_focus_up:
 		return
 	_discard_focus_up = focused
@@ -1195,6 +1200,8 @@ func _drain_resolution_events() -> void:
 		]
 		_presentation_kind = "choice"
 		_animating = false
+		# 结算已经播到这张弃牌牌，指针也指到它了，这里才开始压蒙版。
+		_discard_focus_armed = true
 		_queue_refresh()
 		return
 	if _battle.pending_pile_count() > 0:

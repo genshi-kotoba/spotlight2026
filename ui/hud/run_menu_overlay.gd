@@ -48,6 +48,7 @@ const RELIC_DRAG_ITEM_SCRIPT := "res://ui/hud/relic_drag_item.gd"
 const RELIC_DROP_CELL_SCRIPT := "res://ui/hud/relic_drop_cell.gd"
 const USE_DISCARD_MENU_SCRIPT := "res://ui/components/use_discard_menu.gd"
 const HOVER_LIFT := preload("res://ui/components/hover_lift.gd")
+const VOLUME_SETTINGS := preload("res://ui/components/volume_settings.gd")
 const ITEM_CAPACITY := ITEM_COLUMNS * ITEM_VISIBLE_ROWS # 一屏容量，不改变 main 背包规则。
 ## 立绘越出面板左/下边框，是刻意的出血。
 const SLOT_FRAME_A := "res://assets/ui/UI-004/物品边框1.png"
@@ -653,33 +654,8 @@ func _build_deck_zone(page: Control) -> void:
 
 
 func _build_settings_page(page: Control) -> void:
-	var sound_head := _label("声音", 20, Color(0.910, 0.706, 0.333, 0.85))
-	sound_head.position = Vector2(580, 292)
-	sound_head.size = Vector2(200, 28)
-	page.add_child(sound_head)
-	var rows := [["音乐", "music_volume"], ["音效", "sfx_volume"]]
-	for index in rows.size():
-		var label := _label(rows[index][0], 18, Color(0.749, 0.682, 0.553))
-		label.position = Vector2(580, 344 + index * 64)
-		label.size = Vector2(120, 28)
-		page.add_child(label)
-		var slider := HSlider.new()
-		slider.min_value = 0.0
-		slider.max_value = 1.0
-		slider.step = 0.05
-		slider.value = _setting(String(rows[index][1]), 0.7)
-		slider.custom_minimum_size = Vector2(320, 24)
-		slider.position = Vector2(700, 346 + index * 64)
-		slider.focus_mode = Control.FOCUS_NONE
-		_skin_slider(slider)
-		slider.value_changed.connect(_on_volume_changed.bind(String(rows[index][1])))
-		page.add_child(slider)
-		var readout := _label("%d%%" % roundi(slider.value * 100.0), 16, Color(0.749, 0.682, 0.553))
-		readout.position = Vector2(1036, 346 + index * 64)
-		readout.size = Vector2(80, 28)
-		page.add_child(readout)
-		slider.value_changed.connect(func(value: float) -> void:
-			readout.text = "%d%%" % roundi(value * 100.0))
+	# 音量块与开始界面设置页共用一份，两处外观不会漂。
+	VOLUME_SETTINGS.build(page, Vector2(580, 292))
 
 	var divider := ColorRect.new()
 	divider.color = Color(0.910, 0.706, 0.333, 0.28)
@@ -714,46 +690,6 @@ func _build_settings_page(page: Control) -> void:
 		page.add_child(button)
 
 	_build_abandon_row(page)
-
-
-static var _grabber_texture_cache: Texture2D
-
-
-static func _grabber_texture() -> Texture2D:
-	# 默认滑块圆点是引擎灰白样式，和这套暗金面板不搭，这里画一颗金色圆点。
-	if _grabber_texture_cache != null:
-		return _grabber_texture_cache
-	var side := 22
-	var image := Image.create(side, side, false, Image.FORMAT_RGBA8)
-	image.fill(Color(0, 0, 0, 0))
-	var center := Vector2(side, side) * 0.5
-	for y in side:
-		for x in side:
-			var distance := Vector2(x + 0.5, y + 0.5).distance_to(center)
-			if distance > 10.0:
-				continue
-			image.set_pixel(x, y, Color(0.396, 0.290, 0.145) if distance > 8.0
-				else Color(0.965, 0.784, 0.416))
-	_grabber_texture_cache = ImageTexture.create_from_image(image)
-	return _grabber_texture_cache
-
-
-func _skin_slider(slider: HSlider) -> void:
-	var track := StyleBoxFlat.new()
-	track.bg_color = Color(0.078, 0.063, 0.052, 0.95)
-	track.border_color = Color(0.910, 0.706, 0.333, 0.30)
-	track.set_border_width_all(1)
-	track.set_corner_radius_all(4)
-	track.content_margin_top = 6.0
-	track.content_margin_bottom = 6.0
-	slider.add_theme_stylebox_override("slider", track)
-	var filled := track.duplicate() as StyleBoxFlat
-	filled.bg_color = Color(0.639, 0.475, 0.196, 1.0)
-	filled.border_color = Color(0.910, 0.706, 0.333, 0.55)
-	slider.add_theme_stylebox_override("grabber_area", filled)
-	slider.add_theme_stylebox_override("grabber_area_highlight", filled)
-	slider.add_theme_icon_override("grabber", _grabber_texture())
-	slider.add_theme_icon_override("grabber_highlight", _grabber_texture())
 
 
 func _build_abandon_row(page: Control) -> void:
@@ -809,17 +745,6 @@ func _reset_abandon_confirm() -> void:
 		_abandon_button.visible = true
 	if _abandon_confirm_row != null:
 		_abandon_confirm_row.visible = false
-
-func _setting(key: String, fallback: float) -> float:
-	if GlobalState != null:
-		return float(GlobalState.settings.get(key, fallback))
-	return fallback
-
-
-func _on_volume_changed(value: float, key: String) -> void:
-	if GlobalState != null:
-		GlobalState.set_setting(key, value)
-
 
 func _label(text: String, size: int, color: Color) -> Label:
 	var label := Label.new()
