@@ -57,7 +57,7 @@ func _ready() -> void:
 		RunResults.call_deferred("complete_if_ready")
 	elif session.pending.get("type") == "shop":
 		call_deferred("_show_shop", session.pending.duplicate(true))
-	elif session.pending.get("type") == "event":
+	elif session.pending.get("type") == "event" and _gateway.current_run().current_battle == null:
 		call_deferred("_show_random_event")
 	elif session.pending.get("type") in ["chest", "pile"]:
 		call_deferred("_show_node_loot", session.pending.duplicate(true))
@@ -69,6 +69,34 @@ func _ready() -> void:
 	# 第一张地图生成后即留下完整检查点；原 F6 地图 Demo 仍不受此装配层影响。
 	if map_run != null and map_run.current_floor > 0:
 		_save_run()
+
+## 候选提交覆盖首层、读档和原地换层；关闭配置时为无副作用调用。
+func load_map(snapshot: Dictionary, saved_state: Dictionary = {}) -> bool:
+	var accepted: bool = super.load_map(snapshot, saved_state)
+	if accepted:
+		RegionTitles.track_map(self)
+	return accepted
+
+## Exploration variants warm in the background; current geometry and entry fade
+## determine when the player and region title can start together.
+func is_map_ready() -> bool:
+	return is_current_map_ready() and (_entry_fade == null or not _entry_fade.is_playing())
+
+func region_title_context() -> Dictionary:
+	return {"map_id": session.map_id, "seed": session.seed}
+
+func is_region_title_ready() -> bool:
+	if not is_node_ready() or not is_map_ready() or SceneTransition.is_loading() or paused:
+		return false
+	if _entry_fade != null and _entry_fade.is_playing():
+		return false
+	if _gateway == null or _gateway.current_run() == null or EncounterFlow.session != session:
+		return false
+	var run: RunStateMachine = _gateway.current_run()
+	return run.current_map_id == session.map_id and run.current_battle == null \
+		and session.pending.is_empty() and RunRewards.pending(run).is_empty() \
+		and (_run_menu == null or not _run_menu.is_open()) and (_dialog == null or not _dialog.visible)
+
 
 func _ensure_active_run() -> bool:
 	if _gateway.current_run() != null:
@@ -156,6 +184,14 @@ func _interact() -> void:
 	if not session.pending.is_empty() and _gateway.current_run().current_battle != null:
 		if _gateway.save_current() == OK:
 			EncounterFlow.open_battle()
+		return
+	_update_selection()
+	# A route gate can reveal a new geometry state. Keep that request pending
+	# outside the domain until every planned variant is ready; walking remains
+	# available and no old CPU job has to be cancelled on a reveal frame.
+	if _view.is_presentation_cache_preparing() and not _selected.is_empty() \
+			and bool(session.nodes.get(_selected, {}).get("is_route_gate", false)):
+		_show_toast("前方区域正在准备，请稍候再进入")
 		return
 	super._interact()
 

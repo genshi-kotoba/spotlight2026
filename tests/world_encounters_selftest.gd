@@ -116,6 +116,7 @@ func _test_world_flow() -> void:
 		return
 	var expected_id: String = view.session.nodes[first].content_id
 	var old_snapshot := _json(view.map_run.get_floor(1).snapshot)
+	await preload("res://tests/support/presentation_test_helper.gd").route_ready(get_tree())
 	view._interact()
 	_check("战斗节点不弹模拟完成窗口", not view._dialog.visible)
 	await _frames(8)
@@ -191,7 +192,7 @@ func _test_world_flow() -> void:
 			var target := _approach(view, ["boss", "battle", "elite"])
 			if target.is_empty():
 				break
-			await preload("res://tests/support/presentation_test_helper.gd").map_ready(get_tree())
+			await preload("res://tests/support/presentation_test_helper.gd").route_ready(get_tree())
 			view._interact()
 			await _frames(8)
 			ui = get_tree().current_scene
@@ -231,6 +232,7 @@ func _test_world_flow() -> void:
 	await _frames(8)
 	view = get_tree().current_scene
 	_approach(view, ["battle", "elite"])
+	await preload("res://tests/support/presentation_test_helper.gd").route_ready(get_tree())
 	view._interact()
 	await _frames(8)
 	ui = get_tree().current_scene

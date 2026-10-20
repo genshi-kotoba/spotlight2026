@@ -51,6 +51,7 @@ var _speed_label: Label
 var _dialog: ConfirmationDialog
 var _dialog_request_id := ""
 var _selected := ""
+var _event_name_cache: Dictionary = {}
 var _last_cell := Vector2i(999999, 999999)
 var _status_elapsed := 0.0
 var _toast := ""
@@ -873,8 +874,22 @@ func _interact() -> void:
 		_configure_node_dialog(request)
 
 func _node_label(node: Dictionary) -> String:
-	if node.type == "event" and session.opened.has(node.id):
-		return EventCatalog.display_name(str(node.get("event_kind", ""))) if EventCatalog.has_event(str(node.get("event_kind", ""))) else "事件"
+	# 靠近只显示名称，不把事件标记为 opened，也不改变远处的问号模型。
+	if node.type == "event" and (session.opened.has(node.id) or str(node.id) in session.nearby_nodes()):
+		var run := SaveGateway.current_run()
+		if run != null:
+			var saved: Dictionary = run.inventory_state.get("events", {}).get("%s/%s" % [session.map_id, node.id], {})
+			var saved_index := int(saved.get("index", -1))
+			if saved_index >= 0 and saved_index < RandomEventCatalog.NAMES.size():
+				return RandomEventCatalog.NAMES[saved_index]
+		var event_kind := str(node.get("event_kind", ""))
+		if EventCatalog.has_event(event_kind): return EventCatalog.display_name(event_kind)
+		var seed_text: String = run.main_seed if run != null else session.seed
+		var identity := JSON.stringify([seed_text, session.map_id, node.id, node.get("content_id", "")])
+		if not _event_name_cache.has(identity):
+			var index := RandomEventCatalog.index_for_map_node(seed_text, session.map_id, node)
+			_event_name_cache[identity] = RandomEventCatalog.NAMES[index]
+		return str(_event_name_cache[identity])
 	return LABELS.get(node.type, "节点")
 
 func _configure_node_dialog(request: Dictionary) -> void:

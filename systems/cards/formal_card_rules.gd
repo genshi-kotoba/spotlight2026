@@ -245,7 +245,7 @@ func _value(raw: Variant, card: Dictionary, target: String) -> int:
 			return 5 + 5 * maxi(0, battle.effective_play_limit() - occupied)
 		"coins":
 			var run_silver := GlobalState.current_run.gold if GlobalState.current_run != null else 0
-			return int(floor(float(battle.player.get("silver", run_silver)) / 100.0))
+			return int(floor(float(battle.player.get("sandbox_reference_silver", battle.player.get("silver", run_silver))) / 100.0))
 		"skip_damage": return 4 * int(pow(2, mini(20, int(state().get("skips", {}).get(str(card.instance_id), 0)))))
 		"consumed_block": return int(floor(2.5 * int(state().get("consumed_block", 0))))
 		"nonshift", "shift":

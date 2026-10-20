@@ -1,5 +1,5 @@
 {
-  "initial_draw_count": 12,
+  "initial_draw_count": 6,
   "per_turn_draw_count": 2,
   "play_limit": 10,
   "enemy_health": {"普通": 30, "精英": 50, "BOSS": 80},

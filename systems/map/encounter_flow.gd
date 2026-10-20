@@ -1,5 +1,6 @@
 extends Node
 ## 地图→战斗→节点结算的装配层。地形、战斗效果和持久化仍由原系统负责。
+const EventCombat = preload("res://systems/events/event_combat_flow.gd")
 const Session = preload("res://systems/map/flat_2d/planar_map_session.gd")
 const RulesPath := "res://data/config/encounter_test_rules.json"
 const BATTLE_SCENE := "res://ui/battle/map_battle_scene.tscn"
@@ -7,6 +8,8 @@ const MAP_SCENE := "res://ui/main_menu/menu_map_entry.tscn"
 const TOTAL_FLOORS := 4
 const IMPLEMENTED_FLOORS := 4
 const DEBUG_VICTORY_SETTING := "debug/map_battle/enable_instant_victory"
+const SandboxResources = preload("res://systems/testing/sandbox_resources.gd")
+const SandboxLayout = preload("res://systems/testing/fixed_test_map_layout.gd")
 var map_run: RefCounted
 var session: RefCounted
 var run: RunStateMachine
@@ -73,9 +76,19 @@ func begin_encounter(request: Dictionary) -> bool:
 	var enemy := MonsterCatalog.create(str(monster.id), map_run.current_floor)
 	if enemy.is_empty(): return _fail("未找到怪物正式战斗配置：" + str(monster.id))
 	enemy.grade = monster.grade
+	var enemies: Array = [enemy]
+	if SandboxResources.active(run):
+		enemies.clear()
+		var ids: Array = SandboxLayout.encounter_ids(str(monster.id))
+		for index in ids.size():
+			var member: Dictionary = MonsterCatalog.create(str(ids[index]), map_run.current_floor,
+				str(ids[index]) if index == 0 else "%s@sandbox-%d" % [str(ids[index]), index])
+			if member.is_empty(): return _fail("固定测试阵容缺少怪物配置")
+			member["formation_slot"] = index
+			enemies.append(member)
 	# 只在原牌组为空时使用临时联调牌，不改变正式牌组或任何解锁状态。
 	var temporary: Array = test_rules.empty_deck_fallback if run.deck.is_empty() else []
-	var error := run.start_battle(str(session.pending.node_id), [enemy], 0, false,
+	var error := run.start_battle(str(session.pending.node_id), enemies, 0, false,
 		int(test_rules.play_limit), false, temporary)
 	if error != OK:
 		return _fail("创建节点战斗失败：%d" % error)
@@ -83,6 +96,10 @@ func begin_encounter(request: Dictionary) -> bool:
 	# 固定本场战场外观，随战斗快照保存；Boss 推进楼层不影响旧战场。
 	battle.player["encounter_floor"] = map_run.current_floor
 	battle.player["encounter_rules"] = test_rules.duplicate(true)
+	if SandboxResources.active(run):
+		battle.player.encounter_rules["initial_draw_count"] = 6
+		battle.player["sandbox_reference_silver"] = SandboxResources.RESERVE
+		SandboxResources.refill(run)
 	battle.player["temporary_deck"] = run.deck.is_empty()
 	battle.player["conch_bound"] = int(run.inventory_state.get("conch_bound", 0))
 	battle.player["potions"] = run.items.filter(func(value: Variant): return value is Dictionary and value.get("kind") == "potion").duplicate(true)
@@ -121,12 +138,19 @@ func debug_finish_battle(battle: BattleStateMachine) -> Error:
 	return battle.debug_finish_victory()
 
 func _matches_battle(battle: BattleStateMachine) -> bool:
+	if battle.player.has("event_combat"):
+		return EventCombat.matches(battle, session, run)
 	return session != null and not session.pending.is_empty() \
 		and battle.enemies.size() >= 1 and session.pending.type in ["battle", "elite", "boss"] \
 		and session.pending.node_id == battle.node_id and session.map_id == battle.map_id \
 		and session.pending.content_id == battle.enemies[0].enemy_id
 
 func _on_battle_finished(result: Dictionary) -> void:
+	if EventCombat.is_result(result):
+		var error := EventCombat.settle(run, result)
+		if error != OK: _fail("事件战斗奖励保存失败，可重试结算：%d" % error)
+		else: last_error = ""
+		return
 	if session == null or session.pending.is_empty() or result.get("map_id") != session.map_id \
 			or result.get("node_id") != session.pending.node_id:
 		_fail("拒绝不属于当前地图节点的战斗结果")
@@ -156,7 +180,7 @@ func _on_battle_finished(result: Dictionary) -> void:
 			bonus.append({"id": "conch_rare", "kind": "rare_pack", "amount": int(result.conch_bound), "claimed": false})
 		run.inventory_state.pending_rewards["bonus_entries"] = bonus
 		run.update_map_node(session.map_id, str(pending.node_id), {"completed": true, "enemy_id": pending.content_id})
-		if pending.type == "boss" and not _advance_after_boss():
+		if pending.type == "boss" and not SandboxResources.active(run) and not _advance_after_boss():
 			return
 	# 战斗结果已落地，UI 只负责播放结算动画；不能重进节点重新抽敌人。
 	if SaveGateway.save_current() != OK:
@@ -167,6 +191,7 @@ func _on_battle_finished(result: Dictionary) -> void:
 		MapEvents.boss_cleared.emit(str(pending.map_id), str(pending.node_id))
 
 func _boss_completed() -> bool:
+	if SandboxResources.active(run): return false
 	for id: String in session.nodes:
 		if session.nodes[id].type == "boss" and session.completed.has(id):
 			return true

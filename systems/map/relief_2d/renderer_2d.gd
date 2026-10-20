@@ -129,6 +129,7 @@ var _material_update_count := 0
 var _order_candidate_pairs := 0
 var _order_coplanar_skips := 0
 var _rebuild_timings := {}
+var _input_load_ms := 0.0
 var _geometry_thread: Thread
 var _geometry_builder: Node2D
 var _geometry_generation := 0
@@ -752,6 +753,7 @@ func set_map(snapshot: Dictionary) -> void:
 	_rebuild()
 
 func _load_map_data(snapshot: Dictionary) -> void:
+	var input_started := Time.get_ticks_usec()
 	if not _source_snapshot.is_empty():
 		for field in ["map_id","seed","floor_index","cells","height_quantum","outer_radius","scene_envelope"]:
 			if _source_snapshot.get(field)!=snapshot.get(field): _material_face_cache={};break
@@ -781,6 +783,7 @@ func _load_map_data(snapshot: Dictionary) -> void:
 		_actor_plane = hex_plane(spawn)
 		_actor_height = _cell_height(_key(spawn))
 		_actor_valid = true
+	_input_load_ms = (Time.get_ticks_usec()-input_started)/1000.0
 
 
 func project_plane(p: Vector2, height: float = 0.0) -> Vector2:
@@ -1025,9 +1028,16 @@ func _build_geometry() -> void:
 	if v2: _bounds = support_bounds
 	_rebuild_timings = {"geometry":(geometry_done-start)/1000.0,"sun":(solar_done-geometry_done)/1000.0,"order":(order_done-solar_done)/1000.0,"mesh_and_index":(Time.get_ticks_usec()-order_done)/1000.0,"total":(Time.get_ticks_usec()-start)/1000.0}
 	_sun_dirty = false
+	var cache_started := Time.get_ticks_usec()
 	_refresh_atmosphere_cache()
+	_rebuild_timings["atmosphere"]=(Time.get_ticks_usec()-cache_started)/1000.0
+	cache_started=Time.get_ticks_usec()
 	_refresh_art_cache()
+	_rebuild_timings["art"]=(Time.get_ticks_usec()-cache_started)/1000.0
+	cache_started=Time.get_ticks_usec()
 	_refresh_exploration_fog_cache()
+	_rebuild_timings["fog"]=(Time.get_ticks_usec()-cache_started)/1000.0
+	_rebuild_timings["input_load"]=_input_load_ms
 
 
 func _wall_readability_report() -> Dictionary:
@@ -1127,7 +1137,7 @@ func _start_geometry() -> void:
 	_geometry_builder._material_face_cache={}
 	_job_generation = _geometry_generation
 	_geometry_thread = Thread.new()
-	var status := _geometry_thread.start(_geometry_builder._prepare_geometry_arrays)
+	var status := _geometry_thread.start(_geometry_builder._prepare_geometry_arrays, Thread.PRIORITY_LOW if _presentation_cache_warming else Thread.PRIORITY_NORMAL)
 	if status != OK:
 		_geometry_thread = null
 		_pending_arrays = _geometry_builder._prepare_geometry_arrays()
@@ -1136,10 +1146,12 @@ func _start_geometry() -> void:
 func _prepare_geometry_arrays() -> Array:
 	# Called on a private off-tree builder. No textures, meshes, scene-tree or
 	# RenderingServer operations; each job owns all mutable arrays and solar data.
+	var worker_started := Time.get_ticks_usec()
 	_build_geometry()
 	var started := Time.get_ticks_usec()
 	var arrays := _prepare_material_arrays()
 	_rebuild_timings["materials"]=(Time.get_ticks_usec()-started)/1000.0
+	_rebuild_timings["worker_total"]=(Time.get_ticks_usec()-worker_started)/1000.0
 	return arrays
 
 func _material_face_key(face: Dictionary) -> Array:
@@ -1219,7 +1231,8 @@ func _process(_delta: float) -> void:
 		_pending_arrays = _geometry_builder._prepare_material_arrays()
 		_pending_atmosphere_config = _atmosphere_config.duplicate(true)
 	var start := Time.get_ticks_usec()
-	while _pending_cursor < _pending_arrays.size() and Time.get_ticks_usec()-start < 6000:
+	var upload_budget := 2000 if _presentation_cache_warming else 6000
+	while _pending_cursor < _pending_arrays.size() and Time.get_ticks_usec()-start < upload_budget:
 		var batch = VectorBatch.new()
 		batch.show_behind_parent = true
 		batch.visibility_layer = 0
@@ -2624,7 +2637,7 @@ func _start_warm_lookahead() -> void:
 		builder._exploration_fog_visual_mode=_exploration_fog_visual_mode
 		builder._display_exploration_fog_visual_mode=_exploration_fog_visual_mode
 		var thread:=Thread.new()
-		if thread.start(builder._prepare_geometry_arrays)!=OK:
+		if thread.start(builder._prepare_geometry_arrays, Thread.PRIORITY_LOW)!=OK:
 			builder.free();return # Existing serial worker is the complete fallback.
 		_warm_lookahead={"key":key,"builder":builder,"thread":thread,"signature":_cache_config_signature().duplicate(true)}
 		return

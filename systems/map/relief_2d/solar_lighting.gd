@@ -97,6 +97,9 @@ func bake(snapshot: Dictionary, known: Dictionary, faces: Array, basis: Basis, p
 	var caster_geometry: Array=[]
 	if _receiver_cache!=null:
 		for caster: Dictionary in _casters:caster_geometry.append(_receiver_cache.caster_geometry_id([caster.key,caster.vertices,caster.edges]))
+	var projection_context := 0
+	if _receiver_cache != null:
+		projection_context = _receiver_cache.material_context_id(["solar-projection-v1", _sun, _basis, _pixels])
 	var receiver_cache_hits:=0
 	var receiver_count := 0
 	var candidate_pairs := 0
@@ -165,14 +168,25 @@ func bake(snapshot: Dictionary, known: Dictionary, faces: Array, basis: Basis, p
 		var shadow_bounds: Array[Rect2] = []
 		var shadow_area:=0.0
 		var face_bounds := _bounds(receiver_polygon)
+		var receiver_area := absf(_area(receiver_polygon))
 		for caster_index in candidate_indices:
 			var caster: Dictionary = _casters[caster_index]
 			candidate_pairs += 1
 			if not cache.has(caster_index):
-				cache[caster_index] = _project_solid(caster, n, offset)
-				projection_count += 1
-			var projected: PackedVector2Array = cache[caster_index]
-			if projected.size() < 3 or not face_bounds.intersects(_bounds(projected), true):
+				var projection_signature: Array = []
+				var projection: Variant = null
+				if _receiver_cache != null:
+					projection_signature = [projection_context, caster_geometry[caster_index], plane_key]
+					projection = _receiver_cache.find_projection(projection_signature)
+				if projection == null:
+					var polygon_projection := _project_solid(caster, n, offset)
+					projection = {"polygon": polygon_projection, "bounds": _bounds(polygon_projection)}
+					projection_count += 1
+					if _receiver_cache != null:
+						_receiver_cache.store_projection(projection_signature, polygon_projection, projection.bounds)
+				cache[caster_index] = projection
+			var projected: PackedVector2Array = cache[caster_index].polygon
+			if projected.size() < 3 or not face_bounds.intersects(cache[caster_index].bounds, true):
 				continue
 			clip_count += 1
 			var overlap := _convex_intersection(projected, receiver_polygon)
@@ -182,7 +196,7 @@ func bake(snapshot: Dictionary, known: Dictionary, faces: Array, basis: Basis, p
 			_append_disjoint(shadows, shadow_bounds, overlap)
 			for index in range(previous_count,shadows.size()):shadow_area+=absf(_area(shadows[index]))
 			# Once the full receiver is covered, further casters cannot change it.
-			if shadow_area >= absf(_area(receiver_polygon)) - AREA_EPSILON:
+			if shadow_area >= receiver_area - AREA_EPSILON:
 				break
 		face["solar_shadows"] = shadows
 		if _receiver_cache!=null:_receiver_cache.store_shadows(signature,shadows)

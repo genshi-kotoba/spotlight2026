@@ -15,6 +15,7 @@ signal return_to_menu_requested
 signal quit_requested
 
 const PAGES: Array[String] = ["地图", "背包", "设置"]
+const SANDBOX_RESOURCES := preload("res://systems/testing/sandbox_resources.gd")
 const PANEL_RECT := Rect2(80, 50, 1760, 980)
 const CONTENT_RECT := Rect2(40, 92, 1680, 860)
 const DECK_COLUMNS := 5
@@ -330,8 +331,11 @@ func _reload_items(run: RunStateMachine) -> void:
 	var items: Array = run.items if run != null else []
 	if run != null:
 		RunRewards.ensure_state(run)
-	_resources.text = "银币 %d  ·  万灵药 %d" % [run.gold, int(run.inventory_state.elixir)] if run != null else "银币 0  ·  万灵药 0"
-	if is_instance_valid(_battle) and run != null: _resources.text = "银币 %d  ·  万灵药 %d" % [int(_battle.player.get("silver", run.gold)), int(run.inventory_state.elixir)]
+	var silver: int = run.gold if run != null else 0
+	var elixir: int = int(run.inventory_state.elixir) if run != null else 0
+	if is_instance_valid(_battle) and run != null:
+		silver = int(_battle.player.get("silver", silver))
+	_resources.text = "银币 %s  ·  万灵药 %s" % [SANDBOX_RESOURCES.text(silver, run), SANDBOX_RESOURCES.text(elixir, run)]
 	# 这一栏不写操作说明，只留给限制与失败提示。
 	_bag_hint.text = "" if _can_edit_relics() else "战斗中仅查看，卡包、附魔书与典籍编辑在战后开放。"
 	if settlement_mode: _bag_hint.text = "最终背包快照 · 仅供查看"

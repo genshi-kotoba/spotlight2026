@@ -23,6 +23,9 @@ func _init(p_battle: BattleStateMachine, p_cards: Dictionary, p_buffs: Dictionar
 	battle.rules.register_rule("monsters.card", "card.effect_requested", _before_card, 0)
 	for type: String in ["damage", "block", "heal", "buff_add", "draw", "discard_choice", "pointer_move", "pointer_rewind", "repeat_next"]:
 		battle.rules.register_rule("monsters.bleed." + type, "action." + type, _bleed, 150)
+	battle.set_intent_buff_catalog(p_buffs)
+	# Compatibility callers may ask again after restore; this stays idempotent.
+	battle.ensure_enemy_intents()
 
 func _boss_event(event: BattleEvent) -> void:
 	_final_boss.handle_event(event)
@@ -97,7 +100,7 @@ func _player_turn() -> void:
 			15:
 				if not bool(enemy.get("stole", false)):
 					enemy.stole = true
-					enemy["stolen"] = int(floor(int(battle.player.get("silver", 0)) * 0.3))
+					enemy["stolen"] = int(floor(int(battle.player.get("sandbox_reference_silver", battle.player.get("silver", 0))) * 0.3))
 					battle.player.silver = int(battle.player.get("silver", 0)) - int(enemy.stolen)
 					_buff("enemy", str(enemy.enemy_id), "weak", int(enemy.stolen) / 20, 0)
 			16:
@@ -118,19 +121,12 @@ func _enemy_turn() -> void:
 	for enemy: Dictionary in living(15):
 		for buff: Dictionary in enemy.buffs:
 			if str(buff.buff_id) == "weak": buff.layers = maxi(0, int(buff.layers) - 1)
+	for enemy: Dictionary in battle.enemies:
+		enemy["intent_start_applied_turn"] = battle.turn_number
 
 func _plan(event: BattleEvent) -> void:
 	if not battle.active: return
-	var planned: Array = []
-	var formal := false
-	for enemy: Dictionary in battle.enemies:
-		if int(enemy.health) <= 0: continue
-		if enemy.has("monster_id"):
-			formal = true
-			for action: Dictionary in MonsterCatalog.plan(enemy, battle.turn_number, battle._logic_stream):
-				planned.append({"enemy_id": enemy.enemy_id, "action": action})
-		else: planned.append({"enemy_id": enemy.enemy_id, "action": battle._logic_stream.pick(enemy.actions)})
-	if formal: event.payload["planned"] = planned
+	event.payload["planned"] = battle.enemy_intent_actions()
 
 func _act(event: BattleEvent) -> void:
 	var enemy := battle._combatant(&"enemy", str(event.payload.enemy_id))
@@ -257,10 +253,14 @@ func _summon(id: String, owner: String) -> bool:
 	enemy["formation_slot"] = formation_slot
 	enemy["summoned_by"] = owner
 	enemy["spawn_turn"] = battle.turn_number
+	# Summons made after the unified plan do not gain an extra action this turn.
+	# enemy.turn_started summons are earlier and therefore still act immediately.
+	if battle.phase in [BattleStateMachine.Phase.ENEMY_ACTION, BattleStateMachine.Phase.ENEMY_BUFF]:
+		enemy["intent_first_action_turn"] = battle.turn_number + 1
 	battle.enemies.append(enemy)
 	# 盗贼的入场行为也用于被召唤，不等待下一个回合重抽银币。
 	if id == "15":
-		enemy.stole = true; enemy.stolen = int(floor(int(battle.player.get("silver", 0)) * 0.3))
+		enemy.stole = true; enemy.stolen = int(floor(int(battle.player.get("sandbox_reference_silver", battle.player.get("silver", 0))) * 0.3))
 		battle.player.silver = int(battle.player.get("silver", 0)) - int(enemy.stolen)
 		_buff("enemy", str(enemy.enemy_id), "weak", int(enemy.stolen) / 20, 0)
 

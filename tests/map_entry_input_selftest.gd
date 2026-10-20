@@ -101,7 +101,7 @@ func _approach(view: Node) -> String:
 	return ""
 
 func _press_e() -> void:
-	await preload("res://tests/support/presentation_test_helper.gd").map_ready(get_tree())
+	await preload("res://tests/support/presentation_test_helper.gd").route_ready(get_tree())
 	var key := InputEventKey.new()
 	key.keycode = KEY_E
 	key.physical_keycode = KEY_E

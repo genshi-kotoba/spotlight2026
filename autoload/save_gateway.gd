@@ -10,6 +10,7 @@ signal save_failed(error: int, message: String)
 
 const MAP_KEY := "menu_map_checkpoint"
 const PlanarRun := preload("res://state_machines/run/planar_map_run.gd")
+const SANDBOX_RESOURCES := preload("res://systems/testing/sandbox_resources.gd")
 
 var save_path := GlobalStateMachine.DEFAULT_SAVE_PATH
 var _state: GlobalStateMachine
@@ -25,7 +26,11 @@ func _ready() -> void:
 	_state.save_on_window_close = false
 	_state.save_failed.connect(_forward_error)
 	get_tree().auto_accept_quit = false
-	_load_error = _migrate_legacy_save()
+	if preload("res://systems/testing/sandbox_launch.gd").requested():
+		save_path = preload("res://systems/testing/sandbox_launch.gd").SAVE_PATH
+		_load_error = OK
+	else:
+		_load_error = _migrate_legacy_save()
 	if _load_error == OK:
 		_load_error = load_current()
 
@@ -137,6 +142,7 @@ func save_current() -> Error:
 	var run := _state.current_run
 	if run != null and run.current_battle != null and not bool(run.current_battle.to_dictionary().queue_idle):
 		return _fail(ERR_BUSY, "战斗结算中暂不能保存，请先完成操作。")
+	SANDBOX_RESOURCES.refill(run)
 	var view: Node = _map_view.get_ref() if _map_view != null else null
 	var checkpoint := _map_checkpoint.duplicate(true)
 	if is_instance_valid(view) and run != null:

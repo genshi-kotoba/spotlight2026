@@ -25,6 +25,8 @@ var unlocked_cards: Array[String] = []
 var unlocked_fragments: Array[String] = []
 var unlocked_monsters: Array[String] = []
 var run_history: Array[Dictionary] = []
+## 跨局保留的地区首次入场记录；旧版 v1 缺省为空。
+var seen_region_titles: Array[String] = []
 
 var current_run: RunStateMachine
 var run_active := false
@@ -37,6 +39,8 @@ var _saved_active_run: Dictionary = {}
 
 
 func _ready() -> void:
+	if preload("res://systems/testing/sandbox_launch.gd").requested():
+		save_path = preload("res://systems/testing/sandbox_launch.gd").SAVE_PATH
 	load_save()
 
 
@@ -150,6 +154,9 @@ func build_save_payload() -> Dictionary:
 		"run_history": run_history.duplicate(true),
 		"active_run": active_payload,
 	}
+	# 没有历史记录时保留旧版存档载荷形状。
+	if not seen_region_titles.is_empty():
+		payload["seen_region_titles"] = seen_region_titles.duplicate()
 	return {"error": OK, "payload": payload}
 
 
@@ -281,6 +288,31 @@ func _on_run_ended(result: Dictionary) -> void:
 	ended_run.queue_free()
 
 
+## 语义地区 ID 不包含随机种子；同地区换层/新局不重置历史。
+static func valid_region_title_id(value: Variant) -> bool:
+	if not value is String:
+		return false
+	return RegEx.create_from_string("^[a-z][a-z0-9_.:-]{0,127}$").search(value) != null
+
+func has_seen_region_title(region_id: String) -> bool:
+	return region_id in seen_region_titles
+
+## 首次记录与现有完整存档共用原子写入；失败撤销本次追加。
+func remember_region_title(region_id: String) -> Error:
+	if not valid_region_title_id(region_id):
+		return ERR_INVALID_PARAMETER
+	if has_seen_region_title(region_id):
+		return OK
+	if seen_region_titles.size() >= 4096:
+		return ERR_OUT_OF_MEMORY
+	seen_region_titles.append(region_id)
+	var gateway := get_node_or_null("/root/SaveGateway") if is_inside_tree() else null
+	var error: Error = gateway.save_current() if gateway != null and self == get_node_or_null("/root/GlobalState") else save_game()
+	if error != OK:
+		seen_region_titles.erase(region_id)
+	return error
+
+
 func _install_save(data: Dictionary) -> Error:
 	if not _integer_equals(data.get("save_version"), SAVE_VERSION):
 		return ERR_INVALID_DATA
@@ -291,6 +323,7 @@ func _install_save(data: Dictionary) -> Error:
 	var loaded_fragments: Variant = data.get("unlocked_fragments", [])
 	var loaded_monsters: Variant = data.get("unlocked_monsters", [])
 	var loaded_history: Variant = data.get("run_history")
+	var loaded_regions: Variant = data.get("seen_region_titles", [])
 	var loaded_active: Variant = data.get("active_run")
 	if not loaded_settings is Dictionary or not loaded_achievements is Dictionary \
 			or not loaded_cards is Array or not loaded_history is Array \
@@ -303,9 +336,17 @@ func _install_save(data: Dictionary) -> Error:
 			or (loaded_active != null and not _is_json_safe(loaded_active)):
 		return ERR_INVALID_DATA
 
+	if not loaded_regions is Array or loaded_regions.size() > 4096:
+		return ERR_INVALID_DATA
+	var unique_regions: Dictionary = {}
+	for region: Variant in loaded_regions:
+		if not valid_region_title_id(region) or unique_regions.has(region):
+			return ERR_INVALID_DATA
+		unique_regions[region] = true
 	for record: Variant in loaded_history:
 		if not record is Dictionary:
 			return ERR_INVALID_DATA
+	seen_region_titles.assign(loaded_regions)
 	settings = loaded_settings.duplicate(true)
 	achievements = loaded_achievements.duplicate(true)
 	unlocked_cards.assign(loaded_cards)
@@ -324,6 +365,7 @@ func _install_save(data: Dictionary) -> Error:
 
 
 func _reset_loaded_data() -> void:
+	seen_region_titles.clear()
 	settings.clear()
 	achievements.clear()
 	unlocked_cards.clear()

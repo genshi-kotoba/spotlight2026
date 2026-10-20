@@ -173,7 +173,6 @@ func _presentation_layer() -> Dictionary:
 
 func _sync_view() -> void:
 	_fade_focus_for_entry()
-	if is_instance_valid(_node_hint): _node_hint.clear()
 	var data: Dictionary = session.get_view()
 	var layer := _presentation_layer().duplicate()
 	var visible_ids: Dictionary = {}
@@ -208,17 +207,24 @@ func _update_selection() -> void:
 	if not MapPresentation.owns(self) or not is_map_ready() or paused or not session.pending.is_empty() or _selected not in session.nearby_nodes():
 		_node_hint.clear()
 		return
-	# _node_presentations contains only Session.get_view() known entries, never
-	# the generation snapshot. The hint cannot reveal a hidden event identity.
+	# 圈和图标仍只读取发布过的已知节点；名字仅在 Session 已确认靠近时读取。
 	var node: Dictionary = _view._node_presentations.get(_selected, {})
-	var anchor: Vector2 = _target_marker.position
-	# A partly discovered multi-cell gate can use an entrance marker instead
-	# of its center. Anchor to that published marker, not another footprint cell.
+	if node.is_empty():
+		_node_hint.clear()
+		return
+	var marker_bounds := Rect2()
+	# 只取当前目标自己的已发布贴图，避免借用同批次内其他节点的位置。
 	for batch in _view._node_batches.get(_selected, []):
 		for face: Dictionary in batch.faces:
-			if face.get("node_marker", false):
-				anchor = Vector2(face.bounds.get_center().x, face.bounds.end.y)
-	_node_hint.set_gate(node, anchor, _player.position, _camera.zoom.x)
+			if face.get("node_marker", false) and str(face.get("node_id", "")) == _selected:
+				marker_bounds = face.bounds
+				break
+		if marker_bounds.has_area(): break
+	if not marker_bounds.has_area():
+		_node_hint.clear()
+		return
+	var anchor := Vector2(marker_bounds.get_center().x, marker_bounds.end.y)
+	_node_hint.set_node(node, anchor, _player.position, _camera.zoom.x, _node_label(session.nodes[_selected]), marker_bounds)
 
 func _sync_actor(emit_notifications: bool = true) -> void:
 	_actor_facing_intent = Vector2.ZERO
@@ -301,13 +307,17 @@ func _presentation_committed() -> void:
 	_update_camera()
 	_queue_discovery()
 
-## 怪物节点底座红雾：只取未完成的战斗、精英、首领，底座锚点与节点提示同源。
+## 可交互的已知节点共用底座雾圈；只有已存在的模型才提供锚点与尺寸。
 func _sync_node_mist(nodes: Array) -> void:
 	if not is_instance_valid(_node_mist): return
 	var bases: Array = []
 	for node: Dictionary in nodes:
-		if not bool(node.get("known", false)) or bool(node.get("completed", false)): continue
-		if not (str(node.get("type", "")) in ["battle", "elite", "boss"]): continue
+		if not bool(node.get("known", false)): continue
+		var kind := str(node.get("type", ""))
+		if kind not in ["battle", "elite", "boss", "event", "shop", "chest", "pile"]: continue
+		if bool(node.get("completed", false)):
+			var revisitable: bool = bool(session.nodes.get(node.id, {}).get("revisitable", false))
+			if kind not in ["event", "shop"] or not revisitable: continue
 		var center := Vector2.ZERO
 		var width := 0.0
 		for batch in _view._node_batches.get(node.id, []):
@@ -316,11 +326,16 @@ func _sync_node_mist(nodes: Array) -> void:
 					center = Vector2(face.bounds.get_center().x, face.bounds.end.y)
 					width = face.bounds.size.x
 		if width <= 0.0: continue
-		bases.append({"center": center, "width": width, "phase": float(abs(hash(node.id)) % 628) / 100.0})
+		bases.append({"center": center, "width": width, "phase": float(abs(hash(node.id)) % 628) / 100.0,
+			"palette": "gold" if kind in ["event", "shop", "chest", "pile"] else "red"})
 	_node_mist.set_bases(bases)
 
+## Current support/geometry is usable independently of future discovery variants.
+func is_current_map_ready() -> bool:
+	return not height_layer.is_empty() and _prepare_error.is_empty() and not _discovery_prepare_queued and is_instance_valid(_view) and not _view.is_rebuilding()
+
 func is_map_ready() -> bool:
-	return not height_layer.is_empty() and _prepare_error.is_empty() and not _discovery_prepare_queued and is_instance_valid(_view) and not _view.is_rebuilding() and not _view.is_presentation_cache_preparing()
+	return is_current_map_ready() and not _view.is_presentation_cache_preparing()
 
 func scene_transition_error() -> String:
 	if not _prepare_error.is_empty():
