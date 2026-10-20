@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3]
+[gd_scene load_steps=27 format=3]
 
 [ext_resource type="Script" path="res://ui/battle/battle_test_scene.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/env/ENV-001/ENV-001.PNG" id="2_bg"]
@@ -10,7 +10,6 @@
 [ext_resource type="Texture2D" path="res://assets/ui/UI-028/UI-028.png" id="16_elixir"]
 [ext_resource type="Script" path="res://ui/battle/health_fill.gd" id="15_hpfill"]
 [ext_resource type="Script" path="res://ui/battle/enemy_rack.gd" id="19_enemyrack"]
-[ext_resource type="Script" path="res://ui/battle/damage_preview.gd" id="18_dmgpreview"]
 [ext_resource type="Texture2D" path="res://assets/ui/UI-013/卡背-灰.png" id="12_back"]
 [ext_resource type="Texture2D" path="res://assets/ui/UI-003/大按钮-初始.png" id="13_btn"]
 [ext_resource type="Texture2D" path="res://assets/ui/UI-003/大按钮-悬停.png" id="14_btn_hover"]
@@ -612,7 +611,7 @@ layout_mode = 0
 offset_left = 1722
 offset_top = 112
 offset_right = 1876
-offset_bottom = 928
+offset_bottom = 1044
 mouse_filter = 1
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 3
@@ -761,15 +760,6 @@ offset_bottom = 94.0
 mouse_default_cursor_shape = 2
 flat = true
 
-
-[node name="DamagePreview" type="Control" parent="."]
-layout_mode = 0
-offset_left = 1745
-offset_top = 936
-offset_right = 1915
-offset_bottom = 1044
-mouse_filter = 2
-script = ExtResource("18_dmgpreview")
 
 [node name="PlayButton" type="Button" parent="."]
 unique_name_in_owner = true

@@ -142,7 +142,6 @@ const TEST_ENEMIES: Array[Dictionary] = [
 @onready var backpack_slots: Control = $BackpackSlots
 @onready var play_scroll: ScrollContainer = $PlayScroll
 @onready var play_cards: Control = %PlayCards
-@onready var damage_preview: DamagePreview = $DamagePreview
 @onready var draw_button: Button = %DrawPileButton
 @onready var discard_button: Button = %DiscardPileButton
 @onready var draw_pile_count: Label = $DrawPile/Count
@@ -1738,7 +1737,6 @@ func _refresh_zones() -> void:
 
 	_refresh_header()
 	_refresh_combat_status()
-	_refresh_damage_preview()
 	_refresh_battle_actions()
 
 
@@ -2934,19 +2932,6 @@ func _update_drag_preview(at: Vector2) -> void:
 		card = _find_hand_card(above_id)
 	if not card.is_empty():
 		_show_resolve_preview(str(card.get("card_id", "")), card)
-
-
-func _refresh_damage_preview() -> void:
-	if damage_preview == null or _battle == null:
-		return
-	var cards: Array[Dictionary] = []
-	for row: Control in play_cards.get_children():
-		var card := _find_selected_card(str(row.get_meta("instance_id", "")))
-		if not card.is_empty() and not bool(card.get("slot_empty", false)):
-			cards.append(card)
-	var result := BattleDirectPreview.calculate(_battle, cards, _resolver.card_catalog)
-	damage_preview.show_values(int(result.damage), int(result.block), false)
-	damage_preview.visible = not _busy and not cards.is_empty()
 
 
 func _build_battle_actions() -> void:

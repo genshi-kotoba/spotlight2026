@@ -102,11 +102,6 @@ func _run() -> void:
 	menu._relic_cell_input(_button(Vector2.ZERO, MOUSE_BUTTON_RIGHT, true), 0)
 	_check("战斗菜单不能拖拽、卸下、装配或开包", JSON.stringify(run.to_dictionary()) == snapshot and menu._drag_ghost == null)
 	menu.close()
-	var cards: Array[Dictionary] = [{"card_id": "1", "instance_id": "preview-only", "enchantments": ["damage_50", "repeat_2"]}, {"card_id": "50", "instance_id": "block-only"}]
-	var battle_before := JSON.stringify(battle._battle.to_dictionary())
-	seed_before = JSON.stringify(SeedService.capture_snapshot())
-	var values := BattleDirectPreview.calculate(battle._battle, cards, battle._resolver.card_catalog)
-	_check("正式指令及附魔只读数值预览", int(values.damage) == 14 and int(values.block) > 0 and JSON.stringify(battle._battle.to_dictionary()) == battle_before and JSON.stringify(SeedService.capture_snapshot()) == seed_before)
 	battle._on_hand_card_pressed(str(battle._battle.hand[0].instance_id))
 	await _frames(3)
 	var row: Control = battle.play_cards.get_child(0)
