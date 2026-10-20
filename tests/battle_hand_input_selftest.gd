@@ -9,6 +9,11 @@ func _ready() -> void:
 
 
 func _run() -> void:
+	SaveGateway.save_path = "res://.godot/hand-input-%d/game.json" % Time.get_ticks_usec()
+	_check("手牌测试使用隔离存档", SaveGateway.load_current() == OK)
+	# 此夹具覆盖十张手牌的扇形布局与交互弃牌，不依赖正式首抽默认值。
+	EncounterFlow.test_rules = EncounterFlow.test_rules.duplicate(true)
+	EncounterFlow.test_rules["initial_draw_count"] = 10
 	var catalog := RelicCatalog.load_definitions()
 	var board := RelicBoard.new()
 	# 棋盘固定 4x5 共 20 格，`restore` 要求长度严格相等；前 12 格是连锁布局，其余留空。
@@ -50,8 +55,10 @@ func _run() -> void:
 	await get_tree().process_frame
 	_check("同样构筑可正常进入编排", scene._battle.active and scene._battle.hand.size() == _hand_limit(scene))
 	await preload("res://tests/support/presentation_test_helper.gd").battle_settled(scene)
+	# 规则队列清空时错峰发牌可能仍在播放；真实鼠标夹具应在牌落位后取坐标。
+	await get_tree().create_timer(1.0).timeout
 
-	# 手牌张数随构筑变（合并后是 6 张），末位不能用写死的 6。
+	# 手牌张数随构筑变，末位不能写死。
 	for index: int in [0, 3, maxi(0, scene.hand_cards.get_child_count() - 1)]:
 		var slot := scene.hand_cards.get_child(index) as Control
 		var button := slot.get_child(1) as Button

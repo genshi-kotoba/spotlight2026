@@ -68,6 +68,7 @@ var portrait: TextureRect
 var name_label: Label
 var number_label: Label
 var intent_value: Label
+var action_count_label: Label
 var buff_row: HBoxContainer
 var fill: Control
 var block_marker: ColorRect
@@ -328,6 +329,7 @@ func _build() -> void:
 	intent_strip.z_index = 10
 	add_child(intent_strip)
 	intent_value = intent_strip.action_count_label
+	action_count_label = intent_strip.action_count_label
 
 	shield = BLOCK_SHIELD_SCRIPT.new()
 	shield.name = "EnemyBlockShield"

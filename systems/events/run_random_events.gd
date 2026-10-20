@@ -332,6 +332,7 @@ static func acknowledge(run: Node, request: Dictionary, continue_gamble := false
 	else:
 		current.stage = "done"
 		current.finished = true
+		RunUpgrades.award_node(run, str(request.map_id), str(request.node_id))
 	run.inventory_state.events[key(request)] = current
 	return commit(run, before)
 

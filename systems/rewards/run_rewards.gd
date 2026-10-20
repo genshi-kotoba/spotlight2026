@@ -39,12 +39,14 @@ static func stage_victory(run: Node, map_id: String, node_id: String, grade: Str
 		return ERR_BUSY
 	var entries: Array = [{"id": "silver", "kind": "silver", "amount": 100 if grade == "普通" else 200, "claimed": false}]
 	if grade != "普通":
-		entries.append({"id": "elixir", "kind": "elixir", "amount": 1, "claimed": false})
+		entries.append({"id": "elixir", "kind": "elixir", "amount": 2, "claimed": false})
 	for kind: String in ["fragment_pack", "common_pack"]:
 		entries.append({"id": kind, "kind": kind, "amount": 1, "claimed": false})
 	if grade != "普通":
 		entries.append({"id": "rare_pack", "kind": "rare_pack", "amount": 1, "claimed": false})
 		entries.append({"id": "enchantment_book", "kind": "enchantment_book", "amount": 1, "claimed": false})
+	if grade == "普通":
+		entries.append({"id": "elixir", "kind": "elixir", "amount": 2, "claimed": false})
 	run.inventory_state.pending_rewards = {"battle_key": key, "grade": grade, "entries": entries}
 	run.inventory_state.rewarded_battles[key] = true
 	return OK
@@ -137,7 +139,7 @@ static func choose(run: Node, item_id: String, choice: String) -> Error:
 	else:
 		if not _card_pool(str(pack.kind)).has(choice):
 			return ERR_INVALID_DATA
-		# 奖励明确赠予本局卡牌；不修改局外解锁表。
+		# 奖励明确赠予本局卡牌，永久牌组仍由当前对局持有。
 		if not run.card_pool.has(choice):
 			run.card_pool.append(choice)
 		run.add_card(choice, false)
@@ -306,14 +308,10 @@ static func _item_index(run: Node, item_id: String) -> int:
 			return index
 	return -1
 
-## 战斗测试场景装配时打开：允许对脱离存档槽位的 run 做残片事务。生产模式保持 false。
-static var allow_detached_edit := false
-
-
 static func _can_edit(run: Node) -> bool:
 	if not is_instance_valid(run) or not run.active or run.current_battle != null:
 		return false
-	if not allow_detached_edit and run != SaveGateway.current_run():
+	if run != SaveGateway.current_run() and not bool(run.get_meta("battle_test_sandbox", false)):
 		return false
 	ensure_state(run)
 	return true
@@ -325,6 +323,10 @@ static func _capture(run: Node) -> Dictionary:
 		"deck_cards": run.deck_cards.duplicate(true), "next_card_serial": run.next_card_serial}
 
 static func _commit(run: Node, before: Dictionary) -> Error:
+	# 独立战斗测试只更改沙盒，绝不能保存玩家正在游玩的真实对局。
+	if run != SaveGateway.current_run() and bool(run.get_meta("battle_test_sandbox", false)):
+		run.state_changed.emit()
+		return OK
 	var error := SaveGateway.save_current()
 	if error != OK:
 		run.inventory_state = before.inventory

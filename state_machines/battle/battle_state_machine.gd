@@ -1067,6 +1067,9 @@ func ensure_enemy_intents() -> void:
 
 
 func _queue_intent_refresh(_event: BattleEvent) -> void:
+	# A rejected summon has no battle-state effect and must not publish child facts.
+	if _event.type == &"monster.summon" and not bool(_event.metadata.get("summoned", false)):
+		return
 	if active and _intents_ready:
 		rules.publish("flow.intents.refresh")
 
@@ -1156,6 +1159,17 @@ func _step_enemy_plan(_event: BattleEvent) -> void:
 	_freeze_enemy_intent_previews()
 	_publish_fact("enemy.intents_changed", {"turn": turn_number, "enemies": enemies.duplicate(true)})
 
+	# 对正式怪物与测试敌人统一编号；每次行动都是独立续接点，不合并多段伤害。
+	var counts := {}
+	var indices := {}
+	for item: Dictionary in planned:
+		var id := str(item.enemy_id)
+		counts[id] = int(counts.get(id, 0)) + 1
+	for planned_action: Dictionary in planned:
+		var id := str(planned_action.enemy_id)
+		indices[id] = int(indices.get(id, 0)) + 1
+		planned_action["action_index"] = int(indices[id])
+		planned_action["action_count"] = int(counts[id])
 	_set_phase(Phase.ENEMY_ACTION)
 	for planned_action: Dictionary in planned:
 		rules.publish("flow.enemy.act", planned_action)
@@ -1166,6 +1180,10 @@ func _step_enemy_action(event: BattleEvent) -> void:
 	var data := event.payload
 	if not _enemy_is_alive(String(data.enemy_id)):
 		return
+	var enemy := _combatant(&"enemy", str(data.enemy_id))
+	enemy["current_action"] = data.action.duplicate(true)
+	enemy["action_index"] = int(data.get("action_index", 1))
+	enemy["action_count"] = int(data.get("action_count", 1))
 	enemy_action_requested.emit(String(data.enemy_id), data.action.duplicate(true))
 	_publish_fact("enemy.action_requested", data)
 	rules.publish("flow.enemy.resolved", data)
@@ -1190,6 +1208,9 @@ func _step_enemy_end(_event: BattleEvent) -> void:
 		return
 
 	# 玩家格挡完整覆盖敌方行动，敌方回合结束后统一清零。
+	for enemy: Dictionary in enemies:
+		for key: String in ["current_action", "action_index", "action_count"]:
+			enemy.erase(key)
 	if int(player.get("block", 0)) != 0:
 		player["block"] = 0
 		block_changed.emit(&"player", "player", 0)

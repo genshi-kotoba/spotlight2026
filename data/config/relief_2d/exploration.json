@@ -4,7 +4,7 @@
   "floors": [
     {
       "normal": 3,
-      "elite": 1,
+      "elite": 0,
       "events": 5,
       "cell_space": 3,
       "space_jitter": true,
@@ -26,7 +26,7 @@
     },
     {
       "normal": 6,
-      "elite": 2,
+      "elite": 3,
       "events": 13,
       "cell_space": 3,
       "space_jitter": true,

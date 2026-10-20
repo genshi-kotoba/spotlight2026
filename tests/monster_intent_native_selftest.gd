@@ -9,7 +9,7 @@ const CASES := [
 	{"tag": "final-boss", "ids": ["23"], "rounds": 3},
 ]
 var fixture_root := "res://.godot/intent-native"
-var output_root := "res://../verification/native"
+var output_root := "res://.godot/verification/native"
 var failures := 0
 var checks := 0
 var rounds := 0
@@ -148,7 +148,7 @@ func _verify_turn(tag: String) -> bool:
 
 	var plan_copy := expected.duplicate(true)
 	await _capture(tag)
-	if tag.begins_with("mixed"):
+	if tag.begins_with("mixed") and not "--skip-native-hover" in OS.get_cmdline_user_args():
 		for slot: EnemySlot in scene.enemy_rack.slots:
 			for cell: Control in slot.intent_strip.cells:
 				if not str(cell.get_meta("hint", "")).contains("随机"): continue

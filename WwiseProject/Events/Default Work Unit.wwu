@@ -409,6 +409,28 @@
 										</Action>
 									</ChildrenList>
 								</Event>
+								<Event Name="SFX_046_Enemy_PiperFlute" ID="{B2C2DC98-5F0B-4D60-AFE4-10F107C24A69}">
+									<ChildrenList>
+										<Action Name="SFX_046_Enemy_PiperFlute" ID="{3BB06024-D864-4229-90FB-CECD227F5E1E}" ShortID="782502757">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_046_Enemy_PiperFlute" ID="{7AF1DEDD-9812-4583-9670-4C4B3AC7333E}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_047_Enemy_BossIntro" ID="{3C66CC5D-9FB2-4B09-972D-56AFFC80F58D}">
+									<ChildrenList>
+										<Action Name="SFX_047_Enemy_BossIntro" ID="{06A4A901-EC8F-4DDF-BEC4-6356EF8B16AE}" ShortID="896347451">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_047_Enemy_BossIntro" ID="{A5623C3A-144C-4225-8DD8-7793F7190528}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
 							</ChildrenList>
 						</Folder>
 						<Folder Name="Foot" ID="{7BB06E3D-9A02-47B6-ABB7-93DDF871D5BA}" ShortID="567767677">
@@ -495,6 +517,21 @@
 											<ReferenceList>
 												<Reference Name="Target">
 													<ObjectRef Name="SFX_035_Player_Hit_Heavy" ID="{8C2C17F6-D5EA-4E5A-9BE4-1327120EE8F7}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_043_Player_LowHP" ID="{03B67CA1-3F6F-4311-926D-CEE07F175C0F}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-043_Player_LowHP" ID="{89FCE158-B760-43EB-A9AA-187B5310B37F}" ShortID="260206710">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_043_Player_LowHP" ID="{D52D14D2-4337-4317-BDD9-1159FD54CCD3}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
 												</Reference>
 											</ReferenceList>
 										</Action>
@@ -740,6 +777,50 @@
 										</Action>
 									</ChildrenList>
 								</Event>
+								<Event Name="SFX_028_UI_Slider" ID="{767B33F7-1FC3-4ACC-AB1D-1D9FCC99ECF8}">
+									<ChildrenList>
+										<Action Name="SFX_028_UI_Slider" ID="{62203145-EEBE-49F3-BD3E-DCC19020FD39}" ShortID="109832335">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_028_UI_Slider" ID="{ABD21B24-42C6-45A9-B873-689B604F6C3C}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_029_UI_Error" ID="{D5A3EB95-6CDF-4ABD-9698-A8C574F60901}">
+									<ChildrenList>
+										<Action Name="SFX_029_UI_Error" ID="{CBE9CC52-9E94-4549-9314-11B5FF959B81}" ShortID="611852419">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_029_UI_Error" ID="{12CA15E9-06A4-4BA3-8D28-EB589A32376F}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_030_UI_Result_Win" ID="{42B07160-FD17-43E1-A16A-B6889B67C147}">
+									<ChildrenList>
+										<Action Name="SFX_030_UI_Result_Win" ID="{5813AF30-45DE-4B97-84DD-EE3AAAF0ACD1}" ShortID="364403689">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_030_UI_Result_Win" ID="{D04491A1-9F9F-4EEC-8611-FBE8A7FCADD9}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_031_UI_Result_Lose" ID="{53C573F3-799C-4D7F-8E18-D4E5357D5AC9}">
+									<ChildrenList>
+										<Action Name="SFX_031_UI_Result_Lose" ID="{A72E15E2-9937-440C-9B72-ADEE17FD359A}" ShortID="759197106">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_031_UI_Result_Lose" ID="{28EC9B2B-A27E-4343-8AE7-4ADDE10C0BA2}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
 							</ChildrenList>
 						</Folder>
 						<Folder Name="Voice" ID="{579D9B3B-D3D3-456F-B862-0C2CEA06B60A}" ShortID="492050353">
@@ -748,6 +829,21 @@
 								<Property Name="OverrideColor" Type="bool" Value="True"/>
 							</PropertyList>
 							<ChildrenList>
+								<Event Name="SFX_057_Voice_Talk" ID="{470A206E-D43D-422F-9F92-E02A65C646AA}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="18"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX_057_Voice_Talk" ID="{73492D22-290F-4BCD-ADB5-DF2503CD0DFA}" ShortID="369611267">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_057_Voice_Talk" ID="{759D464D-7E6D-443C-A199-CD8F565DE01B}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
 								<Event Name="SFX_058_Voice_PenWrite" ID="{79DF21E1-C958-48E4-A4E8-F89EA2223C42}">
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="18"/>

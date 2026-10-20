@@ -244,7 +244,8 @@ func _set_options_disabled(disabled: bool) -> void:
 		button.disabled = disabled
 
 func _result_summary(current: Dictionary) -> String:
-	var summary := str(current.get("result", ""))
+	var summary := str(current.get("result", "")).replace("，无奖励", "")
+	summary += "\n完成结点额外获得：万灵药 × 2（每结点一次）"
 	if int(current.get("index", -1)) == 4:
 		var lines := summary.split("\n")
 		for position in lines.size():

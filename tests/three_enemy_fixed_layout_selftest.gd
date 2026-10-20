@@ -492,7 +492,7 @@ func _pointer_select(target: EnemySlot, point: Vector2, label: String) -> bool:
 	var motion: InputEventMouseMotion = InputEventMouseMotion.new()
 	motion.position = point
 	get_viewport().push_input(motion, true)
-	if DisplayServer.get_name() == "headless":
+	if DisplayServer.get_name() == "headless" or "--skip-native-hover" in OS.get_cmdline_user_args():
 		skipped_native_checks.append(label + " 原生hover")
 	else:
 		var until: int = mini(Time.get_ticks_msec() + 2000, deadline)

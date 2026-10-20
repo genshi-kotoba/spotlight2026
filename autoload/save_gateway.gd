@@ -1,6 +1,6 @@
 extends Node
 
-## 开始界面的适配层。局内状态/随机/解锁仍以 main 的 GlobalState 为准。
+## 开始界面的适配层。局内状态、随机与历史记录仍以 GlobalState 为准。
 ## 地图检查点是存档顶层可选扩展，不修改状态机或伪造 active_run。
 signal save_changed
 signal save_reloaded
@@ -62,7 +62,7 @@ func start_new_run(seed_text: String, config: Dictionary, overwrite_confirmed :=
 	var version := str(ProjectSettings.get_setting("application/config/seed_content_version", ""))
 	var random := SeedRegistry.new(version)
 	var prepared := RunStateMachine.new()
-	error = prepared.initialize_new(seed_text, config, _state.unlocked_cards, random)
+	error = prepared.initialize_new(seed_text, config, random)
 	if error != OK:
 		prepared.free()
 		return _fail(error, "新游戏初始化失败，原存档与进度保持不变。")

@@ -98,8 +98,6 @@ func _test_policy() -> void:
 	_check("补入旧地图不改共享随机流", _json(legacy_source.capture_snapshot()) == source_before)
 
 func _test_world_flow() -> void:
-	GlobalState.unlock_card("1")
-	GlobalState.unlock_card("8")
 	var config := {"run_id": "world-encounter-flow", "max_health": 200, "initial_health": 200,
 		"card_catalog": ["1", "8"], "initial_deck": ["1", "1", "1", "1", "1", "8", "8", "8", "8", "8"],
 		"map_ids": ["world:floor-001", "world:floor-002", "world:floor-003"]}
@@ -131,8 +129,8 @@ func _test_world_flow() -> void:
 	_check("第一层战斗使用场景一并保存开战楼层", int(battle.player.encounter_floor) == 1 and ui.get_node("Background").texture.resource_path == "res://assets/env/ENV-001/ENV-001.PNG")
 	_check("敌人匹配种子分配且图片名称正确", battle.enemies[0].enemy_id == expected_id and ui.enemy_rack.slots[0].name_label.text == TextCatalog.entry("monsters", expected_id).name and ui.enemy_rack.slots[0].portrait.texture != null)
 	_check("地图战斗加载对应怪物TXT", ui._monster_text.source_path == TextCatalog.entry("monsters", expected_id).battle_text_path and not ui._monster_text.sentences.is_empty())
-	_check("真实牌组生命进入战斗，不使用临时测试牌", battle.hand.size() == 10 and int(battle.player.health) == 200 and not bool(battle.player.temporary_deck))
-	_check("生产战斗不显示重开测试按钮且典籍保持只读", not ui._restart_button.visible and not ui._run_menu.allow_edit_in_battle)
+	_check("真实牌组按当前首抽6张进入战斗，不使用临时测试牌", battle.hand.size() == 6 and int(battle.player.health) == 200 and not bool(battle.player.temporary_deck))
+	_check("不能重开战斗或修改战斗中的典籍", not ui._restart_button.visible and not ui._run_menu.allow_edit_in_battle)
 	await _ready_to_act(ui)
 	for card: Dictionary in battle.hand:
 		if card.card_id == "1":
@@ -236,7 +234,7 @@ func _test_world_flow() -> void:
 	view._interact()
 	await _frames(8)
 	ui = get_tree().current_scene
-	_check("空牌组临时使用20张牌，首抽受10张上限限制且不更改正式牌组", bool(ui._battle.player.temporary_deck) and GlobalState.current_run.deck.is_empty() and ui._battle.hand.size() == 10)
+	_check("空牌组临时使用20张牌，首抽6张且不更改正式牌组", bool(ui._battle.player.temporary_deck) and GlobalState.current_run.deck.is_empty() and ui._battle.hand.size() == 6)
 	await _ready_to_act(ui)
 	await _capture("node-battle.png")
 	var defeat_context := BattleEffectContext.new(ui._battle, "player", ui._resolver.buff_catalog)

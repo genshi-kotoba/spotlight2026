@@ -79,15 +79,18 @@ func _render() -> void:
 	_claim_button.disabled = _claimed
 	_close_button.text = "继续探索" if _claimed else "稍后领取"
 	_set_description("正在确认箱中物品……")
+	var descriptions: Array[String] = []
 	for entry: Dictionary in loot.get("entries", []):
-		if entry.kind == "silver": _set_description("银币 × %d" % int(entry.amount))
-		elif entry.kind == "potion": _set_description("药水 × 1\n%s" % RunRandomEvents.POTIONS[int(entry.potion)])
+		if entry.kind == "elixir": descriptions.append("万灵药 × %d" % int(entry.amount))
+		elif entry.kind == "silver": descriptions.append("银币 × %d" % int(entry.amount))
+		elif entry.kind == "potion": descriptions.append("药水 × 1\n%s" % RunRandomEvents.POTIONS[int(entry.potion)])
 		else:
 			var fragment: RelicFragmentData = RelicCatalog.resolve(str(entry.fragment_id))
 			if fragment != null:
-				_set_description("典籍残片\n" + fragment.rich_text(32), true)
+				descriptions.append("典籍残片\n" + fragment.rich_text(32))
 			else:
-				_set_description("典籍残片（描述暂不可用）")
+				descriptions.append("典籍残片（描述暂不可用）")
+	_set_description("\n\n".join(descriptions), true)
 
 func _set_description(text: String, rich: bool = false) -> void:
 	_description.bbcode_enabled = rich
