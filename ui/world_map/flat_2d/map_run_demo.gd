@@ -14,8 +14,11 @@ func _ready() -> void:
 	_build_run_controls()
 	_refresh_run_controls()
 
+func _run_settings_path() -> String:
+	return RUN_CONFIG_PATH
+
 func _initial_snapshot() -> Dictionary:
-	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(RUN_CONFIG_PATH))
+	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(_run_settings_path()))
 	if not settings is Dictionary or not settings.get("floors") is Array or not settings.get("seed") is String:
 		push_error("Invalid demo_run.json")
 		return {}
@@ -53,6 +56,7 @@ func _process(delta: float) -> void:
 	super._process(delta)
 	if is_instance_valid(_floor_label):
 		_refresh_run_controls()
+	_sync_run_panel()
 
 func _physics_process(delta: float) -> void:
 	if map_run == null or map_run.current_floor == 0:
@@ -91,7 +95,6 @@ func _change_floor(index: int) -> void:
 	if entry.is_empty():
 		_show_toast(map_run.last_error)
 		return
-	load_map(entry.snapshot, entry.state)
+	# 走黑场节拍：淡出的那一拍再重建地图。
+	load_map_with_beat(entry.snapshot, entry.state)
 	_show_toast("第 %d 层 · 回访保留探索和节点状态" % index)
-
-

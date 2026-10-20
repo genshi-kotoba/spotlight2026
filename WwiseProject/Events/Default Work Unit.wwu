@@ -1,0 +1,773 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{93B8C4E6-9252-4E83-B082-EBB22107F344}" SchemaVersion="133">
+	<Events>
+		<WorkUnit Name="Default Work Unit" ID="{93B8C4E6-9252-4E83-B082-EBB22107F344}" PersistMode="Standalone">
+			<ChildrenList>
+				<Folder Name="SFX" ID="{50FFEF4D-4BA8-4337-A501-3603B3FB7C9B}" ShortID="695315809">
+					<ChildrenList>
+						<Folder Name="Amb" ID="{9C49A839-B585-4AC9-80C2-8BDC771CF0F4}" ShortID="64961150">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="17"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_016_Amb_Workshop" ID="{CBF05321-2CEE-46BF-B8DD-FF1C2A62A20F}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="17"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-016_Amb_Workshop" ID="{982F1E9A-0F1E-45B9-8742-8BCB596EA368}" ShortID="576994557">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_016_Amb_Workshop" ID="{D16FF9E6-74FF-4601-87FC-FC55C09BC0A0}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_017_Amb_Slum" ID="{CA532AE3-62AD-4F8B-B778-2B4CBD8508C6}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="17"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-017_Amb_Slum" ID="{C4423D15-CCAB-459B-9910-30461C1061F4}" ShortID="334798500">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_017_Amb_Slum" ID="{2EF9FB24-1BDC-4B15-B62D-E12E5C2AA9FA}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_018_Amb_Church" ID="{0BBBC390-CBBF-417E-BE58-200D4B568469}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="17"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-018_Amb_Church" ID="{28427F35-854F-438F-ACFD-9B81F3E46680}" ShortID="388345717">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_018_Amb_Church" ID="{1185B2D4-D429-4DD5-8D14-6334B034C348}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_019_Amb_ChurchTop" ID="{77859475-5E2E-4E77-ABF9-BE3C47A784A4}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="17"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-019_Amb_ChurchTop" ID="{E28502D1-6239-4B66-ACDC-22BA465155BA}" ShortID="907574340">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_019_Amb_ChurchTop" ID="{32D1572C-CF22-4EEB-A9D9-AED81CF228CD}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Battle" ID="{61853222-6C08-4A12-90C3-8CFAD8327FA4}" ShortID="998845356">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="10"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_010_Battle_Pointer_Tick" ID="{4694BD1C-1CCA-444E-96A5-DCE2723EBA3E}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-010_Battle_Pointer_Tick" ID="{F6544F94-4FDE-449F-A6E1-56319AC3C612}" ShortID="527915414">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_010_Battle_Pointer_Tick" ID="{3FF00D0B-6BC2-4136-9312-064287AD7EDB}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_011_Battle_Pointer_Rewind" ID="{C915BE6F-6273-441F-A9E6-5E61913A2DAA}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-011_Battle_Pointer_Rewind" ID="{DD8A32D8-224E-48F9-BB32-2411B1464845}" ShortID="370785583">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_011_Battle_Pointer_Rewind" ID="{0ABA3260-6A0B-48F3-9964-82D93B4CAD0C}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+										<Action Name="SFX-011_Battle_Pointer_Rewind_Energy" ID="{5E4AB253-9EB0-4162-91CB-C7A658DD153C}" ShortID="352706907">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_010_Battle_Pointer_Tick_L2" ID="{FB72A3F5-8DE4-45ED-B022-F48B57964296}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_036_Battle_HitResolve" ID="{6BF4EE0B-AAAF-445C-8A0B-6F745DF316A4}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-036_Battle_HitResolve" ID="{AC7B6624-2F03-4957-955D-536CD446FADF}" ShortID="1040372932">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_036_Battle_HitResolve" ID="{F3950DA3-C4BE-440D-B871-901755A66F2F}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_037_Battle_Block" ID="{D327F56B-6DF3-4DB6-9915-832A50775B82}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-037_Battle_Block" ID="{03F4BFD3-8DDB-4EF9-8E65-0C55279FC831}" ShortID="14635987">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_037_Battle_Block" ID="{8B48A61B-17E2-4D2C-BAB9-B6D24B2F6D25}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_038_Battle_Heal" ID="{AC15E048-3C7E-4174-8C66-BC0517BD4A0A}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-038_Battle_Heal" ID="{EA3536E9-5F7E-4811-B53E-9705AFCB4E44}" ShortID="380529089">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_038_Battle_Heal" ID="{E58A1522-7976-4B45-BED6-3B9574D58337}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_039_Battle_BuffGain" ID="{CAFF4A9E-52CD-43E0-83BD-D04ABD9DEDDA}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-039_Battle_BuffGain" ID="{A49F230E-0BFB-475F-A7F7-F1668C0424E6}" ShortID="977968370">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_039_Battle_BuffGain" ID="{0D2CD522-3BA0-4BF8-BFC5-5FB7B64BEEFA}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_040_Battle_DebuffGain" ID="{B984D9C3-C74C-44D2-A5D8-1C9B8E5C3951}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-040_Battle_DebuffGain" ID="{56BF76A2-4AAD-4689-A011-ABF515EB01E5}" ShortID="235514406">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_040_Battle_DebuffGain" ID="{E07E1D25-18A4-446D-AC79-ED55564D32FD}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_041_Battle_Pickup" ID="{B800582F-78CC-4DB7-A1D6-C9AE4C7FEF30}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="10"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-041_Battle_Pickup" ID="{6C8ED329-3E46-4491-BDB4-26647E2DCB88}" ShortID="618939618">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_041_Battle_Pickup" ID="{82DB15B9-27D9-4FEB-9D0F-49BEF61DCEDF}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_033_Battle_TurnChange" ID="{82B6F7A4-81E5-4B6C-9D3A-4B2B60DD54B2}">
+									<ChildrenList>
+										<Action Name="SFX_033_Battle_TurnChange" ID="{73645C45-94FA-422E-B713-2A425FA5E343}" ShortID="920639703">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_033_Battle_TurnChange" ID="{5C5F7F3D-DC9B-4E41-9EAF-E55F5F404E1F}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_059_Battle_HitBlocked" ID="{8208CA0F-F268-48D0-A02B-D3A6E81C7670}">
+									<ChildrenList>
+										<Action Name="SFX_059_Battle_HitBlocked" ID="{4758BD8E-1FC8-43F2-9968-3108B8DB8702}" ShortID="627907127">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_059_Battle_HitBlocked" ID="{E9CEB111-3AF3-4127-AF49-7190B105882B}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Card" ID="{50FA4BD6-9A35-4719-86A7-AE691D588B6B}" ShortID="565679446">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="25"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_006_Card_Pickup" ID="{94B8A269-D845-43C9-A399-0996202C4C6B}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="25"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-006_Card_Pickup" ID="{F5131826-1504-4D7B-BD15-193C795DC02A}" ShortID="402623503">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_006_Card_Pickup" ID="{09077314-A561-4F2C-96D5-EDC402D49CB6}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_007_Card_Play" ID="{0C290FF6-08E6-4D79-B006-EE906AF522E3}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="25"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-007_Card_Play" ID="{9365C88C-6132-42DB-887C-66D697F9D8DF}" ShortID="475034315">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_007_Card_Play" ID="{DDBA68CC-002E-42B9-9869-D4FA4E183BCC}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_008_Card_Draw" ID="{FB5BEB3B-728B-4471-B054-CFDC3C97FBB9}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="25"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-008_Card_Draw" ID="{288AC2EC-AC5D-4BE6-9A07-AC3658C14023}" ShortID="161275273">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_008_Card_Draw" ID="{14D65C85-611B-4FAD-B6FE-CA2390AA580C}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_009_Card_Shuffle" ID="{620A4C62-2C60-45D1-80E8-EECC6E5696BD}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="25"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-009_Card_Shuffle" ID="{042AD79C-6B89-4C8A-A26C-2CE53335A72F}" ShortID="661089681">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_009_Card_Shuffle" ID="{F7405355-16FB-4AD9-8136-A9382EC1B1CE}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_034_Card_Transform" ID="{6E1E5030-4121-4C7E-A4AC-EF4AF4645D94}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="25"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-034_Card_Transform" ID="{2FCA1B99-2893-4457-9598-57843A636713}" ShortID="634928376">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_034_Card_Transform" ID="{5A4DDA16-DFEC-4886-9DF8-EB1C83DB7CC1}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_032_Card_Trigger_Attack" ID="{096643D5-ADE6-4101-A86B-E3E025FF64EF}">
+									<ChildrenList>
+										<Action Name="SFX_032_Card_Trigger_Attack" ID="{C7C225C0-596E-422B-AB01-CC8A0EA1FCEC}" ShortID="57431768">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_032_Card_Trigger_Attack" ID="{D59B87D7-9086-40C7-815E-CFE46780C138}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Cutscene" ID="{2A49B815-40BF-4822-9387-17B30B9B4382}" ShortID="441677207">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="26"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_056_Cutscene_Opening" ID="{36638892-7A59-451E-898D-67FB9A1752F0}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="26"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-056_Cutscene_Opening" ID="{3DBBB196-027D-4417-8066-5A09767E1150}" ShortID="538214007">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_056_Cutscene_Opening" ID="{50F57A9A-2AFA-4664-83BA-64C7B7F61146}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Enemy" ID="{A8ADB538-4035-4378-B56C-FDB9FC225AB1}" ShortID="155356135">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="23"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_014_Enemy_Hit_Light" ID="{BE98094B-3DC8-4676-9006-243AA33B924C}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="23"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-014_Enemy_Hit_Light" ID="{48BB0992-BC57-4482-AE46-B1D5B85203C7}" ShortID="12798139">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_014_Enemy_Hit_Light" ID="{98483381-C804-4C05-B71A-A05B356C7375}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_015_Enemy_Death" ID="{F6F3DFAA-22C6-4EC9-9191-3E8D21F1E679}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="23"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-015_Enemy_Death" ID="{AB7B7FB1-9119-412C-9B61-D624AAC0291B}" ShortID="601515379">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_015_Enemy_Death" ID="{92814F77-CF2B-41B6-93E0-B977FF46D4A5}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_044_Enemy_HitPlayer" ID="{03900DA4-38F9-4E05-AB34-F2795284F424}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="23"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-044_Enemy_HitPlayer" ID="{ECE2A151-5D7D-4F80-8560-D0D507D1B6DE}" ShortID="648779331">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_044_Enemy_HitPlayer" ID="{3B6975C8-3422-47E8-BB75-1614380D9BF7}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_045_Enemy_Break" ID="{44577599-2B87-405E-AF81-7BEC26ECE74A}">
+									<ChildrenList>
+										<Action Name="SFX_045_Enemy_Break" ID="{06C55F69-500B-467F-AC0C-4FBB2C585EAB}" ShortID="369886742">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_045_Enemy_Break" ID="{9249B2CD-0B84-4CF2-BD0E-DAEC206462E4}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Foot" ID="{7BB06E3D-9A02-47B6-ABB7-93DDF871D5BA}" ShortID="567767677">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="20"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_Footsteps" ID="{502CF05A-E77C-4463-8D3B-352BA486B3C6}">
+									<ChildrenList>
+										<Action Name="SFX_Footsteps" ID="{8BB86459-7D56-40E1-BB7A-CC762C5820BE}" ShortID="288781651">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_Footsteps" ID="{28902C75-FD5A-468D-A0FD-7055A6AB4AFE}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Map" ID="{FAFC4021-B5FC-4D82-B01A-FB4195DEED67}" ShortID="812339367">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="16"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_055_Map_FogReveal" ID="{D591CF3D-864C-4ABA-9745-676791BE2A15}">
+									<ChildrenList>
+										<Action Name="SFX_055_Map_FogReveal" ID="{AF31952B-4A17-4BF1-BDA0-9628060C41BD}" ShortID="486506901">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_055_Map_FogReveal" ID="{ECB5B029-EED9-46FA-BBAA-A4D9331F992A}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Player" ID="{85722896-F79A-45C7-848A-7CC93D64DF11}" ShortID="172953614">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="8"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_012_Player_Hit_Light" ID="{B50DF804-C22B-49A8-971F-90BD5B847186}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-012_Player_Hit_Light" ID="{5B46D69F-15F6-4FE2-A7EE-5CEBFF640E20}" ShortID="29615314">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_012_Player_Hit_Light" ID="{6814B313-5C2C-4D9B-A388-190EC966DA63}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_013_Player_Death" ID="{13E57565-E47E-4B0E-8A29-D2107C050EFE}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-013_Player_Death" ID="{7D0C249C-A18A-4621-9FEF-6FEEDDB005FA}" ShortID="467765618">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_013_Player_Death" ID="{A4F42F77-6C55-4DA8-A853-22D2C35EA9DA}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_035_Player_Hit_Heavy" ID="{4099199F-C046-4EEB-AF2D-387B87236C99}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="8"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-035_Player_Hit_Heavy" ID="{33D72FF5-17D1-4899-804A-206898A3C875}" ShortID="570097766">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_035_Player_Hit_Heavy" ID="{8C2C17F6-D5EA-4E5A-9BE4-1327120EE8F7}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_060_Player_AttackThrow" ID="{E5E18C2C-1F63-4435-87BD-EE21027461E8}">
+									<ChildrenList>
+										<Action Name="SFX_060_Player_AttackThrow" ID="{87BE6E0F-5C18-4275-A0C4-7D5831E4B368}" ShortID="288651554">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_060_Player_AttackThrow" ID="{EA654ED7-EC55-4D5D-974C-C7749029DE97}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_042_Player_Breath" ID="{FD82FAD9-CA86-45BC-98EE-479904207A89}">
+									<ChildrenList>
+										<Action Name="SFX_042_Player_Breath" ID="{4AA32F8E-58FE-4B9B-87A5-D0C1D9A2FA3E}" ShortID="101243782">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_042_Player_Breath" ID="{2EA3A023-69D5-4E1F-AE00-11FB8B51E721}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Potion" ID="{321CD5F9-94D6-4EB8-BF0F-5B7C424D5250}" ShortID="472855981">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="24"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_052_Potion_Select" ID="{E61A677A-63BA-4235-9F0D-A8B636185FBE}">
+									<ChildrenList>
+										<Action Name="SFX_052_Potion_Select" ID="{532944A3-C5E3-4559-BF67-57DF59BA4E6A}" ShortID="1052452877">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_052_Potion_Select" ID="{D4EC3F9B-0DEB-4B21-BC7F-5E351F679B67}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_053_Potion_Use" ID="{DD023211-822D-4B18-BC53-0FF7B06BC8E9}">
+									<ChildrenList>
+										<Action Name="SFX_053_Potion_Use" ID="{25FB2D99-10B7-4F7B-A0A3-5FC2950CA942}" ShortID="596303135">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_053_Potion_Use" ID="{7D0903D5-6351-45FA-9CC8-2B668305B2C6}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Relic" ID="{7C9C1F23-628B-4433-AC53-B539F2A7FD1C}" ShortID="684942561">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="7"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_048_Relic_Snap" ID="{276E8A5E-0BEE-484D-B2F4-E92B6B89E759}">
+									<ChildrenList>
+										<Action Name="SFX_048_Relic_Snap" ID="{8EE03456-56F9-4F71-8C31-57E8CDC3A359}" ShortID="271614105">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_048_Relic_Snap" ID="{4B98B72E-B992-4AAD-A84B-A3BF9843BAE0}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_049_Relic_Link" ID="{9870AD74-0FF5-4D7A-A912-AE4369FCCBC7}">
+									<ChildrenList>
+										<Action Name="SFX_049_Relic_Link" ID="{B21B781F-A052-4760-991E-1C06A860E50A}" ShortID="804843511">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_049_Relic_Link" ID="{54CA27DE-AE3A-4ED4-B828-93ADB307F2B8}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_050_Relic_ChainTrigger" ID="{E3276236-DDD5-478E-8BF6-AE456BE0FE87}">
+									<ChildrenList>
+										<Action Name="SFX_050_Relic_ChainTrigger" ID="{92479299-81AC-4312-9F20-AFAFDC40F938}" ShortID="817827621">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_050_Relic_ChainTrigger" ID="{D6838229-25FA-4619-A638-D574647FD7C9}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_051_Relic_Gain" ID="{7765EDEB-DF71-4125-ADC8-A2E9D93F704B}">
+									<ChildrenList>
+										<Action Name="SFX_051_Relic_Gain" ID="{00F7425F-CA24-4519-A8FE-F558063A120C}" ShortID="421538258">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_051_Relic_Gain" ID="{D6D90E5A-C99F-4AE8-916C-25F069C36440}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Trans" ID="{AB733F41-0490-47E4-B2CB-CD001DEA0ECD}" ShortID="494076151">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="3"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_022_Trans_EnterBattle" ID="{45A66BF0-657F-4A82-B7B3-B91BB8719B78}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-022_Trans_EnterBattle" ID="{D71B7285-FA76-47E5-BBD3-B6C67951D813}" ShortID="283796918">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_022_Trans_EnterBattle" ID="{AD570152-85C0-4BFC-BF16-2BC7874E6570}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_023_Trans_FloorChange" ID="{A3FD096B-9295-44D8-A99D-BBF73098B124}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-023_Trans_FloorChange" ID="{D211EE2A-6868-4714-8C4C-8A54D68AEA3A}" ShortID="712359957">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_023_Trans_FloorChange" ID="{EE80D2DF-CC9F-44B8-9EF7-7FB49B76FB51}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_024_Trans_ExitBattle" ID="{571FDE45-6401-44B6-8677-001FFC4D7666}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="3"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-024_Trans_ExitBattle" ID="{90DFBE67-8D2B-4C77-91ED-C6FACE233529}" ShortID="333869834">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_024_Trans_ExitBattle" ID="{C27FA146-F35F-40E5-BF6C-6620DDBBC835}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="UI" ID="{973EAEEB-3897-41DA-9508-7C464F4394B8}" ShortID="907630616">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="2"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_001_UI_Hover" ID="{6BE67A9B-291B-4FDA-97FE-4A605087C259}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-001_UI_Hover" ID="{B70C83AB-AAF7-4C2A-B34B-B8338C905106}" ShortID="942273060">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_001_UI_Hover" ID="{EDD762D4-170A-44B6-A25C-02CCA0618CB0}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_002_UI_Click" ID="{7FD3482D-6511-4FF3-AECC-70943576A99D}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-002_UI_Click" ID="{6575B595-5815-45CD-98D0-198E4BE87A8F}" ShortID="543632411">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_002_UI_Click" ID="{1CE8F3D5-A93F-4BD1-8C8E-B526509E6270}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_003_UI_Back" ID="{8B74723B-0696-4B70-AD33-D1CFE603F67A}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-003_UI_Back" ID="{8327330F-AD06-41C7-AF97-68FFD53A762B}" ShortID="306863005">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_003_UI_Back" ID="{618AB3C8-0F8C-4B61-AFD4-DF9ABC161709}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_004_UI_Panel_Open" ID="{0273BA27-611E-41C4-8817-42AADED57B6C}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-004_UI_Panel_Open" ID="{0541AB6C-91FC-4340-B526-DFE010738BFD}" ShortID="360061839">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_004_UI_Panel_Open" ID="{6FC4C09E-C977-4D59-9B8C-DA3EEDF0E146}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+								<Event Name="SFX_005_UI_Panel_Close" ID="{CFDCE4E3-5CFD-4037-BC12-AF25A97CBF46}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="2"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX-005_UI_Panel_Close" ID="{E25EBE8A-9982-4858-BDFC-EBD0A0F7477A}" ShortID="93487292">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_005_UI_Panel_Close" ID="{7CEF3BAF-5BFA-4EE6-98A7-A22EDD65E36D}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+						<Folder Name="Voice" ID="{579D9B3B-D3D3-456F-B862-0C2CEA06B60A}" ShortID="492050353">
+							<PropertyList>
+								<Property Name="Color" Type="int16" Value="18"/>
+								<Property Name="OverrideColor" Type="bool" Value="True"/>
+							</PropertyList>
+							<ChildrenList>
+								<Event Name="SFX_058_Voice_PenWrite" ID="{79DF21E1-C958-48E4-A4E8-F89EA2223C42}">
+									<PropertyList>
+										<Property Name="Color" Type="int16" Value="18"/>
+										<Property Name="OverrideColor" Type="bool" Value="True"/>
+									</PropertyList>
+									<ChildrenList>
+										<Action Name="SFX_058_Voice_PenWrite" ID="{D3605644-72DF-4B3D-A140-D6B541986964}" ShortID="538929181">
+											<ReferenceList>
+												<Reference Name="Target">
+													<ObjectRef Name="SFX_058_Voice_PenWrite" ID="{08F82922-BCE4-4347-872E-8E767CA0B6C5}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+												</Reference>
+											</ReferenceList>
+										</Action>
+									</ChildrenList>
+								</Event>
+							</ChildrenList>
+						</Folder>
+					</ChildrenList>
+				</Folder>
+			</ChildrenList>
+		</WorkUnit>
+	</Events>
+</WwiseDocument>

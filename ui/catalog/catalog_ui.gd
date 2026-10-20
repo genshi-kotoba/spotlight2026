@@ -16,31 +16,13 @@ static func install_theme(root: Control) -> void:
 	skin.default_font = font
 	skin.default_font_size = 24
 	skin.set_color("font_color", "Label", INK)
-	for style_name: String in ["normal", "hover", "pressed", "focus", "disabled"]:
-		var style := StyleBoxFlat.new()
-		var normal := style_name == "normal"
-		style.bg_color = Color(0.078, 0.065, 0.055, 0.92) if normal \
-			else Color(0.165, 0.132, 0.098, 0.98)
-		if style_name == "disabled":
-			style.bg_color = Color(0.062, 0.052, 0.044, 0.85)
-		style.border_color = Color(GOLD, 0.30 if style_name == "disabled" else (0.45 if normal else 0.95))
-		style.set_border_width_all(1)
-		style.set_corner_radius_all(6)
-		style.content_margin_left = 24
-		style.content_margin_right = 24
-		style.content_margin_top = 12
-		style.content_margin_bottom = 12
-		skin.set_stylebox(style_name, "Button", style)
-		skin.set_color("font_color", "Button",
-			Color(0.52, 0.49, 0.44) if style_name == "disabled" else INK)
-		skin.set_color("font_hover_color", "Button", Color(1.0, 0.933, 0.749))
 	root.theme = skin
 
 
-static func panel_style(color: Color = Color("252b37")) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = color
-	style.set_corner_radius_all(12)
+static func panel_style(color: Color = Color("252b37")) -> StyleBox:
+	var style := CommonUiSkin.panel("row")
+	if color.g > color.r * 1.25 and color.g > color.b:
+		style.set("surface_tint", Color(0.47, 0.88, 0.58))
 	return style
 
 
@@ -61,12 +43,7 @@ static func shell(root: Control, title_text: String, subtitle: String) -> VBoxCo
 	var sheet := Panel.new()
 	sheet.name = "Sheet"
 	sheet.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var sheet_style := StyleBoxFlat.new()
-	sheet_style.bg_color = Color(0.035, 0.03, 0.026, 0.62)
-	sheet_style.border_color = Color(GOLD, 0.14)
-	sheet_style.set_border_width_all(1)
-	sheet_style.set_corner_radius_all(12)
-	sheet.add_theme_stylebox_override("panel", sheet_style)
+	sheet.add_theme_stylebox_override("panel", CommonUiSkin.panel("page_border"))
 	root.add_child(sheet)
 	sheet.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	sheet.offset_left = 24.0
@@ -90,9 +67,10 @@ static func shell(root: Control, title_text: String, subtitle: String) -> VBoxCo
 	title.add_theme_color_override("font_color", Color(0.941, 0.902, 0.804))
 	heading.add_child(title)
 	var back := button("返回开始界面", "Back")
+	CommonUiSkin.style_navigation_button(back, "back")
 	heading.add_child(back)
 	back.pressed.connect(func():
-		var error := root.get_tree().change_scene_to_file("res://ui/main_menu/main_menu.tscn")
+		var error := SceneTransition.change_scene_to_file("res://ui/main_menu/main_menu.tscn")
 		if error != OK:
 			push_error("返回开始界面失败：%d" % error))
 	var hint := label(subtitle, 22)
@@ -114,6 +92,7 @@ static func button(text: String, node_name: String = "") -> Button:
 	var result := Button.new()
 	result.text = text
 	result.name = node_name if not node_name.is_empty() else text
+	CommonUiSkin.style_button(result, Vector4(24, 12, 24, 12))
 	result.custom_minimum_size = Vector2(180, 60)
 	result.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	return result
@@ -137,12 +116,15 @@ static func preview(parent: Control, entry: Dictionary, category: String, factor
 		var card: CardView = CARD_SCENE.instantiate()
 		holder.add_child(card)
 		card.scale = Vector2.ONE * factor
+		if category == "cards":
+			card.set_face(CardData.Rarity.RARE if str(entry.get("rarity", "")) == "稀有" else CardData.Rarity.COMMON,
+				CardData.face_tint_for_type(str(entry.get("type", ""))))
 		card.set_texts(str(entry.get("name", "")), str(entry.get("effect", "")), "")
 		card.set_art_texture(TextCatalogService.art_texture(str(entry.get("art_path", ""))))
 	else:
 		var panel := PanelContainer.new()
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.add_theme_stylebox_override("panel", panel_style())
+		panel.add_theme_stylebox_override("panel", CommonUiSkin.panel("small"))
 		holder.add_child(panel)
 		panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		var box := VBoxContainer.new()
@@ -160,6 +142,13 @@ static func preview(parent: Control, entry: Dictionary, category: String, factor
 			placeholder.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			placeholder.modulate = MUTED
 			box.add_child(placeholder)
-		box.add_child(label(str(entry.get("name", "")), 28))
-		box.add_child(label(str(entry.get("effect", "")), 22))
+		var name_area := MarginContainer.new()
+		name_area.name = "MonsterNameArea"
+		name_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		name_area.add_theme_constant_override("margin_bottom", 16)
+		box.add_child(name_area)
+		var monster_name := label(str(entry.get("name", "")), 28)
+		monster_name.name = "MonsterName"
+		monster_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_area.add_child(monster_name)
 	return holder

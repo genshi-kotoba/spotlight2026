@@ -27,6 +27,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("5_theme")
+settings_scene = "res://ui/main_menu/main_menu_settings.tscn"
 script = ExtResource("1_menu")
 
 [node name="背景" type="TextureRect" parent="."]
@@ -82,7 +83,7 @@ theme_override_styles/panel = SubResource("Rule")
 offset_left = 62.0
 offset_top = 250.0
 offset_right = 462.0
-offset_bottom = 812.0
+offset_bottom = 892.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("MenuCard")
 
@@ -117,20 +118,13 @@ text = "图鉴"
 custom_minimum_size = Vector2(360, 64)
 text = "感谢名单"
 
+[node name="记录" type="Button" parent="按钮列"]
+custom_minimum_size = Vector2(360, 64)
+text = "记录"
+
 [node name="退出游戏" type="Button" parent="按钮列"]
 custom_minimum_size = Vector2(360, 64)
 text = "退出游戏"
-
-[node name="档案" type="Button" parent="."]
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -340.0
-offset_top = 48.0
-offset_right = -80.0
-offset_bottom = 112.0
-grow_horizontal = 0
-theme_override_font_sizes/font_size = 22
-text = "当前档案 1 ▾"
 
 [node name="版本" type="Label" parent="."]
 anchor_left = 1.0

@@ -1,9 +1,12 @@
-extends "res://ui/world_map/flat_2d/map_run_demo.gd"
+extends "res://ui/world_map/relief_2d/map_exploration.gd"
 
-## 主菜单落点：只覆盖装配/持久化入口，地图算法、交互和视图全部继承 main。
+## 正式业务入口；2.5D 只负责显示，战斗、奖励、商店和存档保持同一接线。
 const MENU_SCENE := "res://ui/main_menu/main_menu.tscn"
 var _gateway: Node
 var _saved_entry_state: Dictionary = {}
+var _reward_popup: LootPopup
+var _shop_popup: ShopPopup
+var _node_loot_popup: NodeLootPopup
 
 # PRG-002 已经安装了真实随机快照；地图恢复仅验证同一个快照，不能再次安装
 # SeedService，否则会使 main 的战斗/奖励等已经持有的 RandomStream 失效。
@@ -25,15 +28,39 @@ class ExistingSeedSource extends RefCounted:
 
 func _ready() -> void:
 	_gateway = get_node("/root/SaveGateway")
+	# F6 直接运行任一地图入口时也经过真实局内状态，不再落到无接线的 demo。
+	# 已有进行中的档案只能继续，绝不能用默认种子覆盖它。
+	if not _ensure_active_run():
+		set_process(false)
+		set_physics_process(false)
+		set_process_input(false)
+		set_process_unhandled_input(false)
+		SceneTransition.call_deferred("change_scene_to_file", MENU_SCENE)
+		return
+	MapEvents.node_interaction_requested.connect(_on_world_node_requested)
 	super._ready()
 	if not _saved_entry_state.is_empty():
-		load_map(_map_snapshot, _saved_entry_state)
-		if not session.pending.is_empty() and demo_interactions_enabled:
+		if not session.pending.is_empty() and demo_interactions_enabled and _uses_demo_dialog(session.pending):
 			_dialog_request_id = str(session.pending.request_id)
-			_dialog.title = "已恢复待结算节点"
-			_dialog.dialog_text = "节点 %s 的请求已恢复，请完成或取消以继续探索。" % session.pending.node_id
-			_dialog.popup_centered(Vector2i(570, 255))
-	_gateway.bind_map_view(self)
+			_configure_node_dialog(session.pending)
+	if not EncounterFlow.bind_map(self):
+		_show_toast(EncounterFlow.last_error)
+		return
+	# 兼容旧版已完成 Boss 的地图：正式进度自动转入下一层。
+	if EncounterFlow.session.map_id != session.map_id:
+		var entry: Dictionary = map_run.get_floor(map_run.current_floor)
+		load_map(entry.snapshot, entry.state)
+		EncounterFlow.session = session
+	if not RunRewards.pending(_gateway.current_run()).is_empty() and _gateway.current_run().current_battle == null:
+		call_deferred("_show_pending_rewards")
+	elif bool(_gateway.current_run().inventory_state.get("pending_run_victory", false)):
+		RunResults.call_deferred("complete_if_ready")
+	elif session.pending.get("type") == "shop":
+		call_deferred("_show_shop", session.pending.duplicate(true))
+	elif session.pending.get("type") == "event" and _gateway.current_run().current_battle == null:
+		call_deferred("_show_random_event")
+	elif session.pending.get("type") in ["chest", "pile"]:
+		call_deferred("_show_node_loot", session.pending.duplicate(true))
 	# 放弃本局的二次确认在设置面板里完成，这里只负责落地。
 	# 冒险菜单设置页里的三个动作：存档、回主菜单、退出都走存档网关。
 	_run_menu.abandon_requested.connect(_on_menu_abandon)
@@ -43,9 +70,51 @@ func _ready() -> void:
 	if map_run != null and map_run.current_floor > 0:
 		_save_run()
 
+## 候选提交覆盖首层、读档和原地换层；关闭配置时为无副作用调用。
+func load_map(snapshot: Dictionary, saved_state: Dictionary = {}) -> bool:
+	var accepted: bool = super.load_map(snapshot, saved_state)
+	if accepted:
+		RegionTitles.track_map(self)
+	return accepted
+
+## Exploration variants warm in the background; current geometry and entry fade
+## determine when the player and region title can start together.
+func is_map_ready() -> bool:
+	return is_current_map_ready() and (_entry_fade == null or not _entry_fade.is_playing())
+
+func region_title_context() -> Dictionary:
+	return {"map_id": session.map_id, "seed": session.seed}
+
+func is_region_title_ready() -> bool:
+	if not is_node_ready() or not is_map_ready() or SceneTransition.is_loading() or paused:
+		return false
+	if _entry_fade != null and _entry_fade.is_playing():
+		return false
+	if _gateway == null or _gateway.current_run() == null or EncounterFlow.session != session:
+		return false
+	var run: RunStateMachine = _gateway.current_run()
+	return run.current_map_id == session.map_id and run.current_battle == null \
+		and session.pending.is_empty() and RunRewards.pending(run).is_empty() \
+		and (_run_menu == null or not _run_menu.is_open()) and (_dialog == null or not _dialog.visible)
+
+
+func _ensure_active_run() -> bool:
+	if _gateway.current_run() != null:
+		return true
+	if _gateway.has_continuable_run():
+		return _gateway.continue_saved_run() == OK
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
+	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(_run_settings_path()))
+	if not parsed is Dictionary or not settings is Dictionary:
+		push_error("地图入口的新局配置无法读取")
+		return false
+	var config: Dictionary = parsed.duplicate(true)
+	config["run_id"] = "map-entry-%d-%d" % [Time.get_ticks_usec(), randi()]
+	return _gateway.start_new_run(str(settings.get("seed", "")), config) == OK
+
 
 func _initial_snapshot() -> Dictionary:
-	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(RUN_CONFIG_PATH))
+	var settings: Variant = JSON.parse_string(FileAccess.get_file_as_string(_run_settings_path()))
 	if not settings is Dictionary or not settings.get("floors") is Array:
 		return {}
 	_floor_configs = settings.floors.duplicate(true)
@@ -58,14 +127,163 @@ func _initial_snapshot() -> Dictionary:
 		if not map_run.restore_snapshot(saved):
 			session.last_error = "地图存档无法恢复：" + map_run.last_error
 			return {}
+		if not _enable_monster_assignments():
+			return {}
 		var entry: Dictionary = map_run.get_floor(map_run.current_floor)
 		_saved_entry_state = entry.get("state", {}).duplicate(true)
 		return entry.get("snapshot", {})
 	if not map_run.attach_existing_run(_floor_configs):
 		return {}
+	if not _enable_monster_assignments():
+		return {}
 	var floor_index := run.map_ids.find(run.current_map_id) + 1
 	var entry: Dictionary = map_run.enter_floor(maxi(1, floor_index))
 	return entry.get("snapshot", {})
+
+func _initial_state() -> Dictionary:
+	return _saved_entry_state
+
+func _enable_monster_assignments() -> bool:
+	var policy = preload("res://systems/map/flat_2d/monster_encounters.gd")
+	var roster: Array = policy.roster_from_catalog(TextCatalog.entries("monsters"))
+	if not map_run.enable_encounters(roster):
+		session.last_error = map_run.last_error
+		return false
+	return true
+
+func _uses_demo_dialog(request: Dictionary) -> bool:
+	return request.get("type") not in ["battle", "elite", "boss", "shop", "event", "chest", "pile"]
+
+func _on_world_node_requested(request: Dictionary) -> void:
+	if request.get("map_id") != session.map_id or _uses_demo_dialog(request):
+		return
+	# 不在地图提示或确认框中展示 content_id、名称、头像。
+	EncounterFlow.session = session
+	ScenePreloader.prioritize_node(session.map_id, str(request.node_id))
+	if request.get("type") == "event":
+		_show_random_event()
+		return
+	if request.get("type") == "shop":
+		_show_shop(request)
+		return
+	if request.get("type") in ["chest", "pile"]:
+		_show_node_loot(request)
+		return
+	if not EncounterFlow.begin_encounter(request):
+		_show_toast(EncounterFlow.last_error)
+
+func _interact() -> void:
+	if not RunRewards.pending(_gateway.current_run()).is_empty():
+		_show_pending_rewards()
+		return
+	if RunResults.complete_if_ready():
+		return
+	if session.pending.get("type") in ["chest", "pile"]:
+		_show_node_loot(session.pending.duplicate(true))
+		return
+	if not session.pending.is_empty() and _gateway.current_run().current_battle != null:
+		if _gateway.save_current() == OK:
+			EncounterFlow.open_battle()
+		return
+	_update_selection()
+	# A route gate can reveal a new geometry state. Keep that request pending
+	# outside the domain until every planned variant is ready; walking remains
+	# available and no old CPU job has to be cancelled on a reveal frame.
+	if _view.is_presentation_cache_preparing() and not _selected.is_empty() \
+			and bool(session.nodes.get(_selected, {}).get("is_route_gate", false)):
+		_show_toast("前方区域正在准备，请稍候再进入")
+		return
+	super._interact()
+
+func _update_selection() -> void:
+	super._update_selection()
+	if not _selected.is_empty():
+		ScenePreloader.prioritize_node(session.map_id, _selected)
+
+func _show_shop(request: Dictionary) -> void:
+	if is_instance_valid(_shop_popup):
+		return
+	_set_paused(true)
+	_shop_popup = ShopPopup.new()
+	add_child(_shop_popup)
+	_shop_popup.close_handler = _close_shop
+	_shop_popup.show_shop(request)
+
+func _show_node_loot(request: Dictionary) -> void:
+	if is_instance_valid(_node_loot_popup): return
+	_set_paused(true)
+	_node_loot_popup = NodeLootPopup.new()
+	add_child(_node_loot_popup)
+	_node_loot_popup.close_handler = _close_node_loot
+	_node_loot_popup.claimed.connect(_on_node_loot_claimed)
+	_node_loot_popup.finished.connect(func(): _set_paused(false), CONNECT_DEFERRED)
+	_node_loot_popup.show_loot(request)
+
+func _on_node_loot_claimed(request: Dictionary) -> void:
+	_sync_view()
+	_sync_actor()
+	MapEvents.map_state_changed.emit(str(request.map_id), session.capture_state())
+	MapEvents.node_interaction_resolved.emit(str(request.request_id), str(request.node_id), "completed")
+
+func _close_node_loot(request: Dictionary) -> Error:
+	var error := RunNodeLoot.cancel(_gateway.current_run(), request)
+	if error == OK:
+		MapEvents.map_state_changed.emit(str(request.map_id), session.capture_state())
+		MapEvents.node_interaction_resolved.emit(str(request.request_id), str(request.node_id), "cancelled")
+	return error
+
+func _show_random_event() -> void:
+	if _gateway.save_current() != OK:
+		_show_toast("事件进入前保存失败，请重试")
+		return
+	var error := SceneTransition.change_scene_to_file(RandomEventCatalog.SCENE)
+	if error != OK: _show_toast("打开随机事件失败：%d" % error)
+
+func _close_shop() -> Error:
+	var old_state: Dictionary = session.capture_state()
+	var pending: Dictionary = session.pending.duplicate(true)
+	if pending.get("type") != "shop" or not session.resolve_request({"request_id": pending.request_id, "status": "completed"}):
+		return ERR_INVALID_DATA
+	var error: Error = _gateway.save_current()
+	if error != OK:
+		session.restore_state(old_state)
+		# restore_state 会更新回调令牌，弹窗必须同步。
+		_shop_popup.request = session.pending.duplicate(true)
+		return error
+	_sync_view()
+	_sync_actor()
+	MapEvents.map_state_changed.emit(session.map_id, session.capture_state())
+	MapEvents.node_interaction_resolved.emit(str(pending.request_id), str(pending.node_id), "completed")
+	_set_paused(false)
+	return OK
+
+func _handle_menu_hotkeys(event: InputEvent) -> bool:
+	if is_instance_valid(_shop_popup) or is_instance_valid(_reward_popup) or is_instance_valid(_node_loot_popup):
+		return false
+	return super._handle_menu_hotkeys(event)
+
+func _show_pending_rewards() -> void:
+	if is_instance_valid(_reward_popup):
+		return
+	_set_paused(true)
+	_reward_popup = LootPopup.new()
+	add_child(_reward_popup)
+	_reward_popup.finished.connect(_on_rewards_closed, CONNECT_DEFERRED)
+	_reward_popup.show_rewards()
+
+func _on_rewards_closed() -> void:
+	if RunResults.complete_if_ready(): return
+	_set_paused(false)
+
+func _reset_map() -> void:
+	_show_toast("正式冒险不重置节点；同一种子的敌人和已完成进度均保留")
+
+func _refresh_run_controls() -> void:
+	super._refresh_run_controls()
+	_previous.hide()
+	_next.hide()
+	if map_run != null and map_run.current_floor > 0:
+		_floor_label.text = "第 %d / %d 层%s" % [map_run.current_floor, EncounterFlow.final_floor_count(), " · 顶端" if map_run.current_floor == 4 else ""]
 
 
 func capture_menu_checkpoint() -> Dictionary:
@@ -77,6 +295,15 @@ func capture_menu_checkpoint() -> Dictionary:
 func _save_run() -> void:
 	var error: Error = _gateway.save_current()
 	_show_toast("本局已保存到当前档案" if error == OK else "保存失败：%d" % error)
+
+
+func _persist_fast_travel(previous_state: Dictionary) -> Error:
+	var error: Error = _gateway.save_current()
+	if error != OK:
+		# Capturing a checkpoint also updates the run's in-memory floor cache.
+		# Restore it when the gateway refuses the atomic disk write.
+		map_run.capture_snapshot(previous_state)
+	return error
 
 
 func _build_run_controls() -> void:
@@ -104,14 +331,10 @@ func _return_to_menu() -> void:
 	if _gateway.save_current() != OK:
 		_show_toast("保存失败，仍留在当前地图")
 		return
-	var error := get_tree().change_scene_to_file(MENU_SCENE)
+	var error := SceneTransition.change_scene_to_file(MENU_SCENE)
 	if error != OK:
 		_show_toast("返回开始界面失败：%d" % error)
 
 
 func _change_floor(index: int) -> void:
-	super._change_floor(index)
-	var run: RunStateMachine = _gateway.current_run()
-	if run != null and map_run.current_floor == index:
-		run.set_current_map(run.map_ids[index - 1])
-		_save_run()
+	_show_toast("正式冒险在击败本层 BOSS 后自动换层（请求：%d）" % index)

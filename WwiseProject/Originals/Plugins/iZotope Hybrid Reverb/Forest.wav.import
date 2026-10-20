@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c23bci0powjae"
+path="res://.godot/imported/Forest.wav-89236199a392c5e86139b925c401570a.sample"
+
+[deps]
+
+source_file="res://WwiseProject/Originals/Plugins/iZotope Hybrid Reverb/Forest.wav"
+dest_files=["res://.godot/imported/Forest.wav-89236199a392c5e86139b925c401570a.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

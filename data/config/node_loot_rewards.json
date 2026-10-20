@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "chest": {"silver_weight": 1, "potion_weight": 1, "silver_min": 100, "silver_max": 200},
+  "pile": {"silver_weight": 1, "fragment_weight": 1, "silver_min": 100, "silver_max": 200}
+}

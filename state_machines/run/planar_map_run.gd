@@ -4,6 +4,7 @@ extends RefCounted
 const Generator = preload("res://systems/map/flat_2d/planar_map_generator.gd")
 const Session = preload("res://systems/map/flat_2d/planar_map_session.gd")
 const Domains = preload("res://systems/random/random_domains.gd")
+const Encounters = preload("res://systems/map/flat_2d/monster_encounters.gd")
 const RUN_VERSION := 1
 const MAX_FLOORS := 20
 var last_error := ""
@@ -16,6 +17,7 @@ var _configs: Array = []
 var _floors: Dictionary = {}
 var _failures: Dictionary = {}
 var _anchor: RefCounted
+var _encounter_roster: Array = []
 
 func _init(seed_source: Object, content_version: String) -> void:
 	_source = seed_source
@@ -55,6 +57,7 @@ func _install(seed_text: String, configs: Array, map_set_id: String) -> void:
 	_configs = configs.duplicate(true)
 	_map_set_id = map_set_id
 	_floors = {}
+	_encounter_roster = []
 	_failures = {}
 	current_floor = 0
 	_anchor = _source.get_stream(Domains.MAP_RUN, [_map_set_id], 0)
@@ -102,6 +105,39 @@ func get_main_seed() -> String:
 func floor_count() -> int:
 	return _configs.size()
 
+## 可选的正式怪物策略；独立地图 demo 不启用。旧地图只补内容，不重生成地形。
+func enable_encounters(roster: Array) -> bool:
+	if not Encounters.valid_roster(roster):
+		return _fail("Invalid monster roster")
+	if not _encounter_roster.is_empty():
+		return true # 已保存的候选表属于该局，不受后续目录编辑影响。
+	var prepared := {}
+	for index in _floors:
+		var old: Dictionary = _floors[index]
+		var policy := Encounters.new()
+		var snapshot: Dictionary = policy.assign(old.snapshot, roster)
+		if snapshot.is_empty():
+			return _fail(policy.last_error)
+		var candidate = Session.new()
+		if not candidate.load_map(snapshot):
+			return _fail(candidate.last_error)
+		var state: Dictionary = old.state.duplicate(true)
+		state.fingerprint = candidate.fingerprint
+		if not state.pending.is_empty():
+			state.pending.content_id = candidate.nodes[state.pending.node_id].content_id
+		if not candidate.restore_state(state):
+			return _fail(candidate.last_error)
+		prepared[index] = {"snapshot": snapshot, "state": candidate.capture_state()}
+	_encounter_roster = roster.duplicate(true)
+	_floors = prepared
+	return true
+
+func monster_definition(id: String) -> Dictionary:
+	for record: Dictionary in _encounter_roster:
+		if record.id == id:
+			return record.duplicate(true)
+	return {}
+
 func map_id_for(index: int) -> String:
 	return "%s:floor-%03d" % [_map_set_id, index]
 
@@ -137,6 +173,13 @@ func get_floor(index: int) -> Dictionary:
 		return {}
 	var generator = Generator.new()
 	var snapshot: Dictionary = generator.generate(_source, map_id_for(index), index, _configs[index - 1])
+	if not snapshot.is_empty() and not _encounter_roster.is_empty():
+		var policy := Encounters.new()
+		snapshot = policy.assign(snapshot, _encounter_roster)
+		if snapshot.is_empty():
+			_failures[index] = policy.last_error
+			_fail(policy.last_error)
+			return {}
 	var candidate = Session.new()
 	if snapshot.is_empty() or not candidate.load_map(snapshot):
 		var error: String = generator.last_error if snapshot.is_empty() else candidate.last_error
@@ -192,7 +235,10 @@ func capture_snapshot(current_state: Dictionary = {}) -> Dictionary:
 	for index in indices:
 		failures.append({"floor_index": index, "error": _failures[index]})
 	last_error = ""
-	return {"run_version": RUN_VERSION, "generator_version": Generator.VERSION, "map_set_id": _map_set_id, "current_floor": current_floor, "floor_configs": _configs.duplicate(true), "seed_snapshot": _source.capture_snapshot(), "floors": records, "generation_failures": failures}
+	var saved := {"run_version": RUN_VERSION, "generator_version": Generator.VERSION, "map_set_id": _map_set_id, "current_floor": current_floor, "floor_configs": _configs.duplicate(true), "seed_snapshot": _source.capture_snapshot(), "floors": records, "generation_failures": failures}
+	if not _encounter_roster.is_empty():
+		saved["encounter_roster"] = _encounter_roster.duplicate(true)
+	return saved
 
 ## Preflight EVERY floor and RNG in candidates. No global mutation or signals
 ## until validation succeeds; caller then binds the active floor to its view.
@@ -211,6 +257,9 @@ func restore_snapshot(saved: Dictionary) -> bool:
 	if seed_candidate.restore_snapshot(saved.seed_snapshot) != OK:
 		return _fail("Incompatible or invalid seed snapshot")
 	var records: Dictionary = {}
+	var roster: Variant = saved.get("encounter_roster", [])
+	if not roster is Array or (not roster.is_empty() and not Encounters.valid_roster(roster)):
+		return _fail("Invalid saved monster roster")
 	for record in saved.floors:
 		if not record is Dictionary or not Session._integer(record.get("floor_index")) or not record.get("snapshot") is Dictionary or not record.get("state") is Dictionary:
 			return _fail("Invalid saved floor record")
@@ -219,6 +268,8 @@ func restore_snapshot(saved: Dictionary) -> bool:
 			return _fail("Duplicate or out-of-range saved floor")
 		if not _check_floor(record.snapshot, record.state, index, seed_candidate.get_main_seed(), configs, saved.map_set_id):
 			return false
+		if not roster.is_empty() and not Encounters.valid_assignments(record.snapshot, roster):
+			return _fail("Saved monster does not match node grade/floor")
 		if index != active_index and not record.state.pending.is_empty():
 			return _fail("Inactive floor cannot have a pending encounter")
 		records[index] = {"snapshot": record.snapshot.duplicate(true), "state": record.state.duplicate(true)}
@@ -237,6 +288,7 @@ func restore_snapshot(saved: Dictionary) -> bool:
 		return _fail("Seed source rejected restore; active state preserved")
 	_install(seed_candidate.get_main_seed(), configs, saved.map_set_id)
 	_floors = records
+	_encounter_roster = roster.duplicate(true)
 	_failures = failures
 	current_floor = active_index
 	return true

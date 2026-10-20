@@ -1,0 +1,8 @@
+{
+  "initial_draw_count": 6,
+  "per_turn_draw_count": 2,
+  "play_limit": 10,
+  "enemy_health": {"普通": 30, "精英": 50, "BOSS": 80},
+  "enemy_damage": 6,
+  "empty_deck_fallback": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+}

@@ -57,9 +57,26 @@ enum FaceTint {
 
 ## 卡框色调；卡头形状继续由普通/稀有两档决定。
 @export var face_tint: FaceTint = FaceTint.GRAY
+@export var art_path := ""
+@export_multiline var flavor_text := ""
+@export var implementation_status := "ready"
+@export var occupies_slot := true
 
 ## 效果列表，按顺序执行。
 ##
 ## 元素类型是 GameEffect 而不是 CardEffect，所以卡牌既可以直接挂纯效果（攻击、
 ## 抽牌），也可以直接挂 buff 效果（给目标叠 3 层中毒）。buff 就是这么来的。
 @export var effects: Array[GameEffect] = []
+
+
+## 正式卡牌与图鉴共用的分类底图；独立资源仍可自行配置 face_tint。
+static func face_tint_for_type(type_name: String) -> FaceTint:
+	match type_name.strip_edges().to_lower():
+		"伤害":
+			return FaceTint.RED
+		"buff":
+			return FaceTint.BLUE
+		"移位":
+			return FaceTint.YELLOW
+		_:
+			return FaceTint.GRAY

@@ -1,0 +1,9 @@
+{
+  "common": {
+    "azimuth_degrees": 135.0,
+    "elevation_degrees": 45.0,
+    "ambient": 0.30,
+    "direct": 0.70
+  },
+  "floors": {}
+}

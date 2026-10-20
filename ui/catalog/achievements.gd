@@ -6,7 +6,7 @@ var _status: Label
 
 
 func _ready() -> void:
-	var body := CatalogUi.shell(self, "成就", "当前档案的成就")
+	var body := CatalogUi.shell(self, "成就", "已获得的成就")
 	_status = CatalogUi.label("")
 	_status.name = "Status"
 	body.add_child(_status)

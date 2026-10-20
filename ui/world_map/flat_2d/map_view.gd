@@ -162,7 +162,7 @@ func _draw_node(node: Dictionary) -> void:
 		draw_circle(center, marker_radius, Color("#203238"))
 		draw_circle(center, marker_radius, marker_color, false, 1.8, true)
 
-	var label := _node_label(node_type)
+	var label := str(node.get("display_name", "事件")) if node_type == "event" and node.get("opened", false) else _node_label(node_type)
 	var font_size := 10 if label == "BOSS" else clampi(roundi(_cell_radius_px * 0.21), 10, 14)
 	var label_color := marker_color if completed else COLOR_TEXT
 	var label_width := ThemeDB.fallback_font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
@@ -185,6 +185,10 @@ func _node_label(node_type: String) -> String:
 			return "B"
 		"elite":
 			return "E"
+		"chest":
+			return "箱"
+		"pile":
+			return "堆"
 		"shop":
 			return "$"
 		"boss":
@@ -199,6 +203,10 @@ func _node_color(node_type: String) -> Color:
 			return Color("#d77872")
 		"elite":
 			return Color("#c987d2")
+		"chest":
+			return Color("#dfb970")
+		"pile":
+			return Color("#b8afa0")
 		"shop":
 			return Color("#e5c36d")
 		"boss":

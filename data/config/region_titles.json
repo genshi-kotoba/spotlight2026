@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "enabled": true,
+  "map_regions": {
+    "world:floor-001": "alchemy_workshop",
+    "world:floor-002": "elbak_slums",
+    "world:floor-003": "nock_cathedral",
+    "world:floor-004": "cathedral_summit"
+  },
+  "regions": {
+    "alchemy_workshop": {
+      "title": "炼金工坊",
+      "eyebrow": "第一层",
+      "subtitle": "地底"
+    },
+    "elbak_slums": {
+      "title": "贫民窟",
+      "eyebrow": "第二层",
+      "subtitle": "埃尔巴克"
+    },
+    "nock_cathedral": {
+      "title": "诺克大教堂",
+      "eyebrow": "第三层",
+      "subtitle": "祷告厅"
+    },
+    "cathedral_summit": {
+      "title": "教堂顶端",
+      "eyebrow": "第四层",
+      "subtitle": "神临"
+    }
+  },
+  "style": {
+    "duration": 4.3,
+    "font_size": 68,
+    "reduced_motion": false
+  }
+}

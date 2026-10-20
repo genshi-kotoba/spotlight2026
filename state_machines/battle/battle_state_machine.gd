@@ -12,12 +12,16 @@ signal turn_started(turn_number: int)
 signal player_turn_started(turn_number: int)
 signal card_drawn(card: Dictionary, hand_size: int)
 signal card_discarded(card: Dictionary, reason: StringName)
+signal card_destroyed(card: Dictionary, reason: StringName)
 signal discard_pile_shuffled(draw_pile_size: int)
 signal card_committed(card: Dictionary, play_index: int)
 signal card_effect_requested(card: Dictionary, target: Variant, pointer_index: int)
 signal card_resolved(card: Dictionary, pointer_index: int)
 signal discard_choice_requested(card: Dictionary, count: int, candidates: Array[Dictionary])
 signal discard_choice_completed(discarded_instance_ids: Array[String])
+signal pile_choice_requested(count: int, candidates: Array[Dictionary])
+signal battle_choice_requested(mode: String, count: int, candidates: Array)
+signal potion_consumed(item_id: String)
 signal buff_effect_requested(side: StringName, entity_id: String, buff: Dictionary)
 signal buff_resolved(side: StringName, entity_id: String, buff: Dictionary)
 signal enemy_action_decided(enemy_id: String, action: Dictionary)
@@ -42,6 +46,9 @@ enum Phase {
 	VICTORY,
 	DEFEAT,
 }
+
+## 自然抽牌仍发布 card.drawn 事实，但不激活“获得卡牌”典籍。
+enum DrawReason { EFFECT, BATTLE_START, TURN_START }
 
 const SNAPSHOT_VERSION := 1
 const MAX_POINTER_RESOLUTIONS := 256
@@ -74,11 +81,18 @@ var _resolving_card := false
 var _next_pointer_override := -1
 var _resolution_targets: Dictionary = {}
 var _repeat_remaining_by_card: Dictionary = {}
+var _enchantment_repeat_active: Dictionary = {}
 var _pointer_move_sources: Dictionary = {}
 var _repeat_request_sources: Dictionary = {}
 var _pending_discard_count := 0
 var _pending_card: Dictionary = {}
 var _pending_resolved_at := -1
+var _pending_pile_count := 0
+var _pending_pile_source := ""
+var _repeat_pointer_override := -1
+var _outcome_deferrals := 0
+var _intents_ready := false
+var _intent_buff_catalog: Dictionary = {}
 
 
 func _init() -> void:
@@ -88,6 +102,8 @@ func _init() -> void:
 		"flow.turn.start": _step_turn_start,
 		"flow.turn.draw": _step_turn_draw,
 		"flow.turn.action": _step_turn_action,
+		"flow.turn.ready": _step_turn_ready,
+		"flow.intents.refresh": _step_intents_refresh,
 		"flow.draw.one": _step_draw,
 		"flow.enemy.begin": _step_enemy_begin,
 		"flow.enemy.plan": _step_enemy_plan,
@@ -100,6 +116,9 @@ func _init() -> void:
 	}
 	for type: String in flows:
 		rules.register_rule(type, type, flows[type], 100, _can_process_flow)
+	for type: String in ["combatant.damaged", "monster.summon", "monster.heal", "card.resolved",
+			"action.buff_add", "action.buff_set", "action.buff_settle", "action.buff_duration"]:
+		rules.register_rule("intents.observe." + type, type, _queue_intent_refresh, 250)
 
 
 func _can_process_flow(_event: BattleEvent) -> bool:
@@ -152,6 +171,7 @@ func initialize_battle(config: Dictionary) -> Error:
 
 	phase = Phase.IDLE
 	turn_number = 0
+	_intents_ready = false
 	pointer_index = 0
 	pointer_resolutions = 0
 	_clear_resolution_runtime()
@@ -191,9 +211,11 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 			or saved_phase < Phase.IDLE or saved_phase > Phase.DEFEAT \
 			or saved_turn == null or saved_turn < 0 or saved_pointer == null \
 			or saved_pointer < 0 or saved_resolutions == null or saved_resolutions < 0 \
-			or not _valid_player(saved_player) or not _valid_enemy_array(saved_enemies) \
+			or not _valid_player(saved_player) or not _valid_enemy_array(saved_enemies, saved_player) \
 			or not _valid_card_array(saved_draw) or not _valid_card_array(saved_discard) \
 			or not _valid_card_array(saved_hand) or not _valid_card_array(saved_play) \
+			or saved_draw.any(FinalBossRules.is_saturn) or saved_discard.any(FinalBossRules.is_saturn) \
+			or saved_play.any(FinalBossRules.is_saturn) \
 			or not _card_zones_are_disjoint([saved_draw, saved_discard, saved_hand, saved_play]):
 		return _fail(ERR_INVALID_DATA, "Battle snapshot fields are invalid")
 	# 队列结算中途不是合法存档边界；当前未序列化待执行事件和交互续接点。
@@ -205,6 +227,19 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 			or saved_pointer > saved_play.size() \
 			or saved_resolutions > MAX_POINTER_RESOLUTIONS:
 		return _fail(ERR_INVALID_DATA, "Battle snapshot lifecycle/pointer state is inconsistent")
+	var has_intents := data.has("intent_version")
+	if has_intents and not _integer_equals(data.intent_version, 1):
+		return _fail(ERR_INVALID_DATA, "Battle intent snapshot version is invalid")
+	for saved_enemy: Dictionary in saved_enemies:
+		if saved_enemy.has("intent_plan"):
+			if not _valid_intent(saved_enemy, int(saved_turn), saved_phase == Phase.PLAYER_ACTION):
+				return _fail(ERR_INVALID_DATA, "Battle intent actor/turn/phase/action fields are invalid")
+		elif has_intents and saved_phase == Phase.PLAYER_ACTION:
+			return _fail(ERR_INVALID_DATA, "Battle intent snapshot is incomplete")
+		elif saved_enemy.has("intent_turn") or saved_enemy.has("intent_phase") or saved_enemy.has("intent_actor"):
+			return _fail(ERR_INVALID_DATA, "Battle intent snapshot is incomplete")
+	if not has_intents and saved_enemies.any(func(e: Dictionary): return e.has("intent_plan")):
+		return _fail(ERR_INVALID_DATA, "Battle intent snapshot has no version")
 
 	map_id = saved_map
 	node_id = saved_node
@@ -214,10 +249,18 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 	active = saved_active
 	phase = saved_phase
 	turn_number = saved_turn
+	_intents_ready = has_intents and saved_phase == Phase.PLAYER_ACTION
 	pointer_index = saved_pointer
 	pointer_resolutions = saved_resolutions
 	player = saved_player.duplicate(true)
+	if player.has("encounter_relic_board"):
+		var saved_board := RelicBoard.new()
+		saved_board.restore(player.encounter_relic_board, RelicCatalog.load_definitions())
+		player.encounter_relic_board = saved_board.to_dictionary()
 	enemies = _copy_dictionary_array(saved_enemies)
+	# Presentation projections are derived, transient queue snapshots, never save
+	# authority. Ignore any injected/stale projection when restoring a battle.
+	for enemy: Dictionary in enemies: _clear_intent_preview(enemy)
 	draw_pile = _copy_dictionary_array(saved_draw)
 	discard_pile = _copy_dictionary_array(saved_discard)
 	hand = _copy_dictionary_array(saved_hand)
@@ -233,13 +276,19 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 	)
 	if _draw_stream == null or _discard_stream == null or _logic_stream == null:
 		return _fail(SeedService.last_error, "Could not reacquire restored battle streams")
+	# Bare BattleStateMachine clients also restore legacy PLAYER_ACTION data.
+	# Planning is pure apart from its one committed RNG draw; it needs no resolver.
+	ensure_enemy_intents()
 	last_error = OK
 	return OK
 
 
 func to_dictionary() -> Dictionary:
+	var saved_enemies: Array = enemies.duplicate(true)
+	for enemy: Dictionary in saved_enemies: _clear_intent_preview(enemy)
 	return {
 		"snapshot_version": SNAPSHOT_VERSION,
+		"intent_version": 1,
 		"map_id": map_id,
 		"node_id": node_id,
 		"battle_index": battle_index,
@@ -249,7 +298,7 @@ func to_dictionary() -> Dictionary:
 		"phase": phase,
 		"turn_number": turn_number,
 		"player": player.duplicate(true),
-		"enemies": enemies.duplicate(true),
+		"enemies": saved_enemies,
 		"draw_pile": draw_pile.duplicate(true),
 		"discard_pile": discard_pile.duplicate(true),
 		"hand": hand.duplicate(true),
@@ -276,22 +325,44 @@ func start_battle() -> Error:
 ## 队列在本调用内推进到空闲或输入暂停。选择弃牌会停在
 ## PLAYER_EFFECTS，界面调用 submit_discard_choice() 后从同一指针继续。
 func commit_player_sequence(instance_ids: Array[String], targets: Dictionary = {}) -> Error:
-	if not active or phase != Phase.PLAYER_ACTION or instance_ids.is_empty():
-		return _fail(ERR_INVALID_PARAMETER, "A nonempty sequence is required in PLAYER_ACTION")
+	if not active or phase != Phase.PLAYER_ACTION or not _intents_ready:
+		return _fail(ERR_INVALID_PARAMETER, "Sequence can only be committed after intentions are ready in PLAYER_ACTION")
 	var seen := {}
 	for instance_id: String in instance_ids:
 		if instance_id.strip_edges().is_empty() or seen.has(instance_id) \
 				or _find_card_index(hand, instance_id) < 0:
 			return _fail(ERR_INVALID_PARAMETER, "Sequence contains a duplicate/unknown card")
+		if FinalBossRules.is_saturn(hand[_find_card_index(hand, instance_id)]):
+			return ERR_UNAVAILABLE
 		seen[instance_id] = true
 
-	play_zone.clear()
+	var used_slots := 0
+	for card: Dictionary in play_zone:
+		if not bool(card.get("slot_empty", false)) and bool(card.get("occupies_slot", true)):
+			used_slots += 1
+	var existing_slots := used_slots
+	for id: String in instance_ids:
+		if bool(hand[_find_card_index(hand, id)].get("occupies_slot", true)):
+			used_slots += 1
+	# 弃牌附魔/效果强制插入的已有牌必须能继续结算，但不额外放宽手动出牌额度。
+	if effective_play_limit() > 0 and used_slots > maxi(effective_play_limit(), existing_slots):
+		return _fail(ERR_INVALID_PARAMETER, "Sequence exceeds available card slots")
+	var original_hand := hand.duplicate(true)
 	for instance_id: String in instance_ids:
 		var hand_index := _find_card_index(hand, instance_id)
 		var card: Dictionary = hand[hand_index]
 		hand.remove_at(hand_index)
-		play_zone.append(card)
-		card_committed.emit(card.duplicate(true), play_zone.size() - 1)
+		var vacant := -1
+		for index in play_zone.size():
+			if bool(play_zone[index].get("slot_empty", false)):
+				vacant = index
+				break
+		if vacant >= 0:
+			play_zone[vacant] = card
+		else:
+			play_zone.append(card)
+		card_committed.emit(card.duplicate(true), _find_card_index(play_zone, instance_id))
+	rules.publish("cards.sequence_committed", {"hand": original_hand})
 
 	_set_phase(Phase.PLAYER_EFFECTS)
 	pointer_index = 0
@@ -307,8 +378,15 @@ func _continue_player_resolution() -> Error:
 
 func _step_sequence(_event: BattleEvent) -> void:
 	if pointer_index >= play_zone.size():
-		while not play_zone.is_empty():
-			_discard_play_card(0, &"resolved")
+		var runtime: Dictionary = player.get("relic_runtime", {})
+		if int(runtime.get("extra_pointers", 0)) > 0:
+			runtime.extra_pointers = int(runtime.extra_pointers) - 1
+			runtime["extra_pointer_active"] = true
+			pointer_index = 0
+			rules.publish("flow.sequence.next")
+			return
+		runtime["extra_pointer_active"] = false
+		finish_play_zone()
 		_resolution_targets.clear()
 		_begin_enemy_turn()
 		return
@@ -318,13 +396,30 @@ func _step_sequence(_event: BattleEvent) -> void:
 		rules.last_error = _fail(ERR_CYCLIC_LINK, "Card pointer resolution limit reached")
 		return
 	var card: Dictionary = play_zone[pointer_index].duplicate(true)
-	var target: Variant = _resolution_targets.get(card.instance_id)
-	_next_pointer_override = -1
+	var extra := bool(player.get("relic_runtime", {}).get("extra_pointer_active", false))
+	if extra and int(_logic_stream.int_range(0, 100)) >= 40:
+		pointer_resolutions += 1
+		pointer_index += 1
+		rules.publish("pointer.moved", {"distance": 1, "from": pointer_index - 1, "to": pointer_index, "automatic": true})
+		rules.publish("flow.sequence.next")
+		return
+	var enchanted_id := str(card.instance_id)
+	if card.get("enchantments", []).has("repeat_2") and not _enchantment_repeat_active.has(enchanted_id) and not bool(card.get("slot_empty", false)) and not bool(card.get("nullified", false)):
+		_enchantment_repeat_active[enchanted_id] = true
+		# 复用原状态机重复队列，确保弃牌等交互逐次暂停、指针/循环保护继续生效。
+		_repeat_remaining_by_card[enchanted_id] = (int(_repeat_remaining_by_card.get(enchanted_id, 0)) + 1) * 2 - 1
+	var target: Variant = _resolution_targets.get(card.instance_id, card.get("stored_target"))
+	if target == null or not _enemy_is_alive(str(target)):
+		for enemy: Dictionary in enemies:
+			if int(enemy.health) > 0: target = str(enemy.enemy_id); break
+	play_zone[pointer_index]["stored_target"] = target
+	_next_pointer_override = _repeat_pointer_override
+	_repeat_pointer_override = -1
 	_resolving_card = true
 	_pending_card = card
 	_pending_resolved_at = pointer_index
 	card_effect_requested.emit(card.duplicate(true), _copy_json_value(target), pointer_index)
-	rules.publish("card.effect_requested", {"card": card, "target": target}, {"source_card": card.instance_id})
+	rules.publish("card.effect_requested", {"card": card, "target": target}, {"source_card": card.instance_id, "extra_pointer": extra})
 	rules.publish("flow.sequence.finish", {"card": card, "index": pointer_index})
 
 
@@ -344,11 +439,14 @@ func _finish_resolved_card(card: Dictionary, resolved_at: int,
 		card_instance_id: String, pointer_override: int) -> Error:
 	pointer_resolutions += 1
 	card_resolved.emit(card.duplicate(true), resolved_at)
+	rules.publish("card.resolved", {"card": card, "index": resolved_at,
+		"final_repeat": int(_repeat_remaining_by_card.get(card_instance_id, 0)) <= 0})
 	if _finish_if_needed():
 		return OK
 
 	var repeat_count := int(_repeat_remaining_by_card.get(card_instance_id, 0))
 	if repeat_count > 0 and _find_card_index(play_zone, card_instance_id) >= 0:
+		_repeat_pointer_override = pointer_override
 		if repeat_count == 1:
 			_repeat_remaining_by_card.erase(card_instance_id)
 		else:
@@ -356,6 +454,7 @@ func _finish_resolved_card(card: Dictionary, resolved_at: int,
 		pointer_index = _find_card_index(play_zone, card_instance_id)
 		return OK
 	_repeat_remaining_by_card.erase(card_instance_id)
+	_enchantment_repeat_active.erase(card_instance_id)
 
 	if pointer_override >= 0:
 		pointer_index = pointer_override
@@ -363,6 +462,8 @@ func _finish_resolved_card(card: Dictionary, resolved_at: int,
 		# “使用后移除”会让右侧卡牌左移，下一张仍在原索引。
 		pointer_index = resolved_at + 1 \
 			if _find_card_index(play_zone, card_instance_id) >= 0 else resolved_at
+		if pointer_index != resolved_at:
+			rules.publish("pointer.moved", {"distance": absi(pointer_index - resolved_at), "from": resolved_at, "to": pointer_index, "automatic": true})
 	return OK
 
 
@@ -375,8 +476,9 @@ func submit_discard_choice(instance_ids: Array[String]) -> Error:
 	var seen := {}
 	for instance_id: String in instance_ids:
 		if instance_id.strip_edges().is_empty() or seen.has(instance_id) \
-				or _find_card_index(hand, instance_id) < 0:
-			return _fail(ERR_INVALID_PARAMETER, "Discard choice contains duplicate/unknown card")
+				or _find_card_index(hand, instance_id) < 0 \
+				or not can_discard_card(hand[_find_card_index(hand, instance_id)]):
+			return ERR_INVALID_PARAMETER
 		seen[instance_id] = true
 
 	for instance_id: String in instance_ids:
@@ -401,6 +503,9 @@ func pending_discard_count() -> int:
 func end_player_action() -> Error:
 	if not active or phase != Phase.PLAYER_ACTION:
 		return _fail(ERR_INVALID_PARAMETER, "Player action can only end in PLAYER_ACTION")
+	if not play_zone.is_empty():
+		var empty: Array[String] = []
+		return commit_player_sequence(empty)
 	return _begin_enemy_turn()
 
 
@@ -409,18 +514,24 @@ func request_pointer_rewind(steps: int) -> Error:
 	if not _resolving_card or phase != Phase.PLAYER_EFFECTS or steps <= 0:
 		return _fail(ERR_INVALID_PARAMETER, "Pointer rewind is only valid during a card effect")
 	var target_index := maxi(0, pointer_index - steps)
+	var anchor_index := _find_card_index(play_zone, str(player.get("card_rules", {}).get("anchor", "")))
+	if anchor_index >= 0:
+		target_index = anchor_index
 	if target_index == pointer_index:
 		return ERR_INVALID_PARAMETER
 	var source_id := String(play_zone[pointer_index].get("instance_id", ""))
 	if _pointer_move_sources.has(source_id):
 		return ERR_ALREADY_IN_USE
 	_pointer_move_sources[source_id] = true
-	_next_pointer_override = target_index
+	move_formal_pointer(target_index)
 	return OK
 
 
 ## 指针跳到指定索引；等于 play_zone.size() 表示直接结束本轮牌区结算。
 func request_pointer_move_to(index: int) -> Error:
+	var anchor_index := _find_card_index(play_zone, str(player.get("card_rules", {}).get("anchor", "")))
+	if anchor_index >= 0:
+		index = anchor_index
 	if not _resolving_card or phase != Phase.PLAYER_EFFECTS \
 			or index < 0 or index > play_zone.size() or index == pointer_index:
 		return _fail(ERR_INVALID_PARAMETER, "Pointer target is invalid")
@@ -428,7 +539,7 @@ func request_pointer_move_to(index: int) -> Error:
 	if _pointer_move_sources.has(source_id):
 		return ERR_ALREADY_IN_USE
 	_pointer_move_sources[source_id] = true
-	_next_pointer_override = index
+	move_formal_pointer(index)
 	return OK
 
 
@@ -454,10 +565,11 @@ func request_discard_choice(count: int) -> Error:
 	if not _resolving_card or phase != Phase.PLAYER_EFFECTS or count <= 0 \
 			or _pending_discard_count > 0:
 		return _fail(ERR_INVALID_PARAMETER, "Discard choice request is invalid")
-	_pending_discard_count = mini(count, hand.size())
+	var candidates := discardable_hand_cards()
+	_pending_discard_count = mini(count, candidates.size())
 	if _pending_discard_count > 0:
 		rules.queue.pause()
-		discard_choice_requested.emit(_pending_card.duplicate(true), _pending_discard_count, hand.duplicate(true))
+		discard_choice_requested.emit(_pending_card.duplicate(true), _pending_discard_count, candidates)
 	return OK
 
 
@@ -476,20 +588,27 @@ func apply_damage_to_player(amount: int, ignore_block: bool = false) -> Error:
 	return OK
 
 
-func apply_damage_to_enemy(enemy_id: String, amount: int, ignore_block: bool = false) -> Error:
+func apply_damage_to_enemy(enemy_id: String, amount: int, ignore_block: bool = false, block_double: bool = false) -> Error:
 	var index := _find_enemy_index(enemy_id)
 	if not active or amount < 0 or index < 0:
 		return _fail(ERR_INVALID_PARAMETER, "Enemy damage target/amount is invalid")
 	var enemy: Dictionary = enemies[index]
 	var before := int(enemy["health"])
-	var blocked := 0 if ignore_block else mini(int(enemy["block"]), amount)
+	var multiplier := 2 if block_double else 1
+	var blocked := 0 if ignore_block else mini(int(enemy["block"]), amount * multiplier)
+	var absorbed := int(ceil(float(blocked) / multiplier))
 	enemy["block"] = int(enemy["block"]) - blocked
-	enemy["health"] = maxi(0, int(enemy["health"]) - (amount - blocked))
+	var received := maxi(0, amount - absorbed)
+	var trial_target := _is_damage_trial_target(enemy_id)
+	if not trial_target:
+		enemy["health"] = FinalBossRules.clamp_health_after_damage(enemy,
+			maxi(0, int(enemy["health"]) - received), turn_number)
 	enemies[index] = enemy
 	block_changed.emit(&"enemy", enemy_id, enemy["block"])
 	combatant_damaged.emit(&"enemy", enemy_id, amount, blocked, enemy["health"])
 	_publish_fact("combatant.damaged", {"side": "enemy", "entity_id": enemy_id, "damage": amount,
-		"blocked": blocked, "health_after": enemy["health"], "health_loss": before - int(enemy["health"])})
+		"blocked": blocked, "health_after": enemy["health"],
+		"health_loss": received if trial_target else before - int(enemy["health"])})
 	rules.submit("flow.outcome")
 	return OK
 
@@ -550,24 +669,77 @@ func discard_from_hand(instance_id: String, reason: StringName = &"effect") -> E
 	if index < 0:
 		return _fail(ERR_INVALID_PARAMETER, "Card is not in hand")
 	var card: Dictionary = hand[index]
+	if not can_discard_card(card): return ERR_UNAVAILABLE
 	hand.remove_at(index)
 	discard_pile.append(card)
 	card_discarded.emit(card.duplicate(true), reason)
+	_publish_fact("card.discarded", {"card": card, "reason": String(reason), "from_hand": true})
 	return OK
 
 
+func can_discard_card(card: Dictionary) -> bool:
+	return not FinalBossRules.is_saturn(card)
+
+
+func discardable_hand_cards() -> Array[Dictionary]:
+	return hand.filter(can_discard_card)
+
+
+## 从右向左跳过机制牌。全部受保护时允许超限，不销毁/弃置专属机制。
+func enforce_hand_limit() -> void:
+	var limit := int(player.get("hand_limit", 10))
+	if limit <= 0: return
+	while hand.size() > limit:
+		var eligible := -1
+		for index in range(hand.size() - 1, -1, -1):
+			if can_discard_card(hand[index]):
+				eligible = index
+				break
+		if eligible < 0: break
+		discard_from_hand(str(hand[eligible].instance_id), &"hand_limit")
+
+
+## 与弃牌分开记录，只移除战斗副本；永久牌组由 Run 持有。
+func destroy_card_from_battle(instance_id: String, reason: StringName = &"effect") -> Error:
+	for zone: Array in [hand, play_zone, draw_pile, discard_pile]:
+		var index := _find_card_index(zone, instance_id)
+		if index < 0: continue
+		var card: Dictionary = zone[index].duplicate(true)
+		var error := remove_card_from_battle(instance_id)
+		if error != OK: return error
+		card_destroyed.emit(card, reason)
+		_publish_fact("card.destroyed", {"card": card, "reason": String(reason)})
+		return OK
+	return ERR_DOES_NOT_EXIST
+
+
+## 一个队列批次可以在所有销毁/典籍反应完成后统一判定终局。
+func begin_deferred_outcome() -> void:
+	_outcome_deferrals += 1
+
+
+func end_deferred_outcome() -> void:
+	_outcome_deferrals = maxi(0, _outcome_deferrals - 1)
+	rules.publish("flow.outcome")
+
+
 ## 效果层可在玩家行动或逐张结算期间抽牌；沿用 battle.draw 流。
-func draw_cards(count: int) -> Error:
-	if not active or not [Phase.PLAYER_ACTION, Phase.PLAYER_EFFECTS].has(phase) or count < 0:
+func draw_cards(count: int, reason: DrawReason = DrawReason.EFFECT) -> Error:
+	# 全局残片可以在敌方攻击/回合末触发抽牌；依然必须由队列串行执行。
+	if not active or phase in [Phase.IDLE, Phase.VICTORY, Phase.DEFEAT] or count < 0:
 		return _fail(ERR_INVALID_PARAMETER, "Cards cannot be drawn in this phase")
-	return rules.submit("flow.draw.one", {"remaining": count})
+	rules.publish("flow.draw.one", {"remaining": count, "draw_reason": reason})
+	if reason in [DrawReason.BATTLE_START, DrawReason.TURN_START]:
+		rules.publish("cards.natural_draw_completed", {"turn": turn_number, "draw_reason": reason})
+	return rules.flush()
 
 
 func _step_draw(event: BattleEvent) -> void:
 	var remaining := int(event.payload.remaining)
 	if remaining <= 0:
 		return
-	var error := _draw_one()
+	var reason := int(event.payload.get("draw_reason", DrawReason.EFFECT))
+	var error := _draw_one(reason)
 	if error == ERR_DOES_NOT_EXIST:
 		return
 	if error != OK:
@@ -575,18 +747,20 @@ func _step_draw(event: BattleEvent) -> void:
 		return
 	rules.publish("flow.outcome")
 	if remaining > 1:
-		rules.publish("flow.draw.one", {"remaining": remaining - 1})
+		rules.publish("flow.draw.one", {"remaining": remaining - 1, "draw_reason": reason})
 
 
 ## 随机弃牌使用独立流，避免改变抽牌堆的既有随机序列。
 func discard_random_cards(count: int) -> Error:
 	if not active or not [Phase.PLAYER_ACTION, Phase.PLAYER_EFFECTS].has(phase) or count < 0:
 		return _fail(ERR_INVALID_PARAMETER, "Cards cannot be discarded in this phase")
-	for _index in mini(count, hand.size()):
-		var chosen: Variant = _discard_stream.int_range(0, hand.size())
+	for _index in mini(count, discardable_hand_cards().size()):
+		var candidates := discardable_hand_cards()
+		if candidates.is_empty(): break
+		var chosen: Variant = _discard_stream.int_range(0, candidates.size())
 		if chosen == null:
 			return _fail(_discard_stream.last_error, "Could not choose a card to discard")
-		var card: Dictionary = hand[int(chosen)]
+		var card: Dictionary = candidates[int(chosen)]
 		var error := discard_from_hand(card["instance_id"], &"random")
 		if error != OK:
 			return error
@@ -654,6 +828,181 @@ func get_combatant(side: StringName, entity_id: String) -> Dictionary:
 	return _combatant(side, entity_id).duplicate(true)
 
 
+## 正式卡的结构性指令仍由状态机落实；规则对象只在队列处理器中调用。
+func effective_play_limit() -> int:
+	var base := int(player.get("base_play_limit", 0))
+	if base <= 0:
+		return 0
+	return maxi(1, base + int(player.get("card_rules", {}).get("slots", 0)) + int(player.get("relic_runtime", {}).get("slots", 0)) - int(player.get("conch_bound", 0)))
+
+
+func request_battle_choice(mode: String, candidates: Array, count: int) -> void:
+	if mode in ["discard", "enchantment_20", "enchantment_21"]: candidates = candidates.filter(can_discard_card)
+	if not active or candidates.is_empty(): return
+	player["battle_choice"] = {"mode": mode, "count": mini(count, candidates.size()), "candidates": candidates.duplicate(true)}
+	rules.queue.pause()
+	battle_choice_requested.emit(mode, mini(count, candidates.size()), candidates.duplicate(true))
+
+
+func submit_battle_choice(ids: Array[String]) -> Error:
+	var choice: Dictionary = player.get("battle_choice", {})
+	if not active or choice.is_empty() or ids.size() != int(choice.count): return ERR_INVALID_PARAMETER
+	var allowed: Array = choice.candidates.map(func(card: Dictionary): return str(card.instance_id))
+	var seen := {}
+	for id: String in ids:
+		if id not in allowed or seen.has(id): return ERR_INVALID_PARAMETER
+		if str(choice.mode) in ["discard", "enchantment_20", "enchantment_21"]:
+			# 附魔自带的「跳过」是虚拟选项，不是需要弃掉的真实手牌。
+			if id == "enchantment:skip" and str(choice.mode) != "discard":
+				seen[id] = true
+				continue
+			var hand_index := _find_card_index(hand, id)
+			if hand_index < 0 or not can_discard_card(hand[hand_index]): return ERR_INVALID_PARAMETER
+		seen[id] = true
+	player.erase("battle_choice")
+	rules.publish("enchantment.choice_result" if str(choice.mode).begins_with("enchantment_") else "monster.choice_result", {"mode": choice.mode, "ids": ids})
+	rules.queue.resume()
+	return rules.flush()
+
+
+func add_generated_card(card_id: String, destination: String, reason: String, source: Dictionary = {}) -> void:
+	var serial := int(player.get("generated_card_serial", 0)) + 1
+	player["generated_card_serial"] = serial
+	var card := source.duplicate(true)
+	card["instance_id"] = "generated:%s:%d:%d:%s" % [node_id, battle_index, serial, reason]
+	card["card_id"] = card_id
+	card.erase("copy_id")
+	if FinalBossRules.is_saturn(card): destination = "hand"
+	if destination == "hand" and FinalBossRules.is_saturn(card):
+		# 专属机制必须进入手牌。位置消费既有 battle.logic 流，并在溢出时跳过所有保护牌。
+		var position: Variant = _logic_stream.int_range(0, hand.size() + 1)
+		if position == null:
+			rules.last_error = _logic_stream.last_error
+			return
+		hand.insert(int(position), card)
+		enforce_hand_limit()
+		card_drawn.emit(card.duplicate(true), hand.size())
+		_publish_fact("card.drawn", {"card": card, "hand_size": hand.size(), "draw_reason": DrawReason.EFFECT})
+	elif destination == "hand" and hand.size() < int(player.get("hand_limit", 10)):
+		hand.append(card)
+		card_drawn.emit(card.duplicate(true), hand.size())
+		_publish_fact("card.drawn", {"card": card, "hand_size": hand.size(), "draw_reason": DrawReason.EFFECT})
+	else:
+		discard_pile.append(card)
+		card_discarded.emit(card.duplicate(true), &"hand_limit" if destination == "hand" else &"generated")
+
+
+func card_rule_state() -> Dictionary:
+	if not player.has("card_rules"):
+		player["card_rules"] = {}
+	return player.card_rules
+
+
+func update_card_properties(id: String, changes: Dictionary) -> Error:
+	if not _json_safe(changes) or changes.has("instance_id") or changes.has("card_id"):
+		return ERR_INVALID_PARAMETER
+	for zone: Array in [hand, play_zone, discard_pile, draw_pile]:
+		for card: Dictionary in zone:
+			if str(card.instance_id) == id:
+				card.merge(changes, true)
+				if CardEnchantments.has(card, 4): card["occupies_slot"] = false
+				return OK
+	return ERR_DOES_NOT_EXIST
+
+
+func swap_hand_cards(first: int, second: int) -> void:
+	if first < 0 or second < 0 or first >= hand.size() or second >= hand.size():
+		return
+	var card: Dictionary = hand[first]
+	hand[first] = hand[second]
+	hand[second] = card
+
+
+func finish_play_zone() -> void:
+	var last_locked := -1
+	for index in play_zone.size():
+		if int(play_zone[index].get("locked_until", 0)) > turn_number:
+			last_locked = index
+	var retained: Array[Dictionary] = []
+	for index in play_zone.size():
+		var card: Dictionary = play_zone[index]
+		if int(card.get("locked_until", 0)) > turn_number:
+			retained.append(card)
+		else:
+			if not bool(card.get("slot_empty", false)):
+				discard_pile.append(card)
+				card_discarded.emit(card.duplicate(true), &"resolved")
+			if index <= last_locked:
+				retained.append({"instance_id": "empty-%d-%d" % [turn_number, index], "card_id": "71", "slot_empty": true})
+	play_zone = retained
+
+
+func move_formal_pointer(destination: int, notify_skips: bool = true) -> void:
+	var origin := pointer_index if _next_pointer_override < 0 else _next_pointer_override
+	var target_index := clampi(destination, 0, play_zone.size())
+	_next_pointer_override = target_index
+	rules.publish("pointer.moved", {"distance": absi(target_index - origin), "from": origin, "to": target_index})
+	if notify_skips and target_index > pointer_index + 1:
+		for index in range(pointer_index + 1, mini(target_index, play_zone.size())):
+			rules.publish("card.skipped", {"card": play_zone[index]})
+
+
+func repeat_card_at(index: int, extra: int) -> void:
+	if index >= 0 and index < play_zone.size() and extra > 0:
+		var id := str(play_zone[index].instance_id)
+		_repeat_remaining_by_card[id] = int(_repeat_remaining_by_card.get(id, 0)) + extra
+
+
+func swap_play_cards(first: int, second: int) -> void:
+	if first < 0 or second < 0 or first >= play_zone.size() or second >= play_zone.size():
+		return
+	var card: Dictionary = play_zone[first]
+	play_zone[first] = play_zone[second]
+	play_zone[second] = card
+
+
+func set_player_block(value: int) -> void:
+	player["block"] = maxi(0, value)
+	block_changed.emit(&"player", "player", int(player.block))
+
+
+func request_pile_choice(count: int, source: String) -> void:
+	_pending_pile_count = mini(count, discard_pile.size())
+	_pending_pile_source = source
+	if _pending_pile_count <= 0:
+		return
+	rules.queue.pause()
+	pile_choice_requested.emit(_pending_pile_count, discard_pile.duplicate(true))
+
+
+func submit_pile_choice(ids: Array[String]) -> Error:
+	if not active or phase != Phase.PLAYER_EFFECTS or not rules.queue.paused \
+			or _pending_pile_count <= 0 or ids.size() != _pending_pile_count:
+		return ERR_INVALID_PARAMETER
+	if _find_card_index(play_zone, _pending_pile_source) < 0:
+		return ERR_INVALID_PARAMETER
+	var seen := {}
+	for id: String in ids:
+		if seen.has(id) or _find_card_index(discard_pile, id) < 0:
+			return ERR_INVALID_PARAMETER
+		seen[id] = true
+	var position := _find_card_index(play_zone, _pending_pile_source) + 1
+	for id: String in ids:
+		var index := _find_card_index(discard_pile, id)
+		var card: Dictionary = discard_pile[index]
+		discard_pile.remove_at(index)
+		play_zone.insert(position, card)
+		position += 1
+	_pending_pile_count = 0
+	_pending_pile_source = ""
+	rules.queue.resume()
+	return rules.flush()
+
+
+func pending_pile_count() -> int:
+	return _pending_pile_count
+
+
 func _combatant(side: StringName, entity_id: String) -> Dictionary:
 	if side == &"player" and entity_id == "player":
 		return player
@@ -671,7 +1020,14 @@ func _start_player_turn() -> Error:
 
 
 func _step_turn_start(_event: BattleEvent) -> void:
+	# 第三轮敌方回合及其派生事件照常排空；第四轮的开始、抽牌和存在类效果不入场。
+	if is_damage_trial() and turn_number >= 3:
+		player.event_combat["completed_turns"] = 3
+		player.event_combat["finish_pending"] = true
+		return
 	pointer_index = 0
+	_intents_ready = false
+	for enemy: Dictionary in enemies: _clear_intent_preview(enemy)
 	pointer_resolutions = 0
 	turn_number += 1
 	player_turn_started.emit(turn_number)
@@ -681,7 +1037,8 @@ func _step_turn_start(_event: BattleEvent) -> void:
 
 func _step_turn_draw(_event: BattleEvent) -> void:
 	_set_phase(Phase.PLAYER_DRAW)
-	rules.publish("flow.draw.one", {"remaining": draw_count})
+	rules.publish("flow.draw.one", {"remaining": draw_count,
+		"draw_reason": DrawReason.BATTLE_START if turn_number == 1 else DrawReason.TURN_START})
 	rules.publish("flow.turn.action")
 
 
@@ -690,6 +1047,89 @@ func _step_turn_action(_event: BattleEvent) -> void:
 	_set_phase(Phase.PLAYER_ACTION)
 	turn_started.emit(turn_number)
 	rules.publish("flow.outcome")
+	# turn_started observers may enqueue UI-owned natural draw and its reactions.
+	# This continuation runs after those children; no input can commit before it.
+	rules.publish("flow.turn.ready")
+
+
+func _step_turn_ready(_event: BattleEvent) -> void:
+	ensure_enemy_intents()
+
+
+## Idempotent safe-boundary preparation, including bare legacy restore clients.
+## Does not replay turn-start effects or draw any cards.
+func ensure_enemy_intents() -> void:
+	if not active or phase != Phase.PLAYER_ACTION or _intents_ready:
+		return
+	_refresh_enemy_intents()
+	_intents_ready = true
+	_publish_fact("enemy.intents_ready", {"turn": turn_number, "enemies": enemies.duplicate(true)})
+
+
+func _queue_intent_refresh(_event: BattleEvent) -> void:
+	if active and _intents_ready:
+		rules.publish("flow.intents.refresh")
+
+
+func _step_intents_refresh(_event: BattleEvent) -> void:
+	if not _intents_ready: return
+	_refresh_enemy_intents()
+	_publish_fact("enemy.intents_changed", {"turn": turn_number, "enemies": enemies.duplicate(true)})
+
+
+func _refresh_enemy_intents() -> void:
+	for enemy: Dictionary in enemies:
+		var actor := str(enemy.enemy_id)
+		var current_phase := int(enemy.get("phase", 1))
+		if int(enemy.get("health", 0)) > 0 and int(enemy.get("intent_turn", -1)) == turn_number \
+				and int(enemy.get("intent_phase", -1)) == current_phase \
+				and str(enemy.get("intent_actor", "")) == actor:
+			continue
+		_clear_intent_preview(enemy)
+		if int(enemy.get("health", 0)) <= 0 or _is_damage_trial_target(actor) or int(enemy.get("intent_first_action_turn", 0)) > turn_number:
+			enemy["intent_plan"] = []
+		elif enemy.has("monster_id"):
+			enemy["intent_plan"] = MonsterCatalog.plan(enemy, turn_number, _logic_stream).duplicate(true)
+		else:
+			var picked: Variant = _logic_stream.pick(enemy.actions)
+			enemy["intent_plan"] = [picked.duplicate(true)] if picked is Dictionary else []
+		enemy["intent_turn"] = turn_number
+		enemy["intent_phase"] = current_phase
+		enemy["intent_actor"] = actor
+		for action: Dictionary in enemy.intent_plan:
+			enemy_action_decided.emit(actor, action.duplicate(true))
+
+
+func enemy_intent_actions() -> Array[Dictionary]:
+	_refresh_enemy_intents()
+	var planned: Array[Dictionary] = []
+	for enemy: Dictionary in enemies:
+		if int(enemy.health) <= 0: continue
+		for action: Dictionary in enemy.get("intent_plan", []):
+			planned.append({"enemy_id": str(enemy.enemy_id), "action": action.duplicate(true)})
+	return planned
+
+
+func set_intent_buff_catalog(definitions: Dictionary) -> void:
+	_intent_buff_catalog = definitions
+
+
+static func _clear_intent_preview(enemy: Dictionary) -> void:
+	for key: String in ["intent_preview", "intent_preview_turn", "intent_preview_phase"]:
+		enemy.erase(key)
+
+
+func _freeze_enemy_intent_previews() -> void:
+	# enemy.turn_started and its summons/weak reduction have finished. Freeze
+	# every actor from the same pre-action state before any action mutates buffs.
+	for enemy: Dictionary in enemies: _clear_intent_preview(enemy)
+	var descriptions: Array[Dictionary] = []
+	for enemy: Dictionary in enemies:
+		descriptions.append(MonsterIntentPreview.describe(enemy, player, enemies, _intent_buff_catalog))
+	for index in enemies.size():
+		enemies[index]["intent_preview"] = descriptions[index]
+		enemies[index]["intent_preview_turn"] = turn_number
+		enemies[index]["intent_preview_phase"] = int(enemies[index].get("phase", 1))
 
 
 func _begin_enemy_turn() -> Error:
@@ -703,6 +1143,7 @@ func _step_enemy_begin(_event: BattleEvent) -> void:
 	# 能影响后续卡牌，并在整段出牌结束后清除；玩家中毒也在此时扣血和衰减。
 	_set_phase(Phase.PLAYER_BUFF)
 	_settle_buffs(&"player", "player", player["buffs"])
+	rules.publish("enemy.turn_started", {"turn": turn_number})
 	rules.publish("flow.enemy.plan")
 
 
@@ -711,17 +1152,9 @@ func _step_enemy_plan(_event: BattleEvent) -> void:
 		return
 
 	_set_phase(Phase.ENEMY_DECIDE)
-	var planned: Array[Dictionary] = []
-	for enemy: Dictionary in enemies:
-		if int(enemy["health"]) <= 0:
-			continue
-		var picked: Variant = _logic_stream.pick(enemy["actions"])
-		if picked == null or not picked is Dictionary:
-			rules.last_error = _fail(_logic_stream.last_error, "Could not choose an enemy action")
-			return
-		var action: Dictionary = picked.duplicate(true)
-		planned.append({"enemy_id": enemy["enemy_id"], "action": action})
-		enemy_action_decided.emit(enemy["enemy_id"], action.duplicate(true))
+	var planned := enemy_intent_actions()
+	_freeze_enemy_intent_previews()
+	_publish_fact("enemy.intents_changed", {"turn": turn_number, "enemies": enemies.duplicate(true)})
 
 	_set_phase(Phase.ENEMY_ACTION)
 	for planned_action: Dictionary in planned:
@@ -762,10 +1195,11 @@ func _step_enemy_end(_event: BattleEvent) -> void:
 		block_changed.emit(&"player", "player", 0)
 
 	if discard_hand_at_turn_end:
-		while not hand.is_empty():
-			var card: Dictionary = hand.pop_back()
-			discard_pile.append(card)
-			card_discarded.emit(card.duplicate(true), &"turn_end")
+		for index in range(hand.size() - 1, -1, -1):
+			var card: Dictionary = hand[index]
+			if can_discard_card(card): discard_from_hand(str(card.instance_id), &"turn_end")
+	if is_damage_trial():
+		player.event_combat["completed_turns"] = mini(turn_number, 3)
 	_start_player_turn()
 
 
@@ -776,16 +1210,22 @@ func _step_outcome(_event: BattleEvent) -> void:
 func _clear_resolution_runtime() -> void:
 	_resolution_targets.clear()
 	_repeat_remaining_by_card.clear()
+	_enchantment_repeat_active.clear()
 	_pointer_move_sources.clear()
 	_repeat_request_sources.clear()
 	_pending_discard_count = 0
+	_pending_pile_count = 0
+	_pending_pile_source = ""
 	_pending_card.clear()
 	_pending_resolved_at = -1
 	_next_pointer_override = -1
+	_repeat_pointer_override = -1
 	_resolving_card = false
 
 
-func _draw_one() -> Error:
+func _draw_one(reason: int = DrawReason.EFFECT) -> Error:
+	var limit := int(player.get("hand_limit", 10))
+	if limit > 0 and hand.size() >= limit: return ERR_DOES_NOT_EXIST
 	if draw_pile.is_empty():
 		if discard_pile.is_empty():
 			return ERR_DOES_NOT_EXIST
@@ -797,7 +1237,7 @@ func _draw_one() -> Error:
 	var card: Dictionary = draw_pile.pop_back()
 	hand.append(card)
 	card_drawn.emit(card.duplicate(true), hand.size())
-	_publish_fact("card.drawn", {"card": card, "hand_size": hand.size()})
+	_publish_fact("card.drawn", {"card": card, "hand_size": hand.size(), "draw_reason": reason})
 	return OK
 
 
@@ -825,9 +1265,57 @@ func _step_buff_resolved(event: BattleEvent) -> void:
 	_finish_if_needed()
 
 
+## Explicit preview opt-in only. Do not run monster damage/death reactions:
+## reflection or a new phase must not turn a debug victory into a real defeat.
+func debug_finish_victory() -> Error:
+	var enabled: Variant = ProjectSettings.get_setting("debug/map_battle/enable_instant_victory", false)
+	if not enabled is bool or not enabled:
+		return ERR_UNAVAILABLE
+	if not active or phase != Phase.PLAYER_ACTION or int(player.health) <= 0 \
+			or rules.queue.processing or rules.queue.paused or rules.queue.pending_count() != 0:
+		return ERR_BUSY
+	for enemy: Dictionary in enemies:
+		enemy.health = 0
+	_finish_battle("victory")
+	return OK
+
+
+## 专属事件入口；组件只在第三轮全部派生事件排空后调用。
+func finish_damage_trial() -> Error:
+	if not is_damage_trial() or not active or bool(player.event_combat.get("finished", false)):
+		return ERR_UNAUTHORIZED
+	if turn_number != 3 or phase != Phase.ENEMY_BUFF or int(player.health) <= 0 \
+			or not bool(player.event_combat.get("finish_pending", false)) \
+			or int(player.event_combat.get("completed_turns", 0)) != 3 \
+			or rules.queue.processing or rules.queue.paused or rules.queue.pending_count() != 0 \
+			or rules.last_error != OK:
+		return ERR_BUSY
+	player.event_combat["finished"] = true
+	player.event_combat["finish_pending"] = false
+	_finish_battle("victory")
+	return OK
+
+
+func is_damage_trial() -> bool:
+	var context: Variant = player.get("event_combat")
+	if enemies.size() != 1 or not _damage_trial_enemy_matches(enemies[0], context):
+		return false
+	var request: Variant = context.get("request")
+	return request is Dictionary and request.get("type") == "event" \
+		and request.get("map_id") == map_id and request.get("node_id") == node_id \
+		and context.get("event_key") == "%s/%s" % [map_id, node_id] \
+		and int(context.get("floor", 0)) in [1, 2, 3]
+
+
+func _is_damage_trial_target(enemy_id: String) -> bool:
+	return is_damage_trial() and str(enemies[0].enemy_id) == enemy_id
+
+
 func _finish_if_needed() -> bool:
 	if not active:
 		return true
+	if _outcome_deferrals > 0:
+		return false
 	if int(player["health"]) <= 0:
 		_finish_battle("defeat")
 		return true
@@ -843,11 +1331,14 @@ func _finish_if_needed() -> bool:
 
 func _finish_battle(status: String) -> void:
 	active = false
+	_outcome_deferrals = 0
 	rules.queue.clear()
 	if _resolving_card and not _pending_card.is_empty():
 		card_resolved.emit(_pending_card.duplicate(true), _pending_resolved_at)
 	_resolving_card = false
 	_pending_discard_count = 0
+	_pending_pile_count = 0
+	_pending_pile_source = ""
 	_set_phase(Phase.VICTORY if status == "victory" else Phase.DEFEAT)
 	var defeated: Array[String] = []
 	for enemy: Dictionary in enemies:
@@ -860,6 +1351,8 @@ func _finish_battle(status: String) -> void:
 		"battle_index": battle_index,
 		"turns": turn_number,
 		"defeated_enemy_ids": defeated,
+		"stolen_refund": int(player.get("stolen_refund", 0)),
+		"conch_bound": int(player.get("conch_bound", 0)),
 	})
 
 
@@ -885,8 +1378,8 @@ func _prepare_config(config: Dictionary) -> Dictionary:
 			or not configured_discard is bool or not configured_player is Dictionary \
 			or not configured_enemies is Array or configured_enemies.is_empty() \
 			or not configured_deck is Array or not _valid_player(configured_player) \
-			or not _valid_enemy_array(configured_enemies) \
-			or not _valid_card_array(configured_deck):
+			or not _valid_enemy_array(configured_enemies, configured_player) \
+			or not _valid_card_array(configured_deck) or configured_deck.any(FinalBossRules.is_saturn):
 		_fail(ERR_INVALID_PARAMETER, "Battle config is invalid")
 		return {}
 	return {
@@ -902,22 +1395,40 @@ func _prepare_config(config: Dictionary) -> Dictionary:
 
 
 static func _valid_player(value: Dictionary) -> bool:
+	if value.has("encounter_relic_board"):
+		if not value.encounter_relic_board is Dictionary: return false
+		var saved_board := RelicBoard.new()
+		if saved_board.restore(value.encounter_relic_board, RelicCatalog.load_definitions()) != OK: return false
 	var health: Variant = _integer_value(value.get("health"))
 	var maximum: Variant = _integer_value(value.get("max_health"))
 	var block: Variant = _integer_value(value.get("block", 0))
 	var buffs: Variant = value.get("buffs", [])
 	return health != null and maximum != null and block != null and maximum > 0 \
 		and health >= 0 and health <= maximum and block >= 0 and buffs is Array \
-		and _valid_buff_array(buffs)
+		and _valid_buff_array(buffs) and value.get("card_rules", {}) is Dictionary \
+		and _json_safe(value.get("card_rules", {})) and _valid_relic_runtime(value.get("relic_runtime", {}))
 
 
-static func _valid_enemy_array(values: Array) -> bool:
+static func _valid_relic_runtime(value: Variant) -> bool:
+	if not value is Dictionary or not _json_safe(value): return false
+	if not value.has("chain_charges"): return true
+	if not value.chain_charges is Dictionary: return false
+	for key: Variant in value.chain_charges:
+		if not key is String or not key.is_valid_int() or str(int(key)) != key \
+				or int(key) < 0 or int(key) >= RelicBoard.CELL_COUNT or not value.chain_charges[key] is bool:
+			return false
+	return true
+
+
+static func _valid_enemy_array(values: Array, configured_player: Dictionary = {}) -> bool:
 	var ids := {}
 	for value: Variant in values:
 		if not value is Dictionary or not value.get("enemy_id") is String \
 				or value["enemy_id"].strip_edges().is_empty() or ids.has(value["enemy_id"]) \
 				or not _valid_player(value) or not value.get("actions") is Array \
-				or value["actions"].is_empty() or not _json_safe(value["actions"]):
+				or not _json_safe(value["actions"]) or not FinalBossRules.valid_enemy_state(value):
+			return false
+		if value.actions.is_empty() and not (values.size() == 1 and _damage_trial_enemy_matches(value, configured_player.get("event_combat"))):
 			return false
 		for action: Variant in value["actions"]:
 			if not action is Dictionary:
@@ -926,13 +1437,66 @@ static func _valid_enemy_array(values: Array) -> bool:
 	return true
 
 
+static func _valid_intent(enemy: Dictionary, turn: int, require_current: bool) -> bool:
+	if not enemy.get("intent_plan") is Array or not _json_safe(enemy.intent_plan) \
+			or enemy.get("intent_actor") != enemy.get("enemy_id"):
+		return false
+	var saved_turn: Variant = _integer_value(enemy.get("intent_turn"))
+	var saved_phase: Variant = _integer_value(enemy.get("intent_phase"))
+	var actor_phase: Variant = _integer_value(enemy.get("phase", 1))
+	if saved_turn == null or int(saved_turn) < 0 or int(saved_turn) > turn \
+			or saved_phase == null or int(saved_phase) < 1 or actor_phase == null or int(actor_phase) < 1:
+		return false
+	if require_current and (int(saved_turn) != turn or int(saved_phase) != int(actor_phase)):
+		return false
+	if enemy.has("intent_first_action_turn"):
+		var first: Variant = _integer_value(enemy.intent_first_action_turn)
+		if first == null or int(first) < 0 or int(first) > turn + 1: return false
+		if int(first) > int(saved_turn) and not enemy.intent_plan.is_empty(): return false
+	if enemy.has("intent_start_applied_turn"):
+		var applied: Variant = _integer_value(enemy.intent_start_applied_turn)
+		if applied == null or int(applied) < 0 or int(applied) > turn: return false
+	if enemy.intent_plan.size() > 256: return false
+	for action: Variant in enemy.intent_plan:
+		if not action is Dictionary or not _valid_intent_action(action): return false
+	return true
+
+
+static func _valid_intent_action(action: Dictionary) -> bool:
+	if not _json_safe(action): return false
+	if action.has("action_id") and not action.action_id is String: return false
+	for key: String in ["damage", "block", "dot", "heal_player", "team_strength", "strength", "hits"]:
+		if not action.has(key): continue
+		var amount: Variant = _integer_value(action[key])
+		if amount == null or int(amount) < (1 if key == "hits" else 0) or int(amount) > 1000000: return false
+		if key == "hits" and int(amount) > 256: return false
+	for key: String in ["bleed", "lifesteal", "forget", "random_buff", "nullify", "discard_right"]:
+		if action.has(key) and not action[key] is bool: return false
+	if action.has("summon") and (not action.summon is String or str(action.summon) not in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"]): return false
+	# Original generic action dictionaries also support wait/no-op actions.
+	# Validate known fields without requiring an effect the old API never required.
+	return true
+
+
+static func _damage_trial_enemy_matches(enemy: Dictionary, context: Variant) -> bool:
+	if not context is Dictionary or context.get("kind") != "stone" \
+			or not context.get("event_key") is String or str(context.event_key).is_empty() \
+			or not _integer_equals(context.get("turn_limit"), 3):
+		return false
+	return enemy.get("damage_trial_target", false) == true \
+		and enemy.get("enemy_id") == "damage-trial:" + str(context.event_key) \
+		and _integer_equals(enemy.get("monster_id"), 0) \
+		and _integer_equals(enemy.get("health"), 1) and _integer_equals(enemy.get("max_health"), 1) \
+		and enemy.get("actions") is Array and enemy.actions.is_empty()
+
+
 static func _valid_card_array(values: Array) -> bool:
 	var ids := {}
 	for value: Variant in values:
 		if not value is Dictionary or not value.get("instance_id") is String \
 				or value["instance_id"].strip_edges().is_empty() \
 				or not value.get("card_id") is String or value["card_id"].strip_edges().is_empty() \
-				or ids.has(value["instance_id"]) or not _json_safe(value):
+				or ids.has(value["instance_id"]) or not _json_safe(value) or not FinalBossRules.valid_card_state(value):
 			return false
 		ids[value["instance_id"]] = true
 	return true

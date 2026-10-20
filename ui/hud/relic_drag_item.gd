@@ -7,6 +7,8 @@ extends Control
 signal drag_requested(source: Control, fragment_id: String)
 
 var fragment_id := ""
+var item_id := ""
+var editable := true
 
 var _name_label: Label
 
@@ -22,7 +24,7 @@ func set_lifted(lifted: bool) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if fragment_id.is_empty():
+	if fragment_id.is_empty() or not editable:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		drag_requested.emit(self, fragment_id)

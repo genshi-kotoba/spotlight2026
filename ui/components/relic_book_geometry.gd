@@ -1,14 +1,14 @@
 class_name RelicBookGeometry
 extends RefCounted
 
-## UI-026 书页上那 4×5 网格的形状。
+## UI-026 书页的完整 4×5 透视网格；封锁状态由 RelicBoard 决定。
 ## 美术里的书页是斜的，格子是四边形而不是矩形；而且画上的网格是手绘的，
 ## 每一条横线、竖线的斜率都不一样，单个四角变换压不住。
 ## 所以这里直接存 5 条竖线 + 6 条横线的两个端点，格子取相邻线的交点。
 ## 只算形状，不碰残片数据，也不负责绘制。
 
-const COLUMNS := 4
-const ROWS := 5
+const COLUMNS := RelicBoard.COLUMNS
+const ROWS := RelicBoard.ROWS
 const CELL_COUNT := COLUMNS * ROWS
 const ART_SIZE := Vector2(670, 863)
 ## 色块四边各收一点，留出画上的格线；贴死会把书页糊成一块色板。

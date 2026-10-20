@@ -1,0 +1,69 @@
+{
+  "seed": "4f83161b8668fbff07fd66135092c255",
+  "map_scale": 10.2487,
+  "floors": [
+    {
+      "normal": 3,
+      "elite": 0,
+      "events": 5,
+      "cell_space": 3,
+      "space_jitter": true,
+      "layout_candidates": 2,
+      "layout_profile": "compact",
+      "route_profile": "switchback",
+      "content_profile": "alchemy_floor1_pile",
+      "min_boss_content_nodes": 4
+    },
+    {
+      "normal": 6,
+      "elite": 2,
+      "events": 12,
+      "cell_space": 3,
+      "space_jitter": true,
+      "layout_candidates": 2,
+      "layout_profile": "compact",
+      "route_profile": "switchback"
+    },
+    {
+      "normal": 6,
+      "elite": 3,
+      "events": 13,
+      "cell_space": 3,
+      "space_jitter": true,
+      "layout_candidates": 2,
+      "layout_profile": "compact",
+      "route_profile": "switchback"
+    },
+    {
+      "template": "summit-v1"
+    }
+  ],
+  "height_common": {
+    "amplitude_levels": 8,
+    "wavelength": 7,
+    "detail": 0.25,
+    "quantum": 0.2,
+    "wall_height": 1.3,
+    "baseline_level": 0,
+    "boss_mode": "free",
+    "strategy": "regional_articulated",
+    "event_flat_mode": "center",
+    "foundation_mode": "partial"
+  },
+  "height_floors": {
+    "2": {
+      "boss_mode": "below"
+    },
+    "3": {
+      "boss_mode": "highest"
+    },
+    "4": {
+      "strategy": "basic",
+      "amplitude_levels": 4,
+      "boss_mode": "fixed",
+      "boss_level": 4,
+      "event_flat_mode": "center",
+      "foundation_mode": "full"
+    }
+  }
+}

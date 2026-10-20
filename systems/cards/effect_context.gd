@@ -179,6 +179,9 @@ func attach_effect(_card: Dictionary, _effect: GameEffect) -> void:
 
 # ---------------------------------------------------------------- 指针
 
+func execute_card_program(_instructions: Array[Dictionary], _card: Dictionary) -> void:
+	_unimplemented("execute_card_program")
+
 ## 指针往回退 steps 格。steps 必须为正。这是 PRG-004 现有的唯一指针能力。
 func rewind_pointer(_steps: int) -> void:
 	_unimplemented("rewind_pointer")

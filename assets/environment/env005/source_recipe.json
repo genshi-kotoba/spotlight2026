@@ -1,0 +1,144 @@
+{
+  "size": [
+    2048,
+    2048
+  ],
+  "scale": 0.5,
+  "wall_world_repeat": 0.6,
+  "decoration_probability": 0.02127659574468085,
+  "layers": [
+    {
+      "name": "top-1",
+      "source": "current",
+      "file": "顶面1.png"
+    },
+    {
+      "name": "top-2",
+      "source": "current",
+      "file": "顶面2.png"
+    },
+    {
+      "name": "top-3",
+      "source": "current",
+      "file": "顶面3.png"
+    },
+    {
+      "name": "top-4",
+      "source": "current",
+      "file": "顶面4.png"
+    },
+    {
+      "name": "wall1",
+      "source": "current",
+      "file": "侧面1.png"
+    },
+    {
+      "name": "wall2",
+      "source": "current",
+      "file": "侧面2.png"
+    },
+    {
+      "name": "wall3",
+      "source": "current",
+      "file": "侧面3.png"
+    },
+    {
+      "name": "glass",
+      "source": "legacy",
+      "file": "附件1.png"
+    },
+    {
+      "name": "paper",
+      "source": "legacy",
+      "file": "附件2.png"
+    },
+    {
+      "name": "rubble-1",
+      "source": "current",
+      "file": "石堆1.png",
+      "scale": 0.25
+    },
+    {
+      "name": "rubble-2",
+      "source": "current",
+      "file": "石堆2.png",
+      "scale": 0.25
+    },
+    {
+      "name": "pebble-1",
+      "source": "source_rocks",
+      "file": "pebble-1.png",
+      "scale": 1.0
+    },
+    {
+      "name": "pebble-2",
+      "source": "source_rocks",
+      "file": "pebble-2.png",
+      "scale": 1.0
+    },
+    {
+      "name": "pebble-3",
+      "source": "source_rocks",
+      "file": "pebble-3.png",
+      "scale": 1.0
+    }
+  ],
+  "pools": {
+    "ground": [
+      {
+        "id": "stone-1",
+        "weight": 1,
+        "regions": {
+          "top": "top-1"
+        }
+      },
+      {
+        "id": "stone-2",
+        "weight": 1,
+        "regions": {
+          "top": "top-2"
+        }
+      },
+      {
+        "id": "stone-3",
+        "weight": 1,
+        "regions": {
+          "top": "top-3"
+        }
+      },
+      {
+        "id": "stone-4",
+        "weight": 1,
+        "regions": {
+          "top": "top-4"
+        }
+      }
+    ],
+    "wall": [
+      {
+        "id": "stone-1",
+        "weight": 1,
+        "regions": {
+          "wall1": "wall1",
+          "wall2": "wall2",
+          "wall3": "wall3"
+        }
+      }
+    ],
+    "decoration": [
+      {
+        "id": "glass",
+        "weight": 1,
+        "region": "glass",
+        "width": 0.48
+      },
+      {
+        "id": "paper",
+        "weight": 1,
+        "region": "paper",
+        "width": 0.48
+      }
+    ]
+  },
+  "note": "ENV-005 atlas imported from the confirmed 2026-10-18 preview. Four ground variants; three directional sides form one wall set. Glass/paper use decoration pool. Rubble-1/2 and pebble-1/2/3 are used directly by rock_scatter.json, outside the variant pools."
+}

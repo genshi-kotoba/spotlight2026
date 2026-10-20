@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{D650D4C6-9CB2-4CEF-BB22-1CB7F1932381}" SchemaVersion="133">
+	<SidechainMixes>
+		<WorkUnit Name="Default Work Unit" ID="{D650D4C6-9CB2-4CEF-BB22-1CB7F1932381}" PersistMode="Standalone">
+			<ChildrenList>
+				<SidechainMix Name="SCM_SFX" ID="{C4C83129-EBC0-4C60-99F0-9B774388E32C}"/>
+			</ChildrenList>
+		</WorkUnit>
+	</SidechainMixes>
+</WwiseDocument>
