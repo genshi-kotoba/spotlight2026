@@ -1,9 +1,9 @@
 class_name RunRewards
 extends RefCounted
 ## 战斗奖励与背包唯一业务入口。UI 不直接修改物资；每步原子保存，失败回滚。
-const PACKS := ["fragment_pack", "common_pack", "rare_pack"]
+const PACKS := ["fragment_pack", "common_pack", "rare_pack", "enchantment_book"]
 const NAMES := {"silver": "银币", "elixir": "万灵药", "fragment_pack": "典籍残片包",
-	"common_pack": "普通卡牌包", "rare_pack": "稀有卡牌包", "fragment": "典籍残片"}
+	"common_pack": "普通卡牌包", "rare_pack": "稀有卡牌包", "fragment": "典籍残片", "enchantment_book": "附魔书"}
 
 static func ensure_state(run: Node, legacy_path: String = RelicBoard.SAVE_PATH) -> void:
 	if not run.inventory_state.is_empty():
@@ -44,6 +44,7 @@ static func stage_victory(run: Node, map_id: String, node_id: String, grade: Str
 		entries.append({"id": kind, "kind": kind, "amount": 1, "claimed": false})
 	if grade != "普通":
 		entries.append({"id": "rare_pack", "kind": "rare_pack", "amount": 1, "claimed": false})
+		entries.append({"id": "enchantment_book", "kind": "enchantment_book", "amount": 1, "claimed": false})
 	run.inventory_state.pending_rewards = {"battle_key": key, "grade": grade, "entries": entries}
 	run.inventory_state.rewarded_battles[key] = true
 	return OK
@@ -126,6 +127,8 @@ static func choose(run: Node, item_id: String, choice: String) -> Error:
 	var pack: Dictionary = run.items[index]
 	if str(pack.get("kind", "")) not in PACKS or choice not in pack.get("options", []):
 		return ERR_INVALID_PARAMETER
+	if pack.kind == "enchantment_book":
+		return ERR_INVALID_PARAMETER # 书只能在二级页面选中具体副本后消耗。
 	var before := _capture(run)
 	if pack.kind == "fragment_pack":
 		if RelicCatalog.resolve(choice) == null:
@@ -140,6 +143,32 @@ static func choose(run: Node, item_id: String, choice: String) -> Error:
 		run.add_card(choice, false)
 		run.items.remove_at(index)
 	return _commit(run, before)
+
+static func enchantment_targets(run: Node, enchantment_id: String) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if not is_instance_valid(run): return result
+	run.ensure_deck_cards()
+	for card: Dictionary in run.deck_cards:
+		if CardEnchantments.can_apply(card, enchantment_id): result.append(card.duplicate(true))
+	return result
+
+static func apply_book(run: Node, item_id: String, enchantment_id: String, copy_id: String) -> Error:
+	if not _can_edit(run): return ERR_BUSY
+	var index := _item_index(run, item_id)
+	if index < 0: return ERR_DOES_NOT_EXIST
+	var book: Dictionary = run.items[index]
+	if book.get("kind") != "enchantment_book" or enchantment_id not in book.get("options", []):
+		return ERR_INVALID_PARAMETER
+	run.ensure_deck_cards()
+	for position in run.deck_cards.size():
+		var card: Dictionary = run.deck_cards[position]
+		if str(card.copy_id) == copy_id and CardEnchantments.can_apply(card, enchantment_id):
+			var before := _capture(run)
+			# _capture 的旧档同步会重建字典，不能继续修改捕获前的引用。
+			run.deck_cards[position].enchantments.append(enchantment_id)
+			run.items.remove_at(index)
+			return _commit(run, before)
+	return ERR_INVALID_PARAMETER
 
 static func equip_fragment(run: Node, item_id: String, cell: int) -> Error:
 	if not _can_edit(run) or cell < 0 or cell >= RelicBoard.CELL_COUNT:
@@ -193,10 +222,24 @@ static func unequip_fragment(run: Node, cell: int) -> Error:
 	cells[cell] = ""
 	return _commit(run, before)
 
+## 从背包丢掉一件物品。药水、卡包、残片都能丢，装到典籍书上的残片走 unequip_fragment。
+## 这是界面侧唯一会缩短 run.items 的生产入口，和装配共用同一套快照事务，存档失败就回滚。
+static func discard_item(run: Node, item_id: String) -> Error:
+	if not _can_edit(run):
+		return ERR_BUSY
+	var index := _item_index(run, item_id)
+	if index < 0:
+		return ERR_DOES_NOT_EXIST
+	var before := _capture(run)
+	run.items.remove_at(index)
+	return _commit(run, before)
+
+
 static func _generate_offer(run: Node, index: int, refresh: bool) -> Error:
 	var pack: Dictionary = run.items[index]
 	var fragment_pack: bool = pack.kind == "fragment_pack"
-	var pool: Array = RelicCatalog.reward_ids() if fragment_pack else _card_pool(str(pack.kind))
+	var book: bool = pack.kind == "enchantment_book"
+	var pool: Array = CardEnchantments.reward_ids() if book else (RelicCatalog.reward_ids() if fragment_pack else _card_pool(str(pack.kind)))
 	if fragment_pack:
 		pool = pool.filter(func(id: String) -> bool: return RelicCatalog.resolve(id).kind in [RelicFragmentData.Kind.TRIGGER, RelicFragmentData.Kind.EFFECT])
 	pool.sort()
@@ -207,7 +250,6 @@ static func _generate_offer(run: Node, index: int, refresh: bool) -> Error:
 			previous.append((data.base_fragment_id if not data.base_fragment_id.is_empty() else data.fragment_id.get_slice("~", 0)) if data != null else option)
 		pool = pool.filter(func(id: Variant) -> bool: return id not in previous)
 	var count := 2 if pack.kind == "fragment_pack" else 3
-	count += RelicCatalog.choice_bonus(run.inventory_state.relic_board.cells)
 	if pool.size() < count:
 		return ERR_UNAVAILABLE
 	# 按主种子与包身份派生一次性子上下文，开包顺序、失败重试不消费其他随机流。
@@ -232,7 +274,7 @@ static func valid_items(values: Variant) -> bool:
 	var seen_ids := {}
 	for item: Variant in values:
 		if not item is Dictionary: continue # Historical non-fragment inventory remains compatible.
-		if item.get("kind") in ["fragment", "fragment_pack"]:
+		if item.get("kind") in ["fragment", "fragment_pack", "enchantment_book"]:
 			if not item.get("item_id") is String or item.item_id.is_empty() or seen_ids.has(item.item_id): return false
 			seen_ids[item.item_id] = true
 		if item.get("kind") == "fragment":
@@ -242,6 +284,12 @@ static func valid_items(values: Variant) -> bool:
 			var seen := {}
 			for option: Variant in item.options:
 				if not option is String or RelicCatalog.resolve(option) == null or seen.has(option): return false
+				seen[option] = true
+		elif item.get("kind") == "enchantment_book":
+			if not item.get("options") is Array or item.get("rerolled") != false or item.options.size() not in [0, 3]: return false
+			var seen := {}
+			for option: Variant in item.options:
+				if not option is String or option not in CardEnchantments.reward_ids() or seen.has(option): return false
 				seen[option] = true
 	return true
 
@@ -258,8 +306,14 @@ static func _item_index(run: Node, item_id: String) -> int:
 			return index
 	return -1
 
+## 战斗测试场景装配时打开：允许对脱离存档槽位的 run 做残片事务。生产模式保持 false。
+static var allow_detached_edit := false
+
+
 static func _can_edit(run: Node) -> bool:
-	if not is_instance_valid(run) or not run.active or run.current_battle != null or run != SaveGateway.current_run():
+	if not is_instance_valid(run) or not run.active or run.current_battle != null:
+		return false
+	if not allow_detached_edit and run != SaveGateway.current_run():
 		return false
 	ensure_state(run)
 	return true
@@ -267,7 +321,7 @@ static func _can_edit(run: Node) -> bool:
 static func _capture(run: Node) -> Dictionary:
 	run.ensure_deck_cards()
 	return {"inventory": run.inventory_state.duplicate(true), "items": run.items.duplicate(true),
-		"gold": run.gold, "deck": run.deck.duplicate(), "pool": run.card_pool.duplicate(),
+		"gold": run.gold, "total_silver_earned": run.total_silver_earned, "deck": run.deck.duplicate(), "pool": run.card_pool.duplicate(),
 		"deck_cards": run.deck_cards.duplicate(true), "next_card_serial": run.next_card_serial}
 
 static func _commit(run: Node, before: Dictionary) -> Error:
@@ -276,6 +330,7 @@ static func _commit(run: Node, before: Dictionary) -> Error:
 		run.inventory_state = before.inventory
 		run.items = before.items
 		run.gold = int(before.gold)
+		run.total_silver_earned = int(before.total_silver_earned)
 		run.deck.assign(before.deck)
 		run.deck_cards.assign(before.deck_cards)
 		run.next_card_serial = int(before.next_card_serial)

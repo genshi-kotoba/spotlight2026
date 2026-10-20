@@ -11,8 +11,8 @@ extra_triggers = 2
 [resource]
 script = ExtResource("3_card")
 card_id = &"test_repeat_next"
-card_name = "测试·重复后牌"
-description = "使出牌区后一张牌额外触发 2 次，即正常触发加两次重复。"
+card_name = "重复后牌"
+description = "使出牌区后一张牌额外触发 2 次。"
 kind = 2
 face_tint = 3
 effects = Array[ExtResource("1_base")]([SubResource("Effect")])

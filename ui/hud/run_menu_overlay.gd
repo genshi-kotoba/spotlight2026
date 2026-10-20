@@ -3,7 +3,7 @@ extends Control
 
 ## 冒险菜单浮层：点头像打开背包，点右上角齿轮打开设置，点小地图打开地图页，M 键也进地图。
 ## 三个页面用 open(page) 直接指定，不再在面板里摆分页按钮。
-## 地图页只查看：给小地图放大倍率，可拖动镜头，但不移动角色本体。
+## 地图页支持拖动、缩放；传送请求由地图宿主校验并处理。
 ## 背包使用 main 的真实牌组与物品，残片装配统一走 RunRewards 事务。
 
 signal closed
@@ -46,6 +46,9 @@ const ITEM_ICON_SCRIPT := "res://ui/components/item_icon.gd"
 const HOVER_TIP_SCRIPT := "res://ui/components/hover_tip.gd"
 const RELIC_DRAG_ITEM_SCRIPT := "res://ui/hud/relic_drag_item.gd"
 const RELIC_DROP_CELL_SCRIPT := "res://ui/hud/relic_drop_cell.gd"
+const USE_DISCARD_MENU_SCRIPT := "res://ui/components/use_discard_menu.gd"
+const HOVER_LIFT := preload("res://ui/components/hover_lift.gd")
+const VOLUME_SETTINGS := preload("res://ui/components/volume_settings.gd")
 const ITEM_CAPACITY := ITEM_COLUMNS * ITEM_VISIBLE_ROWS # 一屏容量，不改变 main 背包规则。
 ## 立绘越出面板左/下边框，是刻意的出血。
 const SLOT_FRAME_A := "res://assets/ui/UI-004/物品边框1.png"
@@ -55,7 +58,7 @@ var _shade: ColorRect
 var _panel: Panel
 var _page_title: Label
 var _pages: Array[Control] = []
-var _close_label: Label
+var _close_button: Button
 var _map_slot: Control
 var _map_source: Control
 var _map_placeholder: Control
@@ -65,6 +68,7 @@ var _peek_layer: Control
 var _peek_view: CardView
 var _deck_title: Label
 var _item_tip: Control
+var _item_menu: Control
 var _item_grid: GridContainer
 var _item_title: Label
 var _relic_title: Label
@@ -87,6 +91,11 @@ var _current_page := 1
 var _open_tween: Tween
 ## 测试装配用：非空时背包页读它，不读 GlobalState，也不落存档。
 var run_override: RunStateMachine = null
+## 当前已接上 state_changed 的那一局，换局或重载存档时要重新接。
+var _bound_run: RunStateMachine = null
+## 战斗测试场景专用开关：打开后战斗中仍可编辑典籍。生产模式下保持 false，战斗中仍是仅查看。
+var allow_edit_in_battle := false
+var settlement_mode := false
 
 
 const MENU_ACTIONS := {"menu_map": KEY_M}
@@ -124,10 +133,12 @@ func _ready() -> void:
 
 
 func open(page: int = -1) -> void:
+	if _pack_selection_locked(): return
 	visible = true
 	if page >= 0:
 		set_page(page)
 	_reset_abandon_confirm()
+	_bind_run_signals()
 	_refresh_data()
 	move_to_front()
 	_play_open_animation()
@@ -152,9 +163,12 @@ func current_page() -> int:
 
 
 func close() -> void:
+	if settlement_mode: return
+	if _pack_selection_locked(): return
 	_end_relic_drag(true)
 	_selected_fragment_id = ""
 	_hide_item_tip()
+	_close_item_menu()
 	if _peek_layer != null:
 		_peek_layer.visible = false
 	visible = false
@@ -166,9 +180,12 @@ func is_open() -> bool:
 
 
 func set_page(index: int) -> void:
+	if settlement_mode: index = 1
+	if _pack_selection_locked(): return
 	_end_relic_drag(true)
 	_selected_fragment_id = ""
 	_hide_item_tip()
+	_close_item_menu()
 	_current_page = clampi(index, 0, PAGES.size() - 1)
 	for page_index in _pages.size():
 		var page: Control = _pages[page_index]
@@ -180,11 +197,12 @@ func set_page(index: int) -> void:
 			var tween := page.create_tween()
 			tween.tween_property(page, "modulate:a", 1.0, 0.14)
 	if _page_title != null:
-		_page_title.text = PAGES[_current_page]
+		_page_title.text = "最终背包 · 仅供查看" if settlement_mode else PAGES[_current_page]
 
 
 func set_run_override(run: RunStateMachine) -> void:
 	run_override = run
+	_bind_run_signals()
 	_refresh_data()
 
 
@@ -204,6 +222,7 @@ func set_map_viewer(viewer: Control) -> void:
 func _refresh_data() -> void:
 	_end_relic_drag(true)
 	_hide_item_tip()
+	_close_button.disabled = _pack_selection_locked()
 	var run := _active_run()
 	var deck_ids: Array[String] = []
 	var deck_copies: Array[Dictionary] = []
@@ -238,6 +257,7 @@ func _reload_deck(deck_ids: Array[String], copies: Array[Dictionary] = []) -> vo
 		view.size = Vector2(480.0, 818.0)
 		if data != null:
 			view.set_card(data)
+		view.set_enchantments(copies[index] if index < copies.size() else {})
 		view.apply_compact_layout(DECK_CARD_SCALE)
 		view.tooltip_text = CardEnchantments.describe(copies[index]) if index < copies.size() else ""
 		slot.tooltip_text = view.tooltip_text
@@ -246,8 +266,10 @@ func _reload_deck(deck_ids: Array[String], copies: Array[Dictionary] = []) -> vo
 		peek.flat = true
 		peek.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		peek.tooltip_text = view.tooltip_text
-		peek.pressed.connect(_peek_card.bind(card_id))
+		peek.pressed.connect(_peek_card.bind(card_id, copies[index] if index < copies.size() else {}))
 		slot.add_child(peek)
+		# 卡面整体放大提亮，命中区仍是那张全幅 peek 按钮。
+		HOVER_LIFT.attach(view, peek)
 		_deck_grid.add_child(slot)
 
 
@@ -288,11 +310,12 @@ func _build_peek() -> void:
 	_peek_layer.add_child(_peek_view)
 
 
-func _peek_card(card_id: String) -> void:
+func _peek_card(card_id: String, card: Dictionary = {}) -> void:
 	var data := _card_data(card_id)
 	if data == null:
 		return
 	_peek_view.set_card(data)
+	_peek_view.set_enchantments(card)
 	# 大图与外面的卡是同一份预制件：只是 scale 不同，不重新排字。
 	_peek_view.apply_compact_layout(PEEK_CARD_SCALE)
 	_peek_layer.visible = true
@@ -309,7 +332,9 @@ func _reload_items(run: RunStateMachine) -> void:
 		RunRewards.ensure_state(run)
 	_resources.text = "银币 %d  ·  万灵药 %d" % [run.gold, int(run.inventory_state.elixir)] if run != null else "银币 0  ·  万灵药 0"
 	if is_instance_valid(_battle) and run != null: _resources.text = "银币 %d  ·  万灵药 %d" % [int(_battle.player.get("silver", run.gold)), int(run.inventory_state.elixir)]
-	_bag_hint.text = "拖拽残片安装、换位或拖回背包；右键/Shift点击卸下。\n点击卡包打开；也可先点击残片，再点击典籍格安装。" if _can_edit_relics() else "战斗中仅查看，卡包与典籍编辑在战后开放。"
+	# 这一栏不写操作说明，只留给限制与失败提示。
+	_bag_hint.text = "" if _can_edit_relics() else "战斗中仅查看，卡包、附魔书与典籍编辑在战后开放。"
+	if settlement_mode: _bag_hint.text = "最终背包快照 · 仅供查看"
 	var catalog := RelicCatalog.load_definitions()
 	for index in maxi(ITEM_CAPACITY, items.size()):
 		var slot: Control
@@ -440,17 +465,14 @@ func _build() -> void:
 	title_rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_panel.add_child(title_rule)
 
-	_close_label = Label.new()
-	_close_label.text = "关闭"
-	_close_label.position = Vector2(PANEL_RECT.size.x - 120, 26)
-	_close_label.size = Vector2(96, 44)
-	_close_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_close_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_close_label.add_theme_font_size_override("font_size", 20)
-	_close_label.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
-	_close_label.mouse_filter = Control.MOUSE_FILTER_STOP
-	_close_label.gui_input.connect(_on_close_input)
-	_panel.add_child(_close_label)
+	_close_button = Button.new()
+	_close_button.name = "CloseMenu"
+	_close_button.text = "关闭"
+	CommonUiSkin.style_navigation_button(_close_button, "close", true)
+	_close_button.position = Vector2(PANEL_RECT.size.x - 96, 20)
+	_close_button.size = Vector2(64, 56)
+	_close_button.pressed.connect(close)
+	_panel.add_child(_close_button)
 
 	for index in PAGES.size():
 		var page := Control.new()
@@ -476,16 +498,11 @@ func _build_map_page(page: Control) -> void:
 	_map_placeholder.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_map_placeholder.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_map_slot.add_child(_map_placeholder)
-	var map_hint := _label("滚轮缩放 · 拖动平移", 14, Color(0.749, 0.682, 0.553, 0.7))
-	map_hint.position = Vector2(CONTENT_RECT.position.x + 4.0,
-		CONTENT_RECT.size.y - 26.0)
-	map_hint.size = Vector2(320, 22)
-	page.add_child(map_hint)
 
 
 func _build_bag_page(page: Control) -> void:
 	# 立绘越出边框 · 中栏上典籍下背包 · 右栏卡组。
-	_build_portrait_zone(page)
+	if not settlement_mode: _build_portrait_zone(page)
 	_build_relic_zone(page)
 	_build_item_zone(page)
 	_build_deck_zone(page)
@@ -588,6 +605,7 @@ func _build_relic_zone(page: Control) -> void:
 		cell.mouse_exited.connect(_on_relic_cell_hover_exited.bind(cell))
 		cell.drag_requested.connect(_begin_relic_drag)
 		cell.remove_requested.connect(_on_relic_remove_requested)
+		HOVER_LIFT.attach(cell)
 		var piece := _texture_rect(RelicPieceArt.slot_texture(index), Vector2.ZERO, RELIC_CELL_SIZE)
 		piece.name = "PieceArt"
 		cell.add_child(piece)
@@ -631,33 +649,8 @@ func _build_deck_zone(page: Control) -> void:
 
 
 func _build_settings_page(page: Control) -> void:
-	var sound_head := _label("声音", 20, Color(0.910, 0.706, 0.333, 0.85))
-	sound_head.position = Vector2(580, 292)
-	sound_head.size = Vector2(200, 28)
-	page.add_child(sound_head)
-	var rows := [["音乐", "music_volume"], ["音效", "sfx_volume"]]
-	for index in rows.size():
-		var label := _label(rows[index][0], 18, Color(0.749, 0.682, 0.553))
-		label.position = Vector2(580, 344 + index * 64)
-		label.size = Vector2(120, 28)
-		page.add_child(label)
-		var slider := HSlider.new()
-		slider.min_value = 0.0
-		slider.max_value = 1.0
-		slider.step = 0.05
-		slider.value = _setting(String(rows[index][1]), 0.7)
-		slider.custom_minimum_size = Vector2(320, 24)
-		slider.position = Vector2(700, 346 + index * 64)
-		slider.focus_mode = Control.FOCUS_NONE
-		_skin_slider(slider)
-		slider.value_changed.connect(_on_volume_changed.bind(String(rows[index][1])))
-		page.add_child(slider)
-		var readout := _label("%d%%" % roundi(slider.value * 100.0), 16, Color(0.749, 0.682, 0.553))
-		readout.position = Vector2(1036, 346 + index * 64)
-		readout.size = Vector2(80, 28)
-		page.add_child(readout)
-		slider.value_changed.connect(func(value: float) -> void:
-			readout.text = "%d%%" % roundi(value * 100.0))
+	# 音量块与开始界面设置页共用一份，两处外观不会漂。
+	VOLUME_SETTINGS.build(page, Vector2(580, 292))
 
 	var divider := ColorRect.new()
 	divider.color = Color(0.910, 0.706, 0.333, 0.28)
@@ -694,46 +687,6 @@ func _build_settings_page(page: Control) -> void:
 	_build_abandon_row(page)
 
 
-static var _grabber_texture_cache: Texture2D
-
-
-static func _grabber_texture() -> Texture2D:
-	# 默认滑块圆点是引擎灰白样式，和这套暗金面板不搭，这里画一颗金色圆点。
-	if _grabber_texture_cache != null:
-		return _grabber_texture_cache
-	var side := 22
-	var image := Image.create(side, side, false, Image.FORMAT_RGBA8)
-	image.fill(Color(0, 0, 0, 0))
-	var center := Vector2(side, side) * 0.5
-	for y in side:
-		for x in side:
-			var distance := Vector2(x + 0.5, y + 0.5).distance_to(center)
-			if distance > 10.0:
-				continue
-			image.set_pixel(x, y, Color(0.396, 0.290, 0.145) if distance > 8.0
-				else Color(0.965, 0.784, 0.416))
-	_grabber_texture_cache = ImageTexture.create_from_image(image)
-	return _grabber_texture_cache
-
-
-func _skin_slider(slider: HSlider) -> void:
-	var track := StyleBoxFlat.new()
-	track.bg_color = Color(0.078, 0.063, 0.052, 0.95)
-	track.border_color = Color(0.910, 0.706, 0.333, 0.30)
-	track.set_border_width_all(1)
-	track.set_corner_radius_all(4)
-	track.content_margin_top = 6.0
-	track.content_margin_bottom = 6.0
-	slider.add_theme_stylebox_override("slider", track)
-	var filled := track.duplicate() as StyleBoxFlat
-	filled.bg_color = Color(0.639, 0.475, 0.196, 1.0)
-	filled.border_color = Color(0.910, 0.706, 0.333, 0.55)
-	slider.add_theme_stylebox_override("grabber_area", filled)
-	slider.add_theme_stylebox_override("grabber_area_highlight", filled)
-	slider.add_theme_icon_override("grabber", _grabber_texture())
-	slider.add_theme_icon_override("grabber_highlight", _grabber_texture())
-
-
 func _build_abandon_row(page: Control) -> void:
 	_abandon_button = Button.new()
 	_abandon_button.text = "放弃本局"
@@ -748,9 +701,9 @@ func _build_abandon_row(page: Control) -> void:
 	_abandon_button.pressed.connect(_on_abandon_pressed)
 	page.add_child(_abandon_button)
 
-	# 二次确认就在设置面板里完成，不再另弹窗。
+	# 二次确认就在设置面板里完成，不再另弹窗。位置与「放弃本局」同一条水平线。
 	_abandon_confirm_row = HBoxContainer.new()
-	_abandon_confirm_row.position = Vector2(700, 682)
+	_abandon_confirm_row.position = Vector2(700, 710)
 	_abandon_confirm_row.add_theme_constant_override("separation", 12)
 	_abandon_confirm_row.visible = false
 	page.add_child(_abandon_confirm_row)
@@ -787,17 +740,6 @@ func _reset_abandon_confirm() -> void:
 		_abandon_button.visible = true
 	if _abandon_confirm_row != null:
 		_abandon_confirm_row.visible = false
-
-func _setting(key: String, fallback: float) -> float:
-	if GlobalState != null:
-		return float(GlobalState.settings.get(key, fallback))
-	return fallback
-
-
-func _on_volume_changed(value: float, key: String) -> void:
-	if GlobalState != null:
-		GlobalState.set_setting(key, value)
-
 
 func _label(text: String, size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -859,11 +801,6 @@ func _on_shade_input(event: InputEvent) -> void:
 		close()
 
 
-func _on_close_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		close()
-
-
 func set_battle_context(battle: BattleStateMachine, catalog: Dictionary, board: RelicBoard) -> void:
 	_battle = battle
 	_card_catalog = catalog
@@ -871,6 +808,8 @@ func set_battle_context(battle: BattleStateMachine, catalog: Dictionary, board: 
 
 
 func _on_item_pressed(item_id: String) -> void:
+	if settlement_mode: return
+	if _pack_selection_locked(): return
 	var active := _active_run()
 	var item := RunRewards.item(active, item_id) if active != null else {}
 	if item.get("kind") == "potion" and is_instance_valid(_battle):
@@ -885,10 +824,66 @@ func _on_item_pressed(item_id: String) -> void:
 		_selected_fragment_id = item_id
 		_bag_hint.text = "已选择残片，点击左侧典籍格安装或替换。"
 	elif selected.get("kind") in RunRewards.PACKS and not is_instance_valid(_pack_popup):
+		_end_relic_drag(true)
+		_selected_fragment_id = ""
+		_hide_item_tip()
 		_pack_popup = LootPopup.new()
 		add_child(_pack_popup)
 		_pack_popup.finished.connect(_refresh_data, CONNECT_DEFERRED)
+		_pack_popup.suspension_changed.connect(_on_pack_suspension_changed)
 		_pack_popup.show_pack(item_id)
+
+
+## 背包与场景快捷栏共用的选项菜单，规则也共用：卡包要能改存档才能用，药水要真在战斗里才能用。
+func _open_item_menu(anchor: Control, item_id: String, kind: String) -> void:
+	if settlement_mode or _pack_selection_locked() or item_id.is_empty():
+		return
+	# 选项菜单与说明浮层占同一块位置，弹菜单前先收说明，避免两者叠在一起。
+	_hide_item_tip()
+	_ensure_item_menu().show_for(anchor, _item_rows(kind, item_id))
+
+
+func _item_rows(kind: String, item_id: String) -> Array:
+	if kind == "fragment":
+		# 残片的使用是拖到典籍书上，菜单里只剩丢弃。
+		return [_discard_row(item_id)]
+	if kind in RunRewards.PACKS:
+		return [{"label": "使用", "enabled": _can_edit_relics(), "action": _on_item_pressed.bind(item_id)},
+			_discard_row(item_id)]
+	if kind == "potion":
+		return [{"label": "使用", "enabled": is_instance_valid(_battle), "action": _on_item_pressed.bind(item_id)},
+			_discard_row(item_id)]
+	return [_discard_row(item_id)]
+
+
+func _discard_row(item_id: String) -> Dictionary:
+	return {"label": "丢弃", "enabled": _can_edit_relics(), "danger": true,
+		"action": _discard_item.bind(item_id)}
+
+
+func _discard_item(item_id: String) -> void:
+	var error := RunRewards.discard_item(_active_run(), item_id)
+	if error != OK:
+		_bag_hint.text = "丢弃失败，背包未改变。错误码：%d" % error
+		return
+	_selected_fragment_id = ""
+	_refresh_data()
+	relic_board_updated.emit()
+
+
+func _ensure_item_menu() -> Control:
+	if _item_menu == null:
+		var menu_script := load(USE_DISCARD_MENU_SCRIPT)
+		_item_menu = menu_script.new()
+		_item_menu.name = "ItemMenu"
+		_item_menu.z_index = 160
+		add_child(_item_menu)
+	return _item_menu
+
+
+func _close_item_menu() -> void:
+	if _item_menu != null and is_instance_valid(_item_menu):
+		_item_menu.close()
 
 func _equip_selected(cell: int) -> void:
 	if not _can_edit_relics() or _selected_fragment_id.is_empty():
@@ -1200,6 +1195,8 @@ func _relic_slot_item(fragment: RelicFragmentData, index: int) -> Control:
 	piece.name = "PieceArt"
 	piece.modulate = fragment.tint().lightened(0.35)
 	slot.add_child(piece)
+	# 只放大残片图形，格子底板与边框原地不动，避免悬停时挤到邻格。
+	HOVER_LIFT.attach(piece, slot)
 	var name_label := _label(fragment.display_name, 17, fragment.tint())
 	name_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1232,17 +1229,20 @@ func _item_slot(run: RunStateMachine, item_index: int, slot_index: int) -> Contr
 	var icon: Control = icon_script.make_item(item, 46.0, str(record.get("icon_path", "")))
 	icon.position = Vector2(16, 16)
 	slot.add_child(icon)
+	# 只放大道具图标，格子底板与边框原地不动。
+	HOVER_LIFT.attach(icon, slot)
 	# 图标占格子，名字与效果走和战斗 HUD 同一个悬停浮层。
 	slot.mouse_filter = Control.MOUSE_FILTER_STOP
 	var tip := _item_tooltip(display, record)
-	if kind in RunRewards.PACKS:
-		tip += "\n点击打开（选项不重复，可刷新一次）"
+	if kind == "enchantment_book":
+		tip += "\n使用后先选附魔，再选择符合条件的卡牌；每张卡最多两个不同附魔。"
 	slot.mouse_entered.connect(_show_item_tip.bind(slot, tip))
 	slot.mouse_exited.connect(_hide_item_tip)
 	if kind in RunRewards.PACKS or kind == "potion":
+		# 单击出选项菜单：能用的那行才响应，具体能不能用交给 _item_rows 判。
 		slot.gui_input.connect(func(event: InputEvent):
-			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and (_can_edit_relics() or (kind == "potion" and is_instance_valid(_battle))):
-				_on_item_pressed(item_id)
+			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+				_open_item_menu(slot, item_id, kind)
 				slot.accept_event())
 	return slot
 
@@ -1253,9 +1253,47 @@ func _active_run() -> RunStateMachine:
 	return run_override if is_instance_valid(run_override) else SaveGateway.current_run()
 
 
-func _can_edit_relics() -> bool:
+## 背包开着的时候，别人往这一局里塞东西（快捷栏开卡包、事件奖励、拾取）也要立刻看见。
+## 快捷栏那份 LootPopup 结算时只发 state_changed，背包不接就一直是旧内容。
+func _bind_run_signals() -> void:
 	var run := _active_run()
-	return run != null and run.active and run == SaveGateway.current_run() and run.current_battle == null and not is_instance_valid(_battle)
+	if run == _bound_run:
+		return
+	if is_instance_valid(_bound_run) and _bound_run.state_changed.is_connected(_on_run_state_changed):
+		_bound_run.state_changed.disconnect(_on_run_state_changed)
+	_bound_run = run
+	if is_instance_valid(run) and not run.state_changed.is_connected(_on_run_state_changed):
+		run.state_changed.connect(_on_run_state_changed)
+
+
+func _on_run_state_changed() -> void:
+	# 拖拽残片时刷新会抽掉正拖着的那一格，等这次交互收尾再刷。
+	if not visible or _drag_source != null:
+		return
+	# 数据变了，压在某格上的选项菜单也已经过期，先收掉再重建。
+	_close_item_menu()
+	_refresh_data()
+
+
+func _can_edit_relics() -> bool:
+	if settlement_mode or _pack_selection_locked(): return false
+	var run := _active_run()
+	if run == null or not run.active:
+		return false
+	# 生产模式：战斗中只查看，且只认存档槽位里那一局，不接受界面传入的 run。
+	if not allow_edit_in_battle:
+		return run == SaveGateway.current_run() and run.current_battle == null and not is_instance_valid(_battle)
+	return true
+
+
+## 战斗内编辑要让显示的那块盘跟上 run：显示读 _battle_board，编辑写的是 run 的盘。
+func _sync_battle_board() -> void:
+	if not allow_edit_in_battle or _battle_board == null:
+		return
+	var run := _active_run()
+	if run == null or run.inventory_state.is_empty():
+		return
+	_battle_board.restore(run.inventory_state.relic_board, RelicCatalog.load_definitions())
 
 
 func _bag_used(run: RunStateMachine) -> int:
@@ -1297,12 +1335,17 @@ func _drop_relic_at(screen_position: Vector2) -> void:
 	var fragment_id := _drag_fragment
 	var item_id := _drag_item_id
 	var origin := _drag_origin
+	var source := _drag_source
 	_end_relic_drag(true)
 	if target >= 0:
 		_selected_fragment_id = ""
 		_apply_relic_drop(origin, target, fragment_id, item_id, screen_position)
 	elif origin >= 0 and _in_item_zone(screen_position):
 		_unmount_relic(origin)
+	elif origin < 0 and is_instance_valid(source) and source is RelicDragItem \
+			and source.get_global_rect().has_point(screen_position):
+		# 原地松手是单击不是拖拽：给残片弹出丢弃选项，和场景快捷栏一致。
+		_open_item_menu(source, item_id, "fragment")
 
 
 func _apply_relic_drop(origin: int, target: int, fragment_id: String, item_id: String = "", screen_position: Vector2 = Vector2.INF) -> void:
@@ -1320,6 +1363,7 @@ func _apply_relic_drop(origin: int, target: int, fragment_id: String, item_id: S
 	if error != OK:
 		_bag_hint.text = "装配保存失败，配置未改变。错误码：%d" % error
 		return
+	_sync_battle_board()
 	_refresh_data()
 	relic_board_updated.emit()
 	# 指针在拖拽中已经进入此格，松手后不会再发一次 mouse_entered。
@@ -1339,5 +1383,23 @@ func _unmount_relic(index: int) -> void:
 		_bag_hint.text = "卸下失败，配置未改变。错误码：%d" % error
 		return
 	_selected_fragment_id = ""
+	_sync_battle_board()
 	_refresh_data()
 	relic_board_updated.emit()
+
+
+func _pack_selection_locked() -> bool:
+	return is_instance_valid(_pack_popup) and _pack_popup.is_selection_locked()
+
+
+
+func _on_pack_suspension_changed(suspended: bool) -> void:
+	_end_relic_drag(true)
+	_selected_fragment_id = ""
+	_hide_item_tip()
+	if not suspended and is_instance_valid(_peek_layer): _peek_layer.hide()
+	for cell: RelicDropCell in _relic_drop_cells: cell.editable = _can_edit_relics()
+	for slot: Node in _item_grid.get_children():
+		if slot is RelicDragItem: slot.editable = _can_edit_relics()
+	_close_button.disabled = true
+	_bag_hint.text = "选择尚未完成：背包仅供查看，不能使用物品或装配残片。\n点击“恢复选择”继续。" if suspended else "正在选择奖励，点击“悬置”可收起选项并只读查看背包。"

@@ -1,7 +1,7 @@
 shader_type canvas_item;
 render_mode unshaded, blend_mix;
 
-uniform sampler2D actor_texture : filter_nearest, repeat_disable;
+uniform sampler2D actor_texture : filter_linear_mipmap, repeat_disable;
 uniform vec4 frame_uv = vec4(0.0, 0.0, 1.0, 1.0);
 uniform vec4 hint_color : source_color = vec4(0.55, 0.88, 0.96, 1.0);
 

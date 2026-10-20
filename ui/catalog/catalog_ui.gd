@@ -67,6 +67,7 @@ static func shell(root: Control, title_text: String, subtitle: String) -> VBoxCo
 	title.add_theme_color_override("font_color", Color(0.941, 0.902, 0.804))
 	heading.add_child(title)
 	var back := button("返回开始界面", "Back")
+	CommonUiSkin.style_navigation_button(back, "back")
 	heading.add_child(back)
 	back.pressed.connect(func():
 		var error := SceneTransition.change_scene_to_file("res://ui/main_menu/main_menu.tscn")
@@ -141,6 +142,13 @@ static func preview(parent: Control, entry: Dictionary, category: String, factor
 			placeholder.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			placeholder.modulate = MUTED
 			box.add_child(placeholder)
-		box.add_child(label(str(entry.get("name", "")), 28))
-		box.add_child(label(str(entry.get("effect", "")), 22))
+		var name_area := MarginContainer.new()
+		name_area.name = "MonsterNameArea"
+		name_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		name_area.add_theme_constant_override("margin_bottom", 16)
+		box.add_child(name_area)
+		var monster_name := label(str(entry.get("name", "")), 28)
+		monster_name.name = "MonsterName"
+		monster_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_area.add_child(monster_name)
 	return holder

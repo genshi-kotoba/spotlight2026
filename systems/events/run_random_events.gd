@@ -31,6 +31,11 @@ static func state(run: Node, request: Dictionary) -> Dictionary:
 
 static func open(run: Node, request: Dictionary) -> Error:
 	if not authorized(run, request): return ERR_UNAUTHORIZED
+	var event_index := RandomEventCatalog.index_for_map_node(str(run.main_seed), str(request.map_id), request)
+	run.inventory_state["settlement_context"] = {
+		"location_name": RandomEventCatalog.NAMES[event_index],
+		"background_path": preload("res://ui/battle/battle_environment.gd").path_for_floor(preload("res://ui/battle/battle_environment.gd").floor_for_battle({}, str(request.get("map_id", "")))),
+	}
 	if not state(run, request).is_empty(): return OK
 	var before := capture(run)
 	if not run.inventory_state.has("events"): run.inventory_state.events = {}
@@ -79,7 +84,7 @@ static func selectables(run: Node, request: Dictionary) -> Array:
 	return result
 
 static func legal_enchants(card: Dictionary) -> Array:
-	return CardEnchantments.DEFINITIONS.keys().filter(func(id: Variant): return CardEnchantments.can_apply(card, str(id)))
+	return CardEnchantments.reward_ids().filter(func(id: Variant): return CardEnchantments.can_apply(card, str(id)))
 
 static func choose(run: Node, request: Dictionary, option: int) -> Error:
 	if not authorized(run, request): return ERR_UNAUTHORIZED
@@ -204,7 +209,7 @@ static func select(run: Node, request: Dictionary, ids: Array, rollback: Diction
 				pool = pool.filter(func(id: String) -> bool: return RelicCatalog.resolve(id).kind in [RelicFragmentData.Kind.TRIGGER, RelicFragmentData.Kind.EFFECT])
 				if data != null: pool.erase(data.base_fragment_id if not data.base_fragment_id.is_empty() else consumed.get_slice("~", 0))
 			rng.shuffle_in_place(pool)
-			current.offers = pool.slice(0, mini(pool.size(), 3 + RelicCatalog.choice_bonus(run.inventory_state.relic_board.cells)))
+			current.offers = pool.slice(0, mini(pool.size(), 3))
 			if index == 8:
 				for position in current.offers.size():
 					current.offers[position] = RelicCatalog.generate(rng, str(current.offers[position]))
@@ -296,6 +301,7 @@ static func restore(run: Node, before: Dictionary) -> void:
 	run.inventory_state = before.inventory
 	run.items = before.items
 	run.gold = int(before.gold)
+	run.total_silver_earned = int(before.total_silver_earned)
 	run.health = int(before.health)
 	run.deck.assign(before.deck)
 	run.deck_cards.assign(before.deck_cards)

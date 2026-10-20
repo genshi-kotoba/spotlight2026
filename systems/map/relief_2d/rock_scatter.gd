@@ -12,7 +12,7 @@ const HORIZONTAL_PITCH_DEGREES: float = 35.2643897
 const EPSILON: float = 0.000001
 
 
-static func generate(snapshot: Dictionary) -> Dictionary:
+static func generate(snapshot: Dictionary, catalog: RefCounted = null) -> Dictionary:
 	var warnings: Array[String] = []
 	var config: Dictionary = _load_config(warnings)
 	var entries: Array[Dictionary] = []
@@ -84,7 +84,7 @@ static func generate(snapshot: Dictionary) -> Dictionary:
 		_bin_append(rubble_bins, _bin(plane, radius), candidate)
 		stats.rubble.placed += 1
 	var pebble_candidates: Array[Dictionary] = []
-	var support_fractions: Dictionary = _pebble_support_fractions(stats.pebble)
+	var support_fractions: Dictionary = _pebble_support_fractions(stats.pebble,catalog)
 	var support_margin: float = float(config.pebble.support_margin_ratio) * radius
 	var max_support_fraction: float=float(config.pebble.foot_radius_fraction)
 	for fraction: float in support_fractions.values(): max_support_fraction=maxf(max_support_fraction,fraction)
@@ -436,11 +436,11 @@ static func _point_in_hex(center: Vector2, radius: float, address: Array, key: S
 	return center + a.lerp(b, mix_value) * radial * radius
 
 
-static func _pebble_support_fractions(stats: Dictionary) -> Dictionary:
+static func _pebble_support_fractions(stats: Dictionary, selected_catalog: RefCounted = null) -> Dictionary:
 	# Match renderer_2d's centered horizontal image rect at its fixed pitch.
 	# Camera yaw rotates this footprint without changing its circumradius.
 	# Convex alpha-outline vertices contain the entire horizontal painted shape.
-	var catalog: RefCounted = Catalog.new()
+	var catalog: RefCounted = selected_catalog if selected_catalog != null else Catalog.new()
 	var regions: Dictionary = catalog.get("regions")
 	var fractions: Dictionary = {}
 	var fallback_regions: Array[String] = []
@@ -472,6 +472,7 @@ static func _pebble_support_fractions(stats: Dictionary) -> Dictionary:
 	stats.support_pitch_degrees = HORIZONTAL_PITCH_DEGREES
 	stats.support_radius_fractions = fractions.duplicate()
 	stats.support_outline_fallback_regions = fallback_regions
+	stats.support_catalog_signature = catalog.get("signature")
 	return fractions
 
 

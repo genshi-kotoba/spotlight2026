@@ -56,6 +56,12 @@ func assign(snapshot: Dictionary, roster: Array) -> Dictionary:
 		if pool.is_empty():
 			last_error = "第%d层的%s节点没有可选怪物" % [int(result.floor_index), GRADES[node.type]]
 			return {}
+		if _is_summit(snapshot) and node.type == "boss":
+			if "23" not in pool:
+				last_error = "顶端固定 Boss 23 不在第四层 BOSS 候选表"
+				return {}
+			node.content_id = "23"
+			continue
 		var least := 2147483647
 		for id: String in pool:
 			least = mini(least, int(counts.get(id, 0)))
@@ -68,8 +74,13 @@ func assign(snapshot: Dictionary, roster: Array) -> Dictionary:
 		counts[node.content_id] = int(counts.get(node.content_id, 0)) + 1
 	return result
 
+static func _is_summit(snapshot: Dictionary) -> bool:
+	return int(snapshot.get("floor_index", 0)) == 4 and snapshot.get("generation_config", {}).get("template", "") == "summit-v1"
+
 static func valid_assignments(snapshot: Dictionary, roster: Array) -> bool:
 	for node: Dictionary in snapshot.get("nodes", []):
+		if _is_summit(snapshot) and node.get("type") == "boss" and node.get("content_id") != "23":
+			return false
 		if GRADES.has(node.get("type", "")) and node.get("content_id") not in candidates(roster, int(snapshot.floor_index), node.type):
 			return false
 	return true

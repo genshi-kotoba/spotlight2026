@@ -1,5 +1,6 @@
 {
   "seed": "4f83161b8668fbff07fd66135092c255",
+  "map_scale": 10.2487,
   "floors": [
     {
       "normal": 3,
@@ -32,6 +33,9 @@
       "layout_candidates": 2,
       "layout_profile": "compact",
       "route_profile": "switchback"
+    },
+    {
+      "template": "summit-v1"
     }
   ],
   "height_common": {
@@ -52,6 +56,14 @@
     },
     "3": {
       "boss_mode": "highest"
+    },
+    "4": {
+      "strategy": "basic",
+      "amplitude_levels": 4,
+      "boss_mode": "fixed",
+      "boss_level": 4,
+      "event_flat_mode": "center",
+      "foundation_mode": "full"
     }
   }
 }

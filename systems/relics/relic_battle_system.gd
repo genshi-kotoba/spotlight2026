@@ -163,7 +163,7 @@ func manual_discard_count() -> int:
 
 
 func request_manual_discard() -> Error:
-	if not _battle.active or _battle.phase != BattleStateMachine.Phase.PLAYER_ACTION or manual_discard_count() <= 0 or _battle.hand.is_empty(): return ERR_UNAVAILABLE
+	if not _battle.active or _battle.phase != BattleStateMachine.Phase.PLAYER_ACTION or manual_discard_count() <= 0 or _battle.discardable_hand_cards().is_empty(): return ERR_UNAVAILABLE
 	state().discard_chances = int(state().get("discard_chances", 0)) - 1
 	_battle.request_battle_choice("discard", _battle.hand.duplicate(true), 1)
 	return OK

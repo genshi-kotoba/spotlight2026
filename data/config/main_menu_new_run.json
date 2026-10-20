@@ -6,7 +6,7 @@
   "starter_cards": ["1", "50", "40"],
   "card_catalog": ["1", "50", "40"],
   "initial_items": [],
-  "map_ids": ["world:floor-001", "world:floor-002", "world:floor-003"],
+  "map_ids": ["world:floor-001", "world:floor-002", "world:floor-003", "world:floor-004"],
   "reward_pool": [],
   "shop_pool": [],
   "event_pool": []

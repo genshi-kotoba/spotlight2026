@@ -23,7 +23,7 @@ func _init(p_battle: BattleStateMachine, p_cards: Dictionary, p_buffs: Dictionar
 		for card: Dictionary in zone:
 			var data: CardData = cards.get(str(card.card_id))
 			if data != null:
-				battle.update_card_properties(str(card.instance_id), {"occupies_slot": data.occupies_slot})
+				battle.update_card_properties(str(card.instance_id), {"occupies_slot": not FinalBossRules.is_saturn(card) and data.occupies_slot and not CardEnchantments.has(card, 4)})
 
 
 func state() -> Dictionary:
@@ -106,14 +106,15 @@ func _schedule(instruction: Dictionary, card: Dictionary, target: String) -> voi
 func _execute(op: Dictionary, card: Dictionary, target: String) -> void:
 	if _nullified(card): return
 	var id := str(card.instance_id)
-	var n := _value(op.get("amount", 0), card, target)
+	var scale_factor := float(card.get("effect_scale", 1.0))
+	var n := int(floor(_value(op.get("amount", 0), card, target) * scale_factor))
 	match str(op.op):
 		"damage", "loss":
 			var targets: Array = _enemy_ids() if bool(op.get("all", false)) else [target]
 			if op.op == "loss":
 				targets = ["player"]
 			for destination: String in targets:
-				var damage_event := battle.rules.publish("action.damage", {"side": "player" if destination == "player" else "enemy",
+				var damage_event := battle.rules.publish("action.damage" if op.op == "loss" else "enchantment.damage", {"side": "player" if destination == "player" else "enemy",
 					"target": destination, "amount": n, "ignore_block": op.op == "loss",
 					"use_stats": op.op != "loss", "source_side": "player", "source_id": "player",
 					"block_double": bool(op.get("block_double", false))},
@@ -123,7 +124,8 @@ func _execute(op: Dictionary, card: Dictionary, target: String) -> void:
 					"restore_amount": int(state().get("consumed_block", 0)) if bool(op.get("restore_on_kill", false)) else 0})
 				damage_event.metadata["damage_program_id"] = damage_event.id
 		"block":
-			battle.rules.publish("action.block", {"side": "player", "target": "player", "amount": n})
+			var block_event := battle.rules.publish("action.block", {"side": "player", "target": "player", "amount": n})
+			block_event.metadata["block_program_id"] = block_event.id
 		"heal":
 			battle.rules.publish("action.heal", {"amount": n})
 		"buff":
@@ -133,9 +135,10 @@ func _execute(op: Dictionary, card: Dictionary, target: String) -> void:
 				battle.rules.publish("action.buff_add", {"side": "player" if destination == "player" else "enemy",
 					"target": destination, "buff_id": op.buff, "layers": n})
 		"draw":
-			battle.rules.publish("action.draw", {"count": int(op.count)})
+			battle.rules.publish("action.draw", {"count": int(floor(int(op.count) * scale_factor))})
 		"discard":
-			battle.rules.publish("action.discard_choice", {"count": int(op.count)})
+			var count := int(floor(int(op.count) * scale_factor))
+			if count > 0: battle.rules.publish("action.discard_choice", {"count": count})
 		"remove":
 			battle.rules.publish("action.remove_card", {"instance_id": id})
 		"aura":
@@ -363,7 +366,8 @@ func _damaged(event: BattleEvent) -> void:
 		if heal > 0:
 			battle.rules.publish("action.heal", {"amount": heal})
 		if block > 0:
-			battle.rules.publish("action.block", {"side": "player", "target": "player", "amount": block})
+			var block_event := battle.rules.publish("action.block", {"side": "player", "target": "player", "amount": block})
+			block_event.metadata["block_program_id"] = block_event.id
 		if loss > 0 and int(event.payload.health_after) == 0:
 			var restore := int(event.metadata.get("restore_amount", 0)) if direct else 0
 			if restore > 0 and not bool(state().get("block_restored", false)):
@@ -374,20 +378,26 @@ func _damaged(event: BattleEvent) -> void:
 
 
 func _damage_adjust(event: BattleEvent) -> void:
-	if event.id != int(event.metadata.get("damage_program_id", -1)) or not bool(event.metadata.get("formal_damage", false)) or str(event.payload.side) != "enemy":
+	if event.id != int(event.metadata.get("damage_program_id", -1)) or str(event.payload.side) != "enemy":
 		return
+	var formal_damage := bool(event.metadata.get("formal_damage", false))
 	var id := str(event.metadata.get("source_card", ""))
-	var bonus := int(state().get("next_damage", {}).get(id, 0))
+	if not formal_damage and (id.is_empty() or bool(event.metadata.get("dot", false)) or bool(event.metadata.get("relic_effect", false))): return
+	var bonus := int(state().get("next_damage", {}).get(id, 0)) if formal_damage else 0
 	var layout: Array = state().get("layout", [])
 	var source_index := layout.find(id)
 	var movers: Array[String] = []
 	if source_index >= 0:
 		for card: Dictionary in battle.hand:
-			if str(card.card_id) != "70" or _nullified(card):
+			if str(card.card_id) != "70" or (not FinalBossRules.is_saturn(card) and _nullified(card)):
 				continue
 			var anchor := layout.find(str(card.instance_id))
 			if anchor < 0:
 				continue
+			if FinalBossRules.is_saturn(card):
+				bonus += -1 if source_index < anchor else 2
+				continue
+			if not formal_damage: continue
 			bonus += 1 if source_index < anchor else -2
 			if source_index < anchor:
 				movers.append(str(card.instance_id))

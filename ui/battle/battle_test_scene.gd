@@ -9,28 +9,50 @@ signal presentation_event(kind: String, data: Dictionary)
 @export_range(0, 20, 1) var initial_draw_count := 12
 @export_range(1, 20, 1) var play_limit := 10
 @export_range(0, 20, 1) var per_turn_draw_count := 2
-@export_range(0.05, 3.0, 0.05) var resolution_delay := 0.5
+## 结算收尾的上限。有真实效果反馈的牌实际等待跟着这张牌播出的动画走（见
+## `CombatFeedback.card_animation_time`），只有上限才用这个数；上限与动画时长的
+## 比例在 `FEEDBACK_SETTLE_SHARE`。
+@export_range(0.05, 3.0, 0.05) var resolution_delay := 0.45
+## 只改指针位置的牌没有结算内容，收尾等待压到最短。
+@export_range(0.0, 1.0, 0.01) var pointer_only_delay := 0.12
+## 整串结算的名义预算：一手 10 张有效果的牌约 10 秒。接近预算后自动提速，超出后加速收尾。
+@export_range(2.0, 30.0, 0.5) var resolution_budget := 10.0
+## 指针跳过这么多格之后开始提速。一手 10 张正好 10 格，多出来的多是多重释放的反复结算。
+@export_range(1, 30, 1) var resolution_speedup_after := 10
+## 常规提速的上限。再快就看不清指针落点，重结算部分另有应急档。
+@export_range(1.0, 5.0, 0.1) var resolution_max_speed := 2.2
 @export_range(0.05, 3.0, 0.05) var enemy_turn_delay := 0.75
 @export_range(1.0, 2.0, 0.05) var hand_hover_multiplier := 1.5
-## 保留 main 的弹簧悬停节奏。
-@export_range(0.0, 1.0, 0.01) var hand_hover_duration := 0.42
+## 悬停放大用短过渡：0.42 的弹簧节奏经试玩判定为拖沓。
+@export_range(0.0, 1.0, 0.01) var hand_hover_duration := 0.06
 @export_range(0.0, 1.0, 0.01) var hand_hover_return_duration := 0.18
 @export var relic_board_path := RelicBoard.SAVE_PATH
 @export_range(1, 99999, 1) var enemy_starting_health := 3000
 ## 独立测试战场可直接在检查器预览四层；正式战斗由开战存档决定。
 @export_range(1, 4, 1) var test_floor_index := 1
+## -1 使用楼层默认背景，其他值预览本层对应差分；不消耗随机流。
+@export_range(-1, 8, 1) var test_background_variant := -1
+## 测试局里同时出现几个敌人。默认 2，用来眼验多敌人排布、点选箭头与悬停光晕；
+## 断言「一次致死出牌即结束战斗」的单敌人测试把它设回 1。
+@export_range(1, 4, 1) var test_enemy_count := 2
 
 ## 手牌悬停扇开，规则与取值参考 reference/card-and-dice 的 HandUIController.Hover：
 ## 距悬停卡 1/2/3 张分别外移大/中/小距离，手牌越多幅度越小（10 张时只剩 10%）。
-@export_range(0.0, 120.0, 1.0) var fan_offset_long := 50.0
-@export_range(0.0, 120.0, 1.0) var fan_offset_medium := 35.0
-@export_range(0.0, 120.0, 1.0) var fan_offset_short := 15.0
+@export_range(0.0, 120.0, 1.0) var fan_offset_long := 58.0
+@export_range(0.0, 120.0, 1.0) var fan_offset_medium := 40.0
+@export_range(0.0, 120.0, 1.0) var fan_offset_short := 17.0
 @export_range(0.05, 1.0, 0.01) var fan_duration_in := 0.15
 @export_range(0.05, 1.0, 0.01) var fan_duration_out := 0.18
 ## 按手牌张数缩放的扇开系数，下标即张数（1~10，0 位弃用）。
 @export var fan_factor_by_count: Array[float] = [
 	0.0, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
 ]
+
+## 打击感参数。档位判定见 CombatFeedback.tier_of，这里只放时长、振幅与节拍。
+@export_range(0.0, 0.3, 0.01) var hitstop_medium := 0.05
+@export_range(0.0, 0.3, 0.01) var hitstop_heavy := 0.09
+@export_range(0.0, 0.3, 0.01) var hitstop_kill := 0.12
+@export_range(0.0, 2.0, 0.05) var kill_beat_time := 0.45
 
 const HAND_CARD_SCALE := 0.285
 const PLAY_CARD_SCALE := HAND_CARD_SCALE * 0.5
@@ -47,7 +69,7 @@ const HAND_CARD_SIZE := Vector2(480.0, 818.0) * HAND_CARD_SCALE
 const HAND_AREA_WIDTH := 1178.0
 ## 悬停放大时卡面向左右各生长 32.4，行首尾留出同样余量，避免贴边被视口裁掉。
 const HAND_HOVER_MARGIN := 34.0
-const HAND_AREA_HEIGHT := 404.0
+const HAND_AREA_HEIGHT := 332.0
 const HAND_GAP := 6.0
 const HAND_ARC_SPREAD := 0.045
 const HAND_ARC_RADIUS := 900.0
@@ -65,13 +87,19 @@ const BUFF_ICON_PATHS := {
 	"weak": "res://assets/ui/UI-025/虚弱.png",
 }
 const RELIC_BOOK_POSITION := Vector2(322, 132)
-const RELIC_LOG_SIZE := Vector2(240, 72)
 const CARD_SCENE := preload("res://ui/components/card/card_view.tscn")
 const CARD_TRANSFER := preload("res://ui/battle/card_transfer.gd")
 const HEALTH_TRANSITION_TIME := 0.3
+## 血条掉血时闪一下的暖色，走 fill_color 打亮，不用 modulate（只能往暗里乘）。
+const HEALTH_FLASH_COLOR := Color(1.0, 0.62, 0.68)
+## 残影与抽牌动画都按路径 preload：无头跑测试不经过编辑器扫描，用不了全局类缓存。
+const HEALTH_TRAIL_SCRIPT := preload("res://ui/battle/health_bar_trail.gd")
+const HAND_DEAL_ANIM := preload("res://ui/battle/hand_deal_anim.gd")
 const RUN_MENU := preload("res://ui/hud/run_menu_overlay.gd")
 const VFX_SCRIPT := preload("res://ui/battle/vfx_playback.gd")
 const FEEDBACK_SCRIPT := preload("res://ui/battle/combat_feedback.gd")
+const HIT_STOP_SCRIPT := preload("res://ui/battle/hit_stop.gd")
+const RELIC_HINT_SCRIPT := preload("res://ui/battle/relic_hint_stack.gd")
 const BLOCK_SHIELD_SCRIPT := "res://ui/battle/block_shield.gd"
 const ITEM_ICON_SCRIPT := "res://ui/components/item_icon.gd"
 const HOVER_TIP_SCRIPT := "res://ui/components/hover_tip.gd"
@@ -84,6 +112,7 @@ const MAP_VIEWER_PATH := "res://ui/world_map/map_viewer.gd"
 const MAP_SNAPSHOT_PATH := "res://data/config/flat_2d/demo_map.json"
 const MENU_SCENE := "res://ui/main_menu/main_menu.tscn"
 const TEST_CARD_DIR := "res://data/cards/test"
+const NEW_RUN_CONFIG_PATH := "res://data/config/main_menu_new_run.json"
 const TEST_DECK_CARD_IDS: Array[String] = [
 	"test_damage_enemy", "test_damage_self", "test_block", "test_heal",
 	"test_poison", "test_weak", "test_strength", "test_move_pointer",
@@ -93,6 +122,15 @@ const TEST_DECK_CARD_IDS: Array[String] = [
 	"test_repeat_next",
 ]
 
+## 测试局可用的敌人原型，按 test_enemy_count 取前几个。数值与正式战斗无关，只为止观感。
+const TEST_ENEMIES: Array[Dictionary] = [
+	{"enemy_id": "chr-025", "art_path": "res://assets/chr/CHR-025.png", "damage": 6},
+	{"enemy_id": "chr-003", "art_path": "res://assets/chr/CHR-003.png", "damage": 4},
+	{"enemy_id": "chr-011", "art_path": "res://assets/chr/CHR-011.png", "damage": 5},
+	{"enemy_id": "chr-020", "art_path": "res://assets/chr/CHR-020.png", "damage": 8},
+]
+
+
 @onready var turn_label: Label = %TurnLabel
 @onready var phase_label: Label = %PhaseLabel
 @onready var count_label: Label = %CountLabel
@@ -101,9 +139,13 @@ const TEST_DECK_CARD_IDS: Array[String] = [
 @onready var enemy_status: Label = %EnemyStatus
 @onready var hand_cards: Control = %HandCards
 @onready var hand_scroll: ScrollContainer = $HandScroll
+@onready var discard_shade: ColorRect = $DiscardShade
+@onready var draw_pile_root: Control = $DrawPile
+@onready var discard_pile_root: Control = $DiscardPile
+@onready var backpack_board: Control = $背包底板
+@onready var backpack_slots: Control = $BackpackSlots
 @onready var play_scroll: ScrollContainer = $PlayScroll
 @onready var play_cards: Control = %PlayCards
-@onready var damage_preview: DamagePreview = $DamagePreview
 @onready var draw_button: Button = %DrawPileButton
 @onready var discard_button: Button = %DiscardPileButton
 @onready var draw_pile_count: Label = $DrawPile/Count
@@ -118,11 +160,9 @@ const TEST_DECK_CARD_IDS: Array[String] = [
 @onready var player_hp_fill: Control = $PlayerHPBar/Fill
 @onready var player_hp_block: ColorRect = $PlayerHPBar/Block
 @onready var player_hp_num: Label = $PlayerHPNum
-@onready var enemy_hp_fill: Control = $EnemyHPBar/Fill
-@onready var enemy_hp_block: ColorRect = $EnemyHPBar/Block
-@onready var enemy_hp_num: Label = $EnemyHPNum
 @onready var player_buff_row: HBoxContainer = $PlayerBuffRow
-@onready var enemy_buff_row: HBoxContainer = $EnemyBuffRow
+## 敌人一格一个 EnemySlot，具体节点在 EnemyRack 里按数量建。
+@onready var enemy_rack: EnemyRack = $EnemyRack
 
 var _battle: BattleStateMachine
 var _resolver: BattleEffectResolver
@@ -130,8 +170,8 @@ var _relics: RelicBattleSystem
 var _relic_board := RelicBoard.new()
 var _relic_catalog: Dictionary = {}
 var _relic_book: RelicBookView
-var _relic_log: Label
-var _relic_events: Array[String] = []
+## 典籍提示条：挂在书页下方，每次亮格子推一条。
+var _relic_hints: RelicHintStack
 var _fan_target: Control
 var _fan_tween: Tween
 var _hand_dragging := false
@@ -142,11 +182,14 @@ var _buff_text_by_id: Dictionary = {}
 var _buff_tip: PanelContainer
 var _buff_tip_label: Label
 var player_block_shield: Control
-var enemy_block_shield: Control
 var _run_menu: RunMenuOverlay
+## 战斗测试场景自带的一局，用于战斗内编辑残片；生产场景没有它。
+var _test_run: RunStateMachine = null
 var _settings_button: SettingsButton
 var _map_page_source: Control
 var _selected_ids: Array[String] = []
+## 上一轮手牌里的 instance_id；用来判断这一轮哪些牌是刚抽进来的。
+var _hand_ids_previous: Dictionary = {}
 var _selected_cards: Array[Dictionary] = []
 var _discard_selection_ids: Array[String] = []
 var _pending_discard_count := 0
@@ -163,6 +206,12 @@ var _relic_flash_tweens: Dictionary = {}
 var _pending_pile_presentation: Dictionary = {}
 var _pending_battle_presentation: Dictionary = {}
 var _queued_card_end: Dictionary = {}
+## 当前这张牌是否只动了指针位置。为真时收尾等待走 pointer_only_delay。
+var _card_pointer_only := false
+var _discard_focus_up := false
+## 蒙版只在结算真的走到「等待弃牌」那一步才抬起来。规则侧一发出弃牌请求就抬的话，
+## 只要结算队列里有弃牌牌，从头到尾都压着蒙版。与 pending 计数同时判断，收尾也一定落下。
+var _discard_focus_armed := false
 var _display_pointer_id := ""
 var _settle_pointer: TextureRect
 var _pointer_tween: Tween
@@ -176,12 +225,17 @@ var _animating := false
 var _refresh_queued := false
 ## 规则队列同步结算，UI异步播放；刷新只能重绘当前播放快照，不能偷读最终血量。
 var _presented_player: Dictionary = {}
-var _presented_enemy: Dictionary = {}
+var _presented_enemies: Array[Dictionary] = []
+## true 表示典籍连锁正开着；连锁结束（下一个非典籍事件或队列排空）时关闭，用来只停第一拍。
+var _relic_chain_open := false
+var _bbcode_strip := RegEx.new()
 var _card_transfers: Dictionary = {}
 var _resolved_discards: Dictionary = {}
 ## 血量变化要能看见：记上一次的血量，差值用来飘伤害/治疗数字。
 ## 表现层：飘字、闪红、震动、特效，只吃战斗事件。
 var _feedback: Node
+var _hit_stop: HitStop
+var _pacer: ResolutionPacer
 ## 出牌列上一次的行数，只在新增时播放入场，刷新时不会整列重放。
 var _play_rows_shown := 0
 var _play_insert_index := -1
@@ -199,23 +253,37 @@ const RESOLVE_PREVIEW_SCALE := 0.5
 ## 结算节奏：指针滑行按距离配速，大图出现后停一下再结算，让玩家看清发生了什么。
 const POINTER_GLIDE_SPEED := 1700.0
 const POINTER_GLIDE_MIN := 0.14
-const POINTER_GLIDE_MAX := 0.38
+const POINTER_GLIDE_MAX := 0.22
 const PREVIEW_HOLD := 0.5
+## 结算收尾取这张牌播出动画的这个比例：飘字寿命 0.70~1.00 换算成 0.32~0.45 秒。
+## 取一部分而不是全等，是让下一张牌在数字还在上浮时就开始，整串才不显得一顿一顿。
+const FEEDBACK_SETTLE_SHARE := 0.45
 const PLAY_PLACEHOLDER_ALPHA := 0.55
 const PEEK_CARD_SCALE := 0.79
-const ENEMY_FLOAT_ANCHOR := Vector2(998.0, 330.0)
+## 等待玩家弃牌时，蒙版与要高亮的节点各自抬到哪个层级。失活时全部还原为 0。
+const DISCARD_SHADE_Z := 20
+const DISCARD_FOCUS_Z := 30
 const PLAYER_FLOAT_ANCHOR := Vector2(300.0, 118.0)
+## 敌方飘字 / 特效相对槽位顶边的下沉量：由原版单敌人落点反推
+## （槽顶 y=78，飘字在原版 y=330，特效在原版 y=470）。
+const ENEMY_FLOAT_DROP := 252.0
+const ENEMY_VFX_DROP := 392.0
+## 敌方血条框按品级换图：普通用小怪框、精英用精英框，其余（BOSS）用 boss 框。
+const ENEMY_BAR_FRAME_PATTERN := "res://assets/ui/UI-015/超长-%s血条框.png"
+## 典籍连锁：整条连锁只停第一拍，之后连锁内部各次激活快速连播，亮格提示各自计时退场。
+## 停一拍是为了把「现在在结算典籍」和「只是指针在走」区分开，不至于每次激活都停。
+const RELIC_CHAIN_PAUSE := 0.25
+## 触发格亮起与效果格亮起之间的节拍，两盏灯要读得出先后。
+const RELIC_STEP_BEAT := 0.3
 
 
 var _enchantment_hover: PanelContainer
 var _enchantment_hover_id := ""
 var _monster_text: MonsterBattleText
 var _battle_choice_layer: CanvasLayer
-var _enemy_selector: HBoxContainer
 var _target_enemy_id := ""
 var _manual_discard_button: Button
 var _relic_cells: Array[Label] = []
-var _relic_edit_button: Button
 var _relic_title: Label
 var _restart_button: Button
 var _pile_selection_ids: Array[String] = []
@@ -230,7 +298,7 @@ func _ready() -> void:
 	$背包底板.add_theme_stylebox_override("panel", CommonUiSkin.panel("strip"))
 	$出牌计数底板.add_theme_stylebox_override("panel", CommonUiSkin.panel("tiny"))
 	$PileModal/Window.add_theme_stylebox_override("panel", CommonUiSkin.panel("panel", Vector4(24, 20, 24, 20)))
-	CommonUiSkin.style_button($PileModal/Window/Column/Header/ClosePileButton, Vector4(8, 4, 8, 4))
+	CommonUiSkin.style_navigation_button(%ClosePileButton, "close", true)
 	pile_modal.z_index = 300
 	draw_button.pressed.connect(_on_draw_pile_pressed)
 	discard_button.pressed.connect(_on_discard_pile_pressed)
@@ -238,6 +306,8 @@ func _ready() -> void:
 	play_button.pressed.connect(_on_play_pressed)
 	_run_menu = RUN_MENU.new()
 	_run_menu.name = "RunMenuOverlay"
+	# 战斗测试场景是唯一允许战斗内编辑典籍的装配点，生产场景不得打开。
+	_run_menu.allow_edit_in_battle = true
 	add_child(_run_menu)
 	$PlayerPortrait.gui_input.connect(_on_player_portrait_input)
 	# 冒险菜单设置页的三个动作：战斗里也能存档、回主菜单、退出。
@@ -256,6 +326,7 @@ func _ready() -> void:
 	_build_resolve_preview()
 	_build_settle_pointer()
 	_build_peek()
+	_build_relic_hints()
 	_build_feedback()
 	_start_test_battle()
 	if _battle != null:
@@ -263,7 +334,7 @@ func _ready() -> void:
 		var pending_choice: Dictionary = _battle.player.get("battle_choice", {})
 		if not pending_choice.is_empty(): _on_battle_choice_requested(str(pending_choice.mode), int(pending_choice.count), pending_choice.candidates)
 	_build_battle_actions()
-	$Background.texture = BATTLE_ENVIRONMENT.texture_for_floor(_battle_environment_floor())
+	$Background.texture = BATTLE_ENVIRONMENT.texture_for_floor(_battle_environment_floor(), test_background_variant)
 	_refresh_coin()
 	_setup_monster_battle_text()
 
@@ -273,11 +344,96 @@ func _battle_environment_floor() -> int:
 
 
 func _build_feedback() -> void:
+	# 多敌人时每个敌方立绘与落点都不同，表现层按实体 id 反查，不再假定只有一个敌人。
 	_feedback = FEEDBACK_SCRIPT.new()
 	_feedback.name = "CombatFeedback"
 	add_child(_feedback)
-	_feedback.setup(self, $PlayerPortrait, $EnemyPortrait,
-		PLAYER_FLOAT_ANCHOR, ENEMY_FLOAT_ANCHOR)
+	_feedback.setup(self, $PlayerPortrait, PLAYER_FLOAT_ANCHOR, enemy_view)
+	_build_feel()
+	_build_resolution_pacer()
+
+
+## 典籍提示栈：挂在书页下方，盖在战场上但不拦输入，连锁起止由队列事件驱动。
+func _build_relic_hints() -> void:
+	_relic_hints = RELIC_HINT_SCRIPT.new()
+	_relic_hints.name = "RelicHints"
+	_relic_hints.z_index = 250
+	_relic_hints.position = RELIC_BOOK_POSITION + Vector2(0, RelicBookView.BOOK_SIZE.y + 8.0)
+	add_child(_relic_hints)
+
+
+## 提示本次亮起的残片：名字 + 效果文案。触发点与效果点各推一条，各自计时退场。
+func _present_relic_hint(cell: int) -> void:
+	if _relic_hints == null or _relic_catalog.is_empty():
+		return
+	if cell < 0 or cell >= _relic_board.cells.size():
+		return
+	var fragment: RelicFragmentData = _relic_catalog.get(_relic_board.cells[cell])
+	if fragment == null:
+		return
+	_relic_hints.push("%s：%s" % [fragment.display_name, _plain_relic_text(fragment.rich_description())])
+
+
+## 关掉连锁边界。提示条各自计时退场，这里只复位「本连锁是否已停过第一拍」。
+func _close_relic_chain() -> void:
+	_relic_chain_open = false
+
+
+## 提示条是普通 Label，装不下 BBCode：把 [颜色]、[lb] 与负面词条的运动标记一起去掉。
+func _plain_relic_text(value: String) -> String:
+	if _bbcode_strip.get_pattern().is_empty():
+		_bbcode_strip.compile("\\[[^\\]]*\\]")
+	return _bbcode_strip.sub(value, "", true)
+
+
+## 表现层按实体 id 取敌方立绘与飘字落点。返回空字典表示这个敌人没有可显示的目标，
+## 表现层据此跳过特效，而不是拿另一个敌人的立绘顶替。
+func enemy_view(entity_id: String) -> Dictionary:
+	var slot := enemy_rack.slot_for(entity_id)
+	if slot == null:
+		return {}
+	var portrait_rect := slot.portrait.get_rect()
+	var origin := enemy_rack.position + slot.position
+	return {
+		"portrait": slot.portrait,
+		"feedback_z": slot.feedback_z(),
+		"center": origin + portrait_rect.position + portrait_rect.size * 0.5,
+		"float_anchor": origin + portrait_rect.position + Vector2(portrait_rect.size.x * 0.5, portrait_rect.size.y * 0.32),
+	}
+
+
+
+## 结算节拍：把检查器上的三个上限搬进节拍器。节拍器只是记账对象，不进场景树。
+func _build_resolution_pacer() -> void:
+	_pacer = ResolutionPacer.new()
+	_pacer.budget = resolution_budget
+	_pacer.speedup_after_hops = resolution_speedup_after
+	_pacer.max_speed = resolution_max_speed
+
+
+## 打击感：只有顿帧。不再有震屏——震屏靠改写已注册节点的 position 实现，
+## 与刷新、布局等多个写入方抢同一个坐标，结果是敌人在结算阶段整块闪烁，
+## 收益远小于代价，整块删掉。
+func _build_feel() -> void:
+	_hit_stop = HIT_STOP_SCRIPT.new()
+	_hit_stop.name = "HitStop"
+	add_child(_hit_stop)
+	enemy_rack.slot_selected.connect(_on_enemy_slot_selected)
+
+
+## 点战场上的敌人即切目标，不再有专门的切换按钮。目标标记（箭头 + 高亮框）就是这次点击的
+## 反馈，不另写提示文字，避免与「等待玩家操作」时的提示叠加。
+func _on_enemy_slot_selected(enemy_id: String) -> void:
+	if _battle == null or not _battle.active or enemy_id.is_empty() or _busy or _animating:
+		return
+	var candidates := _battle.enemies.filter(func(enemy: Dictionary): return int(enemy.health) > 0 and str(enemy.enemy_id) == enemy_id)
+	if candidates.is_empty(): return
+	for enemy: Dictionary in _battle.enemies:
+		if int(enemy.health) > 0 and bool(enemy.get("taunt", false)) and str(enemy.enemy_id) != enemy_id: return
+	if enemy_id == _target_enemy_id:
+		return
+	_target_enemy_id = enemy_id
+	_queue_refresh()
 
 
 func _exit_tree() -> void:
@@ -310,9 +466,69 @@ func _refresh_coin() -> void:
 	$Elixir/Count.text = str(elixir)
 
 
+## 正式新局的初始卡组，与主菜单新游戏读同一份配置；读不到才退回测试卡。
+func _initial_deck_from_config() -> Array[String]:
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(NEW_RUN_CONFIG_PATH))
+	if parsed is Dictionary and parsed.get("initial_deck") is Array and not parsed.initial_deck.is_empty():
+		var result: Array[String] = []
+		for card_id: String in parsed.initial_deck:
+			result.append(card_id)
+		return result
+	return TEST_DECK_CARD_IDS.duplicate()
+
+
+## 测试局的敌人表：按 test_enemy_count 取前几个原型，全部用同一份起始血量。
+func _test_enemy_payload() -> Array:
+	var count := clampi(test_enemy_count, 1, TEST_ENEMIES.size())
+	var list: Array = []
+	for index in count:
+		var entry: Dictionary = TEST_ENEMIES[index]
+		list.append({
+			"enemy_id": entry["enemy_id"],
+			"art_path": entry["art_path"],
+			"health": enemy_starting_health,
+			"max_health": enemy_starting_health,
+			"block": 0,
+			"buffs": [],
+			"actions": [{"action_id": "test-attack", "damage": entry["damage"]}],
+		})
+	return list
+
+
+## 战斗测试场景自带一局脱离存档槽位的 run，让冒险菜单在战斗内也能编辑残片。
+## 生产场景不会调用它，RunRewards 的放宽开关也只在这里打开。
+func _setup_test_run() -> bool:
+	if _run_menu == null:
+		return false
+	_test_run = RunStateMachine.new()
+	_test_run.name = "BattleTestRun"
+	_test_run.active = true
+	_test_run.run_id = "battle-test"
+	_test_run.main_seed = SeedService.get_main_seed()
+	add_child(_test_run)
+	# 棋盘来源跟随场景指定的路径：默认即开发用盘，测试显式指向夹具时读夹具，
+	# 这样测试局的构筑与菜单展示仍是同一块，且不污染开发存档。
+	RunRewards.ensure_state(_test_run, relic_board_path)
+	# 卡组用正式初始卡组，不再用测试卡。
+	_test_run.deck.clear()
+	for card_id: String in _initial_deck_from_config():
+		_test_run.deck.append(card_id)
+	RunRewards.allow_detached_edit = true
+	_run_menu.set_run_override(_test_run)
+	_run_menu.relic_board_updated.connect(_refresh_relic_hud)
+	_refresh_backpack()
+	return true
+
+
 func _start_test_battle() -> void:
 	if SeedService.get_main_seed().is_empty():
 		SeedService.begin_run("battle-effects-ui-test")
+
+	# 抽牌与出牌上限对齐正式节点战斗。
+	var rules: Dictionary = EncounterFlow.test_rules
+	initial_draw_count = int(rules.get("initial_draw_count", initial_draw_count))
+	per_turn_draw_count = int(rules.get("per_turn_draw_count", per_turn_draw_count))
+	play_limit = int(rules.get("play_limit", play_limit))
 
 	_battle = BattleStateMachine.new()
 	_battle.name = "BattleStateMachine"
@@ -326,7 +542,7 @@ func _start_test_battle() -> void:
 	_battle.battle_ended.connect(_on_battle_ended)
 
 	var deck: Array[Dictionary] = []
-	var chosen_deck: Array[String] = TEST_DECK_CARD_IDS if deck_card_ids.is_empty() else deck_card_ids
+	var chosen_deck: Array[String] = _initial_deck_from_config() if deck_card_ids.is_empty() else deck_card_ids.duplicate()
 	for index in chosen_deck.size():
 		deck.append({
 			"instance_id": "test-card-%02d" % (index + 1),
@@ -348,15 +564,7 @@ func _start_test_battle() -> void:
 			"block": 0,
 			"buffs": [],
 		},
-		"enemies": [{
-			"enemy_id": "chr-025",
-			"art_path": "res://assets/chr/CHR-025.png",
-			"health": enemy_starting_health,
-			"max_health": enemy_starting_health,
-			"block": 0,
-			"buffs": [],
-			"actions": [{"action_id": "test-attack", "damage": 6}],
-		}],
+		"enemies": _test_enemy_payload(),
 		"deck_instances": deck,
 	})
 	if error == OK:
@@ -366,7 +574,12 @@ func _start_test_battle() -> void:
 		error = _resolver.attach_to_battle(_battle)
 	if error == OK:
 		_relic_catalog = RelicCatalog.load_definitions()
-		var loaded := _relic_board.load_from_file(_relic_catalog, relic_board_path)
+		var loaded := ERR_FILE_NOT_FOUND
+		if _setup_test_run():
+			# 测试局的盘从 run 同步，保证菜单显示与编辑是同一块。
+			loaded = _relic_board.restore(_test_run.inventory_state.relic_board, _relic_catalog)
+		else:
+			loaded = _relic_board.load_from_file(_relic_catalog, relic_board_path)
 		if loaded != OK and loaded != ERR_FILE_NOT_FOUND:
 			error = loaded
 	if error == OK:
@@ -379,9 +592,12 @@ func _start_test_battle() -> void:
 		error = _relics.attach_to_battle(_battle, _relic_board, _relic_catalog, _resolver.buff_catalog)
 		_refresh_relic_hud()
 	if error == OK:
+		_sync_battle_potions()
+		_battle.player["external_natural_draw"] = true
 		error = _battle.start_battle()
 	if error == OK and _battle.active:
-		error = _battle.draw_cards(initial_draw_count, BattleStateMachine.DrawReason.BATTLE_START)
+		# 与正式节点战斗一致：首抽经残片自然抽牌修正。
+		error = _battle.draw_cards(_relics.natural_draw_count(initial_draw_count), BattleStateMachine.DrawReason.BATTLE_START)
 	if error != OK:
 		_busy = true
 		hint_label.text = "战斗测试初始化失败：%d" % error
@@ -410,18 +626,6 @@ func _build_relic_hud() -> void:
 	# 书在主角立绘后面，避免盖住人物。
 	move_child(_relic_book, $HeroPortrait.get_index())
 	_relic_book.attach_tip(self, 120)
-
-	_relic_log = Label.new()
-	_relic_log.position = RELIC_BOOK_POSITION + Vector2(0, RelicBookView.BOOK_SIZE.y + 8.0)
-	_relic_log.size = RELIC_LOG_SIZE
-	_relic_log.text = "尚未配置残片。"
-	_relic_log.add_theme_font_size_override("font_size", 16)
-	_relic_log.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
-	_relic_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_relic_log.clip_text = true
-	_relic_log.visible = false
-	add_child(_relic_log)
-	move_child(_relic_log, pile_modal.get_index())
 	_build_test_controls()
 
 
@@ -431,8 +635,7 @@ func _build_test_controls() -> void:
 	add_child(_relic_title)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.06, 0.04, 0.8)
-	_relic_edit_button = _make_test_button("编辑典籍", style, Vector2(24, 486), _return_to_relic_page)
-	_restart_button = _make_test_button("重开测试", style, Vector2(24, 538), _restart_battle)
+	_restart_button = _make_test_button("重开测试", style, Vector2(24, 486), _restart_battle)
 	_relic_cells = _relic_book._cells
 
 
@@ -444,11 +647,12 @@ func _connect_combat_feedback() -> void:
 	_battle.buff_added.connect(_on_buff_added)
 	_battle.card_committed.connect(_on_card_committed_present)
 	_battle.card_discarded.connect(_on_card_discarded_visual)
+	_battle.card_destroyed.connect(_on_card_destroyed_visual)
 
 
 func _build_block_shields() -> void:
-	# 格挡不再用「格挡 N」文字，改在血条尾端盖一枚盾，盾面写数字。
-	# 盾的大小按各自血条的高度走：Boss 条比玩家条高，盾和数字一起放大。
+	# 玩家侧的盾贴在血条尾端，位置与玩家立绘一样唯一；敌方的盾归 EnemySlot 自己持有，
+	# 因为它随敌人数量与槽宽变化。
 	var script := load(BLOCK_SHIELD_SCRIPT)
 	player_block_shield = script.new()
 	player_block_shield.name = "PlayerBlockShield"
@@ -456,13 +660,6 @@ func _build_block_shields() -> void:
 	player_block_shield.size = Vector2(58, 64)
 	player_block_shield.set("number_px", 19)
 	add_child(player_block_shield)
-	enemy_block_shield = script.new()
-	enemy_block_shield.name = "EnemyBlockShield"
-	enemy_block_shield.z_index = 13
-	enemy_block_shield.position = Vector2(1344, 84)
-	enemy_block_shield.size = Vector2(74, 82)
-	enemy_block_shield.set("number_px", 24)
-	add_child(enemy_block_shield)
 
 
 func _style_backpack_slots() -> void:
@@ -500,7 +697,8 @@ func _refresh_backpack() -> void:
 			if String(extra.name).begins_with("ItemIcon") or String(extra.name).begins_with("ItemName"):
 				child.remove_child(extra)
 				extra.queue_free()
-	var run := SaveGateway.current_run()
+	# 沙盒读的是自带的那一局，正式流程才有存档槽位里那一局。
+	var run := _test_run if _test_run != null else SaveGateway.current_run()
 	var items: Array = run.items if run != null else []
 	var slots := $BackpackSlots.get_children()
 	for index in mini(items.size(), slots.size()):
@@ -580,7 +778,9 @@ func _refresh_relic_hud() -> void:
 func _begin_presentation() -> void:
 	if _busy:
 		return
-	_refresh_combat_status()
+	# 已显示的整队快照保持冻结，不能先把刚变动的业务血量渲染出去。
+	if _presented_enemies.is_empty():
+		_refresh_combat_status()
 	_busy = true
 	_presentation_turn = _battle.turn_number
 	_presented_hand.assign(_battle.hand.duplicate(true))
@@ -602,10 +802,9 @@ func _queue_presentation(kind: String, fields: Dictionary = {}) -> void:
 	var begin := not _busy
 	if begin:
 		_begin_presentation()
-	var enemy_snapshot: Dictionary = {}
-	if not _battle.enemies.is_empty():
-		var index := maxi(0, _battle._find_enemy_index(_chosen_enemy_id()))
-		enemy_snapshot = _battle.enemies[index].duplicate(true)
+	var enemy_snapshots: Array = []
+	for enemy: Dictionary in _battle.enemies:
+		enemy_snapshots.append(enemy.duplicate(true))
 	var current: BattleEvent = _battle.rules.queue.current
 	var from_relic: bool = current != null and (not current.metadata.get("relic_ancestry", []).is_empty() \
 		or bool(current.metadata.get("relic_effect", false)))
@@ -614,7 +813,7 @@ func _queue_presentation(kind: String, fields: Dictionary = {}) -> void:
 		"from_relic": from_relic,
 		"turn": _battle.turn_number,
 		"player": _battle.player.duplicate(true),
-		"enemy": enemy_snapshot,
+		"enemies": enemy_snapshots,
 		"hand": _battle.hand.duplicate(true),
 		"draw_count": _battle.draw_pile.size(),
 		"discard_count": _battle.discard_pile.size(),
@@ -634,8 +833,8 @@ func _apply_presentation_snapshot(event: Dictionary) -> void:
 	_presented_draw_count = int(event["draw_count"])
 	_presented_discard_count = int(event["discard_count"])
 	_presented_relic_count = int(event["activation_count"])
-	if not event["enemy"].is_empty():
-		_render_combat_snapshot(event["player"], event["enemy"])
+	if not event["enemies"].is_empty():
+		_render_combat_snapshot(event["player"], event["enemies"])
 
 
 func _on_relic_triggered(cell: int, chained: bool) -> void:
@@ -663,6 +862,11 @@ func _on_rule_event_processed(event: BattleEvent) -> void:
 			"from": int(event.payload.get("from", 0)),
 			"to": int(event.payload.get("to", 0)),
 		})
+	elif event.type == &"monster.summon" and bool(event.metadata.get("summoned", false)):
+		# event_processed 在规则追加本次召唤后触发；保留每次增长的独立整队快照。
+		_queue_presentation("enemy_spawned")
+	elif event.type == &"enemy.action_requested":
+		_queue_presentation("enemy_action", {"entity_id": str(event.payload.get("enemy_id", ""))})
 
 
 func _on_relic_chain_limited() -> void:
@@ -690,7 +894,7 @@ func _on_turn_started(turn_number: int) -> void:
 	_queue_presentation("turn_started")
 	# 首回合在 start_battle 返回后按 initial_draw_count 抽牌；后续回合在
 	# PLAYER_ACTION 信号期间同步调用，符合 BattleStateMachine 的接口约束。
-	if turn_number > 1 and per_turn_draw_count > 0:
+	if turn_number > 1:
 		var count := _relics.natural_draw_count(per_turn_draw_count) if _relics != null else per_turn_draw_count
 		var error := _battle.draw_cards(count, BattleStateMachine.DrawReason.TURN_START)
 		if error != OK:
@@ -757,18 +961,22 @@ func _flush_card_end() -> void:
 	_queue_presentation("card_end", completed)
 
 
-func _on_combatant_damaged(side: StringName, _entity_id: String, damage: int,
-		blocked: int, _health_after: int) -> void:
-	_queue_presentation("damage", {"side": side, "damage": damage, "blocked": blocked})
+func _on_combatant_damaged(side: StringName, entity_id: String, damage: int,
+		blocked: int, health_after: int) -> void:
+	# 致死的判定来自信号本身，不比较快照差值；实体 id 让飘字与特效找到对应那一格。
+	_queue_presentation("damage", {
+		"side": side, "entity_id": entity_id, "damage": damage, "blocked": blocked,
+		"lethal": health_after <= 0,
+	})
 
 
-func _on_combatant_healed(side: StringName, _entity_id: String, amount: int,
+func _on_combatant_healed(side: StringName, entity_id: String, amount: int,
 		_health_after: int) -> void:
-	_queue_presentation("heal", {"side": side, "amount": amount})
+	_queue_presentation("heal", {"side": side, "entity_id": entity_id, "amount": amount})
 
 
-func _on_block_changed(side: StringName, _entity_id: String, block: int) -> void:
-	_queue_presentation("block", {"side": side, "block": block})
+func _on_block_changed(side: StringName, entity_id: String, block: int) -> void:
+	_queue_presentation("block", {"side": side, "entity_id": entity_id, "block": block})
 
 
 func _on_buff_added(side: StringName, _entity_id: String, buff: Dictionary) -> void:
@@ -780,6 +988,8 @@ func _on_discard_choice_requested(card: Dictionary, count: int,
 	_pending_discard_count = count
 	_pending_discard_card_id = String(card.get("instance_id", ""))
 	_discard_selection_ids.clear()
+	# 请求本身不抬蒙版：等结算播到这张牌、进入等待弃牌那一步再抬。
+	_discard_focus_armed = false
 	_queue_refresh()
 
 
@@ -796,6 +1006,9 @@ func _on_hand_card_pressed(instance_id: String) -> void:
 		hint_label.text = "当前结算未完成，请完成弃牌选择或重开战斗。"
 		return
 	var card := _find_card(_battle.hand, instance_id)
+	if FinalBossRules.is_saturn(card):
+		hint_label.text = "逆行土星为手牌机制牌，无法出牌；其光环在手牌中自动生效"
+		return
 	if _busy or (bool(card.get("occupies_slot", true)) and _used_slots() >= _battle.effective_play_limit()):
 		if not _busy:
 			hint_label.text = "出牌区已满（上限 %d 张）" % _battle.effective_play_limit()
@@ -806,14 +1019,34 @@ func _on_hand_card_pressed(instance_id: String) -> void:
 		return
 	_selected_ids.append(instance_id)
 	_selected_cards.append(card.duplicate(true))
-	_begin_card_transfer(card, "play")
+	# 出牌落位不再飞牌：点完即由 _queue_refresh 重建出手牌与出牌列。
 	hint_label.text = "已编排 %d / %d 张；将按从上到下结算" % [
 		_used_slots(), _battle.effective_play_limit(),
 	]
 	_queue_refresh()
 
 
+## 等待玩家弃牌时压一层蒙版，把要操作的东西抬到蒙版之上，提示范围收窄到「谁在等你」。
+## 蒙版不拦输入：弃牌是逐张点手牌后自动提交，不需要点别的按钮，也就不该挡住误点。
+func _sync_discard_focus() -> void:
+	var focused := _discard_focus_armed and _pending_discard_count > 0
+	if focused == _discard_focus_up:
+		return
+	_discard_focus_up = focused
+	discard_shade.visible = focused
+	discard_shade.z_index = DISCARD_SHADE_Z if focused else 0
+	var level := DISCARD_FOCUS_Z if focused else 0
+	hand_scroll.z_index = level
+	draw_pile_root.z_index = level
+	discard_pile_root.z_index = level
+	backpack_board.z_index = level
+	backpack_slots.z_index = level
+
+
 func _select_card_to_discard(instance_id: String) -> void:
+	if FinalBossRules.is_saturn(_find_card(_battle.hand, instance_id)):
+		hint_label.text = "逆行土星无法弃置，请选择其他手牌"
+		return
 	if _discard_selection_ids.has(instance_id) \
 			or _find_card(_battle.hand, instance_id).is_empty():
 		return
@@ -863,11 +1096,13 @@ func _on_cancel_pressed() -> void:
 
 
 func _on_play_pressed() -> void:
-	if _busy or not _battle.active or (_selected_ids.is_empty() and _battle.play_zone.is_empty()):
+	# 允许空过：一张不编排也能结束回合，规则队列接受空序列。
+	if _busy or not _battle.active:
 		return
 	# 必须在同步推进规则队列之前保存初始画面，避免刷新提前显示致死的最终快照。
 	_begin_presentation()
-	hint_label.text = "开始结算……"
+	# 结算过程不留提示文字，提示只在玩家需要操作时出现。
+	hint_label.text = ""
 	_refresh_header()
 
 	var sequence: Array[String] = _selected_ids.duplicate()
@@ -914,6 +1149,24 @@ func _wait_relic_presentation() -> void:
 	_relic_flash_tweens.clear()
 
 
+## 结算等待的唯一入口：先问节拍器要实际秒数，再照它等。名义时长照样记账，
+## 「一手 10 张约 10 秒」这条目标才不依赖真实时钟，也不受顿帧压低 time_scale 干扰。
+func _wait_resolution(nominal: float, from_relic := false) -> void:
+	var wait := nominal if _pacer == null else _pacer.wait_for(nominal, from_relic)
+	await get_tree().create_timer(wait).timeout
+	if _pacer != null:
+		_pacer.spend(nominal)
+
+
+## 一张牌的收尾等待：跟着这张牌真实播出的动画走，上限是 resolution_delay。
+## 没有真实反馈的牌（只抽牌、只调指针）落到最短档，不为了稳妥白等。
+func _card_settle_wait() -> float:
+	if _card_pointer_only or _feedback == null:
+		return pointer_only_delay
+	return clampf(_feedback.card_animation_time() * FEEDBACK_SETTLE_SHARE,
+		pointer_only_delay, resolution_delay)
+
+
 func _drain_resolution_events() -> void:
 	if _animating or not _busy or not is_inside_tree():
 		return
@@ -921,11 +1174,16 @@ func _drain_resolution_events() -> void:
 	if not _battle.rules.queue.paused:
 		_flush_card_end()
 	_animating = true
+	if _pacer != null:
+		_pacer.begin()
 	while not _resolution_events.is_empty():
 		var event: Dictionary = _resolution_events.pop_front()
 		var kind := str(event["kind"])
-		var ordinary_effect := kind in ["card_effect", "damage", "heal", "block", "card_discarded"] \
+		var ordinary_effect := kind in ["card_effect", "damage", "heal", "block", "card_discarded", "card_destroyed"] \
 			and not bool(event.get("from_relic", false))
+		# 有真实结算内容，或触发了典籍，这张牌就不算「只动了指针」。
+		if ordinary_effect or kind.begins_with("relic_"):
+			_card_pointer_only = false
 		if ordinary_effect or kind in ["card_start", "card_end", "enemy_turn", "turn_started"]:
 			await _wait_relic_presentation()
 			if not is_inside_tree(): return
@@ -933,38 +1191,59 @@ func _drain_resolution_events() -> void:
 		_apply_presentation_snapshot(event)
 		# 表现层时间点：音频等订阅者在这里接到的才是「玩家此刻看到的」。
 		presentation_event.emit(kind, event)
+		# 典籍连锁的边界：第一个 relic_* 事件停这一拍，之后连锁内部各次激活快速连播，
+		# 直到下一个非典籍事件或队列排空才收边。不在每次激活处重复停，连锁越长越不拖。
+		if kind.begins_with("relic_"):
+			if not _relic_chain_open:
+				_relic_chain_open = true
+				await _wait_resolution(RELIC_CHAIN_PAUSE, true)
+				if not is_inside_tree(): return
+		elif _relic_chain_open:
+			_close_relic_chain()
 		match kind:
 			"card_start":
 				var instance_id := str(event["instance_id"])
 				_display_cards.assign(event["play_zone"])
+				_card_pointer_only = true
+				# 指针每前进一格记一次账，跳数超阈值之后结算才开始提速。
+				if _pacer != null:
+					_pacer.note_pointer_hop()
+				if _feedback != null:
+					_feedback.begin_card()
 				_queue_refresh()
 				await get_tree().process_frame
 				if not is_inside_tree(): return
-				await _move_pointer_to(instance_id)
+				await _move_pointer_to(instance_id, bool(event.get("from_relic", false)))
 				if not is_inside_tree(): return
 				phase_label.text = "玩家回合 · 指针位置 %d" % (int(event["pointer"]) + 1)
-				hint_label.text = "正在结算：%s" % _card_display_name(instance_id)
+			"card_effect":
+				if not bool(event.get("pointer_only", false)):
+					_card_pointer_only = false
 			"card_end":
-				hint_label.text = "已结算：%s" % _card_display_name(str(event["instance_id"]))
-				await get_tree().create_timer(resolution_delay).timeout
+				# 收尾等待跟着这张牌真实播出的动画走，没有内容的牌落到最短档。
+				await _wait_resolution(_card_settle_wait())
 				if not is_inside_tree(): return
 			"relic_trigger":
+				# 触发格先亮，停半拍再亮效果格，两盏灯才读得出先后。
 				_flash_relic_cell(int(event["cell"]))
+				_present_relic_hint(int(event["cell"]))
+				await _wait_resolution(RELIC_STEP_BEAT, true)
+				if not is_inside_tree(): return
 			"relic_effect":
 				_flash_relic_cell(int(event["effect"]))
+				_present_relic_hint(int(event["effect"]))
 			"relic_completed":
-				_relic_events.append("[%d→%d] %s" % [int(event["trigger"]) + 1, int(event["effect"]) + 1, str(event["description"])])
-				if _relic_events.size() > 4: _relic_events.pop_front()
-				_relic_log.text = "\n".join(_relic_events)
+				# 亮格时已经推过提示，结算摘要不再显示第二遍。
 				_refresh_relic_hud()
 			"relic_limited":
-				_relic_log.text += "\n本条连锁已达到安全上限。"
+				_relic_hints.push("本条连锁已达到安全上限。")
 			"damage":
-				_feedback.on_damaged(event["side"], int(event["damage"]), int(event["blocked"]))
+				await _play_damage_feedback(event)
+				if not is_inside_tree(): return
 			"heal":
-				_feedback.on_healed(event["side"], int(event["amount"]))
+				_feedback.on_healed(event["side"], int(event["amount"]), str(event.get("entity_id", "")))
 			"block":
-				_feedback.on_block_changed(event["side"], int(event["block"]))
+				_feedback.on_block_changed(event["side"], int(event["block"]), str(event.get("entity_id", "")))
 			"card_discarded":
 				var card: Dictionary = event["card"]
 				if not _card_transfers.has(str(card.instance_id)):
@@ -972,13 +1251,17 @@ func _drain_resolution_events() -> void:
 			"enemy_turn":
 				_set_pointer("")
 				phase_label.text = "怪物回合"
-				hint_label.text = "怪物行动；格挡在敌方回合末清零"
-				await get_tree().create_timer(enemy_turn_delay).timeout
+				await _wait_resolution(enemy_turn_delay)
+				if not is_inside_tree(): return
+			"card_destroyed":
+				_queue_refresh()
+				await _wait_resolution(0.10)
 				if not is_inside_tree(): return
 			"turn_started":
 				phase_label.text = "玩家回合 · 回合开始"
 		_queue_refresh()
 
+	_close_relic_chain()
 	await _wait_relic_presentation()
 	if not is_inside_tree(): return
 	if _battle.has_pending_discard_choice():
@@ -989,6 +1272,8 @@ func _drain_resolution_events() -> void:
 		]
 		_presentation_kind = "choice"
 		_animating = false
+		# 结算已经播到这张弃牌牌，指针也指到它了，这里才开始压蒙版。
+		_discard_focus_armed = true
 		_queue_refresh()
 		return
 	if _battle.pending_pile_count() > 0:
@@ -1028,8 +1313,33 @@ func _drain_resolution_events() -> void:
 	if not _battle.active:
 		_present_battle_ended()
 	else:
-		hint_label.text = "玩家回合开始：请选择手牌编排到右侧"
+		hint_label.text = "请选择手牌编排到右侧"
 	_queue_refresh()
+
+
+## 一次受伤表现：飘字、闪红与特效之后叠顿帧。致死且目标是敌人时再补一拍击杀节拍，
+## 只拉长表现，不改规则，结算结果仍由原路径决定。
+func _play_damage_feedback(event: Dictionary) -> void:
+	var side := StringName(event["side"])
+	var damage := int(event["damage"])
+	var blocked := int(event["blocked"])
+	_feedback.on_damaged(side, damage, blocked, str(event.get("entity_id", "")))
+	var lost := maxi(damage - blocked, 0)
+	if lost <= 0:
+		return
+	var lethal := bool(event.get("lethal", false)) and side != CombatFeedback.SIDE_PLAYER
+	var duration := 0.0
+	if lethal:
+		duration = hitstop_kill
+	else:
+		match CombatFeedback.tier_of(lost):
+			CombatFeedback.TIER_MEDIUM:
+				duration = hitstop_medium
+			CombatFeedback.TIER_HEAVY:
+				duration = hitstop_heavy
+	_hit_stop.hit_stop(duration)
+	if lethal and kill_beat_time > 0.0:
+		await get_tree().create_timer(kill_beat_time).timeout
 
 
 func _on_draw_pile_pressed() -> void:
@@ -1055,7 +1365,7 @@ func _open_pile(title: String, cards: Array[Dictionary]) -> void:
 			peek.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 			peek.tooltip_text = ""
 			peek.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-			peek.pressed.connect(_peek_card.bind(card_id))
+			peek.pressed.connect(_peek_card.bind(card_id, card))
 			slot.add_child(peek)
 		pile_grid.add_child(slot)
 	pile_modal.visible = true
@@ -1137,7 +1447,7 @@ func _on_play_card_hover(slot: Control, entered: bool, instance_id := "") -> voi
 	if entered:
 		var card := _find_selected_card(instance_id)
 		if not card.is_empty():
-			_show_resolve_preview(String(card.get("card_id", "")))
+			_show_resolve_preview(String(card.get("card_id", "")), card)
 	elif not _busy:
 		_resolve_preview.visible = false
 	else:
@@ -1229,6 +1539,10 @@ func _hand_card_at(at: Vector2) -> String:
 
 func _begin_drag() -> void:
 	var card := _card_by_instance(_drag_card_id)
+	if FinalBossRules.is_saturn(card):
+		_drag_card_id = ""
+		hint_label.text = "逆行土星留在手牌中生效，无法拖入出牌区"
+		return
 	if card.is_empty():
 		return
 	_drag_active = true
@@ -1252,6 +1566,7 @@ func _begin_drag() -> void:
 	var data := _card_data(String(card.get("card_id", "")))
 	if data != null:
 		view.set_card(data)
+	view.set_enchantments(card)
 	var drag_px := CardView.text_px_for(PLAY_CARD_SCALE)
 	view.apply_compact_layout(PLAY_CARD_SCALE, drag_px.x, drag_px.y)
 
@@ -1341,6 +1656,10 @@ func _find_hand_card(instance_id: String) -> Dictionary:
 	return {}
 
 
+func _on_card_destroyed_visual(card: Dictionary, _reason: StringName) -> void:
+	_queue_presentation("card_destroyed", {"card": card.duplicate(true)})
+
+
 func _on_card_discarded_visual(card: Dictionary, reason: StringName) -> void:
 	if reason == &"resolved" and _busy:
 		# 同步规则已入弃，仍须等指针播放完整个出牌序列后再飞走。
@@ -1383,6 +1702,7 @@ func _begin_card_transfer(card: Dictionary, destination: String, from_play := fa
 	var data := _card_data(str(card.card_id))
 	if data != null:
 		view.set_card(data)
+	view.set_enchantments(card)
 	var px := CardView.text_px_for(HAND_CARD_SCALE)
 	view.apply_compact_layout(HAND_CARD_SCALE, px.x, px.y)
 	ghost.add_child(view)
@@ -1412,38 +1732,23 @@ func _launch_card_transfer(instance_id: String, ghost: Control, source_transform
 	ghost.start(source_transform, _card_transfer_target.bind(instance_id), discard)
 
 
-func _card_transfer_target(instance_id: String) -> Dictionary:
-	var transfer: Dictionary = _card_transfers[instance_id]
+## 飞牌只剩弃牌，目标固定为弃牌堆按钮。
+func _card_transfer_target(_instance_id: String) -> Dictionary:
 	var inverse := get_global_transform_with_canvas().affine_inverse()
-	if str(transfer.destination) == "play":
-		var view := _transfer_source(instance_id, true)
-		if view != null:
-			var transform := inverse * view.get_global_transform_with_canvas()
-			return {"center": transform * Vector2(240, 409), "scale": transform.get_scale().x}
-		return {"center": inverse * _play_area_rect().get_center(), "scale": PLAY_CARD_SCALE}
 	return {"center": inverse * discard_button.get_global_rect().get_center(), "scale": 0.025}
 
 
 func _hide_transfer_targets() -> void:
+	# 飞牌只剩弃牌：从手牌入弃隐藏手牌，从出牌区入弃隐藏出牌列。
 	for instance_id: String in _card_transfers:
-		var transfer: Dictionary = _card_transfers[instance_id]
-		if str(transfer.destination) == "play" or bool(transfer.from_play):
-			var view := _transfer_source(instance_id, true)
-			if view != null:
-				view.modulate.a = 0.0
-		else:
-			var view := _transfer_source(instance_id, false)
-			if view != null:
-				view.modulate.a = 0.0
+		var view := _transfer_source(instance_id, bool(_card_transfers[instance_id].from_play))
+		if view != null:
+			view.modulate.a = 0.0
 
 
 func _finish_card_transfer(instance_id: String, ghost: Control) -> void:
 	if not _card_transfers.has(instance_id) or _card_transfers[instance_id].ghost != ghost:
 		return
-	if str(_card_transfers[instance_id].destination) == "play":
-		var view := _transfer_source(instance_id, true)
-		if view != null:
-			view.modulate.a = 1.0
 	_card_transfers.erase(instance_id)
 
 
@@ -1456,6 +1761,7 @@ func _cancel_card_transfer(instance_id: String) -> void:
 
 func _refresh_zones() -> void:
 	_refresh_queued = false
+	_sync_discard_focus()
 	if not is_inside_tree():
 		return
 	var insert_at := _play_insert_index
@@ -1476,6 +1782,7 @@ func _refresh_zones() -> void:
 			hand_cards.add_child(slot)
 			hand_slots.append(slot)
 	_layout_hand(hand_slots)
+	_play_deal_animation(hand_slots)
 	hand_count_label.text = "%d 张" % hand_slots.size()
 
 	if _busy:
@@ -1508,8 +1815,7 @@ func _refresh_zones() -> void:
 
 	_refresh_header()
 	_refresh_combat_status()
-	_refresh_damage_preview()
-	_refresh_enemy_selector()
+	_refresh_battle_actions()
 
 
 func _animate_play_insert(index: int) -> void:
@@ -1580,15 +1886,17 @@ func _refresh_header() -> void:
 	draw_button.disabled = _busy
 	discard_button.disabled = _busy
 	cancel_button.disabled = _busy or _selected_ids.is_empty()
-	play_button.disabled = _busy or not _battle.active or (_selected_ids.is_empty() and _battle.play_zone.is_empty()) \
+	# 允许空过：手上没牌、出牌区也空着也能结束回合。
+	play_button.disabled = _busy or not _battle.active \
 		or _battle.phase != BattleStateMachine.Phase.PLAYER_ACTION
 	var locked_count := 0
 	for card: Dictionary in _battle.play_zone:
 		if not bool(card.get("slot_empty", false)):
 			locked_count += 1
-	play_button.text = "结算 %d" % (_selected_ids.size() + locked_count)
+	var to_commit := _selected_ids.size() + locked_count
+	# 结算数为 0 时按钮照样可点，点它就是结束回合，不再单独换文案。
+	play_button.text = "结算 %d" % to_commit
 	play_count_label.text = "%d/%d" % [_used_slots(), _battle.effective_play_limit()]
-	_relic_edit_button.disabled = _busy
 	_restart_button.disabled = _busy
 	for slot: Node in hand_cards.get_children():
 		var button := slot.get_child(1) as Button
@@ -1611,47 +1919,78 @@ func _pop_turn_label() -> void:
 func _refresh_combat_status() -> void:
 	if _battle == null or _battle.enemies.is_empty():
 		return
-	if _busy and not _presented_player.is_empty() and not _presented_enemy.is_empty():
-		_render_combat_snapshot(_presented_player, _presented_enemy)
+	if _busy and not _presented_player.is_empty() and not _presented_enemies.is_empty():
+		_render_combat_snapshot(_presented_player, _presented_enemies)
 		return
-	var index := _battle._find_enemy_index(_chosen_enemy_id())
-	_render_combat_snapshot(_battle.player, _battle.enemies[maxi(0, index)])
+	_render_combat_snapshot(_battle.player, _battle.enemies)
 
 
-func _render_combat_snapshot(player_data: Dictionary, enemy_data: Dictionary) -> void:
+## 渲染一份战斗快照。enemies 必须先复制再用：调用方会把 _presented_enemies 本身传进来，
+## 直接 clear() 会把传进来的那个数组一起清空，本次渲染就成了「空敌人列表」，
+## 表现是整块敌人槽被销毁重建，结算期间反复发生就是敌人在闪。
+func _render_combat_snapshot(player_data: Dictionary, enemies: Array) -> void:
+	var enemy_list: Array = enemies.duplicate(true)
 	_presented_player = player_data.duplicate(true)
-	_presented_enemy = enemy_data.duplicate(true)
-	$EnemyName.text = str(enemy_data.get("name", "CHR-025"))
-	var portrait := str(enemy_data.get("art_path", ""))
-	if not portrait.is_empty(): $EnemyPortrait.texture = TextCatalogService.art_texture(portrait)
-	var actions: Array = enemy_data.get("actions", [])
-	$IntentValue.text = str(actions[0].get("damage", 0)) if not actions.is_empty() else "—"
+	_presented_enemies.assign(enemy_list)
 	_render_health(player_hp_fill, player_hp_block, player_hp_num, player_data,
 		PLAYER_BAR_LEFT, PLAYER_BAR_WIDTH, &"player")
-	_render_health(enemy_hp_fill, enemy_hp_block, enemy_hp_num, enemy_data,
-		ENEMY_BAR_LEFT, ENEMY_BAR_WIDTH, &"enemy")
 	_render_buffs(player_buff_row, player_data.get("buffs", []), 1.0)
-	_render_buffs(enemy_buff_row, enemy_data.get("buffs", []), 1.0)
 	player_status.text = "玩家  HP %d/%d  格挡 %d\nBuff：%s" % [
 		int(player_data.get("health", 0)), int(player_data.get("max_health", 0)),
 		int(player_data.get("block", 0)), _format_buffs(player_data.get("buffs", [])),
 	]
-	enemy_status.text = "%s  HP %d/%d  格挡 %d\nBuff：%s" % [
-		str(enemy_data.get("name", "CHR-025")),
-		int(enemy_data.get("health", 0)), int(enemy_data.get("max_health", 0)),
-		int(enemy_data.get("block", 0)), _format_buffs(enemy_data.get("buffs", [])),
-	]
+	enemy_rack.refresh(enemy_list, _chosen_enemy_id())
+	var lines: Array[String] = []
+	for enemy: Dictionary in enemy_list:
+		_render_enemy_slot(enemy)
+		lines.append("%s HP %d/%d 格挡 %d" % [
+			str(enemy.get("name", "CHR-025")), int(enemy.get("health", 0)),
+			int(enemy.get("max_health", 0)), int(enemy.get("block", 0)),
+		])
+	enemy_status.text = "\n".join(lines)
 
 
-func _render_block_shield(side: StringName, block_layers: int) -> void:
-	# 玩家的盾挂在玩家血条右端，敌人的挂在敌人血条右端。
-	var shield: Control = player_block_shield if side == &"player" else enemy_block_shield
+## 一个敌方槽位的全部显示内容：立绘、名字、意图、血条与 buff。
+func _render_enemy_slot(enemy: Dictionary) -> void:
+	var slot := enemy_rack.slot_for(str(enemy.get("enemy_id", "")))
+	if slot == null:
+		return
+	var portrait := str(enemy.get("art_path", ""))
+	if not portrait.is_empty():
+		slot.set_portrait_texture(TextCatalogService.art_texture(portrait))
+	slot.set_frame_path(_enemy_bar_frame(str(enemy.get("grade", ""))))
+	slot.name_label.text = str(enemy.get("name", "CHR-025"))
+	var interactive := not _busy and not _animating and _battle.active and _battle.phase == BattleStateMachine.Phase.PLAYER_ACTION
+	var taunt := ""
+	for candidate: Dictionary in _presented_enemies:
+		if int(candidate.get("health", 0)) > 0 and bool(candidate.get("taunt", false)):
+			taunt = str(candidate.enemy_id)
+			break
+	slot.show_snapshot_status(enemy, not _presented_enemies.is_empty() and str(_presented_enemies[0].enemy_id) == str(enemy.enemy_id), interactive and (taunt.is_empty() or taunt == str(enemy.enemy_id)))
+	_render_health(slot.fill, slot.block_marker, slot.number_label, enemy,
+		slot.fill_left(), slot.fill_width(), &"enemy", str(enemy.get("enemy_id", "")))
+	_render_buffs(slot.buff_row, enemy.get("buffs", []), 1.0)
+
+
+func _enemy_bar_frame(grade: String) -> String:
+	return ENEMY_BAR_FRAME_PATTERN % {"普通": "小怪", "精英": "精英"}.get(grade, "boss")
+
+
+func _render_block_shield(side: StringName, block_layers: int, entity_id := "") -> void:
+	# 玩家的盾挂在玩家血条右端，始终唯一；敌方的盾归各自槽位，按实体 id 找。
+	var shield: Control = player_block_shield if side == &"player" else _enemy_shield(entity_id)
 	if shield != null:
 		shield.set("value", block_layers)
 
 
+func _enemy_shield(entity_id: String) -> Control:
+	var slot := enemy_rack.slot_for(entity_id)
+	return slot.shield if slot != null else null
+
+
 func _render_health(fill: Control, block: ColorRect, number: Label,
-		data: Dictionary, left: float, bar_width: float, side: StringName) -> void:
+		data: Dictionary, left: float, bar_width: float, side: StringName,
+		entity_id := "") -> void:
 	var health := int(data.get("health", 0))
 	var max_health := maxi(int(data.get("max_health", 1)), 1)
 	var block_layers := int(data.get("block", 0))
@@ -1665,6 +2004,10 @@ func _render_health(fill: Control, block: ColorRect, number: Label,
 	var initialized := fill.has_meta("ratio")
 	var previous := float(fill.get_meta("ratio", ratio))
 	fill.set_meta("ratio", ratio)
+	# 残影先钉在旧长度上，等正条滑完再追上来，掉的那一截就留在眼睛里。
+	var trail = HEALTH_TRAIL_SCRIPT.ensure_on(fill)
+	if trail != null:
+		trail.sync_from(fill, ratio, HEALTH_TRANSITION_TIME)
 	if initialized and is_inside_tree() and not is_equal_approx(previous, ratio):
 		var old_tween: Variant = fill.get_meta("tween") if fill.has_meta("tween") else null
 		if old_tween is Tween and old_tween.is_valid():
@@ -1678,14 +2021,34 @@ func _render_health(fill: Control, block: ColorRect, number: Label,
 		tween.tween_property(block, "offset_right",
 			minf(fill_right + BLOCK_MARKER_WIDTH, left + bar_width + slant), HEALTH_TRANSITION_TIME)
 		fill.set_meta("tween", tween)
+		if ratio < previous:
+			_flash_health_fill(fill)
 	elif not initialized:
 		# 首次直接定位；同目标刷新完全不写动画属性，包括Tween尚未开始的那一帧。
 		fill.set("ratio", ratio)
 		block.offset_left = fill_right
 		block.offset_right = minf(fill_right + BLOCK_MARKER_WIDTH, left + bar_width + slant)
 	block.visible = false
-	_render_block_shield(side, block_layers)
+	_render_block_shield(side, block_layers, entity_id)
 	number.text = "%d/%d" % [health, max_health]
+
+
+## 掉血那一拍血条自己亮一下再收回，对齐《驳回！》的 barHit。
+## 走 fill_color 而不是 modulate：modulate 只能把颜色往暗里乘，亮不起来。
+func _flash_health_fill(fill: Control) -> void:
+	if not is_inside_tree() or fill.get("fill_color") == null:
+		return
+	var base: Color = fill.get_meta("base_color", fill.get("fill_color"))
+	fill.set_meta("base_color", base)
+	var old: Variant = fill.get_meta("flash") if fill.has_meta("flash") else null
+	if old is Tween and old.is_valid():
+		old.kill()
+	var flash := create_tween()
+	flash.set_parallel(true)
+	flash.tween_property(fill, "fill_color", HEALTH_FLASH_COLOR, 0.07)
+	flash.chain().tween_property(fill, "fill_color", base, 0.31) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	fill.set_meta("flash", flash)
 
 
 func _render_buffs(row: HBoxContainer, buffs: Array, chip_scale := 1.0) -> void:
@@ -1756,6 +2119,15 @@ func _build_buff_tip() -> void:
 func _show_buff_tip(anchor: Control, text: String) -> void:
 	if _buff_tip == null or not is_instance_valid(anchor):
 		return
+	# 提示文字也属于来源实体；后排状态说明不能借全局浮层越过主怪。
+	var layer_z := 80
+	var source: Node = anchor
+	while source != null and source != self:
+		if source is EnemySlot:
+			layer_z = source.feedback_z() + 1
+			break
+		source = source.get_parent()
+	_buff_tip.z_index = layer_z
 	_buff_tip.show_for(anchor, text)
 
 
@@ -1837,6 +2209,7 @@ func _make_card_slot(card: Dictionary, card_scale: float, clickable: bool,
 	var data := _card_data(String(card.get("card_id", "")))
 	if data != null:
 		view.set_card(data)
+	view.set_enchantments(card)
 	view.apply_compact_layout(card_scale, title_px, body_px)
 	slot.add_child(view)
 	slot.tooltip_text = CardEnchantments.describe(card)
@@ -1854,6 +2227,28 @@ func _make_card_slot(card: Dictionary, card_scale: float, clickable: bool,
 		button.mouse_exited.connect(_on_hand_card_hover_changed.bind(slot, view, false))
 		slot.add_child(button)
 	return slot
+
+
+## 抽进来的牌从抽牌堆中心飞到自己的手牌位，一张一张到手上。
+## 手牌每轮都会整块重建（打牌、弃牌同样如此），所以只对"这一轮新出现的牌"播放；
+## 已经在手上的牌直接落位，不跟着重飞一遍。
+func _play_deal_animation(slots: Array[Control]) -> void:
+	var current_ids := {}
+	var drawn: Array[Control] = []
+	for slot in slots:
+		var instance_id := str(slot.get_meta("instance_id"))
+		current_ids[instance_id] = true
+		if not _hand_ids_previous.has(instance_id):
+			drawn.append(slot)
+	_hand_ids_previous = current_ids
+	var pile := get_node_or_null("DrawPile") as Control
+	if drawn.is_empty() or pile == null or not pile.is_inside_tree():
+		return
+	# 抽牌堆中心换算到手牌容器的局部坐标，手牌位就在这套坐标里。
+	var origin: Vector2 = hand_cards.get_global_transform_with_canvas().affine_inverse() \
+		* (pile.get_global_transform_with_canvas() * (pile.size * 0.5))
+	for index in drawn.size():
+		HAND_DEAL_ANIM.play(drawn[index], origin, index)
 
 
 func _layout_hand(slots: Array[Control]) -> void:
@@ -1874,8 +2269,8 @@ func _layout_hand(slots: Array[Control]) -> void:
 	hand_cards.size = Vector2(row_width, HAND_AREA_HEIGHT)
 	var start := (row_width - total) * 0.5
 	var center := (count - 1) * 0.5
-	# 为边缘扇形下沉和旋转留出底部空间，避免文字被视口裁掉。
-	var base_y := HAND_AREA_HEIGHT - HAND_CARD_SIZE.y - 44.0
+	# 卡底边贴在 HandScroll 底边，边缘牌的扇形下沉由视口裁掉，与作者原版战斗 UI 一致。
+	var base_y := HAND_AREA_HEIGHT - HAND_CARD_SIZE.y
 	for index in count:
 		var slot := slots[index]
 		slot.size = HAND_CARD_SIZE
@@ -1943,10 +2338,6 @@ func _apply_hand_fan(hovered_slot: Control) -> void:
 				3: magnitude = fan_offset_short
 			if magnitude > 0.0:
 				offset = magnitude * factor * (1.0 if index > hovered_index else -1.0)
-			# 牌多且重叠时也必须给1.5倍悬停卡让出完整空间，不能只沿用直排时的外移幅度。
-			var step := minf(HAND_CARD_SIZE.x + HAND_GAP, (HAND_MAX_WIDTH - HAND_CARD_SIZE.x) / maxf(count - 1, 1.0))
-			var required := maxf(0.0, HAND_CARD_SIZE.x * (1.0 + (hand_hover_multiplier - 1.0) * 0.5) + HAND_GAP + 24.0 - absi(index - hovered_index) * step)
-			offset = maxf(absf(offset), required) * (1.0 if index > hovered_index else -1.0)
 		tween.tween_property(slot, "position:x", base_x + offset, duration)
 
 
@@ -2113,7 +2504,7 @@ func _pointer_target(instance_id: String) -> Vector2:
 	return Vector2(-400.0, -400.0)
 
 
-func _place_pointer(instance_id: String, animated: bool) -> void:
+func _place_pointer(instance_id: String, animated: bool, from_relic := false) -> void:
 	if _settle_pointer == null:
 		return
 	if instance_id.is_empty():
@@ -2126,11 +2517,13 @@ func _place_pointer(instance_id: String, animated: bool) -> void:
 		return
 	if _pointer_tween != null and _pointer_tween.is_valid():
 		_pointer_tween.kill()
-	var duration := clampf(_settle_pointer.position.distance_to(target)
+	var glide := clampf(_settle_pointer.position.distance_to(target)
 		/ POINTER_GLIDE_SPEED, POINTER_GLIDE_MIN, POINTER_GLIDE_MAX)
+	if _pacer != null:
+		glide = _pacer.wait_for(glide, from_relic)
 	_pointer_tween = create_tween()
 	_pointer_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	_pointer_tween.tween_property(_settle_pointer, "position", target, duration)
+	_pointer_tween.tween_property(_settle_pointer, "position", target, glide)
 	await _pointer_tween.finished
 
 
@@ -2152,14 +2545,14 @@ func _refresh_pointer_marks(instance_id: String) -> void:
 
 
 ## 结算一张牌的三拍：指针滑过去 → 左侧大图顿一下 → 再放数值与特效。
-func _move_pointer_to(instance_id: String) -> void:
+func _move_pointer_to(instance_id: String, from_relic := false) -> void:
 	_display_pointer_id = instance_id
 	_refresh_pointer_marks(instance_id)
 	await _ensure_play_visible(instance_id)
-	await _place_pointer(instance_id, true)
+	await _place_pointer(instance_id, true, from_relic)
 	if instance_id == _display_pointer_id:
 		_refresh_resolve_preview(instance_id)
-		await get_tree().create_timer(PREVIEW_HOLD).timeout
+		await _wait_resolution(PREVIEW_HOLD, from_relic)
 
 
 func _build_resolve_preview() -> void:
@@ -2200,13 +2593,14 @@ func _build_peek() -> void:
 	_peek_layer.add_child(_peek_view)
 
 
-func _peek_card(card_id: String) -> void:
+func _peek_card(card_id: String, card: Dictionary = {}) -> void:
 	if card_id.is_empty():
 		return
 	var data := _card_data(card_id)
 	if data == null:
 		return
 	_peek_view.set_card(data)
+	_peek_view.set_enchantments(card)
 	var peek_px := CardView.text_px_for(PEEK_CARD_SCALE)
 	_peek_view.apply_compact_layout(PEEK_CARD_SCALE, peek_px.x, peek_px.y)
 	_peek_layer.visible = true
@@ -2227,7 +2621,7 @@ func _refresh_resolve_preview(instance_id: String) -> void:
 	if card.is_empty() or not _busy:
 		_resolve_preview.visible = false
 		return
-	_show_resolve_preview(String(card.get("card_id", "")))
+	_show_resolve_preview(String(card.get("card_id", "")), card)
 
 
 ## 把某张卡按结算大图的规格摆到左侧。结算指针与出牌列悬停共用这一份。
@@ -2374,9 +2768,8 @@ static func _find_card(cards: Array[Dictionary], instance_id: String) -> Diction
 
 func _setup_monster_battle_text() -> void:
 	# 背景/怪物 < 台词 < 所有其他 UI；保留现有节点路径及输入关系。
-	$Background.z_index = -4
-	$BackgroundDim.z_index = -3
-	$EnemyPortrait.z_index = -2
+	$Background.z_index = EnemySlot.BACKGROUND_Z
+	$BackgroundDim.z_index = EnemySlot.BACKGROUND_DIM_Z
 	_monster_text = MonsterBattleText.new()
 	_monster_text.name = "MonsterBattleText"
 	add_child(_monster_text)
@@ -2400,7 +2793,7 @@ func _monster_text_context() -> Dictionary:
 	var blocked: Array[Rect2] = []
 	for child: Node in get_children():
 		if not child is Control or not child.is_visible_in_tree() or child == _monster_text \
-				or child.name in [&"Background", &"BackgroundDim", &"EnemyPortrait", &"RunMenuOverlay", &"PeekLayer", &"CombatFeedback", &"BuffTip"]:
+				or child.name in [&"Background", &"BackgroundDim", &"EnemyRack", &"RunMenuOverlay", &"PeekLayer", &"CombatFeedback", &"BuffTip"]:
 			continue
 		var rect: Rect2 = child.get_rect()
 		# 手持卡最大1.5倍及弹簧过冲的活动区域，一直保留而非仅避开当前小卡面。
@@ -2414,13 +2807,6 @@ func _monster_text_context() -> Dictionary:
 			blocked.append(rect.grow(10.0))
 	return {"area": visible_area, "blockers": blocked,
 		"suspended": pile_modal.visible or _run_menu.is_open() or _peek_layer.visible}
-
-
-func _return_to_relic_page() -> void:
-	if not _busy:
-		var error := SceneTransition.change_scene_to_file("res://ui/relics/relic_test_scene.tscn")
-		if error != OK:
-			hint_label.text = "打开典籍页面失败：%d" % error
 
 
 func _restart_battle() -> void:
@@ -2591,7 +2977,7 @@ func _handle_menu_key(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-func _show_resolve_preview(card_id: String) -> void:
+func _show_resolve_preview(card_id: String, card: Dictionary = {}) -> void:
 	if _resolve_preview == null or _resolve_view == null:
 		return
 	var data := _card_data(card_id)
@@ -2603,6 +2989,7 @@ func _show_resolve_preview(card_id: String) -> void:
 		_resolve_view.set_card(data)
 		var px := CardView.text_px_for(RESOLVE_PREVIEW_SCALE)
 		_resolve_view.apply_compact_layout(RESOLVE_PREVIEW_SCALE, px.x, px.y)
+	_resolve_view.set_enchantments(card)
 	_resolve_preview.show()
 
 
@@ -2622,20 +3009,7 @@ func _update_drag_preview(at: Vector2) -> void:
 	if card.is_empty():
 		card = _find_hand_card(above_id)
 	if not card.is_empty():
-		_show_resolve_preview(str(card.get("card_id", "")))
-
-
-func _refresh_damage_preview() -> void:
-	if damage_preview == null or _battle == null:
-		return
-	var cards: Array[Dictionary] = []
-	for row: Control in play_cards.get_children():
-		var card := _find_selected_card(str(row.get_meta("instance_id", "")))
-		if not card.is_empty() and not bool(card.get("slot_empty", false)):
-			cards.append(card)
-	var result := BattleDirectPreview.calculate(_battle, cards, _resolver.card_catalog)
-	damage_preview.show_values(int(result.damage), int(result.block), false)
-	damage_preview.visible = not _busy and not cards.is_empty()
+		_show_resolve_preview(str(card.get("card_id", "")), card)
 
 
 func _build_battle_actions() -> void:
@@ -2652,16 +3026,7 @@ func _build_battle_actions() -> void:
 		if error != OK: hint_label.text = "本回合没有可用的手动弃牌机会。"
 		_queue_refresh(), CONNECT_DEFERRED)
 	add_child(_manual_discard_button)
-	var scroll := ScrollContainer.new()
-	scroll.name = "EnemyTargetSelector"
-	scroll.position = Vector2(670, 490)
-	scroll.size = Vector2(650, 145)
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	add_child(scroll)
-	_enemy_selector = HBoxContainer.new()
-	_enemy_selector.add_theme_constant_override("separation", 12)
-	scroll.add_child(_enemy_selector)
-	_refresh_enemy_selector()
+	_refresh_battle_actions()
 
 
 func _chosen_enemy_id() -> String:
@@ -2675,33 +3040,25 @@ func _chosen_enemy_id() -> String:
 	return str(_battle.enemies[0].enemy_id) if not _battle.enemies.is_empty() else ""
 
 
-func _refresh_enemy_selector() -> void:
-	if _battle == null or not is_instance_valid(_enemy_selector): return
+## 底部动作栏只剩手动弃牌按钮。切换目标改为直接点战场上的敌人；用药水改为点击背包里的
+## 药水原地弹选项，两者都不再占用这里的按钮位。
+func _refresh_battle_actions() -> void:
+	if _battle == null or not is_instance_valid(_manual_discard_button): return
 	_manual_discard_button.text = "弃牌机会 %d · 手牌上限 %d" % [_relics.manual_discard_count() if _relics != null else 0, int(_battle.player.get("hand_limit", 10))]
 	_manual_discard_button.disabled = _busy or _relics == null or _relics.manual_discard_count() <= 0
-	for child: Node in _enemy_selector.get_children(): _enemy_selector.remove_child(child); child.queue_free()
-	if _busy: return # 不提前泄露尚未播放的召唤/血量快照。
-	for enemy: Dictionary in _battle.enemies:
-		if int(enemy.health) <= 0 or _battle.enemies.size() < 2: continue
-		var button := Button.new()
-		CommonUiSkin.style_button(button, Vector4(8, 6, 8, 6))
-		button.custom_minimum_size = Vector2(185, 115)
-		button.icon = TextCatalogService.art_texture(str(enemy.get("art_path", "")))
-		button.expand_icon = true
-		button.add_theme_constant_override("icon_max_width", 68)
-		button.text = ("▶ " if str(enemy.enemy_id) == _chosen_enemy_id() else "") + str(enemy.name) + "\n%d/%d%s" % [enemy.health, enemy.max_health, " · 嘲讽" if bool(enemy.get("taunt", false)) else ""]
-		button.pressed.connect(func(): _target_enemy_id = str(enemy.enemy_id); _queue_refresh(), CONNECT_DEFERRED)
-		_enemy_selector.add_child(button)
-	var run := SaveGateway.current_run()
-	if run != null:
-		for item: Dictionary in _battle.player.get("potions", []):
-			if str(item.item_id) in _battle.player.get("used_potions", []): continue
-			var button := Button.new()
-			CommonUiSkin.style_button(button, Vector4(8, 6, 8, 6))
-			button.text = "使用药水\n" + str(RunRandomEvents.POTIONS[int(item.potion)])
-			button.custom_minimum_size = Vector2(180, 90)
-			button.pressed.connect(_use_potion.bind(str(item.item_id)), CONNECT_DEFERRED)
-			_enemy_selector.add_child(button)
+
+
+## 把这一局的药水注进战斗快照：规则侧只认 battle.player["potions"]，没有就等于点了没反应。
+## 生产路径由 EncounterFlow 开局前注入，这里兜住战斗测试场景。
+func _sync_battle_potions() -> void:
+	if _battle == null:
+		return
+	var run := _test_run if _test_run != null else SaveGateway.current_run()
+	if run == null:
+		return
+	_battle.player["potions"] = run.items.filter(
+		func(value: Variant) -> bool: return value is Dictionary and value.get("kind") == "potion"
+	).duplicate(true)
 
 
 func _use_potion(item_id: String) -> void:
@@ -2741,6 +3098,8 @@ func _show_battle_choice(mode: String, _count: int, candidates: Array) -> void:
 	panel.add_child(column)
 	var label := Label.new()
 	label.text = {"discard": "选择一张牌弃置（不会补抽）", "nullify": "选择一张牌无效化：本场战斗失去全部效果", "copy": "选择一张手牌复制"}.get(mode, "选择卡牌")
+	if mode.begins_with("enchantment_"):
+		label.text = "附魔：可弃置一张手牌，本次%s +50%%；也可跳过" % ("伤害" if mode == "enchantment_20" else "格挡")
 	label.add_theme_font_size_override("font_size", 26)
 	column.add_child(label)
 	var scroll := ScrollContainer.new()
@@ -2754,6 +3113,7 @@ func _show_battle_choice(mode: String, _count: int, candidates: Array) -> void:
 		var button := Button.new()
 		CommonUiSkin.style_button(button)
 		button.text = "%s · %s" % [data.card_name if data != null else str(card.card_id), data.description if data != null else "暂无"]
+		if card.has("choice_text"): button.text = str(card.choice_text)
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.custom_minimum_size.y = 60
 		button.add_theme_font_size_override("font_size", 21)

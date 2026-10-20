@@ -8,6 +8,7 @@ const Envelope = preload("res://systems/map/relief_2d/scene_envelope.gd")
 const FogVeil = preload("res://systems/map/relief_2d/fog_veil_2d.gd")
 const Discovery = preload("res://systems/map/relief_2d/discovery_presentations.gd")
 const NodeHint = preload("res://systems/map/relief_2d/node_interaction_hint.gd")
+const MistVeil = preload("res://systems/map/relief_2d/node_mist_veil.gd")
 const SETTINGS := "res://data/config/relief_2d/exploration.json"
 const SUN := "res://data/config/relief_2d/sunlight.json"
 const ATMOSPHERE := "res://data/config/relief_2d/atmosphere.json"
@@ -20,12 +21,16 @@ var _atmosphere_settings: Dictionary = {}
 var _envelope: Dictionary = {}
 var _fog_veil: Node2D
 var _node_hint: Node2D
+var _node_mist: Node2D
 var _animated_plane := Vector2.ZERO
+var _actor_facing_intent := Vector2.ZERO
 var _discovery_prepare_queued := false
 var _prepare_error := ""
 var _entry_started_usec := 0
 var entry_ready_ms := -1.0
 var _binding_presentation := false
+## 已经放过焦点渐亮的层标识，同一层重刷不重放。
+var _focus_identity := ""
 
 func _ready() -> void:
 	_entry_started_usec = Time.get_ticks_usec()
@@ -44,7 +49,7 @@ func _run_settings_path() -> String:
 	return SETTINGS
 
 func _create_map_view() -> Node2D:
-	map_scale = 6.5
+	map_scale = clampf(float(_height_settings.get("map_scale", 7.0)), 0.5, 16.0)
 	speed_multiplier = 2.0
 	var run := SaveGateway.current_run()
 	var identity := run.run_id if run != null else SeedService.get_main_seed()
@@ -66,6 +71,11 @@ func _create_map_view() -> Node2D:
 		_node_hint.name = "NodeInteractionHint"
 		view.add_child(_node_hint)
 	_node_hint.clear()
+	_node_mist = view.get_node_or_null("NodeMistVeil")
+	if _node_mist == null:
+		_node_mist = MistVeil.new()
+		_node_mist.name = "NodeMistVeil"
+		view.add_child(_node_mist)
 	view.presentation_committed.connect(_presentation_committed)
 	return view
 
@@ -105,6 +115,10 @@ func _prepare_presentation(candidate: RefCounted) -> bool:
 		return false
 	var snapshot: Dictionary = candidate.get_snapshot()
 	var config := _height_config(candidate.floor_index)
+	# 顶端是固定地图：地形与外围也固定，货架随机仍由独立商店流负责。
+	if candidate.floor_index == 4:
+		noise = 4042026
+		scenery = 4042027
 	var identity: String = candidate.fingerprint + "|" + JSON.stringify(config) + "|" + JSON.stringify(snapshot.get("height_recipe", {}))
 	var layer: Dictionary = MapPresentation.height_layer if identity == MapPresentation.height_identity else {}
 	var surroundings: Dictionary = MapPresentation.envelope if not layer.is_empty() else {}
@@ -138,10 +152,15 @@ func _plane_to_display(point: Vector2) -> Vector2:
 
 func _place_actor(point: Vector2) -> void:
 	_player.position = _plane_to_display(point)
-	_view.update_actor(point, support.height_at(point))
+	# Publish position and animation together once at the end of advance_actor.
+	_view.update_actor(point, support.height_at(point), true)
 
 func _direction_to_plane(direction: Vector2) -> Vector2:
 	return _view.unproject_plane(direction).normalized()
+
+func _advance_motion(direction: Vector2, delta: float) -> void:
+	_actor_facing_intent = _view.project_plane(direction) if is_instance_valid(_view) else Vector2.ZERO
+	super._advance_motion(direction, delta)
 
 func _presentation_layer() -> Dictionary:
 	var layer := height_layer.duplicate()
@@ -153,6 +172,7 @@ func _presentation_layer() -> Dictionary:
 	return layer
 
 func _sync_view() -> void:
+	_fade_focus_for_entry()
 	if is_instance_valid(_node_hint): _node_hint.clear()
 	var data: Dictionary = session.get_view()
 	var layer := _presentation_layer().duplicate()
@@ -172,6 +192,7 @@ func _sync_view() -> void:
 	_view.set_wall_cutaway_context(session.map_id, session.seed, session.floor_index, session.reachable(), true, session.collision_boundaries())
 	_view.set_layer(layer, session.known, session.completed, _binding_presentation)
 	_view.set_node_presentations(data.nodes)
+	_sync_node_mist(data.nodes)
 	if not _view.is_rebuilding():
 		support.set_visibility(session.known, true)
 		_sync_veil()
@@ -200,14 +221,39 @@ func _update_selection() -> void:
 	_node_hint.set_gate(node, anchor, _player.position, _camera.zoom.x)
 
 func _sync_actor(emit_notifications: bool = true) -> void:
+	_actor_facing_intent = Vector2.ZERO
 	super._sync_actor(emit_notifications)
 	if not MapPresentation.owns(self): return
 	_update_render_cache()
 	_view.flush_dynamic()
+	_sync_node_mist(session.get_view().nodes)
 	if is_instance_valid(_fog_veil):
 		_fog_veil.set_view(_view._cache_view)
 		_fog_veil.set_focus(_view.project_plane(_view._actor_plane, _view._actor_height + _view.ACTOR_HEIGHT * 0.32), 0.6)
 	MapPresentation.present(self)
+
+
+func _after_fast_travel() -> void:
+	# A discontinuous move is not walking: reset animation displacement along
+	# with the flat host's render path, while normal support supplies elevation.
+	_animated_plane = session.actor_plane
+	_actor_facing_intent = Vector2.ZERO
+	_view.advance_actor(Vector2.ZERO, 0.0, Vector2.ZERO)
+
+
+func _fast_travel_ready() -> bool:
+	return is_map_ready()
+
+func _fast_travel_portrait() -> Dictionary:
+	var animation = _view.actor_animation
+	var feet: Vector2 = _view.project_plane(session.actor_plane, support.height_at(session.actor_plane))
+	var transform := _view.get_global_transform_with_canvas()
+	var rect: Rect2 = animation.draw_rect(feet)
+	var body: Rect2 = animation.body_rect(feet)
+	return {"feet": transform * feet,
+		"rect": Rect2(transform * rect.position, rect.size * transform.get_scale().abs()),
+		"body": Rect2(transform * body.position, body.size * transform.get_scale().abs()),
+		"texture": animation.textures.get(str(animation.frame().get("path", "")))}
 
 func _queue_discovery() -> void:
 	if _discovery_prepare_queued: return
@@ -230,6 +276,14 @@ func _prepare_discovery() -> void:
 		_prepare_error = "本层显示准备失败，请返回菜单后重试"
 	if not _prepare_error.is_empty(): push_error(_prepare_error)
 
+## 新层第一次出图时把角色光从全暗拉起；同一层重刷不重放。
+func _fade_focus_for_entry() -> void:
+	if not is_instance_valid(_fog_veil): return
+	var identity := "%s:%d" % [session.seed, session.floor_index]
+	if identity == _focus_identity: return
+	_focus_identity = identity
+	_fog_veil.fade_focus_in()
+
 func _sync_veil() -> void:
 	if not is_instance_valid(_fog_veil) or not _fog_veil.is_inside_tree(): return
 	var revision := "%s:%s:%s" % [session.seed, session.floor_index, hash([_view._known, _view._source_snapshot])]
@@ -240,11 +294,30 @@ func _sync_veil() -> void:
 func _presentation_committed() -> void:
 	if not MapPresentation.owns(self): return
 	_view.set_node_presentations(session.get_view().nodes)
+	_sync_node_mist(session.get_view().nodes)
 	support.set_visibility(session.known, true)
 	_sync_actor(false)
 	_sync_veil()
 	_update_camera()
 	_queue_discovery()
+
+## 怪物节点底座红雾：只取未完成的战斗、精英、首领，底座锚点与节点提示同源。
+func _sync_node_mist(nodes: Array) -> void:
+	if not is_instance_valid(_node_mist): return
+	var bases: Array = []
+	for node: Dictionary in nodes:
+		if not bool(node.get("known", false)) or bool(node.get("completed", false)): continue
+		if not (str(node.get("type", "")) in ["battle", "elite", "boss"]): continue
+		var center := Vector2.ZERO
+		var width := 0.0
+		for batch in _view._node_batches.get(node.id, []):
+			for face: Dictionary in batch.faces:
+				if face.get("node_marker", false):
+					center = Vector2(face.bounds.get_center().x, face.bounds.end.y)
+					width = face.bounds.size.x
+		if width <= 0.0: continue
+		bases.append({"center": center, "width": width, "phase": float(abs(hash(node.id)) % 628) / 100.0})
+	_node_mist.set_bases(bases)
 
 func is_map_ready() -> bool:
 	return not height_layer.is_empty() and _prepare_error.is_empty() and not _discovery_prepare_queued and is_instance_valid(_view) and not _view.is_rebuilding() and not _view.is_presentation_cache_preparing()
@@ -294,7 +367,7 @@ func _process(delta: float) -> void:
 	super._process(delta)
 	if not is_instance_valid(_view): return
 	_update_render_cache()
-	_view.advance_actor(_render_actor_plane - _animated_plane, delta)
+	_view.advance_actor(_render_actor_plane - _animated_plane, delta, _actor_facing_intent)
 	_animated_plane = _render_actor_plane
 	if is_instance_valid(_fog_veil):
 		_fog_veil.set_view(_view._cache_view)

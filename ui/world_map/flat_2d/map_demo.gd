@@ -8,12 +8,21 @@ const MiniMap = preload("res://ui/world_map/flat_2d/map_minimap.gd")
 const RunPanel = preload("res://ui/hud/run_status_panel.gd")
 const RunMenu = preload("res://ui/hud/run_menu_overlay.gd")
 const MapViewerScript = preload("res://ui/world_map/map_viewer.gd")
+const FastTravel = preload("res://systems/map/flat_2d/map_fast_travel.gd")
+const TravelEffect = preload("res://ui/world_map/flat_2d/map_fast_travel_effect.gd")
+const StepDust = preload("res://systems/map/flat_2d/actor_step_dust.gd")
+const EntryFade = preload("res://ui/world_map/flat_2d/map_entry_fade.gd")
 const MAP_PATH := "res://data/config/flat_2d/demo_map.json"
 const SETTINGS_PATH := "res://data/config/flat_2d/demo_settings.json"
 const LABELS := {"battle": "普通战斗", "elite": "精英战斗", "shop": "商店", "boss": "Boss", "event": "随机事件", "chest": "宝箱", "pile": "残堆"}
 const WALK_ACCELERATION_DELAY := 2.0
 const WALK_ACCELERATION_DURATION := 1.0
 const WALK_ACCELERATION_MAX := 1.5
+## 起步与停步的速度变化率，平面单位/秒²。按基础速度 4.2 算，起步约 0.10 秒、停步约 0.12 秒。
+const WALK_START_ACCEL := 42.0
+const WALK_STOP_ACCEL := 34.0
+## 顶着障碍还按着方向时，先给这么久的宽限，再清零加速进度。
+const WALK_BLOCKED_GRACE := 0.2
 
 @export var demo_interactions_enabled := true
 var session = Session.new()
@@ -23,6 +32,10 @@ var move_speed := 2.1
 ## User-adjustable base speed; the continuous-walk bonus never changes it.
 var speed_multiplier := 2.0
 var _continuous_walk_seconds := 0.0
+var _velocity := Vector2.ZERO
+## 移动中按住加速键，直接吃满连续行走的加速档。
+var _sprint_held := false
+var _blocked_seconds := 0.0
 var paused := false
 var _map_snapshot: Dictionary = {}
 var _view: Node2D
@@ -54,10 +67,21 @@ var _hud_root: Control
 ## 右下信息面板的内容列：子类（跑图落点）往这里加行。
 var _info_column: VBoxContainer
 var _run_panel: RunStatusPanel
+## 状态列内容签名，用来判断背包/血量/资源有没有被别的流程改动。
+var _panel_signature := ""
 var _run_menu: RunMenuOverlay
 var _menu_paused_before := false
 var _resume_after_focus := false
 var _menu_map: Control
+## 脚步尘：世界空间的角色表现，跟 _player.position 同一套显示坐标。
+var _step_dust: Node2D
+## 原地重建地图的黑场节拍，见 load_map_with_beat。
+var _entry_fade: CanvasLayer
+var _dust_last_position := Vector2.ZERO
+var _travel_effect: CanvasLayer
+var _fast_travel_busy := false
+var _travel_failure := ""
+var _travel_return_paused := false
 
 class CircleActor extends Node2D:
 	var radius := 10.8
@@ -105,9 +129,18 @@ func _ready() -> void:
 	_camera.drag_vertical_enabled = false
 	_player.add_child(_camera)
 	_camera.make_current()
+	_step_dust = StepDust.new()
+	add_child(_step_dust)
 	_build_hud()
+	_entry_fade = EntryFade.new()
+	_entry_fade.name = "MapEntryFade"
+	add_child(_entry_fade)
+	_travel_effect = TravelEffect.new()
+	_travel_effect.name = "MapTravelEffect"
+	add_child(_travel_effect)
+	_travel_effect.finished.connect(_on_fast_travel_finished)
 	_bus = get_node("/root/MapEvents")
-	_bus.map_load_requested.connect(load_map)
+	_bus.map_load_requested.connect(_on_map_load_requested)
 	_bus.node_result_submitted.connect(submit_node_result)
 	get_viewport().size_changed.connect(_update_camera)
 	var data := _initial_snapshot()
@@ -174,17 +207,24 @@ func _on_minimap_input(event: InputEvent) -> void:
 
 
 func _open_run_menu(page: int = 1) -> void:
-	if _run_menu == null:
+	if _run_menu == null or _fast_travel_busy:
 		return
 	if _run_panel != null and _run_panel._relic_book != null:
 		_run_panel._relic_book._hide_tip()
 	if _menu_map == null:
-		# 地图页里是真正的 MapView 渲染：滚轮缩放、拖动平移，角色不动。
+		# 查看器只发送节点请求；通行校验和传送由当前地图宿主处理。
 		# 先挂进浮层再喂数据，查看器内部节点在 _ready 里才建好。
 		_menu_map = MapViewerScript.new()
 		_run_menu.set_map_viewer(_menu_map)
+		_menu_map.fast_travel_requested.connect(_on_map_fast_travel)
 	# 每次打开都重新喂一份"已探索视图"：地形、迷雾、已解锁节点和小地图同源。
 	_menu_map.set_map(session.get_view(), cell_radius_px)
+	var destinations: Dictionary = FastTravel.options(session)
+	if not _fast_travel_ready():
+		for destination: Dictionary in destinations.values():
+			destination.ok = false
+			destination.reason = "presentation_pending"
+	_menu_map.set_travel_options(session.map_id, session.fingerprint, destinations)
 	_update_minimap()
 	if _menu_map != null and is_instance_valid(_menu_map):
 		_menu_map.set_actor(_render_actor_plane)
@@ -197,18 +237,123 @@ func _open_run_menu(page: int = 1) -> void:
 
 
 func _on_run_menu_closed() -> void:
-	_set_paused(_menu_paused_before)
+	if not _fast_travel_busy: _set_paused(_menu_paused_before)
+
+
+func _on_map_fast_travel(node_id: String, map_id: String, fingerprint: String) -> void:
+	if _fast_travel_busy: return
+	if not _run_menu.is_open() or _run_menu.current_page() != 0 or _dialog.visible:
+		_menu_map.show_feedback("请在地图页选择目的地")
+		return
+	if not _fast_travel_ready():
+		_menu_map.show_feedback("本层显示准备中，请稍候")
+		return
+	var preview: Dictionary = FastTravel.preview(session, node_id, map_id, fingerprint)
+	if not preview.ok:
+		_menu_map.show_feedback(MapViewerScript.reason_text(preview))
+		return
+	var point := Vector2(float(preview.actor_plane[0]), float(preview.actor_plane[1]))
+	var direction := _plane_to_display(point) - _plane_to_display(session.actor_plane)
+	_fast_travel_busy = true
+	_travel_failure = ""
+	_travel_return_paused = _menu_paused_before
+	_velocity = Vector2.ZERO
+	_sprint_held = false
+	_mouse_steering_held = false
+	_reset_walk_acceleration()
+	_run_menu.close()
+	if not _travel_effect.play(_fast_travel_portrait(), direction,
+			_commit_fast_travel.bind(node_id, map_id, fingerprint, session), _fast_travel_portrait):
+		_travel_failure = "传送效果未就绪，请重试"
+		_on_fast_travel_finished(false)
+
+
+func _commit_fast_travel(node_id: String, map_id: String, fingerprint: String, active) -> bool:
+	if session != active or not _fast_travel_ready():
+		_travel_failure = "地图状态已改变，请重新选择"
+		return false
+	var previous: Dictionary = session.capture_state()
+	var previous_path: Array[Vector2] = session.motion_path.duplicate()
+	var result: Dictionary = FastTravel.travel(session, node_id, map_id, fingerprint)
+	if not result.ok:
+		_travel_failure = MapViewerScript.reason_text(result)
+		return false
+	# Save before publishing the new position to the renderer. An IO failure
+	# leaves both the visible actor and the session at their original location.
+	if _persist_fast_travel(previous) != OK:
+		session.actor_plane = Vector2(float(previous.actor_plane[0]), float(previous.actor_plane[1]))
+		session.motion_path = previous_path
+		_travel_failure = "保存失败，仍停留原位置；请重试"
+		return false
+	_mouse_steering_held = false
+	_reset_walk_acceleration()
+	_selected = node_id if node_id in session.nearby_nodes() else ""
+	_manual_selection = not _selected.is_empty()
+	_selection_origin = session.actor_plane
+	_sync_actor(false)
+	_after_fast_travel()
+	_update_camera()
+	_bus.player_cell_entered.emit(active.map_id, _last_cell)
+	if session != active:
+		return false
+	_emit_state()
+	if session != active:
+		return false
+	return true
+
+
+func _on_fast_travel_finished(success: bool) -> void:
+	if not _fast_travel_busy: return
+	_fast_travel_busy = false
+	_set_paused(_travel_return_paused or not get_window().has_focus())
+	if not get_window().has_focus(): _resume_after_focus = not _travel_return_paused
+	if success:
+		_show_toast("已到达节点前方 · E 交互")
+	else:
+		_open_run_menu(0)
+		_menu_paused_before = _travel_return_paused
+		_menu_map.show_feedback(_travel_failure)
+
+
+func _cancel_fast_travel() -> void:
+	_fast_travel_busy = false
+	if is_instance_valid(_travel_effect): _travel_effect.cancel()
+
+
+func _fast_travel_portrait() -> Dictionary:
+	var feet := _player.get_global_transform_with_canvas().origin
+	var radius := Session.FOOT_RADIUS * cell_radius_px * _camera.zoom.x
+	return {"feet": feet, "body": Rect2(feet - Vector2.ONE * radius, Vector2.ONE * radius * 2.0)}
+
+
+## Formal hosts persist through their existing save gateway; flat demos remain
+## usable without a run/save dependency. No schema or random stream is added.
+func _persist_fast_travel(_previous_state: Dictionary) -> Error:
+	return OK
+
+
+func _fast_travel_ready() -> bool:
+	return not session.map_id.is_empty()
+
+
+func _after_fast_travel() -> void:
+	pass
 
 
 func _refresh_run_panel() -> void:
 	if _run_panel == null:
 		return
-	# 血量取跑图状态；还没开局时先用占位值。
+	# 血量、银币、万灵药取跑图状态；还没开局时先用占位值。
 	if GlobalState != null and GlobalState.run_active and GlobalState.current_run != null:
 		var run: RunStateMachine = GlobalState.current_run
 		_run_panel.set_health(run.health, run.max_health, 0, [])
+		RunRewards.ensure_state(run)
+		_run_panel.set_resources(run.gold, int(run.inventory_state.elixir))
+		_run_panel.set_items(run.items)
 	else:
 		_run_panel.set_health(60, 100, 0, [])
+		_run_panel.set_resources(0, 0)
+		_run_panel.set_items([])
 	# 典籍残片与战斗界面读同一个存档文件。
 	var catalog := RelicCatalog.load_definitions()
 	var board := RelicBoard.new()
@@ -221,6 +366,26 @@ func _refresh_run_panel() -> void:
 	if error != OK and error != ERR_FILE_NOT_FOUND:
 		push_warning("地图界面读取典籍配置失败：%d" % error)
 	_run_panel.set_relic_board(catalog, board)
+	_panel_signature = _run_panel_signature()
+
+
+## 背包、血量、银币、万灵药会在拾取、事件、商店、战后结算里被别的流程直接改动，
+## 面板只在开局与典籍变动时刷过，中途入包的东西看不到。按签名变化补刷，比每帧重建便宜。
+func _sync_run_panel() -> void:
+	if _run_panel == null or _run_panel_signature() == _panel_signature:
+		return
+	_refresh_run_panel()
+
+
+func _run_panel_signature() -> String:
+	if GlobalState == null or not GlobalState.run_active or GlobalState.current_run == null:
+		return "idle"
+	var run: RunStateMachine = GlobalState.current_run
+	var ids := PackedStringArray()
+	for item: Variant in run.items:
+		ids.append(str((item as Dictionary).get("item_id", "")) if item is Dictionary else "")
+	return "%d|%d|%d|%d|%s" % [run.health, run.max_health, run.gold,
+		int(run.inventory_state.elixir), ",".join(ids)]
 
 
 func _initial_snapshot() -> Dictionary:
@@ -231,7 +396,7 @@ func _initial_state() -> Dictionary:
 	return {}
 
 func _register_input() -> void:
-	var actions := {"map2d_left": [KEY_A, KEY_LEFT], "map2d_right": [KEY_D, KEY_RIGHT], "map2d_up": [KEY_W, KEY_UP], "map2d_down": [KEY_S, KEY_DOWN], "map2d_interact": [KEY_E], "map2d_pause": [KEY_ESCAPE], "map2d_cycle": [KEY_Q]}
+	var actions := {"map2d_left": [KEY_A, KEY_LEFT], "map2d_right": [KEY_D, KEY_RIGHT], "map2d_up": [KEY_W, KEY_UP], "map2d_down": [KEY_S, KEY_DOWN], "map2d_interact": [KEY_E], "map2d_pause": [KEY_ESCAPE], "map2d_cycle": [KEY_Q], "map2d_sprint": [KEY_SHIFT]}
 	for action in actions:
 		if not InputMap.has_action(action):
 			InputMap.add_action(action)
@@ -389,6 +554,7 @@ func load_map(snapshot: Dictionary, saved_state: Dictionary = {}) -> bool:
 		return false
 	if not _prepare_presentation(candidate):
 		return false
+	_cancel_fast_travel()
 	session = candidate
 	_map_snapshot = candidate.get_snapshot()
 	_selected = ""
@@ -423,6 +589,17 @@ func load_map(snapshot: Dictionary, saved_state: Dictionary = {}) -> bool:
 func capture_state() -> Dictionary:
 	return session.capture_state()
 
+## 局内换层由业务模块经总线请求，走黑场节拍而不是直接换。
+func _on_map_load_requested(snapshot: Dictionary, saved_state: Dictionary = {}) -> void:
+	load_map_with_beat(snapshot, saved_state)
+
+## 原地重建地图的入场节拍：黑场淡出，淡出的那一拍再重建，最后淡入。
+## 首层进入不走这里，那时候的淡入由场景转场遮罩负责，叠加会变成两次黑幕。
+func load_map_with_beat(snapshot: Dictionary, saved_state: Dictionary = {}) -> void:
+	if _entry_fade == null or not _entry_fade.play(func() -> void: load_map(snapshot, saved_state)):
+		# 节拍占着或没有节拍节点时不能吞掉请求，直接重建。
+		load_map(snapshot, saved_state)
+
 func _reset_map() -> void:
 	if not session.pending.is_empty():
 		_show_toast("请先完成或取消当前节点")
@@ -440,6 +617,8 @@ func _sync_actor(emit_notifications: bool = true) -> void:
 	_render_path = [session.actor_plane]
 	_render_path_length = 0.0
 	_render_motion(1.0)
+	# 瞬移后的第一帧不该被当成走路，把尘点基准一并归位。
+	_dust_last_position = _player.position
 	_notify_actor_cell(emit_notifications)
 
 func _notify_actor_cell(emit_notifications: bool = true) -> void:
@@ -467,6 +646,17 @@ func _render_motion(fraction: float) -> void:
 	_camera.force_update_scroll()
 	_update_minimap()
 
+## 尘点跟着角色在显示空间里走，不吃物理帧插值，直接读当帧的 _player.position。
+func _update_movement_cues(delta: float) -> void:
+	if not is_instance_valid(_player) or not is_instance_valid(_step_dust):
+		return
+	var at: Vector2 = _player.position
+	var motion := at - _dust_last_position
+	_dust_last_position = at
+	if motion.length() > 48.0:
+		motion = Vector2.ZERO
+	_step_dust.update(at, motion, delta)
+
 func _update_camera() -> void:
 	if not is_inside_tree() or not is_instance_valid(_view) or not is_instance_valid(_camera):
 		return
@@ -489,24 +679,36 @@ func _update_minimap() -> void:
 		_menu_map.set_actor(_render_actor_plane)
 
 func _physics_process(delta: float) -> void:
+	if _fast_travel_busy: return
 	var direction := Vector2.ZERO
 	if not paused and session.pending.is_empty() and DisplayServer.window_is_focused():
 		direction = _movement_direction()
+	# 按住加速键就直接进满档，跳过连续行走的蓄力段；松手后回到原来的蓄力判定。
+	_sprint_held = not direction.is_zero_approx() and Input.is_action_pressed("map2d_sprint")
 	_advance_motion(direction, delta)
 
 func _advance_motion(direction: Vector2, delta: float) -> void:
-	if direction.is_zero_approx():
-		_reset_walk_acceleration()
 	var step_delta := clampf(delta, 0.0, 0.05)
+	var stopping := direction.is_zero_approx()
+	if stopping:
+		_sprint_held = false
+		_reset_walk_acceleration()
+	var rate := WALK_STOP_ACCEL if stopping else WALK_START_ACCEL
+	_velocity = _velocity.move_toward(direction * move_speed * _walking_speed_multiplier(), rate * step_delta)
 	var before: Vector2 = session.actor_plane
-	session.move_actor(direction * move_speed * _walking_speed_multiplier() * step_delta)
+	session.move_actor(_velocity * step_delta)
 	# Count collision-resolved movement, including sliding and direction changes.
 	# A fully blocked frame resets the bonus instead of charging it at a wall.
 	if session.actor_plane != before:
-		_continuous_walk_seconds = minf(_continuous_walk_seconds + step_delta,
-			WALK_ACCELERATION_DELAY + WALK_ACCELERATION_DURATION)
+		_blocked_seconds = 0.0
+		if not stopping:
+			_continuous_walk_seconds = minf(_continuous_walk_seconds + step_delta,
+				WALK_ACCELERATION_DELAY + WALK_ACCELERATION_DURATION)
 	else:
-		_reset_walk_acceleration()
+		_blocked_seconds = 0.0 if stopping else _blocked_seconds + step_delta
+		# 擦墙一帧不算停下，顶着障碍持续过宽限期才清零加速进度。
+		if stopping or _blocked_seconds >= WALK_BLOCKED_GRACE:
+			_reset_walk_acceleration()
 	_render_path.assign(session.motion_path)
 	_render_path_length = 0.0
 	for i in range(1, _render_path.size()):
@@ -514,6 +716,8 @@ func _advance_motion(direction: Vector2, delta: float) -> void:
 	_notify_actor_cell()
 
 func _walking_speed_multiplier() -> float:
+	if _sprint_held:
+		return speed_multiplier * WALK_ACCELERATION_MAX
 	var progress := clampf((_continuous_walk_seconds - WALK_ACCELERATION_DELAY)
 		/ WALK_ACCELERATION_DURATION, 0.0, 1.0)
 	return speed_multiplier * lerpf(1.0, WALK_ACCELERATION_MAX, progress)
@@ -564,6 +768,7 @@ func _update_selection() -> void:
 
 func _process(delta: float) -> void:
 	_render_motion(Engine.get_physics_interpolation_fraction())
+	_update_movement_cues(delta)
 	_toast_left = maxf(0, _toast_left - delta)
 	_status_elapsed += delta
 	_update_selection()
@@ -582,6 +787,9 @@ func _process(delta: float) -> void:
 		_status.text = "位置 (%d, %d) · 已完成 %d / %d · %.0f FPS%s" % [_last_cell.x, _last_cell.y, session.completed.size(), session.nodes.size(), Engine.get_frames_per_second(), " · " + _toast if _toast_left > 0 else ""]
 
 func _input(event: InputEvent) -> void:
+	if _fast_travel_busy:
+		get_viewport().set_input_as_handled()
+		return
 	if _handle_menu_hotkeys(event):
 		return
 	# Use viewport-local event positions, including the first button press.
@@ -593,6 +801,9 @@ func _input(event: InputEvent) -> void:
 		_mouse_steering_held = false
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _fast_travel_busy:
+		get_viewport().set_input_as_handled()
+		return
 	if _handle_menu_hotkeys(event):
 		return
 	if event.is_action_pressed("map2d_pause"):

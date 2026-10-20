@@ -40,12 +40,9 @@ test_scene.tscn
 lark_login_qr*.png
 /_local/
 
-# DSH harness 工具产物（不属于游戏工程）
+# Audio workspace and local harness temporary files
 .dsh-acl-recovery/
 .dsh/
 _work/
-
-# 音频工作区临时文件
 *.rpp-bak
 *.bak
-

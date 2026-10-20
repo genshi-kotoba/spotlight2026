@@ -3,6 +3,8 @@ extends RefCounted
 
 const DATA_PATH := "res://data/relics/test_fragments.csv"
 const FORMAL_PATH := "res://data/relics/fragments.csv"
+# 仅保留旧存档 ID 的解析；不再进入生成池或拥有任何效果。
+const RETIRED_IDS := ["FRG-021"]
 static var _cache: Dictionary = {}
 
 
@@ -15,7 +17,10 @@ static func load_definitions() -> Dictionary:
 			return {}
 	# 负面附着使用稳定复合ID，棋盘仍只存字符串，冷恢复不会丢失附着效果。
 	var base := result.duplicate()
-	for id: String in reward_ids(base):
+	var compatible_ids := reward_ids(base)
+	compatible_ids.append_array(RETIRED_IDS)
+	for id: String in compatible_ids:
+		if not base.has(id): continue
 		for curse: String in negative_ids(base):
 			var data: RelicFragmentData = base[id].duplicate(true)
 			data.fragment_id = id + "~" + curse
@@ -34,7 +39,7 @@ static func reward_ids(catalog: Dictionary = {}) -> Array[String]:
 	var values := load_definitions() if catalog.is_empty() else catalog
 	var result: Array[String] = []
 	for id: String in values:
-		if id.begins_with("FRG-") and not id.contains("~") and values[id].kind != RelicFragmentData.Kind.NEGATIVE:
+		if id.begins_with("FRG-") and not id.contains("~") and id not in RETIRED_IDS and values[id].kind != RelicFragmentData.Kind.NEGATIVE:
 			result.append(id)
 	result.sort()
 	return result
@@ -46,15 +51,6 @@ static func negative_ids(catalog: Dictionary) -> Array[String]:
 		if catalog[id].kind == RelicFragmentData.Kind.NEGATIVE:
 			result.append(id)
 	result.sort()
-	return result
-
-
-static func choice_bonus(cells: Array) -> int:
-	var result := 0
-	for id: String in cells:
-		var data := resolve(id)
-		if data != null and ((data.kind == RelicFragmentData.Kind.PRESENCE and data.action_id == "extra_choice") or data.presence_action == "extra_choice"):
-			result += 1
 	return result
 
 
@@ -163,5 +159,10 @@ static func _read(path: String, result: Dictionary) -> bool:
 		data.reach = reaches[row[5]]
 		data.action_id = row[6]
 		data.amount = int(row[7])
+		if data.fragment_id in RETIRED_IDS:
+			data.description = "此残片效果已移除"
+			data.event_id = ""
+			data.action_id = ""
+			data.amount = 0
 		result[data.fragment_id] = data
 	return true

@@ -13,10 +13,8 @@ func _run() -> void:
 	get_window().size = Vector2i(1920, 1080)
 	fixture_root = "res://.godot/monster-text-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(fixture_root)
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("1.json"), fixture_root.path_join("2.json"), fixture_root.path_join("3.json")])
-	SaveGateway._active_slot = 1
-	_check("独立测试存档", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture_root.path_join("game.json")
+	_check("独立测试存档", SaveGateway.load_current() == OK)
 	EncounterFlow.relic_board_path = fixture_root.path_join("empty-board.json")
 	_check("句号换行、分号换行、BOM、CRLF与尾句", MonsterBattleText.parse_sentences("\uFEFF甲；\r\n乙。\r\n丙。行内句号不拆。\n尾句") == ["甲；\n乙。", "丙。行内句号不拆。", "尾句"])
 	_check("问号感叹号加换行结束一句", MonsterBattleText.parse_sentences("谁？\n我！\n结束。\n") == ["谁？", "我！", "结束。"])
@@ -36,7 +34,7 @@ func _run() -> void:
 	overlay.set_process(false)
 	_check("逐字放慢至0.16秒、句间3秒，保留0.1秒抖动和1秒淡出", is_equal_approx(overlay.character_interval, 0.16) and is_equal_approx(overlay.perturb_interval, 0.1) and MonsterBattleText.NEXT_DELAY == 3.0 and MonsterBattleText.FADE_DURATION == 1.0)
 	_check("测试场景加载CHR025真实TXT", overlay.source_path == SOURCE and not overlay.sentences.is_empty())
-	_check("鼠标穿透，背景和敌人之上、所有UI之下", overlay.mouse_filter == Control.MOUSE_FILTER_IGNORE and scene.get_node("Background").z_index < scene.get_node("EnemyPortrait").z_index and scene.get_node("EnemyPortrait").z_index < overlay.z_index and overlay.z_index < scene.hand_scroll.z_index)
+	_check("鼠标穿透，背景和敌人之上、所有UI之下", overlay.mouse_filter == Control.MOUSE_FILTER_IGNORE and scene.get_node("Background").z_index < scene.enemy_rack.slots[0].portrait.z_index and scene.enemy_rack.slots[0].portrait.z_index < overlay.z_index and overlay.z_index < scene.hand_scroll.z_index)
 	var before := JSON.stringify(SeedService.capture_snapshot())
 	var context := scene._monster_text_context()
 	var viewport_area: Rect2 = scene.get_global_transform_with_canvas().affine_inverse() * scene.get_viewport_rect()
@@ -205,7 +203,9 @@ func _run() -> void:
 	overlay.context_provider = func(): return {"area": Rect2(0, 0, 80, 60), "blockers": []}
 	overlay.advance(0.001)
 	_check("缩小窗口后不越界绘制旧句", overlay.active_sentences.is_empty())
-	scene._on_battle_ended({"status": "victory"})
+	for enemy: Dictionary in scene._battle.enemies:
+		if int(enemy.health) > 0: scene._battle.apply_damage_to_enemy(str(enemy.enemy_id), int(enemy.health), true)
+	await preload("res://tests/support/presentation_test_helper.gd").battle_settled(scene)
 	_check("终局停止且清除文本", not overlay._running and overlay.active_sentences.is_empty())
 	scene.queue_free()
 	await _frames(3)

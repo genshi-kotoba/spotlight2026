@@ -243,6 +243,8 @@ func _prime_cutaway_pipeline() -> void:
 func _init(load_actor: bool = true) -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	if load_actor: actor_animation.load_config("res://data/config/relief_2d/actor.json", ACTOR_HEIGHT * _basis.y.y * PIXELS_PER_WORLD)
+	if actor_animation.config.get("texture_filter", "nearest") == "linear_mipmap":
+		texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_configure_sun()
 
 
@@ -398,7 +400,7 @@ func _cache_key(snapshot: Dictionary, known: Dictionary) -> String:
 
 
 func _cache_config_signature() -> Array:
-	return [_sun_config,_atmosphere_config,_art_enabled,_exploration_fog_enabled,_exploration_fog_visual_mode,show_grid,show_node_regions]
+	return [_sun_config,_atmosphere_config,_art_enabled,_exploration_fog_enabled,_exploration_fog_visual_mode,show_grid,show_node_regions,_art.cache_identity()]
 
 
 func prepare_presentation_cache(states: Array[Dictionary]) -> bool:
@@ -638,15 +640,16 @@ func is_sun_enabled() -> bool:
 	return bool(_display_sun_config.get("enabled", true))
 
 
-func advance_actor(displacement: Vector2, delta: float) -> void:
+func advance_actor(displacement: Vector2, delta: float, facing_intent: Vector2 = Vector2(INF, INF)) -> void:
 	if _wall_cutaway != null and _wall_cutaway.advance(delta):
 		_wall_cutaway.refresh(self)
 		if _actor_cutaway_restore != null:
 			_wall_cutaway.apply_to(_actor_cutaway_restore.material)
-	if actor_animation.advance(displacement, project_plane(displacement), delta):
-		_refresh_actor_occlusion_hint()
-		_refresh_actor_cutaway_restore()
-		queue_redraw()
+	if actor_animation.advance(displacement, project_plane(displacement), delta, facing_intent):
+		# Stationary breathing/blinking changes the silhouette and its sunlight shadow.
+		_dynamic_dirty = true
+	# Position can change between two sprite frames; publish that movement too.
+	flush_dynamic()
 
 
 func set_layer(snapshot: Dictionary, known: Dictionary, completed: Dictionary, synchronous_binding: bool = false) -> void:
@@ -754,6 +757,9 @@ func _load_map_data(snapshot: Dictionary) -> void:
 			if _source_snapshot.get(field)!=snapshot.get(field): _material_face_cache={};break
 	if _floor_data==null or not _floor_data.matches(snapshot): _floor_data=FloorRenderData.new(snapshot)
 	_source_snapshot = _floor_data.snapshot_for(snapshot)
+	# CPU catalog selection precedes rock outlines and all material UV packets.
+	# Texture allocation remains in VectorBatch's main-thread publish path.
+	_art.select_floor(int(_source_snapshot.get("floor_index",1)))
 	_solar_snapshot = _source_snapshot
 	_cells = _floor_data.cells
 	_wall_readability_cache={}
@@ -1154,7 +1160,7 @@ func _material_face_key(face: Dictionary) -> Array:
 				fog_domain.append(_known.get(_key(coord+direction),false))
 				for second: Vector2i in DIRS: fog_domain.append(_known.get(_key(coord+direction+second),false))
 	if _material_context_id==0:
-		_material_context_id=_floor_data.material_context_id(["surface-point-light-v1",show_grid,_display_sun_config,_display_art_enabled,_art.catalog.signature,_art._address,_display_atmosphere_config,_atmosphere._anchor,_display_exploration_fog_enabled,_display_exploration_fog_visual_mode])
+		_material_context_id=_floor_data.material_context_id(["surface-point-light-v1",show_grid,_display_sun_config,_display_art_enabled,_art.cache_identity(),_art._address,_display_atmosphere_config,_atmosphere._anchor,_display_exploration_fog_enabled,_display_exploration_fog_visual_mode])
 	return [_material_context_id,_is_cutaway_wall(face),face.polygon,face.coefficient,face.normal,face.color,face.category,face.id,face.key,face.known,face.get("solar_factor",1.0),face.get("solar_shadows",[]),face.get("label"),face.get("label_point"),face.get("node_id"),face.top,face.get("draw_edges",true),_art._blocked.has(face.key),lamps,fog_domain,face.get("rock",{})]
 
 
@@ -1218,7 +1224,7 @@ func _process(_delta: float) -> void:
 		batch.show_behind_parent = true
 		batch.visibility_layer = 0
 		add_child(batch)
-		batch.apply_prepared(_geometry_builder._prepared_face_groups[_pending_cursor],_pending_arrays[_pending_cursor])
+		batch.apply_prepared(_geometry_builder._prepared_face_groups[_pending_cursor],_pending_arrays[_pending_cursor],_geometry_builder._art.atlas_path)
 		# Mesh + retained wall packets now own their data; release upload scratch.
 		_pending_arrays[_pending_cursor]=[]
 		_pending_batches.append(batch);_pending_cursor+=1
@@ -1376,7 +1382,8 @@ func _face_indices(rect: Rect2) -> Array:
 
 
 func _make_node(node: Dictionary) -> void:
-	if int(_source_snapshot.get("floor_index", 0)) == 1:
+	# 第四层复用已交付的 Boss/商店节点立绘及其透明、落地和遮挡处理。
+	if int(_source_snapshot.get("floor_index", 0)) in [1, 4]:
 		_make_node_marker(node)
 		return
 	# These are traversable node floor stamps, not physical props. A future art
@@ -1802,7 +1809,7 @@ func _refresh_actor() -> void:
 	_actor_light = _solar.lighting_at(actor_world)
 	_actor_atmosphere_tint = _atmosphere.tint(Color.WHITE,actor_world,Vector3.UP,_key(_plane_coord(_actor_plane)),_actor_light,_display_sun_config,false,true)
 	if is_sun_enabled():
-		for shadow: Dictionary in _solar.project_actor_shadow(_actor_plane, _actor_height, ACTOR_HEIGHT, Profile.FOOT_RADIUS, _faces):
+		for shadow: Dictionary in _solar.project_actor_shadow(_actor_plane, _actor_height, ACTOR_HEIGHT, Profile.FOOT_RADIUS, _faces, actor_animation.shadow_contour(PIXELS_PER_WORLD, _basis.y.y)):
 			var receiver: Dictionary = _faces[int(shadow.face_index)]
 			if receiver.get("node_marker", false) or (receiver.has("rock") and not is_art_enabled()): continue
 			for visible in _visible_surface_regions(shadow.polygon, receiver):
@@ -2119,7 +2126,7 @@ func _refresh_art_actor_shadow() -> void:
 					decal.polygon=overlap
 					buffer.art_decoration(self,shadow.receiver,decal,true)
 	buffer.flush_mesh()
-	_art_actor_shadow_batch.apply_prepared([],buffer.commands)
+	_art_actor_shadow_batch.apply_prepared([],buffer.commands,_art.atlas_path)
 	if _wall_cutaway != null: _art_actor_shadow_batch.material=_wall_cutaway.material
 	_art_actor_shadow_batch.show()
 
@@ -2639,7 +2646,7 @@ func _drain_retired_warm_jobs(wait_for_all: bool=false) -> void:
 
 func _make_rocks() -> void:
 	# Full-floor deterministic positions; discovery only controls drawing.
-	_rock_layout=RockScatter.generate(_source_snapshot)
+	_rock_layout=RockScatter.generate(_source_snapshot,_art.catalog)
 	for entry: Dictionary in _rock_layout.get("entries",[]):
 		if not bool(_known.get(str(entry.key),false)): continue
 		if entry.kind=="rubble" and not bool(_known.get(str(entry.wall_key),false)): continue

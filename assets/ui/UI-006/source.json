@@ -1,0 +1,32 @@
+{
+  "asset_id": "UI-006",
+  "name": "关闭和返回图标",
+  "record_id": "reczz28IaRlfHwh3",
+  "table_id": "tblWIEha9sBO0EWl",
+  "attachment": "UI-006-重置.zip",
+  "file_token": "FOJRbG0dGoT4wbxOAGtcB8jbnNb",
+  "attachment_sha256": "6f126cb6f012b5e53d061bfd760f6a963e8a4d6d64876c6b963e542a129f24f4",
+  "selection": "最新重置暗金常态／悬停，原始PNG不裁切、不重绘",
+  "files": [
+    {
+      "file": "关闭-初始-金.png",
+      "bytes": 54903,
+      "sha256": "25de18c8ea1e4bf9b4a3723b271c82a4bfd2bd96db5ffc659d9a1f1851d7605c"
+    },
+    {
+      "file": "关闭-悬停-金.png",
+      "bytes": 81219,
+      "sha256": "9c9d530947aa39826902a44e7b78a4003886abf9edc10ca380241e13dbc476bf"
+    },
+    {
+      "file": "返回-初始-金.png",
+      "bytes": 40777,
+      "sha256": "fd5667136fb658c3b5689a8dc4f488c90f2f38463008f090cdf32f5dfad5a5bd"
+    },
+    {
+      "file": "返回-悬停-金.png",
+      "bytes": 73058,
+      "sha256": "c11df1e142ec69c07115b6232f48987c47517ad89e2a26bb81bd4352492e8f30"
+    }
+  ]
+}

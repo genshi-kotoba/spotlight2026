@@ -13,8 +13,8 @@ duration = 1
 [resource]
 script = ExtResource("3_card")
 card_id = &"test_strength"
-card_name = "测试·力量"
-description = "获得 3 层力量。本回合每次对敌造成伤害时额外造成 3 点。"
+card_name = "力量"
+description = "获得 3 层力量。"
 kind = 1
 face_tint = 2
 effects = Array[ExtResource("1_base")]([SubResource("Effect")])

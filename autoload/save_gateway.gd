@@ -2,22 +2,17 @@ extends Node
 
 ## 开始界面的适配层。局内状态/随机/解锁仍以 main 的 GlobalState 为准。
 ## 地图检查点是存档顶层可选扩展，不修改状态机或伪造 active_run。
-signal slots_refreshed
-signal active_slot_changed(slot: int)
-signal run_started(slot: int)
-signal run_continued(slot: int)
+signal save_changed
+signal save_reloaded
+signal run_started
+signal run_continued
 signal save_failed(error: int, message: String)
 
-const SLOT_COUNT := 3
-const PROFILE_PATH := "user://save/menu_profile.json"
 const MAP_KEY := "menu_map_checkpoint"
 const PlanarRun := preload("res://state_machines/run/planar_map_run.gd")
 
-var profile_path := PROFILE_PATH
-var slot_paths: Array[String] = [GlobalStateMachine.DEFAULT_SAVE_PATH,
-	"user://save/slot2.json", "user://save/slot3.json"]
+var save_path := GlobalStateMachine.DEFAULT_SAVE_PATH
 var _state: GlobalStateMachine
-var _active_slot := 1
 var _map_checkpoint: Dictionary = {}
 var _map_view: WeakRef
 var _load_error: Error = OK
@@ -30,12 +25,9 @@ func _ready() -> void:
 	_state.save_on_window_close = false
 	_state.save_failed.connect(_forward_error)
 	get_tree().auto_accept_quit = false
-	var profile := _read_json(profile_path)
-	if profile.error == OK:
-		var slot: Variant = profile.data.get("active_slot", 1)
-		if (slot is int or slot is float) and float(slot) == floorf(float(slot)):
-			_active_slot = clampi(int(slot), 1, SLOT_COUNT)
-	_load_error = _load_slot(_active_slot)
+	_load_error = _migrate_legacy_save()
+	if _load_error == OK:
+		_load_error = load_current()
 
 
 func _notification(what: int) -> void:
@@ -45,92 +37,74 @@ func _notification(what: int) -> void:
 		call_deferred("quit_game")
 
 
-func slot_path(slot: int) -> String:
-	return slot_paths[slot - 1] if slot >= 1 and slot <= SLOT_COUNT else ""
-
-
-func get_active_slot() -> int:
-	return _active_slot
-
-
 func startup_notice() -> String:
 	return _error_notice if _load_error != OK else ""
-
-
-func list_slots() -> Array[Dictionary]:
-	var result: Array[Dictionary] = []
-	for slot in range(1, SLOT_COUNT + 1):
-		result.append(read_slot(slot))
-	return result
-
-
-func read_slot(slot: int) -> Dictionary:
-	var info := {"slot": slot, "exists": false, "state": "empty", "region": "",
-		"health": 0, "max_health": 0, "gold": 0, "progress": 0,
-		"run_count": 0, "updated_at": ""}
-	var path := slot_path(slot)
-	if path.is_empty() or not FileAccess.file_exists(path):
-		return info
-	info.exists = true
-	var loaded := _read_json(path)
-	if loaded.error != OK:
-		info.state = "ended"
-		info.region = "存档读取失败"
-		return info
-	var data: Dictionary = loaded.data
-	var history: Variant = data.get("run_history", [])
-	info.run_count = history.size() if history is Array else 0
-	var active: Variant = data.get("active_run")
-	var run: Variant = active.get("run_snapshot") if active is Dictionary else null
-	if run is Dictionary and bool(run.get("active", false)):
-		info.state = "active"
-		info.region = str(run.get("current_map_id", ""))
-		info.health = int(run.get("health", 0))
-		info.max_health = int(run.get("max_health", 0))
-		info.gold = int(run.get("gold", 0))
-	else:
-		info.state = "ended"
-	info.updated_at = Time.get_datetime_string_from_unix_time(FileAccess.get_modified_time(path))
-	return info
 
 
 func has_continuable_run() -> bool:
 	return _load_error == OK and _state.has_continuable_run()
 
 
-func start_new_run(seed_text: String, config: Dictionary) -> Error:
+func start_new_run(seed_text: String, config: Dictionary, overwrite_confirmed := false) -> Error:
 	if _load_error != OK:
-		return _fail(_load_error, "当前档案读取失败，请切换其他档案或确认删除后再开局。")
-	if has_continuable_run():
-		return _fail(ERR_ALREADY_IN_USE, "当前档案已有进行中的局，请先确认覆盖。")
-	var error := _ensure_parent(slot_path(_active_slot))
+		return _fail(_load_error, "存档读取失败，原文件已保留，请修复存档后重试。")
+	if has_continuable_run() and not overwrite_confirmed:
+		return _fail(ERR_ALREADY_IN_USE, "已有未完成的游戏，请先确认覆盖。")
+	var error := _ensure_parent(save_path)
 	if error != OK:
 		return _fail(error, "无法创建存档目录。")
+	# 先在独立随机上下文中准备并验证新局，避免配置错误或写盘失败损毁原局。
+	var version := str(ProjectSettings.get_setting("application/config/seed_content_version", ""))
+	var random := SeedRegistry.new(version)
+	var prepared := RunStateMachine.new()
+	error = prepared.initialize_new(seed_text, config, _state.unlocked_cards, random)
+	if error != OK:
+		prepared.free()
+		return _fail(error, "新游戏初始化失败，原存档与进度保持不变。")
+	var data := _state.capture_save_data()
+	if data.is_empty():
+		prepared.free()
+		return _fail(_state.last_error, "无法读取原游戏状态，未覆盖存档。")
+	var previous: Variant = data.get("active_run")
+	if previous is Dictionary and previous.get("run_snapshot") is Dictionary:
+		data.run_history.append(RunStateMachine.history_record_from_snapshot(previous.run_snapshot, {"status": "abandoned"}))
+	data["active_run"] = {"run_snapshot": prepared.to_dictionary(), "seed_snapshot": random.capture_snapshot()}
+	var validator := GlobalStateMachine.new()
+	error = validator._install_save(data)
+	validator.free()
+	if error == OK:
+		error = _write_json(save_path, data)
+	if error != OK:
+		prepared.free()
+		return _fail(error, "新游戏保存失败，原存档与进度保持不变。")
+	_state.save_path = save_path
+	error = _state.install_prepared_run(data, prepared)
+	if error != OK:
+		prepared.free()
+		return _fail(error, "新游戏已保存，但内存载入失败，请重新启动游戏。")
 	_map_checkpoint.clear()
 	_map_view = null
-	error = _state.start_new_run(seed_text, config)
-	if error == OK:
-		run_started.emit(_active_slot)
-		slots_refreshed.emit()
-	return error
+	run_started.emit()
+	save_changed.emit()
+	return OK
 
 
 func continue_saved_run() -> Error:
 	if not has_continuable_run():
-		return _fail(ERR_DOES_NOT_EXIST, "当前档案没有可继续的局。")
+		return _fail(ERR_DOES_NOT_EXIST, "没有可继续的游戏。")
 	# 保存并返回菜单后，本局仍在内存中；不能再次恢复/重置随机流。
 	if _state.run_active and _state.current_run != null:
-		run_continued.emit(_active_slot)
+		run_continued.emit()
 		return OK
 	var error := _state.continue_saved_run()
 	if error == OK:
-		run_continued.emit(_active_slot)
+		run_continued.emit()
 	return error
 
 
 func abandon_run() -> Error:
 	if not has_continuable_run():
-		return _fail(ERR_DOES_NOT_EXIST, "当前档案没有进行中的局。")
+		return _fail(ERR_DOES_NOT_EXIST, "没有进行中的游戏。")
 	if _state.current_run == null:
 		var error := continue_saved_run()
 		if error != OK:
@@ -141,61 +115,8 @@ func abandon_run() -> Error:
 	if error == OK:
 		error = _state.last_error
 	if error == OK:
-		slots_refreshed.emit()
+		save_changed.emit()
 	return error
-
-
-func set_active_slot(slot: int) -> Error:
-	if slot < 1 or slot > SLOT_COUNT:
-		return _fail(ERR_INVALID_PARAMETER, "档号必须在 1 到 3 之间。")
-	if slot == _active_slot:
-		return OK
-	if _load_error == OK:
-		var error := save_current()
-		if error != OK:
-			return error
-	# 先验证目标，不因错误存档破坏当前内存状态。
-	var error := _validate_slot(slot)
-	if error != OK:
-		return _fail(error, "目标档案无法读取，当前档案保持不变。")
-	error = _write_json(profile_path, {"active_slot": slot})
-	if error != OK:
-		return _fail(error, "当前档案索引保存失败。")
-	error = _load_slot(slot)
-	if error != OK:
-		_write_json(profile_path, {"active_slot": _active_slot})
-		return error
-	_active_slot = slot
-	active_slot_changed.emit(slot)
-	slots_refreshed.emit()
-	return OK
-
-
-func delete_slot(slot: int) -> Error:
-	var path := slot_path(slot)
-	if path.is_empty():
-		return _fail(ERR_INVALID_PARAMETER, "无效的档号。")
-	# 用户确认删除后移至可恢复目录，不丢弃原 JSON 与备份。
-	var archive := path.get_base_dir().path_join("deleted")
-	var error := DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(archive))
-	if error != OK:
-		return _fail(error, "无法创建已删除档案备份目录。")
-	var moved: Array[Dictionary] = []
-	var suffix := ".%d-%d.deleted" % [int(Time.get_unix_time_from_system()), Time.get_ticks_usec()]
-	for candidate: String in [path, path + ".bak", path + ".tmp"]:
-		if not FileAccess.file_exists(candidate):
-			continue
-		var destination := archive.path_join(candidate.get_file() + suffix)
-		error = DirAccess.rename_absolute(ProjectSettings.globalize_path(candidate), ProjectSettings.globalize_path(destination))
-		if error != OK:
-			for item: Dictionary in moved:
-				DirAccess.rename_absolute(item.to, item.from)
-			return _fail(error, "删除档案失败，已尝试恢复原文件。")
-		moved.append({"from": ProjectSettings.globalize_path(candidate), "to": ProjectSettings.globalize_path(destination)})
-	if slot == _active_slot:
-		_load_error = _load_slot(slot)
-	slots_refreshed.emit()
-	return _load_error if slot == _active_slot else OK
 
 
 func bind_map_view(view: Node) -> void:
@@ -212,7 +133,7 @@ func current_run() -> RunStateMachine:
 
 func save_current() -> Error:
 	if _load_error != OK:
-		return _fail(_load_error, "当前档案有读取错误，拒绝覆盖。")
+		return _fail(_load_error, "存档有读取错误，拒绝覆盖。")
 	var run := _state.current_run
 	if run != null and run.current_battle != null and not bool(run.current_battle.to_dictionary().queue_idle):
 		return _fail(ERR_BUSY, "战斗结算中暂不能保存，请先完成操作。")
@@ -224,17 +145,14 @@ func save_current() -> Error:
 			return _fail(ERR_INVALID_DATA, "地图检查点捕获失败，未覆盖存档。")
 	if not checkpoint.is_empty() and run != null:
 		checkpoint["seed_snapshot"] = SeedService.capture_snapshot()
-	var path := slot_path(_active_slot)
+	var path := save_path
 	var error := _ensure_parent(path)
 	if error != OK:
 		return _fail(error, "无法创建存档目录。")
-	# 状态机只构建原有完整载荷，补入地图后直接走既有最终原子安装。
-	# 不再把同一份状态先写盘、读回解析再写一次，也不更改状态机的保存路径。
+	# 状态机序列化原有字段，网关附上地图后只原子写入一次完整存档。
 	var prepared := _state.build_save_payload()
 	if prepared.error != OK:
-		return _state._fail(prepared.error, "Could not capture random state")
-	# 对齐旧中间保存成功后的状态；最终安装失败仍由网关报告。
-	_state.last_error = OK
+		return _fail(prepared.error, "存档状态捕获失败，原文件已保留。")
 	var data: Dictionary = prepared.payload
 	# 尚未点击继续时 current_run 为 null，但磁盘仍有进行中的局；不能丢掉它的地图。
 	var saved_active: Variant = data.get("active_run")
@@ -244,7 +162,8 @@ func save_current() -> Error:
 	if error != OK:
 		return _fail(error, "保存失败，原存档已保留。")
 	_map_checkpoint = checkpoint
-	slots_refreshed.emit()
+	_state.last_error = OK
+	save_changed.emit()
 	return OK
 
 
@@ -256,14 +175,14 @@ func quit_game() -> void:
 	get_tree().quit()
 
 
-func _validate_slot(slot: int) -> Error:
+func _validate_save(path: String) -> Error:
 	var candidate := GlobalStateMachine.new()
-	candidate.save_path = slot_path(slot)
+	candidate.save_path = path
 	var error := candidate.load_save()
 	candidate.free()
 	if error != OK:
 		return error
-	var loaded := _read_json(slot_path(slot))
+	var loaded := _read_json(path)
 	if loaded.error == ERR_FILE_NOT_FOUND:
 		return OK
 	if loaded.error != OK:
@@ -300,13 +219,14 @@ func _validate_slot(slot: int) -> Error:
 	return OK
 
 
-func _load_slot(slot: int) -> Error:
-	var error := _validate_slot(slot)
+func load_current() -> Error:
+	var error := _validate_save(save_path)
 	if error != OK:
-		return _fail(error, "档案读取失败，原文件不会被覆盖。")
+		_load_error = error
+		return _fail(error, "存档读取失败，原文件不会被覆盖。")
 	var old_run := _state.current_run
 	var previous_path := _state.save_path
-	_state.save_path = slot_path(slot)
+	_state.save_path = save_path
 	error = _state.load_save()
 	if error != OK:
 		_state.save_path = previous_path
@@ -315,11 +235,36 @@ func _load_slot(slot: int) -> Error:
 		old_run.queue_free()
 	_map_view = null
 	_map_checkpoint.clear()
-	var loaded := _read_json(slot_path(slot))
+	var loaded := _read_json(save_path)
 	if loaded.error == OK:
 		var extension: Dictionary = loaded.data.get(MAP_KEY, {})
 		_map_checkpoint = extension.get("snapshot", {}).duplicate(true)
 	_load_error = OK
+	_error_notice = ""
+	save_reloaded.emit()
+	save_changed.emit()
+	return OK
+
+
+## 仅首次升级读取旧布局；不保留多槽位接口，也不删除玩家的旧存档。
+func _migrate_legacy_save(legacy_root := "user://") -> Error:
+	if FileAccess.file_exists(save_path):
+		return OK
+	var source := legacy_root.path_join("spotlight_save.json")
+	var profile := _read_json(legacy_root.path_join("save/menu_profile.json"))
+	if profile.error == OK:
+		var selected: Variant = profile.data.get("active_slot", 1)
+		if (selected is int or selected is float) and float(selected) == floorf(float(selected)) and int(selected) in [2, 3]:
+			source = legacy_root.path_join("save/slot%d.json" % int(selected))
+	if not FileAccess.file_exists(source):
+		return OK
+	var error := _validate_save(source)
+	if error != OK:
+		return _fail(error, "旧存档无法迁移，原文件已保留，未创建新存档。")
+	var loaded := _read_json(source)
+	error = _write_json(save_path, loaded.data)
+	if error != OK:
+		return _fail(error, "旧存档迁移保存失败，原文件已保留。")
 	return OK
 
 

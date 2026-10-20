@@ -3,10 +3,13 @@ extends RefCounted
 ## panel backgrounds are deliberately not used as world-map sprites.
 const ROOT := "res://assets/map_nodes/alchemy/"
 const EVENT_ART := {
-	"great_work": "", "medical": "", "empty_gambling_table": "",
-	"death_and_taxes": "", "wishing_well": "", "beast_fight": "",
-	"damage_stele": "", "object_confession": "", "codex_exchange": "",
-	"material_synthesis": "", "material_upgrade": "", "listening_conch": "",
+	"great_work": ROOT + "great_work.png", "medical": ROOT + "medical.png",
+	"empty_gambling_table": ROOT + "empty_gambling_table.png",
+	"death_and_taxes": ROOT + "death_and_taxes.png", "wishing_well": ROOT + "wishing_well.png",
+	"beast_fight": ROOT + "beast_fight.png", "damage_stele": ROOT + "damage_stele.png",
+	"object_confession": ROOT + "object_confession.png", "codex_exchange": ROOT + "codex_exchange.png",
+	"material_synthesis": ROOT + "material_synthesis.png", "material_upgrade": ROOT + "material_upgrade.png",
+	"listening_conch": ROOT + "listening_conch.png",
 }
 static var _textures: Dictionary = {}
 static var _opaque_rects: Dictionary = {}
@@ -23,11 +26,12 @@ static func describe(node: Dictionary) -> Dictionary:
 	if kind == "event":
 		if not node.get("opened", false):
 			label = "?"
+			texture = ROOT + "question.png"
 		else:
 			texture = EVENT_ART.get(str(node.get("event_kind", "")), "")
 			if label.is_empty(): label = "事件"
 	else:
-		texture = ROOT + kind + ".png" if kind in ["battle", "boss", "shop", "chest", "pile"] else ""
+		texture = ROOT + kind + ".png" if kind in ["battle", "elite", "boss", "shop", "chest", "pile"] else ""
 		if label.is_empty(): label = {"battle":"战斗", "boss":"首领", "shop":"商店", "chest":"宝箱", "pile":"残堆", "elite":"精英"}.get(kind, "事件")
 	return {"texture":texture, "label":label, "completed":bool(node.get("completed", false)), "type":kind, "body_radius":float(node.get("body_radius", 0.0)), "body_capsule":node.get("body_capsule", {}).duplicate(true)}
 

@@ -1,27 +1,18 @@
-[gd_scene load_steps=28 format=3]
+[gd_scene load_steps=27 format=3]
 
 [ext_resource type="Script" path="res://ui/battle/battle_test_scene.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/env/ENV-001/ENV-001.PNG" id="2_bg"]
-[ext_resource type="Texture2D" path="res://assets/chr/CHR-025.png" id="3_enemy"]
 [ext_resource type="Texture2D" path="res://assets/chr/CHR-002/IMG_20261012_225512.png" id="4_hero"]
 [ext_resource type="Texture2D" path="res://assets/ui/UI-015/金-主角血条-主角血条底图.png" id="5_player_base"]
 [ext_resource type="Texture2D" path="res://assets/ui/UI-015/金-主角血条-金-主角血条底框.png" id="6_player_frame"]
 [ext_resource type="Texture2D" path="res://assets/ui/UI-015/金-主角血条-主角头像.png" id="7_player_avatar"]
-[ext_resource type="Texture2D" path="res://assets/ui/UI-015/超长血条底图.png" id="8_boss_base"]
-[ext_resource type="Texture2D" path="res://assets/ui/UI-015/超长-boss血条框.png" id="9_boss_frame"]
-[ext_resource type="Texture2D" path="res://assets/ui/UI-016/攻击.png" id="10_intent"]
-[ext_resource type="Texture2D" path="res://assets/ui/UI-016/意图角标.png" id="17_intent_ring"]
 [ext_resource type="Texture2D" path="res://assets/ui/UI-023/UI-023.png" id="11_coin"]
 [ext_resource type="Texture2D" path="res://assets/ui/UI-028/UI-028.png" id="16_elixir"]
 [ext_resource type="Script" path="res://ui/battle/health_fill.gd" id="15_hpfill"]
-[ext_resource type="Script" path="res://ui/battle/damage_preview.gd" id="18_dmgpreview"]
+[ext_resource type="Script" path="res://ui/battle/enemy_rack.gd" id="19_enemyrack"]
 [ext_resource type="Texture2D" path="res://assets/ui/UI-013/卡背-灰.png" id="12_back"]
 [ext_resource type="Texture2D" path="res://assets/ui/UI-003/大按钮-初始.png" id="13_btn"]
 [ext_resource type="Texture2D" path="res://assets/ui/UI-003/大按钮-悬停.png" id="14_btn_hover"]
-
-[sub_resource type="AtlasTexture" id="Atlas_intent"]
-atlas = ExtResource("10_intent")
-region = Rect2(104, 125, 847, 863)
 
 [sub_resource type="AtlasTexture" id="Atlas_coin"]
 atlas = ExtResource("11_coin")
@@ -512,104 +503,12 @@ expand_mode = 1
 stretch_mode = 5
 flip_h = true
 
-[node name="EnemyPortrait" type="TextureRect" parent="."]
+[node name="EnemyRack" type="Control" parent="."]
 layout_mode = 0
-offset_left = 562.0
-offset_top = 116.0
-offset_right = 1434.2
-offset_bottom = 933.2
+offset_right = 0.0
+offset_bottom = 0.0
 mouse_filter = 2
-texture = ExtResource("3_enemy")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="EnemyName" type="Label" parent="."]
-layout_mode = 0
-offset_left = 650.0
-offset_top = 78.0
-offset_right = 1450.0
-offset_bottom = 110.0
-mouse_filter = 2
-horizontal_alignment = 0
-theme_override_colors/font_color = Color(1, 0.768627, 0.690196, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 22
-text = "人造之神，方舟缔造者"
-
-[node name="EnemyHPBar" type="Control" parent="."]
-layout_mode = 0
-offset_left = 530.0
-offset_top = 78.0
-offset_right = 1489.5
-offset_bottom = 166.0
-mouse_filter = 2
-
-[node name="Base" type="TextureRect" parent="EnemyHPBar"]
-layout_mode = 0
-offset_right = 959.5
-offset_bottom = 88.0
-mouse_filter = 2
-texture = ExtResource("8_boss_base")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Fill" type="Control" parent="EnemyHPBar"]
-script = ExtResource("15_hpfill")
-layout_mode = 0
-offset_left = 99.0
-offset_top = 30.0
-offset_right = 880.0
-offset_bottom = 62.0
-mouse_filter = 2
-slant = 21.8
-fill_color = Color(0.756863, 0.239216, 0.262745, 1)
-
-[node name="Block" type="ColorRect" parent="EnemyHPBar"]
-visible = false
-layout_mode = 0
-offset_left = 880.0
-offset_top = 30.0
-offset_right = 896.0
-offset_bottom = 62.0
-mouse_filter = 2
-color = Color(0.352941, 0.439216, 0.54902, 1)
-
-[node name="Frame" type="TextureRect" parent="EnemyHPBar"]
-layout_mode = 0
-offset_left = 19.0
-offset_top = 1.0
-offset_right = 959.1
-offset_bottom = 87.0
-mouse_filter = 2
-texture = ExtResource("9_boss_frame")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="EnemyHPNum" type="Label" parent="."]
-layout_mode = 0
-offset_left = 650.0
-offset_top = 112.0
-offset_right = 860.0
-offset_bottom = 140.0
-mouse_filter = 2
-theme_override_colors/font_color = Color(1, 0.878431, 0.847059, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 18
-text = "3000/3000"
-
-[node name="EnemyBuffRow" type="HBoxContainer" parent="."]
-z_index = 12
-layout_mode = 0
-offset_left = 650.0
-offset_top = 156.0
-offset_right = 1400.0
-offset_bottom = 178.0
-mouse_filter = 2
-theme_override_constants/separation = 8
+script = ExtResource("19_enemyrack")
 
 [node name="EnemyStatus" type="Label" parent="."]
 unique_name_in_owner = true
@@ -621,44 +520,6 @@ offset_right = 1310.0
 offset_bottom = 240.0
 theme_override_font_sizes/font_size = 16
 text = "CHR-025  HP 300/300  格挡 0"
-
-[node name="IntentBadge" type="TextureRect" parent="."]
-layout_mode = 0
-offset_left = 1440
-offset_top = 52
-offset_right = 1551
-offset_bottom = 165
-mouse_filter = 2
-texture = SubResource("Atlas_intent")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="IntentRing" type="TextureRect" parent="."]
-layout_mode = 0
-offset_left = 1504
-offset_top = 120
-offset_right = 1564
-offset_bottom = 180
-mouse_filter = 2
-texture = ExtResource("17_intent_ring")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="IntentValue" type="Label" parent="."]
-layout_mode = 0
-offset_left = 1504
-offset_top = 120
-offset_right = 1564
-offset_bottom = 180
-mouse_filter = 2
-theme_override_colors/font_color = Color(1, 0.768627, 0.690196, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 26
-text = "6"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="Elixir" type="Control" parent="."]
 layout_mode = 0
@@ -750,7 +611,7 @@ layout_mode = 0
 offset_left = 1722
 offset_top = 112
 offset_right = 1876
-offset_bottom = 928
+offset_bottom = 1044
 mouse_filter = 1
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 3
@@ -773,10 +634,18 @@ theme_override_colors/font_color = Color(0.74902, 0.682353, 0.552941, 1)
 theme_override_font_sizes/font_size = 18
 text = "0/10"
 
+[node name="DiscardShade" type="ColorRect" parent="."]
+visible = false
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.55)
+
 [node name="HandScroll" type="ScrollContainer" parent="."]
 layout_mode = 0
 offset_left = 352.0
-offset_top = 660.0
+offset_top = 732.0
 offset_right = 1490.0
 offset_bottom = 1064.0
 mouse_filter = 1
@@ -892,15 +761,6 @@ mouse_default_cursor_shape = 2
 flat = true
 
 
-[node name="DamagePreview" type="Control" parent="."]
-layout_mode = 0
-offset_left = 1745
-offset_top = 936
-offset_right = 1915
-offset_bottom = 1044
-mouse_filter = 2
-script = ExtResource("18_dmgpreview")
-
 [node name="PlayButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
@@ -934,7 +794,7 @@ theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBtn")
 theme_override_styles/hover = SubResource("StyleBtnHover")
 theme_override_styles/pressed = SubResource("StyleBtnHover")
-theme_override_styles/disabled = SubResource("ButtonDisabled")
+theme_override_styles/disabled = SubResource("StyleBtn")
 text = "取消"
 
 [node name="HintLabel" type="Label" parent="."]

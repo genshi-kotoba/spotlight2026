@@ -18,20 +18,21 @@ config/seed_content_version="jam-map-seed-v1"
 
 [audio]
 
-buses/default_bus_layout="uid://cr0j85mujfcm7"
+buses/default_bus_layout="res://default_bus_layout.tres"
 
 [autoload]
 
 SeedService="*res://autoload/seed_service.gd"
 GlobalState="*res://state_machines/global/global_state_machine.gd"
 MapEvents="*res://core/signals/map_events.gd"
-SaveGateway="*res://autoload/save_gateway.gd"
 TextCatalog="*res://systems/text/text_catalog.gd"
+SaveGateway="*res://autoload/save_gateway.gd"
 EncounterFlow="*res://systems/map/encounter_flow.gd"
 MapPresentation="*res://autoload/map_presentation.gd"
 SceneTransition="*res://autoload/scene_transition.gd"
 ScenePreloader="*res://autoload/scene_preloader.gd"
-WwiseRuntimeManager="*uid://dwd3a80scqotq"
+RunResults="*res://autoload/run_results.gd"
+WwiseRuntimeManager="*res://addons/Wwise/runtime/wwise_runtime_manager.gd"
 AudioService="*res://autoload/audio_service.gd"
 AudioIntegration="*res://autoload/audio_integration.gd"
 
@@ -43,10 +44,6 @@ window/size/window_width_override=1920
 window/size/window_height_override=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-
-[dotnet]
-
-project/assembly_name="spotlight2026"
 
 [editor_plugins]
 

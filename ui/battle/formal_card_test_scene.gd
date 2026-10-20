@@ -1,4 +1,4 @@
-extends BattleTestScene
+extends "res://ui/battle/battle_test_scene.gd"
 
 ## 正式牌测试入口。分组仅改变测试牌组，不改正式存档、解锁与主菜单默认牌组。
 func _ready() -> void:

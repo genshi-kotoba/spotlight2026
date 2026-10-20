@@ -12,10 +12,8 @@ func _ready() -> void:
 
 func _run() -> void:
 	fixture_root = "res://.godot/world-encounters-%d" % Time.get_ticks_usec()
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("slot1.json"), fixture_root.path_join("slot2.json"), fixture_root.path_join("slot3.json")])
-	SaveGateway._active_slot = 1
-	_check("独立测试存档", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture_root.path_join("game.json")
+	_check("独立测试存档", SaveGateway.load_current() == OK)
 	EncounterFlow.relic_board_path = fixture_root.path_join("empty-relic.json")
 	_test_policy()
 	await _test_world_flow()
@@ -130,10 +128,11 @@ func _test_world_flow() -> void:
 	ui.enemy_turn_delay = 0.05
 	var battle: BattleStateMachine = ui._battle
 	_check("第一层战斗使用场景一并保存开战楼层", int(battle.player.encounter_floor) == 1 and ui.get_node("Background").texture.resource_path == "res://assets/env/ENV-001/ENV-001.PNG")
-	_check("敌人匹配种子分配且图片名称正确", battle.enemies[0].enemy_id == expected_id and ui.get_node("EnemyName").text == TextCatalog.entry("monsters", expected_id).name and ui.get_node("EnemyPortrait").texture != null)
+	_check("敌人匹配种子分配且图片名称正确", battle.enemies[0].enemy_id == expected_id and ui.enemy_rack.slots[0].name_label.text == TextCatalog.entry("monsters", expected_id).name and ui.enemy_rack.slots[0].portrait.texture != null)
 	_check("地图战斗加载对应怪物TXT", ui._monster_text.source_path == TextCatalog.entry("monsters", expected_id).battle_text_path and not ui._monster_text.sentences.is_empty())
 	_check("真实牌组生命进入战斗，不使用临时测试牌", battle.hand.size() == 10 and int(battle.player.health) == 200 and not bool(battle.player.temporary_deck))
-	_check("不能重开战斗或修改战斗中的典籍", not ui._restart_button.visible and not ui._relic_edit_button.visible)
+	_check("生产战斗不显示重开测试按钮且典籍保持只读", not ui._restart_button.visible and not ui._run_menu.allow_edit_in_battle)
+	await _ready_to_act(ui)
 	for card: Dictionary in battle.hand:
 		if card.card_id == "1":
 			ui._on_hand_card_pressed(str(card.instance_id))
@@ -152,7 +151,7 @@ func _test_world_flow() -> void:
 	ui._on_menu_return()
 	await _frames(5)
 	_check("保存返回菜单保留进行中的战斗", get_tree().current_scene.scene_file_path == "res://ui/main_menu/main_menu.tscn" and SaveGateway.current_run().current_battle == battle)
-	_check("冷启动模拟读取档案", SaveGateway._load_slot(1) == OK)
+	_check("冷启动模拟读取档案", SaveGateway.load_current() == OK)
 	get_tree().current_scene._on_continue_pressed()
 	await _frames(12)
 	ui = get_tree().current_scene
@@ -166,6 +165,7 @@ func _test_world_flow() -> void:
 	_check("战斗地图仍不包含怪物身份字段", not _json(ui._map_snapshot_data()).contains("content_id"))
 	var context := BattleEffectContext.new(battle, expected_id, ui._resolver.buff_catalog)
 	context.damage_enemy(expected_id, int(battle.enemies[0].health) - 5)
+	await preload("res://tests/support/presentation_test_helper.gd").battle_settled(ui)
 	ui.resolution_delay = 0.05
 	ui.enemy_turn_delay = 0.05
 	for card: Dictionary in battle.hand:
@@ -186,7 +186,7 @@ func _test_world_flow() -> void:
 	# 战斗数值通过事件队列清场夹具；地图位置只移到合法可达的交互格。
 	for floor_number in [1, 2, 3]:
 		var safety := 0
-		while view.map_run.current_floor == floor_number and not EncounterFlow.waiting_for_fourth_floor() and safety < 10:
+		while GlobalState.run_active and view.scene_file_path == MAP and view.map_run.current_floor == floor_number and safety < 10:
 			safety += 1
 			var target := _approach(view, ["boss", "battle", "elite"])
 			if target.is_empty():
@@ -197,6 +197,7 @@ func _test_world_flow() -> void:
 			ui = get_tree().current_scene
 			if ui.scene_file_path != EncounterFlow.BATTLE_SCENE:
 				break
+			await _ready_to_act(ui)
 			var expected_background := preload("res://ui/battle/battle_environment.gd").texture_for_floor(floor_number)
 			_check("第%d层战斗复用公共场景缓存" % floor_number, ScenePreloader.cached_resource(EncounterFlow.BATTLE_SCENE) is PackedScene)
 			_check("第%d层正式节点绑定对应战场" % floor_number, int(ui._battle.player.encounter_floor) == floor_number and ui.get_node("Background").texture == expected_background)
@@ -205,16 +206,23 @@ func _test_world_flow() -> void:
 			_check("节点或Boss结算后旧战场不变", ui.get_node("Background").texture == expected_background and ui._battle_environment_floor() == floor_number)
 			_check("Boss奖励阶段已预热目标楼层全部节点", ScenePreloader.stats().map_id == EncounterFlow.session.map_id and int(ScenePreloader.stats().nodes) == EncounterFlow.session.nodes.size())
 			await _frames(10)
+			if floor_number == 3 and bool(SaveGateway.current_run().inventory_state.get("pending_run_victory", false)):
+				await preload("res://tests/support/presentation_test_helper.gd").battle_settled(ui)
+				_check("第三层Boss领奖前仍可保存并继续", SaveGateway.save_current() == OK and SaveGateway.load_current() == OK and SaveGateway.continue_saved_run() == OK)
+				get_tree().change_scene_to_file(MAP)
+				await _frames(12)
+				_check("冷恢复保留最终奖励，尚未提前结束游戏", GlobalState.run_active and not RunRewards.pending(SaveGateway.current_run()).is_empty() and bool(SaveGateway.current_run().inventory_state.get("pending_run_victory", false)))
 			await preload("res://tests/support/reward_test_helper.gd").collect(get_tree())
 			view = get_tree().current_scene
 			if view.scene_file_path != MAP:
 				break
-		_check("第%d层BOSS后自动推进或进入第四层待开放状态" % floor_number, view.scene_file_path == MAP and (view.map_run.current_floor > floor_number or (floor_number == 3 and EncounterFlow.waiting_for_fourth_floor())))
-	_check("第三层完成不误判全游戏胜利", GlobalState.run_active and GlobalState.current_run.stages_completed == 3 and GlobalState.current_run.map_ids.size() == 3 and EncounterFlow.waiting_for_fourth_floor())
-	_check("未生成第四层地图", view.map_run.floor_count() == 3)
+		_check("第%d层BOSS后自动推进或第三层通关" % floor_number, (view.scene_file_path == MAP and view.map_run.current_floor > floor_number) if floor_number < 3 else (not GlobalState.run_active and GlobalState.run_history.back().result == "victory"))
+	_check("第三层BOSS领奖后记录通关和三层完成", not GlobalState.run_active and GlobalState.run_history.back().stages_completed == 3 and GlobalState.run_history.back().result == "victory")
+	_check("未生成第四层地图", EncounterFlow.map_run.floor_count() == 3)
+	await _wait_settlement()
 	await _capture("floor3-cleared.png")
+	await _confirm_settlement()
 	# 空牌组兼容与败北：临时牌只存在于战斗快照，不授予解锁或污染正式牌组。
-	SaveGateway.abandon_run()
 	await _frames(3)
 	config.run_id = "empty-deck-encounter"
 	config.initial_deck = []
@@ -227,11 +235,32 @@ func _test_world_flow() -> void:
 	await _frames(8)
 	ui = get_tree().current_scene
 	_check("空牌组临时使用20张牌，首抽受10张上限限制且不更改正式牌组", bool(ui._battle.player.temporary_deck) and GlobalState.current_run.deck.is_empty() and ui._battle.hand.size() == 10)
+	await _ready_to_act(ui)
 	await _capture("node-battle.png")
 	var defeat_context := BattleEffectContext.new(ui._battle, "player", ui._resolver.buff_catalog)
 	defeat_context.damage_player(999, true)
-	await _frames(10)
-	_check("败北回主菜单并记录失败，不完成BOSS", get_tree().current_scene.scene_file_path == "res://ui/main_menu/main_menu.tscn" and not GlobalState.run_active and GlobalState.run_history.back().result == "defeat")
+	await _wait_settlement()
+	_check("败北展示结算并记录失败，不完成BOSS", not GlobalState.run_active and GlobalState.run_history.back().result == "defeat")
+	await _confirm_settlement()
+	_check("确认败北结算后回主菜单", get_tree().current_scene.scene_file_path == "res://ui/main_menu/main_menu.tscn")
+
+func _wait_settlement() -> void:
+	var deadline := Time.get_ticks_msec() + 18000
+	while (not is_instance_valid(RunResults.view) or not RunResults.view.detail_ready) and Time.get_ticks_msec() < deadline: await get_tree().process_frame
+	_check("终局结算动画完成并显示只读背包", is_instance_valid(RunResults.view) and RunResults.view.detail_ready)
+
+func _confirm_settlement() -> void:
+	if is_instance_valid(RunResults.view): RunResults.view.confirm_button.pressed.emit()
+	var deadline := Time.get_ticks_msec() + 8000
+	while (is_instance_valid(RunResults.view) or SceneTransition.is_loading()) and Time.get_ticks_msec() < deadline: await get_tree().process_frame
+
+func _ready_to_act(ui: Node) -> void:
+	var deadline := Time.get_ticks_msec() + 20000
+	while ui._opening or ui._presentation_pending():
+		if Time.get_ticks_msec() >= deadline:
+			_check("战斗开局与抽牌表现按时完成", false)
+			return
+		await get_tree().create_timer(0.01).timeout
 
 func _approach(view: Node, types: Array) -> String:
 	view._set_paused(false)

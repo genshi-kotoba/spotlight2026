@@ -52,6 +52,8 @@ func reload() -> Error:
 			# 兼容旧工具/旧测试的六列 CSV；旧数据不猜测 TXT 路径。
 			result = CsvTextTable.read(str(paths.get(category, "")), LEGACY_MONSTER_HEADERS, ENTRY_KEYS)
 		_tables[category] = result.records
+		if category == "fragments":
+			_tables[category] = result.records.filter(func(record: Dictionary) -> bool: return str(record.id) not in RelicCatalog.RETIRED_IDS)
 		_errors[category] = result.message
 		if result.error != OK and first_error == OK:
 			first_error = result.error

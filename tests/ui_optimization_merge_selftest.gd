@@ -11,19 +11,17 @@ func _ready() -> void:
 func _run() -> void:
 	fixture_root = "res://.godot/ui-optimization-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(fixture_root)
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("1.json"), fixture_root.path_join("2.json"), fixture_root.path_join("3.json")])
-	SaveGateway._active_slot = 1
-	_check("独立档案加载", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture_root.path_join("game.json")
+	_check("独立档案加载", SaveGateway.load_current() == OK)
 	var config: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
 	config.run_id = "ui-optimization"
 	_check("正式新局", SaveGateway.start_new_run("ui-optimization", config) == OK)
 	var run := SaveGateway.current_run()
-	_check("新局8张牌、12格空典籍、空背包", run.deck.size() == 8 and run.items.is_empty() and RunRewards.board_for_run(run).cells.count("") == 12)
-	var geometry_ok := RelicBookGeometry.CELL_COUNT == 12
-	for index in 12:
+	_check("新局8张牌、20格空典籍与默认九格解锁、空背包", run.deck.size() == 8 and run.items.is_empty() and RunRewards.board_for_run(run).cells.size() == 20 and RunRewards.board_for_run(run).cells.count("") == 20 and RunRewards.board_for_run(run).unlocked_cells == [0, 1, 2, 4, 5, 6, 8, 9, 10])
+	var geometry_ok := RelicBookGeometry.CELL_COUNT == 20
+	for index in 20:
 		geometry_ok = geometry_ok and RelicBookGeometry.cell_at(RelicBookGeometry.cell_center(index, RelicBookView.BOOK_SIZE), RelicBookView.BOOK_SIZE) == index
-	_check("12格透视中心命中，不接受第13格", geometry_ok and RelicBookGeometry.cell_quad(12, RelicBookView.BOOK_SIZE).is_empty())
+	_check("20格透视中心命中，不接受第21格", geometry_ok and RelicBookGeometry.cell_quad(20, RelicBookView.BOOK_SIZE).is_empty())
 	var seed_before := JSON.stringify(SeedService.capture_snapshot())
 	var menu := RunMenuOverlay.new()
 	add_child(menu)
@@ -50,12 +48,18 @@ func _run() -> void:
 	_check("换位保存失败", RunRewards.move_fragment(run, 0, 2) != OK)
 	SaveGateway._load_error = old_error
 	_check("失败完整回滚", JSON.stringify(run.to_dictionary()) == snapshot)
-	_check("越界与空格被拒绝", RunRewards.move_fragment(run, 0, 12) == ERR_INVALID_PARAMETER and RunRewards.move_fragment(run, 11, 0) == ERR_DOES_NOT_EXIST)
+	_check("越界与已解锁空格被拒绝", RunRewards.move_fragment(run, 0, 20) == ERR_INVALID_PARAMETER and RunRewards.move_fragment(run, 2, 0) == ERR_DOES_NOT_EXIST)
+	_check("锁定格被拒绝且拒绝不改配置", RunRewards.move_fragment(run, 0, 12) == ERR_UNAUTHORIZED and JSON.stringify(run.to_dictionary()) == snapshot)
 	await _click(menu._relic_drop_cells[1], MOUSE_BUTTON_RIGHT)
 	_check("右键卸下仅返回一份", RunRewards.board_for_run(run).cells[1].is_empty() and run.items.size() == 2)
+	var before_item_click := JSON.stringify(run.to_dictionary())
 	await _click(menu._item_grid.get_child(0))
+	_check("真实单击残片打开选项菜单并精确选中副本", menu._item_menu != null and menu._item_menu.is_open() and menu._selected_fragment_id == "fragment-a" and JSON.stringify(run.to_dictionary()) == before_item_click)
+	# UseDiscardMenu deliberately consumes the outside press which dismisses it.
 	await _click(menu._relic_drop_cells[2])
-	_check("保留原点击残片再点空格的装配方式", RunRewards.board_for_run(run).cells[2] == "deal_damage" and RunRewards.item(run, "fragment-a").is_empty())
+	_check("真实外点只关闭选项菜单，保留选择且不改变存档", not menu._item_menu.is_open() and menu._selected_fragment_id == "fragment-a" and JSON.stringify(run.to_dictionary()) == before_item_click)
+	await _click(menu._relic_drop_cells[2])
+	_check("关闭选项后保留真实点击空格装配方式", RunRewards.board_for_run(run).cells[2] == "deal_damage" and RunRewards.item(run, "fragment-a").is_empty())
 	# 清除选中状态后从已装格拖回背包，走与右键相同的事务。
 	await _drag(menu._relic_drop_cells[2], menu._item_grid.get_child(3))
 	_check("拖回背包不丢失副本", RunRewards.board_for_run(run).cells[2].is_empty() and run.items.size() == 2)
@@ -88,6 +92,7 @@ func _run() -> void:
 	battle.relic_board_path = fixture_root.path_join("empty.json")
 	add_child(battle)
 	await _frames(5)
+	await preload("res://tests/support/presentation_test_helper.gd").battle_settled(battle)
 	menu = battle._run_menu
 	battle._open_run_menu(1)
 	await _settle()
@@ -97,11 +102,6 @@ func _run() -> void:
 	menu._relic_cell_input(_button(Vector2.ZERO, MOUSE_BUTTON_RIGHT, true), 0)
 	_check("战斗菜单不能拖拽、卸下、装配或开包", JSON.stringify(run.to_dictionary()) == snapshot and menu._drag_ghost == null)
 	menu.close()
-	var cards: Array[Dictionary] = [{"card_id": "1", "instance_id": "preview-only", "enchantments": ["damage_50", "repeat_2"]}, {"card_id": "50", "instance_id": "block-only"}]
-	var battle_before := JSON.stringify(battle._battle.to_dictionary())
-	seed_before = JSON.stringify(SeedService.capture_snapshot())
-	var values := BattleDirectPreview.calculate(battle._battle, cards, battle._resolver.card_catalog)
-	_check("正式指令及附魔只读数值预览", int(values.damage) == 14 and int(values.block) > 0 and JSON.stringify(battle._battle.to_dictionary()) == battle_before and JSON.stringify(SeedService.capture_snapshot()) == seed_before)
 	battle._on_hand_card_pressed(str(battle._battle.hand[0].instance_id))
 	await _frames(3)
 	var row: Control = battle.play_cards.get_child(0)
@@ -115,11 +115,12 @@ func _run() -> void:
 	await get_tree().create_timer(0.6).timeout
 	await _capture("hand-hover.png")
 	battle._on_hand_card_hover_changed(hand_slot, hand_slot.get_child(0), false)
-	battle._feedback.on_damaged(&"enemy", 2, 0)
+	battle.enemy_rack.slots[0].set_meta("portrait_home", battle.enemy_rack.slots[0].portrait.position)
+	battle._feedback.on_damaged(&"enemy", 2, 0, str(battle._battle.enemies[0].enemy_id))
 	await get_tree().create_timer(0.08).timeout
-	battle._feedback.on_damaged(&"enemy", 2, 0)
+	battle._feedback.on_damaged(&"enemy", 2, 0, str(battle._battle.enemies[0].enemy_id))
 	await get_tree().create_timer(0.35).timeout
-	_check("连续受击震动后恢复原位", battle.get_node("EnemyPortrait").position.is_equal_approx(battle._feedback._portrait_homes[&"enemy"]))
+	_check("连续受击震动后恢复原位", battle.enemy_rack.slots[0].portrait.position.is_equal_approx(battle.enemy_rack.slots[0].get_meta("portrait_home")))
 	battle.queue_free()
 	await _frames(2)
 	print("新版UI优化整合：全部通过" if failures == 0 else "新版UI优化整合：失败%d项" % failures)

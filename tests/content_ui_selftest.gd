@@ -4,10 +4,8 @@ func _run() -> void:
 	get_window().size = Vector2i(1280, 720)
 	fixture_root = "res://.godot/content-ui-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(fixture_root)
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("1.json"), fixture_root.path_join("2.json"), fixture_root.path_join("3.json")])
-	SaveGateway._active_slot = 1
-	_check("界面测试独立存档", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture_root.path_join("game.json")
+	_check("界面测试独立存档", SaveGateway.load_current() == OK)
 	var config: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
 	config.run_id = "content-ui-fixture"
 	_check("界面测试独立新局", SaveGateway.start_new_run("content-ui-fixture", config) == OK)
@@ -17,14 +15,15 @@ func _run() -> void:
 	scene.initial_draw_count = 8
 	add_child(scene)
 	await _frames(6)
+	await preload("res://tests/support/presentation_test_helper.gd").battle_settled(scene)
 	scene._battle.enemies.assign([MonsterCatalog.create("11", 2), MonsterCatalog.create("14", 2, "knight"), MonsterCatalog.create("15", 2, "thief")])
 	scene._battle.player["potions"] = [{"item_id": "fixture-potion", "potion": 1}]
 	scene._queue_refresh()
 	await _frames(8)
-	_check("多敌人目标列表与药水均可见", scene._enemy_selector.get_child_count() == 4)
-	scene._enemy_selector.get_child(1).pressed.emit()
+	_check("多敌人同屏槽位与目标指示就绪", scene.enemy_rack.slots.size() == 3)
+	scene.enemy_rack.slots[1].selected.emit(scene.enemy_rack.slots[1].enemy_id)
 	await _frames(5)
-	_check("点击随从可切换伤害目标", scene._chosen_enemy_id() == "knight")
+	_check("点击战场上的随从可切换伤害目标", scene._chosen_enemy_id() == "knight")
 	await _capture("multi-enemy.png")
 	scene._battle.request_battle_choice("nullify", scene._battle.hand.duplicate(true), 1)
 	await _frames(5)

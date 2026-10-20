@@ -53,14 +53,14 @@ func _ready() -> void:
 		EncounterFlow.session = session
 	if not RunRewards.pending(_gateway.current_run()).is_empty() and _gateway.current_run().current_battle == null:
 		call_deferred("_show_pending_rewards")
+	elif bool(_gateway.current_run().inventory_state.get("pending_run_victory", false)):
+		RunResults.call_deferred("complete_if_ready")
 	elif session.pending.get("type") == "shop":
 		call_deferred("_show_shop", session.pending.duplicate(true))
 	elif session.pending.get("type") == "event":
 		call_deferred("_show_random_event")
 	elif session.pending.get("type") in ["chest", "pile"]:
 		call_deferred("_show_node_loot", session.pending.duplicate(true))
-	elif EncounterFlow.waiting_for_fourth_floor():
-		_show_fourth_floor_notice()
 	# 放弃本局的二次确认在设置面板里完成，这里只负责落地。
 	# 冒险菜单设置页里的三个动作：存档、回主菜单、退出都走存档网关。
 	_run_menu.abandon_requested.connect(_on_menu_abandon)
@@ -148,8 +148,7 @@ func _interact() -> void:
 	if not RunRewards.pending(_gateway.current_run()).is_empty():
 		_show_pending_rewards()
 		return
-	if EncounterFlow.waiting_for_fourth_floor():
-		_show_toast("前三层已完成，第四层暂未开放")
+	if RunResults.complete_if_ready():
 		return
 	if session.pending.get("type") in ["chest", "pile"]:
 		_show_node_loot(session.pending.duplicate(true))
@@ -237,9 +236,8 @@ func _show_pending_rewards() -> void:
 	_reward_popup.show_rewards()
 
 func _on_rewards_closed() -> void:
+	if RunResults.complete_if_ready(): return
 	_set_paused(false)
-	if EncounterFlow.waiting_for_fourth_floor():
-		_show_fourth_floor_notice()
 
 func _reset_map() -> void:
 	_show_toast("正式冒险不重置节点；同一种子的敌人和已完成进度均保留")
@@ -249,17 +247,7 @@ func _refresh_run_controls() -> void:
 	_previous.hide()
 	_next.hide()
 	if map_run != null and map_run.current_floor > 0:
-		_floor_label.text = "第 %d / 4 层 · 击败 BOSS 自动前往下一层" % map_run.current_floor
-
-func _show_fourth_floor_notice() -> void:
-	_set_paused(true)
-	var notice := AcceptDialog.new()
-	notice.title = "前三层已完成"
-	notice.dialog_text = "已击败第三层 BOSS。\n第四层暂未制作，本局进度已保留；这还不是全游戏通关。"
-	notice.ok_button_text = "留在地图"
-	CommonUiSkin.style_dialog(notice)
-	add_child(notice)
-	notice.popup_centered(Vector2i(660, 220))
+		_floor_label.text = "第 %d / %d 层%s" % [map_run.current_floor, EncounterFlow.final_floor_count(), " · 顶端" if map_run.current_floor == 4 else ""]
 
 
 func capture_menu_checkpoint() -> Dictionary:
@@ -271,6 +259,15 @@ func capture_menu_checkpoint() -> Dictionary:
 func _save_run() -> void:
 	var error: Error = _gateway.save_current()
 	_show_toast("本局已保存到当前档案" if error == OK else "保存失败：%d" % error)
+
+
+func _persist_fast_travel(previous_state: Dictionary) -> Error:
+	var error: Error = _gateway.save_current()
+	if error != OK:
+		# Capturing a checkpoint also updates the run's in-memory floor cache.
+		# Restore it when the gateway refuses the atomic disk write.
+		map_run.capture_snapshot(previous_state)
+	return error
 
 
 func _build_run_controls() -> void:

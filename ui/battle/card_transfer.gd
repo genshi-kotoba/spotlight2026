@@ -1,10 +1,11 @@
 extends Control
-## 仅表现层的飞牌。目标每帧读取，允许出牌列重建、插牌和滚动，不阻塞规则队列。
+## 仅表现层的飞牌。目标每帧读取，支持抽牌落入扇形，以及出牌列重建、插牌和滚动。
 signal completed
 
-const SHRINK_TIME := 0.07
-const FLIGHT_TIME := 0.18
-const LAND_TIME := 0.09
+## 弃牌飞行动画。试玩判定原 0.34s 整体偏慢，压到 0.18s。
+const SHRINK_TIME := 0.04
+const FLIGHT_TIME := 0.09
+const LAND_TIME := 0.05
 const DURATION := SHRINK_TIME + FLIGHT_TIME + LAND_TIME
 const TRAVEL_SCALE := 0.09
 
@@ -46,6 +47,7 @@ func _land(weight: float) -> void:
 	position = Vector2(target.center) - pivot_offset
 	var target_scale := 0.025 if disappearing else float(target.scale)
 	scale = Vector2.ONE * lerpf(TRAVEL_SCALE, target_scale, weight)
+	rotation = lerp_angle(0.0, float(target.get("rotation", 0.0)), weight)
 	if disappearing:
 		modulate.a = 1.0 - weight
 

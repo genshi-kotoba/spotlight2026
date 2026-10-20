@@ -11,7 +11,7 @@ amount = 8
 [resource]
 script = ExtResource("3_card")
 card_id = &"test_damage_enemy"
-card_name = "测试·对敌伤害"
-description = "对目标敌人造成 8 点伤害。力量增加伤害，虚弱降低伤害，最低为 0。"
+card_name = "对敌伤害"
+description = "对目标敌人造成 8 点伤害。"
 face_tint = 1
 effects = Array[ExtResource("1_base")]([SubResource("Effect")])

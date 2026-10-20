@@ -1,19 +1,25 @@
 class_name MonsterCatalog
 extends RefCounted
-## 正式怪物数值来自策划案；17/23 按当前测试要求暂定100血、10攻击。
-const HEALTH := [128, 64, 18, 32, 28, 24, 26, 24, 164, 135, 70, 118, 89, 46, 38, 205, 100, 101, 99, 80, 89, 50, 100]
-const DAMAGE := [10, 2, 4, 5, 0, 4, 1, 4, 3, 6, 4, 10, 6, 6, 10, 2, 10, 0, 0, 10, 3, 6, 10]
+## 正式怪物数值来自策划案；17 按当前测试要求暂定100血、10攻击。
+const HEALTH := [128, 64, 18, 32, 28, 24, 26, 24, 164, 135, 70, 118, 89, 46, 38, 205, 100, 101, 99, 80, 89, 50, 305]
+const DAMAGE := [10, 2, 4, 5, 0, 4, 1, 4, 3, 6, 4, 10, 6, 6, 10, 2, 10, 0, 0, 10, 3, 6, 8]
 
 static func create(id: String, floor_index := 1, identity := "") -> Dictionary:
 	var entry := TextCatalog.entry("monsters", id)
 	var index := int(id) - 1
 	if entry.is_empty() or index < 0 or index >= HEALTH.size(): return {}
-	return {"enemy_id": id if identity.is_empty() else identity, "monster_id": id,
+	var enemy := {"enemy_id": id if identity.is_empty() else identity, "monster_id": id,
 		"name": str(entry.name), "art_path": str(entry.art_path),
 		"grade": "BOSS" if "BOSS" in str(entry.get("type", "")) else ("精英" if "精英" in str(entry.get("type", "")) else "普通"),
 		"health": int(HEALTH[index]), "max_health": int(HEALTH[index]), "block": 0, "buffs": [],
 		"floor": floor_index, "taunt": id == "5" and floor_index >= 2, "phase": 1,
 		"actions": [{"action_id": "monster-attack", "damage": int(DAMAGE[index])}]}
+	if id == "23":
+		enemy.merge({"boss_transition_pending": false, "boss_health_locked": false,
+			"boss_transition_turn": 0, "boss_saturn_turn": 0,
+			"actions": [{"action_id": "monster-23", "damage": 8},
+				{"action_id": "monster-23", "strength": 1}, {"action_id": "monster-23", "block": 8}]}, true)
+	return enemy
 
 static func plan(enemy: Dictionary, turn: int, rng: RandomStream) -> Array:
 	var id := int(enemy.get("monster_id", 0))
@@ -40,6 +46,7 @@ static func plan(enemy: Dictionary, turn: int, rng: RandomStream) -> Array:
 		18: result = [{"block": 10}]
 		19: result = [{"heal_player": 10, "nullify": true}]
 		21: result = [{"damage": 3}, {"damage": 3}]
+		23: result = [{"damage": 8}, {"strength": 1}, {"block": 8}]
 		_: result = enemy.actions.duplicate(true)
 	for action: Dictionary in result: action["action_id"] = "monster-%d" % id
 	return result

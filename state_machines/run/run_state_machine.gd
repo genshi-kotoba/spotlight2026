@@ -20,7 +20,11 @@ var result: Dictionary = {}
 
 var max_health := 0
 var health := 0
-var gold := 0
+var total_silver_earned := 0
+var gold := 0:
+	set(value):
+		total_silver_earned += maxi(0, value - gold)
+		gold = value
 var deck: Array[String] = []
 ## 与 deck 同序的永久副本；deck 保留编号接口以兼容地图、历史与旧存档。
 var deck_cards: Array[Dictionary] = []
@@ -47,22 +51,25 @@ var last_error: Error = OK
 
 
 func initialize_new(seed_text: String, config: Dictionary,
-		unlocked_cards: Array) -> Error:
+		unlocked_cards: Array, seed_source: Variant = null) -> Error:
 	if active or current_battle != null:
 		return _fail(ERR_ALREADY_IN_USE, "Run is already initialized")
 
 	var prepared := _prepare_new_config(config, unlocked_cards)
 	if prepared.is_empty():
 		return last_error
-	var chosen_seed := SeedService.begin_run(seed_text)
+	# 覆盖存档时可先用独立随机上下文预备新局，写盘成功前不影响原局的随机流。
+	var random: Variant = SeedService if seed_source == null else seed_source
+	var chosen_seed: String = random.begin_run(seed_text)
 	if chosen_seed.is_empty():
-		return _fail(SeedService.last_error, "Could not begin the seeded run")
+		return _fail(random.last_error, "Could not begin the seeded run")
 
 	run_id = prepared["run_id"]
 	main_seed = chosen_seed
 	max_health = prepared["max_health"]
 	health = prepared["health"]
 	gold = prepared["gold"]
+	total_silver_earned = gold
 	deck.assign(prepared["deck"])
 	ensure_deck_cards()
 	card_pool.assign(prepared["card_pool"])
@@ -78,15 +85,15 @@ func initialize_new(seed_text: String, config: Dictionary,
 	for map_id: String in map_ids:
 		map_states[map_id] = {"completed": false, "nodes": {}}
 
-	var seeded_rewards: Variant = _seeded_pool(RandomDomains.REWARD, prepared["reward_pool"])
+	var seeded_rewards: Variant = _seeded_pool(RandomDomains.REWARD, prepared["reward_pool"], random)
 	if seeded_rewards == null:
 		return last_error
 	reward_pool.assign(seeded_rewards)
-	var seeded_shops: Variant = _seeded_pool(RandomDomains.SHOP, prepared["shop_pool"])
+	var seeded_shops: Variant = _seeded_pool(RandomDomains.SHOP, prepared["shop_pool"], random)
 	if seeded_shops == null:
 		return last_error
 	shop_pool.assign(seeded_shops)
-	var seeded_events: Variant = _seeded_pool(RandomDomains.EVENT_POOL, prepared["event_pool"])
+	var seeded_events: Variant = _seeded_pool(RandomDomains.EVENT_POOL, prepared["event_pool"], random)
 	if seeded_events == null:
 		return last_error
 	event_pool.assign(seeded_events)
@@ -143,14 +150,15 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 	var saved_max: Variant = _integer_value(data.get("max_health"))
 	var saved_health: Variant = _integer_value(data.get("health"))
 	var saved_gold: Variant = _integer_value(data.get("gold"))
+	var saved_total: Variant = _integer_value(data.get("total_silver_earned", data.get("gold")))
 	var saved_battles: Variant = _integer_value(data.get("battles_fought"))
 	var saved_stages: Variant = _integer_value(data.get("stages_completed"))
-	if saved_max == null or saved_health == null or saved_gold == null \
+	if saved_max == null or saved_health == null or saved_gold == null or saved_total == null \
 			or saved_battles == null or saved_stages == null or saved_max <= 0 \
-			or saved_health < 0 or saved_health > saved_max or saved_gold < 0 \
+			or saved_health < 0 or saved_health > saved_max or saved_gold < 0 or saved_total < 0 \
 			or saved_battles < 0 or saved_stages < 0 or not saved_maps.has(saved_current_map) \
 			or not _json_safe(saved_result) or not _json_safe(saved_items) or not RunRewards.valid_items(saved_items) \
-			or not _unique_string_array_valid(saved_maps) or saved_maps.size() != 3 \
+			or not _unique_string_array_valid(saved_maps) or saved_maps.size() not in [3, 4] \
 			or not _valid_map_states(saved_map_states, saved_maps) \
 			or not _valid_nonnegative_int_dictionary(saved_indices) \
 			or (saved_active and not saved_result.is_empty()) \
@@ -169,6 +177,7 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 	max_health = saved_max
 	health = saved_health
 	gold = saved_gold
+	total_silver_earned = int(saved_total)
 	deck.assign(saved_deck)
 	if data.has("deck_cards"):
 		if not _valid_deck_cards(data.deck_cards, saved_deck) or _integer_value(data.get("next_card_serial")) == null or int(data.next_card_serial) < 0:
@@ -223,6 +232,7 @@ func to_dictionary() -> Dictionary:
 		"max_health": max_health,
 		"health": health,
 		"gold": gold,
+		"total_silver_earned": total_silver_earned,
 		"deck": deck.duplicate(),
 		"deck_cards": deck_cards.duplicate(true),
 		"next_card_serial": next_card_serial,
@@ -370,6 +380,8 @@ func start_battle(node_id: String, enemies: Array, draw_count: int = 5,
 	ensure_deck_cards()
 	for index in battle_deck.size():
 		var copy: Dictionary = deck_cards[index].duplicate(true) if temporary_deck.is_empty() else {}
+		for field: String in ["boss_saturn", "boss_owner"]:
+			copy.erase(field)
 		copy.merge({
 			"instance_id": "%s:%s:%d:%d" % [run_id, node_id, battle_index, index],
 			"card_id": battle_deck[index],
@@ -416,17 +428,35 @@ func finish_abandoned() -> Error:
 
 
 func build_history_record(end_result: Dictionary) -> Dictionary:
+	return history_record_from_snapshot(to_dictionary(), end_result)
+
+
+static func history_record_from_snapshot(snapshot: Dictionary, end_result: Dictionary) -> Dictionary:
+	var context: Dictionary = snapshot.get("inventory_state", {}).get("settlement_context", {})
 	return {
-		"run_id": run_id,
-		"main_seed": main_seed,
+		"run_id": snapshot.run_id,
+		"main_seed": snapshot.main_seed,
 		"result": end_result.get("status", "unknown"),
 		"victory": end_result.get("status") == "victory",
 		"death_location": end_result.get("death_location", ""),
-		"deck": deck.duplicate(),
-		"stages_completed": stages_completed,
-		"battles_fought": battles_fought,
-		"enemies_defeated": defeated_enemy_ids.size(),
+		"location_name": context.get("location_name", end_result.get("death_location", "未知地点")),
+		"background_path": context.get("background_path", "res://assets/env/ENV-001/ENV-001.PNG"),
+		"total_silver_earned": int(snapshot.get("total_silver_earned", snapshot.get("gold", 0))),
+		"final_inventory": {
+			"gold": snapshot.get("gold", 0), "health": snapshot.get("health", 0),
+			"max_health": snapshot.get("max_health", 100),
+			"deck": snapshot.get("deck", []).duplicate(true),
+			"deck_cards": snapshot.get("deck_cards", []).duplicate(true),
+			"next_card_serial": snapshot.get("next_card_serial", 0),
+			"items": snapshot.get("items", []).duplicate(true),
+			"inventory_state": snapshot.get("inventory_state", {}).duplicate(true),
+		},
+		"deck": snapshot.deck.duplicate(),
+		"stages_completed": snapshot.stages_completed,
+		"battles_fought": snapshot.battles_fought,
+		"enemies_defeated": snapshot.defeated_enemy_ids.size(),
 		"ended_at": Time.get_datetime_string_from_system(true),
+		"ended_at_unix": Time.get_unix_time_from_system(),
 	}
 
 
@@ -454,7 +484,7 @@ func _prepare_new_config(config: Dictionary, unlocked_cards: Array) -> Dictionar
 			or configured_gold < 0 or not _string_array_valid(catalog) \
 			or not _string_array_valid(initial_deck) or not _string_array_valid(starters) or not configured_items is Array \
 			or not _json_safe(configured_items) or not _unique_string_array_valid(configured_maps) \
-			or configured_maps.size() != 3 or not _string_array_valid(rewards) \
+			or configured_maps.size() not in [3, 4] or not _string_array_valid(rewards) \
 			or not _string_array_valid(shops) or not _string_array_valid(events) \
 			or not _string_array_valid(unlocked_cards):
 		_fail(ERR_INVALID_PARAMETER, "New run config is invalid")
@@ -520,18 +550,20 @@ static func _valid_deck_cards(values: Variant, ids: Array) -> bool:
 		var card: Variant = values[index]
 		if not card is Dictionary or card.get("card_id") != ids[index] or not card.get("copy_id") is String or card.copy_id.is_empty() or seen.has(card.copy_id) or not CardEnchantments.valid(card.get("enchantments")):
 			return false
+		if card.has("boss_saturn") or card.has("boss_owner"):
+			return false
 		seen[card.copy_id] = true
 	return true
 
 
-func _seeded_pool(domain: StringName, source: Array) -> Variant:
+func _seeded_pool(domain: StringName, source: Array, random: Variant) -> Variant:
 	var result: Array[String] = []
 	result.assign(source)
 	if result.size() <= 1:
 		return result
-	var stream := SeedService.get_stream(domain, [run_id, "pool"])
+	var stream: RandomStream = random.get_stream(domain, [run_id, "pool"])
 	if stream == null:
-		_fail(SeedService.last_error, "Could not get pool stream: " + String(domain))
+		_fail(random.last_error, "Could not get pool stream: " + String(domain))
 		return null
 	if stream.shuffle_in_place(result) != OK:
 		_fail(stream.last_error, "Could not shuffle pool: " + String(domain))
@@ -563,6 +595,11 @@ func _on_battle_ended(battle_result: Dictionary) -> void:
 	if is_instance_valid(presentation):
 		ended.reparent(presentation)
 	var player_state := ended.player
+	var floor_index := preload("res://ui/battle/battle_environment.gd").floor_for_battle(player_state, ended.map_id)
+	inventory_state["settlement_context"] = {
+		"location_name": str(ended.enemies[0].get("name", "未知怪物")) if not ended.enemies.is_empty() else "未知怪物",
+		"background_path": preload("res://ui/battle/battle_environment.gd").path_for_floor(floor_index),
+	}
 	health = int(player_state.get("health", health))
 	gold = maxi(0, int(player_state.get("silver", gold)))
 	ensure_deck_cards()
@@ -661,6 +698,8 @@ static func _valid_inventory_state(data: Dictionary) -> bool:
 			or pending.get("grade") not in ["普通", "精英", "BOSS"] or not pending.get("entries") is Array:
 		return false
 	var kinds: Array = ["silver", "fragment_pack", "common_pack"] if pending.grade == "普通" else ["silver", "elixir", "fragment_pack", "common_pack", "rare_pack"]
+	# 保留旧版五项未领奖存档；新版精英/BOSS末尾追加附魔书。
+	if pending.grade != "普通" and pending.entries.size() == 6: kinds.append("enchantment_book")
 	if pending.entries.size() != kinds.size():
 		return false
 	for index in kinds.size():

@@ -12,6 +12,7 @@ var _actions: BattleActionRules
 var _stats: BattleStatRules
 var formal_rules: FormalCardRules
 var monster_rules: MonsterBattleRules
+var enchantment_rules: BattleEnchantmentRules
 
 
 func attach_to_battle(p_battle: BattleStateMachine) -> Error:
@@ -31,8 +32,9 @@ func attach_to_battle(p_battle: BattleStateMachine) -> Error:
 	_stats = BattleStatRules.new(battle, buff_catalog)
 	formal_rules = FormalCardRules.new(battle, card_catalog, buff_catalog)
 	monster_rules = MonsterBattleRules.new(battle, card_catalog, buff_catalog)
+	enchantment_rules = BattleEnchantmentRules.new(battle, formal_rules)
 	battle.rules.register_rule("cards.compile", "card.effect_requested", _on_card_effect_requested)
-	battle.rules.register_rule("enchantments.damage", "action.damage", _enchantment_damage, 15)
+	battle.rules.register_rule("cards.effects_compile", "card.effects_compile", _compile_card_effects)
 	battle.rules.register_rule("cards.effect", "effect.execute", _execute_effect)
 	battle.rules.register_rule("buffs.compile", "buff.effect_requested", _on_buff_effect_requested)
 	battle.rules.register_rule("buffs.step", "buff.effect_step", _step_buff_effect)
@@ -48,6 +50,7 @@ func _exit_tree() -> void:
 		battle.rules.remove_rules_for(_stats)
 		battle.rules.remove_rules_for(formal_rules)
 		battle.rules.remove_rules_for(monster_rules)
+		battle.rules.remove_rules_for(enchantment_rules)
 
 
 func _load_catalogs() -> Error:
@@ -103,9 +106,18 @@ func _on_card_effect_requested(event: BattleEvent) -> void:
 		push_error("BattleEffectResolver: unknown card %s" % card.get("card_id", ""))
 		battle.rules.last_error = ERR_DOES_NOT_EXIST
 		return
+	battle.rules.publish("enchantment.prepare", event.payload)
+
+func _compile_card_effects(event: BattleEvent) -> void:
+	if not battle.active: return
+	var card: Dictionary = event.payload.card
+	if bool(card.get("nullified", false)) or formal_rules.is_disabled(str(card.instance_id)): return
+	var data: CardData = card_catalog.get(str(card.card_id))
+	if data == null: return
 	formal_rules.before_card(event)
 	for effect: GameEffect in data.effects:
 		battle.rules.publish("effect.execute", {"effect": effect, "card": card, "target": event.payload.target})
+	battle.rules.publish("enchantment.triggered", {"card": card})
 
 
 func _execute_effect(event: BattleEvent) -> void:
@@ -127,17 +139,6 @@ func _execute_effect(event: BattleEvent) -> void:
 				"layers": definition.initial_layers, "duration": definition.duration})
 	else:
 		battle.rules.last_error = ERR_INVALID_DATA
-
-
-func _enchantment_damage(event: BattleEvent) -> void:
-	if str(event.payload.get("side", "")) != "enemy" or not bool(event.payload.get("use_stats", false)):
-		return
-	# 来源 ID 会沿反应链继承，因此还必须匹配原始伤害指令 ID。
-	if event.id != int(event.metadata.get("damage_program_id", -1)):
-		return
-	var card := formal_rules._live_card(str(event.metadata.get("source_card", "")))
-	if card.get("enchantments", []).has("damage_50"):
-		event.payload.amount = int(floor(int(event.payload.amount) * 1.5))
 
 
 func _on_enemy_action_requested(event: BattleEvent) -> void:

@@ -34,8 +34,8 @@ var foreground_misses := 0
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_process(false)
-	SaveGateway.run_started.connect(func(_slot: int): clear_map())
-	SaveGateway.active_slot_changed.connect(func(_slot: int): clear_map())
+	SaveGateway.run_started.connect(clear_map)
+	SaveGateway.save_reloaded.connect(clear_map)
 
 ## 菜单显示期间就读取地图入口与通用战斗资源，不把工作留到点击新游戏之后。
 func warm_menu(game_scene := MAP_SCENE) -> void:
@@ -98,7 +98,7 @@ func prepare_map(snapshot: Dictionary, run_id: String, monsters: Dictionary = {}
 					if path.begins_with("res://"):
 						paths.append(path)
 			"shop":
-				paths.append_array([SHOP_SCRIPT, LOOT_SCRIPT, CARD_SCENE])
+				paths.append_array([SHOP_SCRIPT, LOOT_SCRIPT, CARD_SCENE, "res://assets/events/EVBG-013.png"])
 				# 不提前抽取/保存货架，缓存候选卡图也覆盖未来开包和附魔选牌。
 				paths.append_array(card_art)
 			"event":
