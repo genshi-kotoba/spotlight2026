@@ -716,11 +716,12 @@ func _scene_state_to_ambient(state: String) -> String:
 
 
 func _guess_foot_material(map_id: String) -> String:
+	# 第一层木、第二层泥、第三/四层石
 	match _map_id_to_scene_state(map_id):
-		"Workshop", "Church", "ChurchTop":
-			return "Stone"
 		"Slum":
 			return "Mud"
+		"Church", "ChurchTop":
+			return "Stone"
 		_:
 			return "Wood"
 
