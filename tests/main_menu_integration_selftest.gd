@@ -26,7 +26,7 @@ func _run() -> void:
 	get_tree().current_scene = menu
 	await _frames()
 	_check("空档案不能继续但能开新局", menu.get_node("按钮列/继续游戏").disabled and not menu.get_node("按钮列/新游戏").disabled)
-	_check("主菜单保留七按钮且不再有存档选择入口", menu.get_node("按钮列").get_child_count() == 7 and not menu.has_node("档案"))
+	_check("主菜单保留原入口并加入记录且不再有存档选择入口", menu.get_node("按钮列").get_child_count() == 8 and menu.has_node("按钮列/记录") and not menu.has_node("档案"))
 	_check("旧三槽位接口及场景已移除", not gateway.has_method("set_active_slot") and not gateway.has_method("list_slots") and not ResourceLoader.exists("res://ui/main_menu/profile_switch.tscn") and not ResourceLoader.exists("res://ui/main_menu/slot_card.tscn"))
 	menu.get_node("按钮列/设置").pressed.emit()
 	_check("未导入设置页时给明确提示", menu.get_node("提示条/文本").text.contains("设置页尚未接入"))
@@ -117,12 +117,15 @@ func _run() -> void:
 	GlobalState.unlock_collection("fragments", "relic-progress")
 	GlobalState.complete_achievement("menu-achievement")
 	GlobalState.set_setting("music", 0.4)
+	GlobalState.current_run.gold = 17
+	GlobalState.current_run.items.append({"item_id":"old-run-only", "kind":"potion", "potion":0})
+	var starter_items: Array = menu._new_run_config().get("initial_items", [])
 	menu.get_node("按钮列/新游戏").pressed.emit()
 	menu.get_node("确认弹窗/面板/按钮行/确定").pressed.emit()
 	await _frames()
 	view = get_tree().current_scene
 	_check("确认覆盖后新局身份改变且旧局记入历史", GlobalState.current_run.run_id != run_id and GlobalState.run_history.size() == 1 and GlobalState.run_history[0].result == "abandoned")
-	_check("覆盖保留成就/解锁/设置，清空旧节点和本局物资", GlobalState.unlocked_cards.has("1") and GlobalState.unlocked_fragments.has("relic-progress") and GlobalState.achievements.has("menu-achievement") and GlobalState.settings.music == 0.4 and GlobalState.current_run.gold == 0 and GlobalState.current_run.items.is_empty() and view.session.completed.is_empty())
+	_check("覆盖保留成就/解锁/设置，清空旧节点和旧物资并重建配置初始物品", GlobalState.unlocked_cards.has("1") and GlobalState.unlocked_fragments.has("relic-progress") and GlobalState.achievements.has("menu-achievement") and GlobalState.settings.music == 0.4 and GlobalState.current_run.gold == 0 and _json(GlobalState.current_run.items) == _json(starter_items) and view.session.completed.is_empty())
 	var replacement_id := GlobalState.current_run.run_id
 	view._return_to_menu()
 	await _frames()

@@ -22,7 +22,7 @@ func _run() -> void:
 	context.damage_enemy(owner, int(primary.health), true)
 	var spawn_events := scene._resolution_events.filter(func(e: Dictionary): return e.kind == "enemy_spawned")
 	_check("真实阶段转换经过队列召唤两只独立怪物", scene._battle.enemies.size() == 3 and int(primary.phase) == 2 and spawn_events.size() == 2)
-	if scene._battle.enemies.size() != 3:
+	if scene._battle.enemies.size() != 3 or spawn_events.size() != 2:
 		get_tree().quit(1)
 		return
 	_check("召唤快照逐个增长且不提前显示最终阵容", spawn_events[0].enemies.size() == 2 and spawn_events[1].enemies.size() == 3 and scene.enemy_rack.slots.size() == 1)

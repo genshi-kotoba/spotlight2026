@@ -54,7 +54,7 @@ func _victory_and_currency() -> void:
 	_check("第三层Boss标记最终通关但等领奖完成", EncounterFlow._advance_after_boss() and run.active and bool(run.inventory_state.pending_run_victory) and not RunResults.complete_if_ready())
 	_check("最终奖励完成后触发通关", RunRewards.finish_rewards(run) == OK and RunResults.complete_if_ready())
 	var record: Dictionary = GlobalState.run_history.back()
-	_check("通关记录带累计银币、战斗数、最终卡牌附魔和未开卡包", record.result == "victory" and int(record.total_silver_earned) == 520 and int(record.battles_fought) == 7 and record.final_inventory.deck_cards[0].enchantments == ["damage_50"] and record.final_inventory.items.size() == 2)
+	_check("通关记录带累计银币、战斗数、最终卡牌附魔和未开卡包", record.result == "victory" and int(record.total_silver_earned) == 520 and int(record.battles_fought) == 7 and record.final_inventory.deck_cards[0].enchantments == ["damage_50"] and record.final_inventory.items.size() == _config.get("initial_items", []).size() + 2)
 	_check("通关文本无死因", RunHistory.lines(record).size() == 3 and RunHistory.lines(record)[0] == "结束了")
 	var saved := SaveGateway._read_json(SaveGateway.save_path)
 	_check("终局立即原子保存且没有可继续的活动局", saved.error == OK and saved.data.active_run == null and saved.data.run_history.size() == 1 and not SaveGateway.has_continuable_run())

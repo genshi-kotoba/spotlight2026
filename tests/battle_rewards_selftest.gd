@@ -13,6 +13,8 @@ func _run() -> void:
 	legacy_board.save_to_file(EncounterFlow.relic_board_path)
 	_config = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
 	_config.run_id = "rewards-test"
+	# 奖励专项从空背包开始；正式9件起始物品由主菜单集成测试覆盖。
+	_config.initial_items = []
 	_check("无需旧解锁也能建立指定初始构筑", SaveGateway.start_new_run("rewards-fixed-seed", _config) == OK)
 	var run := SaveGateway.current_run()
 	_check("移除额外选项残片，不再显示于图鉴和奖励池", TextCatalog.entry("fragments", "FRG-021").is_empty() and "FRG-021" not in RelicCatalog.reward_ids())
@@ -38,12 +40,29 @@ func _run() -> void:
 	if battle_ui.scene_file_path != EncounterFlow.BATTLE_SCENE:
 		get_tree().quit(1)
 		return
+	# 地图开局在手牌动画后还会等待残片/转场收尾；此夹具验证普通出牌后的奖励，
+	# 不应在 _opening 仍为真时注入致死并误走“开局结算”确认弹窗。
+	var opening_deadline := Time.get_ticks_msec() + 15000
+	while (battle_ui._opening or battle_ui._presentation_pending()) and Time.get_ticks_msec() < opening_deadline:
+		await get_tree().create_timer(0.01).timeout
+	_check("正常战斗开局表现已完成", not battle_ui._opening and not battle_ui._presentation_pending())
+	if battle_ui._opening or battle_ui._presentation_pending():
+		get_tree().quit(1)
+		return
 	var context := BattleEffectContext.new(battle_ui._battle, str(battle_ui._battle.enemies[0].enemy_id), battle_ui._resolver.buff_catalog)
 	context.damage_enemy(str(battle_ui._battle.enemies[0].enemy_id), 999)
 	await _frames(10)
+	# 结算协程还会等待伤害/残片尾部展示，busy=false 并不代表奖励弹窗已挂入。
+	var reward_deadline := Time.get_ticks_msec() + 15000
+	while not is_instance_valid(battle_ui._reward_popup) and Time.get_ticks_msec() < reward_deadline:
+		await get_tree().create_timer(0.01).timeout
 	var popup: LootPopup = battle_ui._reward_popup
 	var first_battle_key := str(RunRewards.pending(run).battle_key)
 	_check("胜利停留奖励弹窗且未自动领取", is_instance_valid(popup) and RunRewards.pending(run).entries.size() == 3 and run.gold == 0 and run.items.is_empty())
+	if not is_instance_valid(popup):
+		print("REWARD_FIXTURE_DIAGNOSTIC ", JSON.stringify({"active":battle_ui._battle.active,"enemies":battle_ui._battle.enemies,"pending":RunRewards.pending(run),"busy":battle_ui._busy,"opening":battle_ui._opening,"leaving":battle_ui._leaving,"result":battle_ui._battle_result,"presentation_pending":battle_ui._presentation_pending(),"flow_error":EncounterFlow.last_error,"resolution_events":battle_ui._resolution_events}))
+		get_tree().quit(1)
+		return
 	await _capture("ordinary-rewards.png")
 	await _click(popup._options.get_node("Reward_silver"))
 	_check("点击领取100银币，重复领取被拒绝", run.gold == 100 and RunRewards.claim(run, "silver") == ERR_ALREADY_EXISTS)
@@ -69,7 +88,17 @@ func _run() -> void:
 	var fragment_pack_id := _pack_id(run, "fragment_pack")
 	run.inventory_state.relic_board.cells[0] = "FRG-021"
 	await _click(bag._item_grid.get_child(0))
+	# 当前正式交互先打开使用/丢弃菜单，再通过真实鼠标选择“使用”。
+	_check("残片包点击后显示可用的使用操作", is_instance_valid(bag._item_menu) and bag._item_menu.visible and bag._item_menu._rows.get_child_count() == 2 and bag._item_menu._rows.get_child(0).text == "使用" and not bag._item_menu._rows.get_child(0).disabled)
+	if not is_instance_valid(bag._item_menu) or not bag._item_menu.visible:
+		get_tree().quit(1)
+		return
+	await _click(bag._item_menu._rows.get_child(0))
 	popup = bag._pack_popup
+	_check("实际使用残片包后出现选择弹窗", is_instance_valid(popup))
+	if not is_instance_valid(popup):
+		get_tree().quit(1)
+		return
 	var first: Array = RunRewards.item(run, fragment_pack_id).options
 	_check("残片包恰为两个不同选项", first.size() == 2 and first[0] != first[1])
 	run.inventory_state.relic_board.cells[0] = ""
