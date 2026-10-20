@@ -4,6 +4,76 @@ var failures := 0
 var fixture_root := ""
 
 
+## 观察真实 HandDeal 调用；不替换动画或向生产添加测试接口。
+class ObservedBattleScene extends "res://ui/battle/battle_test_scene.gd":
+	var deal_records: Array[Dictionary] = []
+	var deal_tweens: Array[Tween] = []
+	var pause_new_deals := false
+
+	func _play_deal_animation(slots: Array[Control]) -> void:
+		var drawn: Array[Dictionary] = []
+		for slot: Control in slots:
+			var id := str(slot.get_meta("instance_id"))
+			if not _hand_ids_previous.has(id):
+				drawn.append({"instance_id": id, "slot_ref": weakref(slot),
+					"target_position": slot.position, "target_rotation": slot.rotation})
+		var previous_tweens := get_tree().get_processed_tweens()
+		super._play_deal_animation(slots)
+		for tween: Tween in get_tree().get_processed_tweens():
+			if tween not in previous_tweens:
+				deal_tweens.append(tween)
+				if pause_new_deals: tween.pause()
+		var pile := get_node("DrawPile") as Control
+		var origin := hand_cards.get_global_transform_with_canvas().affine_inverse() * (pile.get_global_transform_with_canvas() * (pile.size * 0.5))
+		for index in drawn.size():
+			var record: Dictionary = drawn[index]
+			var slot := (record.slot_ref as WeakRef).get_ref() as Control
+			record.merge({"start_position": slot.position, "start_rotation": slot.rotation,
+				"start_scale": slot.scale, "start_alpha": slot.modulate.a,
+				"pile_center": origin, "batch_index": index})
+			deal_records.append(record)
+
+
+func _new_observed_scene() -> ObservedBattleScene:
+	var scene: BattleTestScene = load("res://ui/battle/battle_test_scene.tscn").instantiate()
+	scene.set_script(ObservedBattleScene)
+	return scene as ObservedBattleScene
+
+
+func _add_draw_fixture(scene: ObservedBattleScene, opening: int, each_turn: int) -> void:
+	# 场景 ready 会读取正式规则；只为本夹具短暂设定精确抽牌数，随后恢复原字典。
+	var previous := EncounterFlow.test_rules
+	EncounterFlow.test_rules = previous.duplicate(true)
+	EncounterFlow.test_rules["initial_draw_count"] = opening
+	EncounterFlow.test_rules["per_turn_draw_count"] = each_turn
+	scene.initial_draw_count = opening
+	scene.per_turn_draw_count = each_turn
+	scene.test_enemy_count = 1
+	add_child(scene)
+	EncounterFlow.test_rules = previous
+	_check("夹具已恢复正式抽牌规则", EncounterFlow.test_rules == previous)
+
+
+func _step_deals(scene: ObservedBattleScene, seconds: float) -> void:
+	for tween: Tween in scene.deal_tweens:
+		if tween.is_valid(): tween.custom_step(seconds)
+
+
+func _record_slot(record: Dictionary) -> Control:
+	return (record.slot_ref as WeakRef).get_ref() as Control
+
+
+func _wait_deals(scene: ObservedBattleScene) -> void:
+	var deadline := Time.get_ticks_msec() + 5000
+	while Time.get_ticks_msec() < deadline:
+		var running := false
+		for tween: Tween in scene.deal_tweens:
+			if tween.is_valid() and tween.is_running(): running = true
+		if not running: return
+		await get_tree().process_frame
+	_check("真实发牌动画按时完成", false)
+
+
 func _ready() -> void:
 	call_deferred("_run")
 
@@ -14,13 +84,13 @@ func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(fixture_root)
 	SaveGateway.save_path = fixture_root.path_join("game.json")
 	_check("独立测试存档", SaveGateway.load_current() == OK)
-	var scene: BattleTestScene = load("res://ui/battle/battle_test_scene.tscn").instantiate()
+	var scene := _new_observed_scene()
 	scene.relic_board_path = fixture_root.path_join("empty-board.json")
 	scene.deck_card_ids.assign(["test_damage_enemy", "test_damage_enemy", "test_damage_enemy", "test_block", "test_heal"])
-	scene.initial_draw_count = 5
+	scene.pause_new_deals = true
 	scene.enemy_starting_health = 31
 	scene.resolution_delay = 0.35
-	add_child(scene)
+	_add_draw_fixture(scene, 5, 2)
 	await _check_opening_draw(scene)
 	await _check_health(scene)
 	await _check_transfers(scene)
@@ -33,46 +103,44 @@ func _run() -> void:
 	get_tree().quit(failures)
 
 
-func _check_opening_draw(scene: BattleTestScene) -> void:
+func _check_opening_draw(scene: ObservedBattleScene) -> void:
 	var deadline := Time.get_ticks_msec() + 5000
-	while scene._card_transfers.is_empty() and Time.get_ticks_msec() < deadline:
+	while scene.deal_records.size() < 5 and Time.get_ticks_msec() < deadline:
 		await get_tree().process_frame
-	_check("开局抽牌立即完成业务，表现仍在逐张播放", scene._battle.hand.size() == 5 and scene._busy and not scene._card_transfers.is_empty())
-	if scene._card_transfers.is_empty(): return
-	var id: String = scene._card_transfers.keys()[0]
-	var ghost: Control = scene._card_transfers[id].ghost
-	while ghost._flight == null and Time.get_ticks_msec() < deadline:
-		await get_tree().process_frame
-	if ghost._flight == null:
-		_check("抽牌飞行已启动", false)
-		return
-	# 首次资源加载可能占用一帧较久，重置后按固定时间步长验证轨迹。
-	var source_transform := Transform2D(0.0, Vector2.ONE * scene.CARD_TRANSFER.TRAVEL_SCALE,
-		0.0, ghost._start_center - ghost.pivot_offset * scene.CARD_TRANSFER.TRAVEL_SCALE)
-	ghost._flight.kill()
-	ghost.start(source_transform, scene._card_transfer_target.bind(id), false)
-	ghost._flight.pause()
+	_check("开局业务准确抽5张，真实发牌为5张分别建Tween", scene._battle.hand.size() == 5 and scene.deal_records.size() == 5 and scene.deal_tweens.size() == 5)
+	if scene.deal_records.size() != 5: return
 	var seed_before := JSON.stringify(SeedService.capture_snapshot())
-	var inverse := scene.get_global_transform_with_canvas().affine_inverse()
-	var pile_center := inverse * scene.draw_button.get_global_rect().get_center()
-	_check("抽牌从抽牌堆中心以小比例起飞", ghost._start_center.distance_to(pile_center) < 1.0 and is_equal_approx(ghost.scale.x, scene.CARD_TRANSFER.TRAVEL_SCALE))
-	_check("飞行期间手牌目标隐藏且禁止操作", is_zero_approx(scene._transfer_source(id, false).modulate.a) and not scene._can_click_hand())
-	ghost._flight.custom_step(0.07)
-	ghost._flight.custom_step(0.09)
-	_check("抽牌平滑飞向手牌而非瞬移", ghost.position.distance_to(pile_center - ghost.pivot_offset) > 10.0 and (ghost.position + ghost.pivot_offset).distance_to(scene._card_transfer_target(id).center) > 10.0)
-	scene._refresh_zones()
-	await _frames(3)
-	_check("抽牌途中重建手牌仍隐藏目标", is_zero_approx(scene._transfer_source(id, false).modulate.a))
-	ghost._flight.custom_step(0.10)
-	ghost._flight.custom_step(0.04)
-	_check("落入手牌时放大并跟随扇形位置", ghost.scale.x > scene.CARD_TRANSFER.TRAVEL_SCALE and ghost.scale.x < scene.HAND_CARD_SCALE and (ghost.position + ghost.pivot_offset).distance_to(scene._card_transfer_target(id).center) < 1.0)
+	var starts_correct := true
+	for record: Dictionary in scene.deal_records:
+		var slot := _record_slot(record)
+		if not is_instance_valid(slot):
+			starts_correct = false
+			continue
+		var center: Vector2 = record.start_position + Vector2(slot.size.x * 0.5, slot.size.y * (1.0 - scene.HAND_DEAL_ANIM.START_SCALE * 0.5))
+		starts_correct = starts_correct and center.distance_to(record.pile_center) < 1.0 and record.start_scale == Vector2.ONE * scene.HAND_DEAL_ANIM.START_SCALE and is_zero_approx(float(record.start_alpha)) and is_equal_approx(float(record.start_rotation), scene.HAND_DEAL_ANIM.START_ROTATION)
+	_check("真实发牌从抽牌堆中心以45%尺寸、偏角和透明状态起飞", starts_correct)
+	var first := _record_slot(scene.deal_records[0])
+	var last := _record_slot(scene.deal_records[4])
+	if not is_instance_valid(first) or not is_instance_valid(last):
+		_check("发牌期间真实槽位保持存活", false)
+		return
+	_step_deals(scene, 0.15)
+	_check("首张连续移动而末张仍等待错峰出发", first.position.distance_to(scene.deal_records[0].target_position) > 0.1 and first.position.distance_to(scene.deal_records[0].start_position) > 0.1 and first.modulate.a > 0.0 and first.modulate.a < 1.0 and is_zero_approx(last.modulate.a))
+	_step_deals(scene, 0.25)
+	_check("首张0.4秒精确落位，末张仍在飞入", first.position.distance_to(scene.deal_records[0].target_position) < 0.1 and first.scale.is_equal_approx(Vector2.ONE) and is_equal_approx(first.rotation, float(scene.deal_records[0].target_rotation)) and last.modulate.a > 0.0 and last.modulate.a < 1.0)
 	await _capture("card-draw-landing.png")
-	ghost._flight.custom_step(0.2)
-	_check("落位对齐手牌角度且恢复真实卡面", not scene._card_transfers.has(id) and is_equal_approx(scene._transfer_source(id, false).modulate.a, 1.0) and is_equal_approx(ghost.rotation, scene._transfer_source(id, false).get_global_transform_with_canvas().get_rotation()))
+	_step_deals(scene, 0.25)
+	var landed := true
+	for record: Dictionary in scene.deal_records:
+		var slot := _record_slot(record)
+		landed = landed and is_instance_valid(slot) and slot.position.distance_to(record.target_position) < 0.1 and slot.scale.is_equal_approx(Vector2.ONE) and is_equal_approx(slot.rotation, float(record.target_rotation)) and is_equal_approx(slot.modulate.a, 1.0)
+	_check("错峰结束后所有卡面与实际布局落点一致", landed)
+	scene.pause_new_deals = false
+	var recorded := scene.deal_records.size()
+	scene._refresh_zones()
+	_check("同一手牌刷新不重复发牌，落位后允许操作", scene.deal_records.size() == recorded and scene.hand_cards.get_child_count() == 5 and scene._card_transfers.is_empty() and scene._can_click_hand())
+	_check("抽牌表现与刷新不额外消耗随机流", JSON.stringify(SeedService.capture_snapshot()) == seed_before)
 	await _wait_presentation(scene)
-	_check("首抽全部落位后开放操作且没有幽灵牌", scene.hand_cards.get_child_count() == 5 and scene._card_transfers.is_empty() and scene._can_click_hand())
-	_check("抽牌动画不额外消耗随机流", JSON.stringify(SeedService.capture_snapshot()) == seed_before)
-
 
 func _wait_presentation(scene: BattleTestScene) -> void:
 	var deadline := Time.get_ticks_msec() + 15000
@@ -83,44 +151,51 @@ func _wait_presentation(scene: BattleTestScene) -> void:
 
 
 func _check_effect_and_turn_draw() -> void:
-	var scene: BattleTestScene = load("res://ui/battle/battle_test_scene.tscn").instantiate()
+	var scene := _new_observed_scene()
 	scene.relic_board_path = fixture_root.path_join("empty-board.json")
 	for index in 12: scene.deck_card_ids.append("test_draw")
-	scene.initial_draw_count = 2
-	scene.per_turn_draw_count = 1
 	scene.resolution_delay = 0.05
 	scene.enemy_turn_delay = 0.05
-	add_child(scene)
+	_add_draw_fixture(scene, 2, 1)
 	await _wait_presentation(scene)
+	await _wait_deals(scene)
+	_check("效果抽牌夹具首抽准确为2张", scene._battle.hand.size() == 2 and scene.deal_records.size() == 2)
+	scene.deal_records.clear()
 	scene._on_hand_card_pressed(str(scene._battle.hand[0].instance_id))
 	await get_tree().create_timer(0.45).timeout
 	scene._on_play_pressed()
+	await _wait_presentation(scene)
+	await _wait_deals(scene)
 	var drawn_ids := {}
-	var deadline := Time.get_ticks_msec() + 15000
-	while scene._presentation_pending() and Time.get_ticks_msec() < deadline:
-		for id: String in scene._card_transfers:
-			if str(scene._card_transfers[id].destination) == "hand": drawn_ids[id] = true
-		await get_tree().process_frame
-	_check("效果抽2张和次回合抽1张均有飞牌", drawn_ids.size() == 3 and scene._battle.turn_number == 2 and scene._battle.hand.size() == 4 and not scene._busy)
-	# 强制测试洗回弃牌堆后的补抽，以及手牌上限不产生虚假的飞牌。
+	for record: Dictionary in scene.deal_records: drawn_ids[record.instance_id] = true
+	_check("效果抽2张和次回合抽1张均走真实发牌且不重播", scene.deal_records.size() == 3 and drawn_ids.size() == 3 and scene._battle.turn_number == 2 and scene._battle.hand.size() == 4 and not scene._busy)
+	# 独立补抽不在出牌/回合表现段中；显式请求正常刷新入口来显示这次真实规则结果。
 	scene._battle.discard_pile.append_array(scene._battle.draw_pile)
 	scene._battle.draw_pile.clear()
 	var count := scene._battle.hand.size()
+	scene.deal_records.clear()
 	_check("洗牌后继续抽牌请求成功", scene._battle.draw_cards(20) == OK)
+	scene._refresh_zones()
+	await _wait_deals(scene)
 	drawn_ids.clear()
-	deadline = Time.get_ticks_msec() + 15000
-	while scene._presentation_pending() and Time.get_ticks_msec() < deadline:
-		for id: String in scene._card_transfers:
-			if str(scene._card_transfers[id].destination) == "hand": drawn_ids[id] = true
-		await get_tree().process_frame
-	_check("洗回抽牌也有动画且只为实际入手的牌播放", scene._battle.hand.size() == 10 and drawn_ids.size() == 10 - count and not scene._busy)
-	await _frames(3)
+	for record: Dictionary in scene.deal_records: drawn_ids[record.instance_id] = true
+	_check("洗回抽牌遵守10张上限，仅为实际入手牌发牌", scene._battle.hand.size() == 10 and scene.hand_cards.get_child_count() == 10 and scene.deal_records.size() == 10 - count and drawn_ids.size() == 10 - count)
+	# 再做一次真实弃牌/补抽，在新发牌Tween运行期间退出，验证绑定节点的清理。
 	var last: Dictionary = scene._battle.hand.back().duplicate(true)
-	scene._begin_card_transfer(last, "hand")
+	_check("退出夹具真实弃置一张手牌", scene._battle.discard_from_hand(str(last.instance_id), &"animation_exit") == OK)
+	await _wait_presentation(scene)
+	var before := scene.deal_tweens.size()
+	_check("退出夹具真实补抽一张牌", scene._battle.draw_cards(1) == OK)
+	scene._refresh_zones()
+	var active: Array[Tween] = []
+	for tween: Tween in scene.deal_tweens.slice(before):
+		if tween.is_valid(): active.append(tween)
+	_check("退出前真实发牌动画已经启动", active.size() == 1)
 	scene.queue_free()
 	await _frames(4)
-	_check("飞行期间退出战斗清理临时节点", not is_instance_valid(scene))
-
+	var cleaned := not is_instance_valid(scene)
+	for tween: Tween in active: cleaned = cleaned and not tween.is_valid()
+	_check("飞行期间退出战斗清理真实槽位和绑定Tween", cleaned)
 
 func _check_health(scene: BattleTestScene) -> void:
 	var data := scene._battle.player.duplicate(true)
