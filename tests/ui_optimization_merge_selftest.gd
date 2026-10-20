@@ -11,10 +11,8 @@ func _ready() -> void:
 func _run() -> void:
 	fixture_root = "res://.godot/ui-optimization-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(fixture_root)
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("1.json"), fixture_root.path_join("2.json"), fixture_root.path_join("3.json")])
-	SaveGateway._active_slot = 1
-	_check("独立档案加载", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture_root.path_join("game.json")
+	_check("独立档案加载", SaveGateway.load_current() == OK)
 	var config: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
 	config.run_id = "ui-optimization"
 	_check("正式新局", SaveGateway.start_new_run("ui-optimization", config) == OK)
@@ -88,6 +86,7 @@ func _run() -> void:
 	battle.relic_board_path = fixture_root.path_join("empty.json")
 	add_child(battle)
 	await _frames(5)
+	await preload("res://tests/support/presentation_test_helper.gd").battle_settled(battle)
 	menu = battle._run_menu
 	battle._open_run_menu(1)
 	await _settle()
@@ -115,11 +114,12 @@ func _run() -> void:
 	await get_tree().create_timer(0.6).timeout
 	await _capture("hand-hover.png")
 	battle._on_hand_card_hover_changed(hand_slot, hand_slot.get_child(0), false)
-	battle._feedback.on_damaged(&"enemy", 2, 0)
+	battle.enemy_rack.slots[0].set_meta("portrait_home", battle.enemy_rack.slots[0].portrait.position)
+	battle._feedback.on_damaged(&"enemy", 2, 0, str(battle._battle.enemies[0].enemy_id))
 	await get_tree().create_timer(0.08).timeout
-	battle._feedback.on_damaged(&"enemy", 2, 0)
+	battle._feedback.on_damaged(&"enemy", 2, 0, str(battle._battle.enemies[0].enemy_id))
 	await get_tree().create_timer(0.35).timeout
-	_check("连续受击震动后恢复原位", battle.get_node("EnemyPortrait").position.is_equal_approx(battle._feedback._portrait_homes[&"enemy"]))
+	_check("连续受击震动后恢复原位", battle.enemy_rack.slots[0].portrait.position.is_equal_approx(battle.enemy_rack.slots[0].get_meta("portrait_home")))
 	battle.queue_free()
 	await _frames(2)
 	print("新版UI优化整合：全部通过" if failures == 0 else "新版UI优化整合：失败%d项" % failures)

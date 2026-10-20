@@ -417,8 +417,12 @@ func _build_feel() -> void:
 ## 点战场上的敌人即切目标，不再有专门的切换按钮。目标标记（箭头 + 高亮框）就是这次点击的
 ## 反馈，不另写提示文字，避免与「等待玩家操作」时的提示叠加。
 func _on_enemy_slot_selected(enemy_id: String) -> void:
-	if _battle == null or not _battle.active or enemy_id.is_empty():
+	if _battle == null or not _battle.active or enemy_id.is_empty() or _busy or _animating:
 		return
+	var candidates := _battle.enemies.filter(func(enemy: Dictionary): return int(enemy.health) > 0 and str(enemy.enemy_id) == enemy_id)
+	if candidates.is_empty(): return
+	for enemy: Dictionary in _battle.enemies:
+		if int(enemy.health) > 0 and bool(enemy.get("taunt", false)) and str(enemy.enemy_id) != enemy_id: return
 	if enemy_id == _target_enemy_id:
 		return
 	_target_enemy_id = enemy_id
@@ -1277,7 +1281,7 @@ func _open_pile(title: String, cards: Array[Dictionary]) -> void:
 			peek.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 			peek.tooltip_text = ""
 			peek.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-			peek.pressed.connect(_peek_card.bind(card_id))
+			peek.pressed.connect(_peek_card.bind(card_id, card))
 			slot.add_child(peek)
 		pile_grid.add_child(slot)
 	pile_modal.visible = true
@@ -1359,7 +1363,7 @@ func _on_play_card_hover(slot: Control, entered: bool, instance_id := "") -> voi
 	if entered:
 		var card := _find_selected_card(instance_id)
 		if not card.is_empty():
-			_show_resolve_preview(String(card.get("card_id", "")))
+			_show_resolve_preview(String(card.get("card_id", "")), card)
 	elif not _busy:
 		_resolve_preview.visible = false
 	else:
@@ -1474,6 +1478,7 @@ func _begin_drag() -> void:
 	var data := _card_data(String(card.get("card_id", "")))
 	if data != null:
 		view.set_card(data)
+	view.set_enchantments(card)
 	var drag_px := CardView.text_px_for(PLAY_CARD_SCALE)
 	view.apply_compact_layout(PLAY_CARD_SCALE, drag_px.x, drag_px.y)
 
@@ -1605,6 +1610,7 @@ func _begin_card_transfer(card: Dictionary, destination: String, from_play := fa
 	var data := _card_data(str(card.card_id))
 	if data != null:
 		view.set_card(data)
+	view.set_enchantments(card)
 	var px := CardView.text_px_for(HAND_CARD_SCALE)
 	view.apply_compact_layout(HAND_CARD_SCALE, px.x, px.y)
 	ghost.add_child(view)
@@ -1862,8 +1868,13 @@ func _render_enemy_slot(enemy: Dictionary) -> void:
 		slot.portrait.texture = TextCatalogService.art_texture(portrait)
 	slot.set_frame_path(_enemy_bar_frame(str(enemy.get("grade", ""))))
 	slot.name_label.text = str(enemy.get("name", "CHR-025"))
-	var actions: Array = enemy.get("actions", [])
-	slot.intent_value.text = str(actions[0].get("damage", 0)) if not actions.is_empty() else "—"
+	var interactive := not _busy and not _animating and _battle.active and _battle.phase == BattleStateMachine.Phase.PLAYER_ACTION
+	var taunt := ""
+	for candidate: Dictionary in _presented_enemies:
+		if int(candidate.get("health", 0)) > 0 and bool(candidate.get("taunt", false)):
+			taunt = str(candidate.enemy_id)
+			break
+	slot.show_snapshot_status(enemy, not _presented_enemies.is_empty() and str(_presented_enemies[0].enemy_id) == str(enemy.enemy_id), interactive and (taunt.is_empty() or taunt == str(enemy.enemy_id)))
 	_render_health(slot.fill, slot.block_marker, slot.number_label, enemy,
 		slot.fill_left(), slot.fill_width(), &"enemy", str(enemy.get("enemy_id", "")))
 	_render_buffs(slot.buff_row, enemy.get("buffs", []), 1.0)
@@ -2097,6 +2108,7 @@ func _make_card_slot(card: Dictionary, card_scale: float, clickable: bool,
 	var data := _card_data(String(card.get("card_id", "")))
 	if data != null:
 		view.set_card(data)
+	view.set_enchantments(card)
 	view.apply_compact_layout(card_scale, title_px, body_px)
 	slot.add_child(view)
 	slot.tooltip_text = CardEnchantments.describe(card)
@@ -2480,13 +2492,14 @@ func _build_peek() -> void:
 	_peek_layer.add_child(_peek_view)
 
 
-func _peek_card(card_id: String) -> void:
+func _peek_card(card_id: String, card: Dictionary = {}) -> void:
 	if card_id.is_empty():
 		return
 	var data := _card_data(card_id)
 	if data == null:
 		return
 	_peek_view.set_card(data)
+	_peek_view.set_enchantments(card)
 	var peek_px := CardView.text_px_for(PEEK_CARD_SCALE)
 	_peek_view.apply_compact_layout(PEEK_CARD_SCALE, peek_px.x, peek_px.y)
 	_peek_layer.visible = true
@@ -2507,7 +2520,7 @@ func _refresh_resolve_preview(instance_id: String) -> void:
 	if card.is_empty() or not _busy:
 		_resolve_preview.visible = false
 		return
-	_show_resolve_preview(String(card.get("card_id", "")))
+	_show_resolve_preview(String(card.get("card_id", "")), card)
 
 
 ## 把某张卡按结算大图的规格摆到左侧。结算指针与出牌列悬停共用这一份。
@@ -2863,7 +2876,7 @@ func _handle_menu_key(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-func _show_resolve_preview(card_id: String) -> void:
+func _show_resolve_preview(card_id: String, card: Dictionary = {}) -> void:
 	if _resolve_preview == null or _resolve_view == null:
 		return
 	var data := _card_data(card_id)
@@ -2875,6 +2888,7 @@ func _show_resolve_preview(card_id: String) -> void:
 		_resolve_view.set_card(data)
 		var px := CardView.text_px_for(RESOLVE_PREVIEW_SCALE)
 		_resolve_view.apply_compact_layout(RESOLVE_PREVIEW_SCALE, px.x, px.y)
+	_resolve_view.set_enchantments(card)
 	_resolve_preview.show()
 
 
@@ -2894,7 +2908,7 @@ func _update_drag_preview(at: Vector2) -> void:
 	if card.is_empty():
 		card = _find_hand_card(above_id)
 	if not card.is_empty():
-		_show_resolve_preview(str(card.get("card_id", "")))
+		_show_resolve_preview(str(card.get("card_id", "")), card)
 
 
 func _refresh_damage_preview() -> void:
@@ -2996,6 +3010,8 @@ func _show_battle_choice(mode: String, _count: int, candidates: Array) -> void:
 	panel.add_child(column)
 	var label := Label.new()
 	label.text = {"discard": "选择一张牌弃置（不会补抽）", "nullify": "选择一张牌无效化：本场战斗失去全部效果", "copy": "选择一张手牌复制"}.get(mode, "选择卡牌")
+	if mode.begins_with("enchantment_"):
+		label.text = "附魔：可弃置一张手牌，本次%s +50%%；也可跳过" % ("伤害" if mode == "enchantment_20" else "格挡")
 	label.add_theme_font_size_override("font_size", 26)
 	column.add_child(label)
 	var scroll := ScrollContainer.new()
@@ -3009,6 +3025,7 @@ func _show_battle_choice(mode: String, _count: int, candidates: Array) -> void:
 		var button := Button.new()
 		CommonUiSkin.style_button(button)
 		button.text = "%s · %s" % [data.card_name if data != null else str(card.card_id), data.description if data != null else "暂无"]
+		if card.has("choice_text"): button.text = str(card.choice_text)
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.custom_minimum_size.y = 60
 		button.add_theme_font_size_override("font_size", 21)

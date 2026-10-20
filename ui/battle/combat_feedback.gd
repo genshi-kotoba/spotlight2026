@@ -148,7 +148,8 @@ func _flash(side: StringName, entity_id: String) -> void:
 	var flash := target.create_tween()
 	_flash_tweens[key] = flash
 	flash.tween_property(target, "modulate", Color(1.0, 0.42, 0.42, 1.0), 0.07)
-	flash.tween_property(target, "modulate", Color.WHITE, 0.24)
+	flash.tween_method(func(weight: float):
+		target.modulate = Color(1.0, 0.42, 0.42, 1.0).lerp(target.get_meta("base_tint", Color.WHITE), weight), 0.0, 1.0, 0.24)
 
 
 func _vfx(side: StringName, kind: int, table: Dictionary, entity_id: String) -> void:

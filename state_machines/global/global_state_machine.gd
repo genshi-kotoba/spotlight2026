@@ -16,7 +16,7 @@ signal unlocked_cards_changed(card_ids: Array[String])
 signal collection_unlocked(category: String, entry_id: String)
 
 const SAVE_VERSION := 1
-const DEFAULT_SAVE_PATH := "user://spotlight_save.json"
+const DEFAULT_SAVE_PATH := "user://save/game.json"
 
 var save_path := DEFAULT_SAVE_PATH
 var settings: Dictionary = {}
@@ -110,16 +110,23 @@ func save_game() -> Error:
 	var prepared := build_save_payload()
 	if prepared.error != OK:
 		return _fail(prepared.error, "Could not capture random state")
-	var json := JSON.stringify(prepared.payload, "\t")
-	var error := _write_atomic(json)
+	var error := _write_atomic(JSON.stringify(prepared.payload, "\t"))
 	if error != OK:
 		return _fail(error, "Could not write save file")
 	last_error = OK
 	return OK
 
 
-## 只构建完整的 JSON 载荷，不写文件、不安装状态、不发保存信号。
-## 网关可补入地图检查点后一次原子写入；错误由调用者沿原保存入口报告。
+## 只捕获原有全局字段，网关在一次原子写入中附上地图检查点。
+func capture_save_data() -> Dictionary:
+	var prepared := build_save_payload()
+	if prepared.error != OK:
+		_fail(prepared.error, "Could not capture random state")
+		return {}
+	return prepared.payload
+
+
+## 只构建完整载荷，不写文件、不切换保存路径、不发送保存失败信号。
 func build_save_payload() -> Dictionary:
 	var active_payload: Variant = null
 	if run_active and current_run != null:
@@ -144,6 +151,31 @@ func build_save_payload() -> Dictionary:
 		"active_run": active_payload,
 	}
 	return {"error": OK, "payload": payload}
+
+
+## 网关已验证并保存预备新局后才调用；旧局只在提交成功后销毁。
+func install_prepared_run(data: Dictionary, run: RunStateMachine) -> Error:
+	var validator := GlobalStateMachine.new()
+	var error := validator._install_save(data)
+	validator.free()
+	if error != OK:
+		return _fail(error, "Prepared save validation failed")
+	error = SeedService.restore_snapshot(data.active_run.seed_snapshot)
+	if error != OK:
+		return _fail(error, "Could not install prepared random context")
+	var old_run := current_run
+	_install_save(data)
+	add_child(run)
+	_connect_run(run)
+	current_run = run
+	run_active = true
+	_saved_active_run.clear()
+	if is_instance_valid(old_run):
+		old_run.queue_free()
+	last_error = OK
+	save_loaded.emit()
+	run_started.emit(run)
+	return OK
 
 
 func load_save() -> Error:
@@ -241,7 +273,9 @@ func _on_run_ended(result: Dictionary) -> void:
 	current_run = null
 	_saved_active_run.clear()
 	run_finished.emit(result.duplicate(true))
-	var error := save_game()
+	# 正式游戏由网关原子落盘，结束记录不能绕过单存档保护及备份逻辑。
+	var gateway := get_node_or_null("/root/SaveGateway") if is_inside_tree() else null
+	var error: Error = gateway.save_current() if gateway != null and self == get_node_or_null("/root/GlobalState") else save_game()
 	if error != OK:
 		push_error("GlobalStateMachine: autosave after run end failed")
 	ended_run.queue_free()
@@ -302,6 +336,9 @@ func _reset_loaded_data() -> void:
 
 
 func _write_atomic(text: String) -> Error:
+	var directory_error := DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(save_path.get_base_dir()))
+	if directory_error != OK:
+		return directory_error
 	var temporary := save_path + ".tmp"
 	var backup := save_path + ".bak"
 	var file := FileAccess.open(temporary, FileAccess.WRITE)

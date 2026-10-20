@@ -56,6 +56,11 @@ const NUMBER_COLOR := Color(1.0, 0.878431, 0.847059)
 const INTENT_COLOR := Color(1.0, 0.768627, 0.690196)
 
 var enemy_id := ""
+var selectable := true
+var _snapshot_initialized := false
+var _snapshot_dead := false
+var _death_tween: Tween
+var _intent_kind := "攻击"
 
 var portrait: TextureRect
 var name_label: Label
@@ -156,7 +161,7 @@ func set_frame_path(path: String) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if enemy_id.is_empty():
+	if enemy_id.is_empty() or not selectable:
 		return
 	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
 		return
@@ -310,3 +315,42 @@ func _label(color: Color) -> Label:
 	label.add_theme_constant_override("shadow_offset_y", 2)
 	label.add_theme_font_size_override("font_size", 20)
 	return label
+
+
+## 沿用同一份事件快照处理意图、嘲讽和退场，不读取规则侧的最终状态。
+func show_snapshot_status(enemy: Dictionary, primary: bool, interactive: bool) -> void:
+	var dead := int(enemy.get("health", 0)) <= 0
+	selectable = interactive and not dead
+	var actions: Array = enemy.get("actions", [])
+	var action: Dictionary = actions[0] if not actions.is_empty() else {}
+	var kind := "攻击" if action.has("damage") else ("防御" if action.has("block") else "特殊")
+	if kind != _intent_kind:
+		var atlas := AtlasTexture.new()
+		atlas.atlas = TextCatalogService.art_texture("res://assets/ui/UI-016/%s.png" % kind)
+		atlas.region = INTENT_REGION
+		_intent_badge.texture = atlas
+		_intent_kind = kind
+	intent_value.text = str(action.damage) if action.has("damage") else (str(action.block) if action.has("block") else "—")
+	_intent_badge.visible = not dead
+	_intent_ring.visible = not dead
+	intent_value.visible = not dead
+	var tint := Color(1, 1, 1, 0.25) if dead and primary else Color.WHITE
+	portrait.set_meta("base_tint", tint)
+	if not _snapshot_initialized:
+		portrait.modulate = tint
+		visible = primary or not dead
+	elif dead and not _snapshot_dead:
+		_death_tween = create_tween()
+		_death_tween.tween_interval(0.3)
+		if primary:
+			_death_tween.tween_property(portrait, "modulate", tint, 0.15)
+		else:
+			_death_tween.tween_property(self, "modulate:a", 0.0, 0.15)
+			_death_tween.tween_callback(hide)
+	elif not dead and _snapshot_dead:
+		if _death_tween != null and _death_tween.is_valid(): _death_tween.kill()
+		modulate.a = 1.0
+		portrait.modulate = Color.WHITE
+		show()
+	_snapshot_initialized = true
+	_snapshot_dead = dead

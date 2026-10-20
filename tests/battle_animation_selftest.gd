@@ -12,10 +12,8 @@ func _run() -> void:
 	get_window().size = Vector2i(1920, 1080)
 	fixture_root = "res://.godot/battle-animation-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(fixture_root)
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("1.json"), fixture_root.path_join("2.json"), fixture_root.path_join("3.json")])
-	SaveGateway._active_slot = 1
-	_check("独立测试存档", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture_root.path_join("game.json")
+	_check("独立测试存档", SaveGateway.load_current() == OK)
 	var scene: BattleTestScene = load("res://ui/battle/battle_test_scene.tscn").instantiate()
 	scene.relic_board_path = fixture_root.path_join("empty-board.json")
 	scene.deck_card_ids.assign(["test_damage_enemy", "test_damage_enemy", "test_damage_enemy", "test_block", "test_heal"])
@@ -23,15 +21,105 @@ func _run() -> void:
 	scene.enemy_starting_health = 31
 	scene.resolution_delay = 0.35
 	add_child(scene)
-	await _frames(5)
+	await _check_opening_draw(scene)
 	await _check_health(scene)
 	await _check_transfers(scene)
 	await _check_normal_turn(scene)
 	await _check_lethal_sequence(scene)
 	scene.queue_free()
 	await _frames(3)
+	await _check_effect_and_turn_draw()
 	print("血条与飞牌动画：全部通过" if failures == 0 else "血条与飞牌动画：失败%d项" % failures)
 	get_tree().quit(failures)
+
+
+func _check_opening_draw(scene: BattleTestScene) -> void:
+	var deadline := Time.get_ticks_msec() + 5000
+	while scene._card_transfers.is_empty() and Time.get_ticks_msec() < deadline:
+		await get_tree().process_frame
+	_check("开局抽牌立即完成业务，表现仍在逐张播放", scene._battle.hand.size() == 5 and scene._busy and not scene._card_transfers.is_empty())
+	if scene._card_transfers.is_empty(): return
+	var id: String = scene._card_transfers.keys()[0]
+	var ghost: Control = scene._card_transfers[id].ghost
+	while ghost._flight == null and Time.get_ticks_msec() < deadline:
+		await get_tree().process_frame
+	if ghost._flight == null:
+		_check("抽牌飞行已启动", false)
+		return
+	# 首次资源加载可能占用一帧较久，重置后按固定时间步长验证轨迹。
+	var source_transform := Transform2D(0.0, Vector2.ONE * scene.CARD_TRANSFER.TRAVEL_SCALE,
+		0.0, ghost._start_center - ghost.pivot_offset * scene.CARD_TRANSFER.TRAVEL_SCALE)
+	ghost._flight.kill()
+	ghost.start(source_transform, scene._card_transfer_target.bind(id), false)
+	ghost._flight.pause()
+	var seed_before := JSON.stringify(SeedService.capture_snapshot())
+	var inverse := scene.get_global_transform_with_canvas().affine_inverse()
+	var pile_center := inverse * scene.draw_button.get_global_rect().get_center()
+	_check("抽牌从抽牌堆中心以小比例起飞", ghost._start_center.distance_to(pile_center) < 1.0 and is_equal_approx(ghost.scale.x, scene.CARD_TRANSFER.TRAVEL_SCALE))
+	_check("飞行期间手牌目标隐藏且禁止操作", is_zero_approx(scene._transfer_source(id, false).modulate.a) and not scene._can_click_hand())
+	ghost._flight.custom_step(0.07)
+	ghost._flight.custom_step(0.09)
+	_check("抽牌平滑飞向手牌而非瞬移", ghost.position.distance_to(pile_center - ghost.pivot_offset) > 10.0 and (ghost.position + ghost.pivot_offset).distance_to(scene._card_transfer_target(id).center) > 10.0)
+	scene._refresh_zones()
+	await _frames(3)
+	_check("抽牌途中重建手牌仍隐藏目标", is_zero_approx(scene._transfer_source(id, false).modulate.a))
+	ghost._flight.custom_step(0.10)
+	ghost._flight.custom_step(0.04)
+	_check("落入手牌时放大并跟随扇形位置", ghost.scale.x > scene.CARD_TRANSFER.TRAVEL_SCALE and ghost.scale.x < scene.HAND_CARD_SCALE and (ghost.position + ghost.pivot_offset).distance_to(scene._card_transfer_target(id).center) < 1.0)
+	await _capture("card-draw-landing.png")
+	ghost._flight.custom_step(0.2)
+	_check("落位对齐手牌角度且恢复真实卡面", not scene._card_transfers.has(id) and is_equal_approx(scene._transfer_source(id, false).modulate.a, 1.0) and is_equal_approx(ghost.rotation, scene._transfer_source(id, false).get_global_transform_with_canvas().get_rotation()))
+	await _wait_presentation(scene)
+	_check("首抽全部落位后开放操作且没有幽灵牌", scene.hand_cards.get_child_count() == 5 and scene._card_transfers.is_empty() and scene._can_click_hand())
+	_check("抽牌动画不额外消耗随机流", JSON.stringify(SeedService.capture_snapshot()) == seed_before)
+
+
+func _wait_presentation(scene: BattleTestScene) -> void:
+	var deadline := Time.get_ticks_msec() + 15000
+	while scene._presentation_pending() and Time.get_ticks_msec() < deadline:
+		await get_tree().process_frame
+	_check("表现队列可正常收尾", not scene._presentation_pending())
+	await _frames(3)
+
+
+func _check_effect_and_turn_draw() -> void:
+	var scene: BattleTestScene = load("res://ui/battle/battle_test_scene.tscn").instantiate()
+	scene.relic_board_path = fixture_root.path_join("empty-board.json")
+	for index in 12: scene.deck_card_ids.append("test_draw")
+	scene.initial_draw_count = 2
+	scene.per_turn_draw_count = 1
+	scene.resolution_delay = 0.05
+	scene.enemy_turn_delay = 0.05
+	add_child(scene)
+	await _wait_presentation(scene)
+	scene._on_hand_card_pressed(str(scene._battle.hand[0].instance_id))
+	await get_tree().create_timer(0.45).timeout
+	scene._on_play_pressed()
+	var drawn_ids := {}
+	var deadline := Time.get_ticks_msec() + 15000
+	while scene._presentation_pending() and Time.get_ticks_msec() < deadline:
+		for id: String in scene._card_transfers:
+			if str(scene._card_transfers[id].destination) == "hand": drawn_ids[id] = true
+		await get_tree().process_frame
+	_check("效果抽2张和次回合抽1张均有飞牌", drawn_ids.size() == 3 and scene._battle.turn_number == 2 and scene._battle.hand.size() == 4 and not scene._busy)
+	# 强制测试洗回弃牌堆后的补抽，以及手牌上限不产生虚假的飞牌。
+	scene._battle.discard_pile.append_array(scene._battle.draw_pile)
+	scene._battle.draw_pile.clear()
+	var count := scene._battle.hand.size()
+	_check("洗牌后继续抽牌请求成功", scene._battle.draw_cards(20) == OK)
+	drawn_ids.clear()
+	deadline = Time.get_ticks_msec() + 15000
+	while scene._presentation_pending() and Time.get_ticks_msec() < deadline:
+		for id: String in scene._card_transfers:
+			if str(scene._card_transfers[id].destination) == "hand": drawn_ids[id] = true
+		await get_tree().process_frame
+	_check("洗回抽牌也有动画且只为实际入手的牌播放", scene._battle.hand.size() == 10 and drawn_ids.size() == 10 - count and not scene._busy)
+	await _frames(3)
+	var last: Dictionary = scene._battle.hand.back().duplicate(true)
+	scene._begin_card_transfer(last, "hand")
+	scene.queue_free()
+	await _frames(4)
+	_check("飞行期间退出战斗清理临时节点", not is_instance_valid(scene))
 
 
 func _check_health(scene: BattleTestScene) -> void:
@@ -126,23 +214,23 @@ func _check_lethal_sequence(scene: BattleTestScene) -> void:
 		if str(card.card_id) == "test_damage_enemy":
 			scene._on_hand_card_pressed(str(card.instance_id))
 	await get_tree().create_timer(0.45).timeout
-	var previous := float(scene.enemy_hp_fill.get("ratio"))
+	var previous := float(scene.enemy_rack.slots[0].fill.get("ratio"))
 	var monotonic := true
 	var snapshot_matches := true
 	var saw_intermediate := false
 	var deadline := Time.get_ticks_msec() + 10000
 	scene._on_play_pressed()
-	_check("逻辑已致死但血条仍保持初始表现血量", not scene._battle.active and is_equal_approx(float(scene.enemy_hp_fill.get("ratio")), previous))
+	_check("逻辑已致死但血条仍保持初始表现血量", not scene._battle.active and is_equal_approx(float(scene.enemy_rack.slots[0].fill.get("ratio")), previous))
 	while scene._busy and Time.get_ticks_msec() < deadline:
 		await get_tree().process_frame
-		var current := float(scene.enemy_hp_fill.get("ratio"))
+		var current := float(scene.enemy_rack.slots[0].fill.get("ratio"))
 		monotonic = monotonic and current <= previous + 0.00001
 		previous = current
-		var presented := int(scene._presented_enemy.health)
+		var presented := int(scene._presented_enemies[0].health)
 		saw_intermediate = saw_intermediate or (presented > 0 and presented < 23)
-		snapshot_matches = snapshot_matches and is_equal_approx(float(scene.enemy_hp_fill.get_meta("ratio")), float(scene._presented_enemy.health) / float(scene._presented_enemy.max_health))
+		snapshot_matches = snapshot_matches and is_equal_approx(float(scene.enemy_rack.slots[0].fill.get_meta("ratio")), float(scene._presented_enemies[0].health) / float(scene._presented_enemies[0].max_health))
 	await get_tree().create_timer(0.35).timeout
-	_check("致死连续伤害播放不先归零再恢复", monotonic and snapshot_matches and saw_intermediate and not scene._busy and is_zero_approx(float(scene.enemy_hp_fill.get("ratio"))))
+	_check("致死连续伤害播放不先归零再恢复", monotonic and snapshot_matches and saw_intermediate and not scene._busy and is_zero_approx(float(scene.enemy_rack.slots[0].fill.get("ratio"))))
 	_check("结算后出牌入弃动画收尾，不残留飞牌", scene._card_transfers.is_empty() and scene._resolved_discards.is_empty())
 	await _capture("lethal-finished.png")
 

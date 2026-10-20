@@ -63,7 +63,7 @@ static func claim(run: Node, request: Dictionary) -> Error:
 	if loot.claimed: return ERR_ALREADY_EXISTS
 	var session: RefCounted = EncounterFlow.session
 	var before := {"inventory":run.inventory_state.duplicate(true), "items":run.items.duplicate(true),
-		"gold":run.gold, "session":session.capture_state()}
+		"gold":run.gold, "total_silver_earned":run.total_silver_earned, "session":session.capture_state()}
 	# Preflight every item before changing anything. A consumed item still has a
 	# claimed ledger, so absence from the backpack never permits another award.
 	for entry: Dictionary in loot.entries:
@@ -76,10 +76,12 @@ static func claim(run: Node, request: Dictionary) -> Error:
 	run.inventory_state.node_loot[key(str(request.map_id), str(request.node_id))] = loot
 	if not session.resolve_request({"request_id":request.request_id, "status":"completed"}):
 		run.inventory_state = before.inventory; run.items = before.items; run.gold = int(before.gold)
+		run.total_silver_earned = int(before.total_silver_earned)
 		return ERR_INVALID_DATA
 	var error := SaveGateway.save_current()
 	if error != OK:
 		run.inventory_state = before.inventory; run.items = before.items; run.gold = int(before.gold)
+		run.total_silver_earned = int(before.total_silver_earned)
 		if not _restore_session(before.session): return ERR_INVALID_DATA
 	run.state_changed.emit()
 	return error

@@ -152,10 +152,12 @@ func repeat_next_card(extra_triggers: int) -> void:
 
 
 func _submit(type: String, data: Dictionary) -> void:
-	var event := battle.rules.publish("action." + type, data)
+	var parent := battle.rules.queue.current
+	var card_effect := parent != null and parent.type == "effect.execute" and parent.payload.get("effect") is CardEffect
+	var event := battle.rules.publish("enchantment.damage" if type == "damage" and card_effect else "action." + type, data)
 	if type == "damage" and battle.rules.queue.current != null and battle.rules.queue.current.type.begins_with("buff."):
 		event.metadata["dot"] = true
-	var parent := battle.rules.queue.current
 	if type == "damage" and parent != null and parent.type == "effect.execute" and parent.payload.get("effect") is CardEffect:
 		event.metadata["damage_program_id"] = event.id
+	if type == "block" and card_effect: event.metadata["block_program_id"] = event.id
 	battle.rules.flush()

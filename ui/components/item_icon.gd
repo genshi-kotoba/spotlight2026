@@ -16,6 +16,8 @@ static func make(path: String, side: float) -> ItemIcon:
 ## 保留 make(path, side)，已有药剂和普通物品调用不会改变。
 static func make_item(item: Variant, side: float, path: String = "") -> ItemIcon:
 	if item is Dictionary:
+		if str(item.get("kind", "")) == "enchantment_book":
+			return make("res://assets/ui/enchantment_book.svg", side)
 		if str(item.get("kind", "")) in ["fragment", "fragment_pack"]:
 			return _make_texture(RelicPieceArt.template_texture(), side)
 	elif item is String and item in ["fragment", "fragment_pack", "典籍残片", "典籍残片包"]:

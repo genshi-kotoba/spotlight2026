@@ -20,11 +20,9 @@ func _run() -> void:
 	get_window().size = Vector2i(1920, 1080)
 	fixture_root = "res://.godot/battle-feel-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(fixture_root)
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("1.json"), fixture_root.path_join("2.json"), fixture_root.path_join("3.json")])
-	SaveGateway._active_slot = 1
+	SaveGateway.save_path = fixture_root.path_join("game.json")
 	Engine.time_scale = 1.0
-	_check("独立测试存档", SaveGateway._load_slot(1) == OK)
+	_check("独立测试存档", SaveGateway.load_current() == OK)
 	var scene := _make_scene()
 	add_child(scene)
 	await _frames(5)

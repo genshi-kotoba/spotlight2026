@@ -34,8 +34,8 @@ var foreground_misses := 0
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_process(false)
-	SaveGateway.run_started.connect(func(_slot: int): clear_map())
-	SaveGateway.active_slot_changed.connect(func(_slot: int): clear_map())
+	SaveGateway.run_started.connect(clear_map)
+	SaveGateway.save_reloaded.connect(clear_map)
 
 ## 菜单显示期间就读取地图入口与通用战斗资源，不把工作留到点击新游戏之后。
 func warm_menu(game_scene := MAP_SCENE) -> void:

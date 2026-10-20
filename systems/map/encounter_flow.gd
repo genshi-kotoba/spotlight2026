@@ -175,8 +175,8 @@ func _boss_completed() -> bool:
 func _advance_after_boss() -> bool:
 	run.complete_current_map()
 	if map_run.current_floor >= IMPLEMENTED_FLOORS:
-		# 不能把第三层当全游戏胜利；保留本局，等待后续第四层。
-		run.map_states[run.current_map_id]["awaiting_fourth_floor"] = true
+		# 当前测试版以第三层为终点，领完最终 Boss 奖励后再记录最终背包。
+		run.inventory_state["pending_run_victory"] = true
 		return true
 	var entry: Dictionary = map_run.enter_floor(map_run.current_floor + 1, session.capture_state())
 	if entry.is_empty():

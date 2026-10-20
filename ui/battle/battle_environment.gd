@@ -27,7 +27,7 @@ static func path_for_floor(floor_index: int, variant_index: int = -1) -> String:
 	var index := floor_index if floor_index >= 1 and floor_index <= PATHS.size() else 1
 	var variants := variants_for_floor(index)
 	var selected := variant_index if variant_index >= 0 else int(_floor_config(index).get("default", 0))
-	return variants[selected if selected < variants.size() else 0]
+	return variants[selected if selected >= 0 and selected < variants.size() else 0]
 
 static func texture_for_floor(floor_index: int, variant_index: int = -1) -> Texture2D:
 	# 地图预加载器提前持有本层贴图；不要在解析战斗脚本时同步读完四层大图。

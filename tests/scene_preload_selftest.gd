@@ -10,17 +10,15 @@ func _ready() -> void:
 func _run() -> void:
 	get_tree().current_scene = null
 	var fixture := "res://.godot/scene-preload-%d" % Time.get_ticks_usec()
-	SaveGateway.profile_path = fixture.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture.path_join("1.json"), fixture.path_join("2.json"), fixture.path_join("3.json")])
-	SaveGateway._active_slot = 1
-	_check("使用隔离存档", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture.path_join("game.json")
+	_check("使用隔离存档", SaveGateway.load_current() == OK)
 	var config: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/config/main_menu_new_run.json"))
 	config.run_id = "preload-fixture"
 	_check("建立测试局", SaveGateway.start_new_run("preload-fixture", config) == OK)
 	var run := SaveGateway.current_run()
 	var original := JSON.stringify(run.to_dictionary())
 	var rng := JSON.stringify(SeedService.capture_snapshot())
-	var file_before := FileAccess.get_file_as_string(SaveGateway.slot_path(1))
+	var file_before := FileAccess.get_file_as_string(SaveGateway.save_path)
 	var cold_started := Time.get_ticks_usec()
 	var first := await ScenePreloader.load_scene(TARGET)
 	var cold_ms := (Time.get_ticks_usec() - cold_started) / 1000.0
@@ -51,7 +49,7 @@ func _run() -> void:
 		_check("新层不返回上一层节点状态", ScenePreloader.node_status("preload:floor-%03d" % (floor_index - 1), "normal").is_empty())
 	_check("预加载不改变牌组、背包、进度或商店库存", original == JSON.stringify(run.to_dictionary()))
 	_check("预加载不改变玩法随机快照", rng == JSON.stringify(SeedService.capture_snapshot()))
-	_check("预加载不写存档", file_before == FileAccess.get_file_as_string(SaveGateway.slot_path(1)))
+	_check("预加载不写存档", file_before == FileAccess.get_file_as_string(SaveGateway.save_path))
 	var cached := ScenePreloader.cached_resource(ScenePreloader.BATTLE_SCENE)
 	_check("所有战斗节点仅保留一个公共PackedScene", cached is PackedScene and await ScenePreloader.load_scene(ScenePreloader.BATTLE_SCENE) == cached)
 	ScenePreloader.prepare_map(_map(1), "replacement-run")

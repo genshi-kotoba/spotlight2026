@@ -92,6 +92,7 @@ var _open_tween: Tween
 var run_override: RunStateMachine = null
 ## 战斗测试场景专用开关：打开后战斗中仍可编辑典籍。生产模式下保持 false，战斗中仍是仅查看。
 var allow_edit_in_battle := false
+var settlement_mode := false
 
 
 const MENU_ACTIONS := {"menu_map": KEY_M}
@@ -129,6 +130,7 @@ func _ready() -> void:
 
 
 func open(page: int = -1) -> void:
+	if _pack_selection_locked(): return
 	visible = true
 	if page >= 0:
 		set_page(page)
@@ -157,6 +159,8 @@ func current_page() -> int:
 
 
 func close() -> void:
+	if settlement_mode: return
+	if _pack_selection_locked(): return
 	_end_relic_drag(true)
 	_selected_fragment_id = ""
 	_hide_item_tip()
@@ -172,6 +176,8 @@ func is_open() -> bool:
 
 
 func set_page(index: int) -> void:
+	if settlement_mode: index = 1
+	if _pack_selection_locked(): return
 	_end_relic_drag(true)
 	_selected_fragment_id = ""
 	_hide_item_tip()
@@ -187,7 +193,7 @@ func set_page(index: int) -> void:
 			var tween := page.create_tween()
 			tween.tween_property(page, "modulate:a", 1.0, 0.14)
 	if _page_title != null:
-		_page_title.text = PAGES[_current_page]
+		_page_title.text = "最终背包 · 仅供查看" if settlement_mode else PAGES[_current_page]
 
 
 func set_run_override(run: RunStateMachine) -> void:
@@ -211,6 +217,7 @@ func set_map_viewer(viewer: Control) -> void:
 func _refresh_data() -> void:
 	_end_relic_drag(true)
 	_hide_item_tip()
+	_close_button.disabled = _pack_selection_locked()
 	var run := _active_run()
 	var deck_ids: Array[String] = []
 	var deck_copies: Array[Dictionary] = []
@@ -245,6 +252,7 @@ func _reload_deck(deck_ids: Array[String], copies: Array[Dictionary] = []) -> vo
 		view.size = Vector2(480.0, 818.0)
 		if data != null:
 			view.set_card(data)
+		view.set_enchantments(copies[index] if index < copies.size() else {})
 		view.apply_compact_layout(DECK_CARD_SCALE)
 		view.tooltip_text = CardEnchantments.describe(copies[index]) if index < copies.size() else ""
 		slot.tooltip_text = view.tooltip_text
@@ -253,7 +261,7 @@ func _reload_deck(deck_ids: Array[String], copies: Array[Dictionary] = []) -> vo
 		peek.flat = true
 		peek.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		peek.tooltip_text = view.tooltip_text
-		peek.pressed.connect(_peek_card.bind(card_id))
+		peek.pressed.connect(_peek_card.bind(card_id, copies[index] if index < copies.size() else {}))
 		slot.add_child(peek)
 		# 卡面整体放大提亮，命中区仍是那张全幅 peek 按钮。
 		HOVER_LIFT.attach(view, peek)
@@ -297,11 +305,12 @@ func _build_peek() -> void:
 	_peek_layer.add_child(_peek_view)
 
 
-func _peek_card(card_id: String) -> void:
+func _peek_card(card_id: String, card: Dictionary = {}) -> void:
 	var data := _card_data(card_id)
 	if data == null:
 		return
 	_peek_view.set_card(data)
+	_peek_view.set_enchantments(card)
 	# 大图与外面的卡是同一份预制件：只是 scale 不同，不重新排字。
 	_peek_view.apply_compact_layout(PEEK_CARD_SCALE)
 	_peek_layer.visible = true
@@ -319,7 +328,8 @@ func _reload_items(run: RunStateMachine) -> void:
 	_resources.text = "银币 %d  ·  万灵药 %d" % [run.gold, int(run.inventory_state.elixir)] if run != null else "银币 0  ·  万灵药 0"
 	if is_instance_valid(_battle) and run != null: _resources.text = "银币 %d  ·  万灵药 %d" % [int(_battle.player.get("silver", run.gold)), int(run.inventory_state.elixir)]
 	# 这一栏不写操作说明，只留给限制与失败提示。
-	_bag_hint.text = "" if _can_edit_relics() else "战斗中仅查看，卡包与典籍编辑在战后开放。"
+	_bag_hint.text = "" if _can_edit_relics() else "战斗中仅查看，卡包、附魔书与典籍编辑在战后开放。"
+	if settlement_mode: _bag_hint.text = "最终背包快照 · 仅供查看"
 	var catalog := RelicCatalog.load_definitions()
 	for index in maxi(ITEM_CAPACITY, items.size()):
 		var slot: Control
@@ -492,7 +502,7 @@ func _build_map_page(page: Control) -> void:
 
 func _build_bag_page(page: Control) -> void:
 	# 立绘越出边框 · 中栏上典籍下背包 · 右栏卡组。
-	_build_portrait_zone(page)
+	if not settlement_mode: _build_portrait_zone(page)
 	_build_relic_zone(page)
 	_build_item_zone(page)
 	_build_deck_zone(page)
@@ -874,6 +884,8 @@ func set_battle_context(battle: BattleStateMachine, catalog: Dictionary, board: 
 
 
 func _on_item_pressed(item_id: String) -> void:
+	if settlement_mode: return
+	if _pack_selection_locked(): return
 	var active := _active_run()
 	var item := RunRewards.item(active, item_id) if active != null else {}
 	if item.get("kind") == "potion" and is_instance_valid(_battle):
@@ -888,15 +900,19 @@ func _on_item_pressed(item_id: String) -> void:
 		_selected_fragment_id = item_id
 		_bag_hint.text = "已选择残片，点击左侧典籍格安装或替换。"
 	elif selected.get("kind") in RunRewards.PACKS and not is_instance_valid(_pack_popup):
+		_end_relic_drag(true)
+		_selected_fragment_id = ""
+		_hide_item_tip()
 		_pack_popup = LootPopup.new()
 		add_child(_pack_popup)
 		_pack_popup.finished.connect(_refresh_data, CONNECT_DEFERRED)
+		_pack_popup.suspension_changed.connect(_on_pack_suspension_changed)
 		_pack_popup.show_pack(item_id)
 
 
 ## 背包与场景快捷栏共用的选项菜单，规则也共用：卡包要能改存档才能用，药水要真在战斗里才能用。
 func _open_item_menu(anchor: Control, item_id: String, kind: String) -> void:
-	if item_id.is_empty():
+	if settlement_mode or _pack_selection_locked() or item_id.is_empty():
 		return
 	# 选项菜单与说明浮层占同一块位置，弹菜单前先收说明，避免两者叠在一起。
 	_hide_item_tip()
@@ -1294,6 +1310,8 @@ func _item_slot(run: RunStateMachine, item_index: int, slot_index: int) -> Contr
 	# 图标占格子，名字与效果走和战斗 HUD 同一个悬停浮层。
 	slot.mouse_filter = Control.MOUSE_FILTER_STOP
 	var tip := _item_tooltip(display, record)
+	if kind == "enchantment_book":
+		tip += "\n使用后先选附魔，再选择符合条件的卡牌；每张卡最多两个不同附魔。"
 	slot.mouse_entered.connect(_show_item_tip.bind(slot, tip))
 	slot.mouse_exited.connect(_hide_item_tip)
 	if kind in RunRewards.PACKS or kind == "potion":
@@ -1312,6 +1330,7 @@ func _active_run() -> RunStateMachine:
 
 
 func _can_edit_relics() -> bool:
+	if settlement_mode or _pack_selection_locked(): return false
 	var run := _active_run()
 	if run == null or not run.active:
 		return false
@@ -1421,3 +1440,20 @@ func _unmount_relic(index: int) -> void:
 	_sync_battle_board()
 	_refresh_data()
 	relic_board_updated.emit()
+
+
+func _pack_selection_locked() -> bool:
+	return is_instance_valid(_pack_popup) and _pack_popup.is_selection_locked()
+
+
+
+func _on_pack_suspension_changed(suspended: bool) -> void:
+	_end_relic_drag(true)
+	_selected_fragment_id = ""
+	_hide_item_tip()
+	if not suspended and is_instance_valid(_peek_layer): _peek_layer.hide()
+	for cell: RelicDropCell in _relic_drop_cells: cell.editable = _can_edit_relics()
+	for slot: Node in _item_grid.get_children():
+		if slot is RelicDragItem: slot.editable = _can_edit_relics()
+	_close_button.disabled = true
+	_bag_hint.text = "选择尚未完成：背包仅供查看，不能使用物品或装配残片。\n点击“恢复选择”继续。" if suspended else "正在选择奖励，点击“悬置”可收起选项并只读查看背包。"

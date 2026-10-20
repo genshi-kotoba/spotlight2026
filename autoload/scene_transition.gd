@@ -16,6 +16,8 @@ var _was_paused := false
 var _presentation_mode: Node.ProcessMode
 var _previous_focus: WeakRef
 var _blocker: ColorRect
+var _label: Label
+var _elapsed := 0.0
 var _failure_dialog: AcceptDialog
 ## 调试用阶段耗时，资源等待与场景准备分开记录，避免把加载假快当成优化。
 var last_metrics: Dictionary = {}
@@ -25,12 +27,33 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 2048 # 高于普通 CanvasLayer 和嵌入式弹窗。
 	_blocker = ColorRect.new()
-	_blocker.name = "TransitionFade"
-	_blocker.color = Color(0.0, 0.0, 0.0, 0.0)
+	_blocker.name = "LoadingOverlay"
+	_blocker.color = Color.BLACK
 	_blocker.mouse_filter = Control.MOUSE_FILTER_STOP
 	_blocker.focus_mode = Control.FOCUS_ALL
 	add_child(_blocker)
 	_blocker.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var center := CenterContainer.new()
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_blocker.add_child(center)
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var panel := PanelContainer.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := CommonUiSkin.panel("strip", Vector4(48, 28, 48, 28))
+	panel.add_theme_stylebox_override("panel", style)
+	center.add_child(panel)
+	_label = Label.new()
+	_label.name = "LoadingLabel"
+	_label.text = "正在加载…"
+	_label.custom_minimum_size.x = 280
+	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var font := SystemFont.new()
+	font.font_names = PackedStringArray(["Microsoft YaHei", "SimHei", "Noto Sans CJK SC"])
+	_label.add_theme_font_override("font", font)
+	_label.add_theme_font_size_override("font_size", 40)
+	_label.add_theme_color_override("font_color", Color("e8bc58"))
+	panel.add_child(_label)
 	_blocker.hide()
 	_failure_dialog = AcceptDialog.new()
 	CommonUiSkin.style_dialog(_failure_dialog)
@@ -65,22 +88,30 @@ func change_scene_to_file(path: String) -> Error:
 	var focus := get_viewport().gui_get_focus_owner()
 	_previous_focus = weakref(focus) if focus != null else null
 	get_tree().paused = true
-	_blocker.color.a = 0.0
+	_elapsed = 0.0
+	_label.text = "正在加载…"
+	_blocker.modulate.a = 0.0
 	_blocker.show()
 	_blocker.grab_focus()
+	set_process(true)
 	set_process_input(true)
 	transition_started.emit(path)
 	_perform.call_deferred(path)
 	return OK
 
 
+func _process(delta: float) -> void:
+	_elapsed += delta
+	_label.text = "正在加载" + ".".repeat(1 + int(_elapsed / 0.4) % 3)
+
+
 func _fade_to(alpha: float, duration: float) -> void:
-	# Start after a drawn frame, so a cold/deferred creation does not consume
-	# the elapsed time before this animation and jump straight to its end.
+	# 先绘制一帧，避免冷加载耗时令淡出动画直接跳到终点。
 	await _draw_frame()
 	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).set_ignore_time_scale(true)
 	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(_blocker, "color:a", alpha, duration)
+	# 保留 main 的加载提示，背景与文字一起淡入淡出。
+	tween.tween_property(_blocker, "modulate:a", alpha, duration)
 	await tween.finished
 
 
@@ -97,8 +128,7 @@ func _draw_frame() -> void:
 
 
 func _perform(path: String) -> void:
-	# Keep cold resource submission/installation after the fade, under full black.
-	# Existing menu/node prewarming remains owned by ScenePreloader.
+	# 资源安装发生在完整遮罩下，未就绪的地图不会提前露出。
 	var fade_started := Time.get_ticks_usec()
 	await _fade_to(1.0, FADE_OUT_SECONDS)
 	last_metrics.fade_out_ms = (Time.get_ticks_usec() - fade_started) / 1000.0
@@ -145,8 +175,7 @@ func _perform(path: String) -> void:
 		if not _redirect.is_empty():
 			path = _redirect
 			continue
-		# Preparation/redirect handling is complete. Further requests remain busy
-		# during the reveal, rather than accepting a redirect that would be lost.
+		# 淡入期间仍锁定输入，但不再接收会被丢失的准备阶段重定向。
 		_installing = false
 		fade_started = Time.get_ticks_usec()
 		await _fade_to(0.0, FADE_IN_SECONDS)
@@ -176,8 +205,8 @@ func _finish() -> void:
 	_busy = false
 	_installing = false
 	_redirect = ""
-	_blocker.color.a = 0.0
 	_blocker.hide()
+	_blocker.modulate.a = 0.0
 	set_process(false)
 	set_process_input(false)
 	MapPresentation.process_mode = _presentation_mode

@@ -17,6 +17,12 @@ static func wrap_to_width(text: String, font: Font, font_size: int,
 	var line := ""
 	for index in text.length():
 		var character := text[index]
+		if character == "\r":
+			continue
+		if character == "\n":
+			lines.append(line)
+			line = ""
+			continue
 		var candidate := line + character
 		var width := font.get_string_size(candidate, HORIZONTAL_ALIGNMENT_LEFT,
 			-1.0, font_size).x
@@ -24,18 +30,14 @@ static func wrap_to_width(text: String, font: Font, font_size: int,
 			# 标点不另起一行，但也不许超宽：把上一行末尾若干字一起带到下一行，
 			# 否则这一行会宽出卡面，居中后被裁掉左右各半个字。
 			if character in BREAK_EXCEPTIONS:
-				var carry := ""
-				while line.length() > 1:
-					var shorter := line.substr(0, line.length() - 1)
-					var moved := line.substr(line.length() - 1)
-					line = shorter
-					carry = moved + carry
-					var tail_width := font.get_string_size(line + character,
-						HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size).x
-					if tail_width <= max_width:
-						break
-				lines.append(line + character)
-				line = carry
+				# 末字与标点一起放到下一行，不能把标点插到末字前面。
+				var carry := line.right(1) + character
+				if line.length() > 1 and font.get_string_size(carry, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size).x <= max_width:
+					lines.append(line.left(line.length() - 1))
+					line = carry
+				else:
+					lines.append(line)
+					line = character
 			else:
 				lines.append(line)
 				line = character

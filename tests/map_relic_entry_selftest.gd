@@ -8,10 +8,8 @@ const BOARD_CELLS := ["turn_strength", "on_card_gained", "gain_block", "deal_dam
 
 func _run() -> void:
 	fixture_root = "res://.godot/map-relic-entry-%d" % Time.get_ticks_usec()
-	SaveGateway.profile_path = fixture_root.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture_root.path_join("slot1.json"), fixture_root.path_join("slot2.json"), fixture_root.path_join("slot3.json")])
-	SaveGateway._active_slot = 1
-	_check("隔离真实档案", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture_root.path_join("game.json")
+	_check("隔离真实档案", SaveGateway.load_current() == OK)
 	DirAccess.make_dir_recursive_absolute(fixture_root)
 	EncounterFlow.relic_board_path = fixture_root.path_join("board.json")
 	var board := RelicBoard.new()

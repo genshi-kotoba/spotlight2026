@@ -21,12 +21,13 @@ config/seed_content_version="jam-map-seed-v1"
 SeedService="*res://autoload/seed_service.gd"
 GlobalState="*res://state_machines/global/global_state_machine.gd"
 MapEvents="*res://core/signals/map_events.gd"
-SaveGateway="*res://autoload/save_gateway.gd"
 TextCatalog="*res://systems/text/text_catalog.gd"
+SaveGateway="*res://autoload/save_gateway.gd"
 EncounterFlow="*res://systems/map/encounter_flow.gd"
 MapPresentation="*res://autoload/map_presentation.gd"
 SceneTransition="*res://autoload/scene_transition.gd"
 ScenePreloader="*res://autoload/scene_preloader.gd"
+RunResults="*res://autoload/run_results.gd"
 
 [display]
 

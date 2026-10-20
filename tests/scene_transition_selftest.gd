@@ -18,10 +18,8 @@ func _run() -> void:
 	get_tree().current_scene = null
 	get_window().size = Vector2i(1920, 1080)
 	var fixture := "res://.godot/scene-transition-%d" % Time.get_ticks_usec()
-	SaveGateway.profile_path = fixture.path_join("profile.json")
-	SaveGateway.slot_paths.assign([fixture.path_join("slot1.json"), fixture.path_join("slot2.json"), fixture.path_join("slot3.json")])
-	SaveGateway._active_slot = 1
-	_check("使用独立存档夹具", SaveGateway._load_slot(1) == OK)
+	SaveGateway.save_path = fixture.path_join("game.json")
+	_check("使用独立存档夹具", SaveGateway.load_current() == OK)
 	SceneTransition.transition_started.connect(func(path: String): starts.append(path))
 	SceneTransition.transition_finished.connect(func(path: String): finishes.append(path))
 	SceneTransition.transition_failed.connect(func(path: String, _error: Error): errors.append(path))
@@ -39,6 +37,7 @@ func _run() -> void:
 	var current := get_tree().current_scene
 	_check("新场景准备完成才撤掉遮罩", current.scene_file_path == TARGET and current.prepared and not SceneTransition._blocker.visible and not get_tree().paused)
 	_check("完成信号仅发送一次", starts == [TARGET] and finishes == [TARGET] and errors.is_empty())
+	_check("淡出淡入耗时独立统计且计入总时长", SceneTransition.last_metrics.fade_out_ms > 0.0 and SceneTransition.last_metrics.fade_in_ms > 0.0 and SceneTransition.last_metrics.total_ms >= SceneTransition.last_metrics.fade_out_ms + SceneTransition.last_metrics.fade_in_ms)
 	await _click(Vector2(120, 70))
 	_check("切换后恢复真实鼠标点击", current.clicks == 1)
 	get_tree().paused = true
@@ -64,6 +63,9 @@ func _run() -> void:
 	await get_tree().process_frame
 	_check("遮罩覆盖真实视口、提示正中且鼠标拦截", SceneTransition._blocker.get_global_rect().encloses(get_viewport().get_visible_rect()) and SceneTransition._blocker.mouse_filter == Control.MOUSE_FILTER_STOP and SceneTransition._label.get_global_rect().get_center().distance_to(get_viewport().get_visible_rect().get_center()) < 2.0)
 	if DisplayServer.get_name() != "headless":
+		# 截取真正显示加载文字的遮罩阶段，而不是淡出刚开始的透明帧。
+		while SceneTransition.is_loading() and SceneTransition._blocker.modulate.a < 0.98:
+			await get_tree().process_frame
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("res://.godot/scene-transition-loading.png")
 	await _wait()
@@ -81,10 +83,14 @@ func _run() -> void:
 func _wait() -> void:
 	var deadline := Time.get_ticks_msec() + 15000
 	var covered := true
+	var fade_requests_rejected := true
 	while SceneTransition.is_loading() and Time.get_ticks_msec() < deadline:
 		covered = covered and SceneTransition._blocker.visible and get_tree().paused
+		if not SceneTransition._installing and SceneTransition._blocker.modulate.a > 0.0 and SceneTransition._blocker.modulate.a < 1.0:
+			fade_requests_rejected = fade_requests_rejected and SceneTransition.change_scene_to_file(MENU) == ERR_BUSY
 		await get_tree().process_frame
 	_check("加载和连续跳转期间始终保留遮罩与操作锁", covered)
+	_check("淡入淡出期间不受理会丢失的重定向", fade_requests_rejected)
 	_check("场景切换无永久等待", not SceneTransition.is_loading())
 	await get_tree().process_frame
 

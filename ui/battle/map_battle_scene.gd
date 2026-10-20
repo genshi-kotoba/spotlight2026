@@ -146,6 +146,9 @@ func _on_battle_ended(result: Dictionary) -> void:
 	call_deferred("_leave_after_resolution")
 
 func _show_opening_result() -> void:
+	if not RunResults.pending_record.is_empty():
+		_leave_after_resolution()
+		return
 	if _opening_result != null:
 		return
 	_opening_result = AcceptDialog.new()
@@ -189,6 +192,9 @@ func _leave_after_resolution() -> void:
 	_return_after_rewards()
 
 func _return_after_rewards() -> void:
+	if RunResults.complete_if_ready() or not RunResults.pending_record.is_empty():
+		RunResults.present(self)
+		return
 	var path := EncounterFlow.MAP_SCENE if _battle_result in ["victory", "escaped"] else MENU_SCENE
 	var error := SceneTransition.change_scene_to_file(path)
 	if error != OK:
