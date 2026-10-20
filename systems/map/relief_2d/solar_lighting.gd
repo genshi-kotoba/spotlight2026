@@ -8,6 +8,8 @@ extends RefCounted
 const ACTOR_SHADOW_SCREEN_BIN := 128.0
 const ACTOR_SHADOW_MAX_PIECE_BINS := 256
 const ACTOR_SHADOW_MAX_INDEX_REFERENCES := 200000
+const ACTOR_SILHOUETTE_CACHE_LIMIT := 128
+const ACTOR_SILHOUETTE_MAX_VERTICES := 160
 const EPSILON := 0.00001
 const AREA_EPSILON := 0.0001
 const PIXEL_EPSILON := 0.001
@@ -38,6 +40,9 @@ var _actor_shadow_wide_count := 0
 var _actor_shadow_bounds_filter_enabled := true # Legacy-reference switch for tests.
 var _actor_shadow_use_spatial_index := true
 var _last_actor_shadow_report: Dictionary = {}
+var _actor_silhouette_cache: Dictionary = {}
+var _actor_silhouette_cache_order: Array[PackedByteArray] = []
+var _actor_silhouette_use_convex_parts := true # Triangle-reference switch for tests.
 var _last_report: Dictionary = {}
 var _scenery_caster_count := 0
 var _support_skirt_caster_count := 0
@@ -67,6 +72,7 @@ func configure(config: Dictionary = {}) -> Dictionary:
 	_cached_faces = []
 	_actor_shadow_piece_bounds.clear();_actor_shadow_piece_bins.clear();_actor_shadow_wide_pieces.clear()
 	_actor_shadow_index_references=0;_actor_shadow_wide_count=0
+	_actor_silhouette_cache.clear();_actor_silhouette_cache_order.clear()
 	return _config_report()
 
 
@@ -217,15 +223,47 @@ func lighting_at(point: Vector3, normal: Vector3 = Vector3.UP) -> float:
 	return _ambient if incidence <= EPSILON or is_shadowed(point) else _ambient + _direct * incidence
 
 
-func project_actor_shadow(center: Vector2, feet_height: float, actor_height: float, radius: float, faces: Array) -> Array[Dictionary]:
+func project_actor_shadow(center: Vector2, feet_height: float, actor_height: float, radius: float, faces: Array, silhouette: PackedVector2Array = PackedVector2Array()) -> Array[Dictionary]:
+	# The optional simple contour is a zero-thickness upright sprite caster.
+	# x is world distance across a light-facing upright presentation proxy.
+	# Its lateral axis is perpendicular to horizontal sunlight, signed toward
+	# camera-right. This preserves raster width when the visible sprite's
+	# camera-facing plane would be nearly parallel to the sunlight rays.
+	# y is signed upright world height relative to the feet, not screen distance.
+	# Keep the small below-anchor foot extent; receiver clipping removes it.
+	# Raster input therefore divides its vertical distance by basis.y.y too.
 	var started := Time.get_ticks_usec()
 	var all_pieces := 0
 	var tested_pieces := 0
+	var projection_planes := 0
+	var projected_triangles := 0
+	var projected_convex_parts := 0
 	var results: Array[Dictionary] = []
+	_last_actor_shadow_report = {"silhouette_mode":"legacy_cylinder", "caster_plane":"legacy_cylinder", "silhouette_triangles":0, "silhouette_cache_hit":false, "silhouette_fallback":"invalid_actor", "output_pieces":0}
 	if not _enabled or not _finite2(center) or not is_finite(feet_height) or not is_finite(actor_height) or not is_finite(radius) or actor_height <= EPSILON or radius <= EPSILON:
 		return results
-	var actor := _solid(center, feet_height, feet_height + actor_height, radius, "actor", 8)
-	var light_bounds: Rect2 = actor.light_bounds
+	var geometry := _actor_silhouette_geometry(silhouette, actor_height, radius)
+	var triangles: PackedInt32Array = geometry.triangles
+	var convex_parts: Array[PackedInt32Array] = geometry.parts
+	if not _actor_silhouette_use_convex_parts: convex_parts = _actor_triangle_parts(triangles)
+	var actor: Dictionary = {}
+	var vertices := PackedVector3Array()
+	var right := _actor_shadow_right()
+	if not triangles.is_empty() and (not _finite3(right) or right.length_squared() <= EPSILON * EPSILON):
+		triangles = PackedInt32Array()
+		geometry.reason = "invalid_camera_right"
+	if triangles.is_empty():
+		actor = _solid(center, feet_height, feet_height + actor_height, radius, "actor", 8)
+		vertices = actor.vertices
+	else:
+		right = right.normalized()
+		var origin := Vector3(center.x, feet_height, center.y)
+		for point: Vector2 in geometry.contour:
+			vertices.append(origin + right * point.x + Vector3.UP * point.y)
+	var light_bounds: Rect2 = _light_bounds(vertices)
+	# This scratch cache is local to one actor query. Movement never creates
+	# persistent plane/position entries; only local contour triangulations persist.
+	var projected_planes: Dictionary = {}
 	var same_faces := is_same(_cached_faces, faces)
 	var candidates: Array = _query_bounds(_receiver_bins, light_bounds) if same_faces else []
 	# The normal runtime path uses bake's sunlight-space receiver index. A caller
@@ -242,33 +280,212 @@ func project_actor_shadow(center: Vector2, feet_height: float, actor_height: flo
 			continue
 		var n: Vector3 = normal.normalized()
 		if n.dot(_sun) <= EPSILON or not light_bounds.intersects(_light_bounds(world), true): continue
-		var projected := _project_solid(actor, n, n.dot(world[0]))
-		if projected.size() < 3: continue
-		var overlap := _convex_intersection(projected, _clean_polygon(polygon))
-		if overlap.size() < 3: continue
+		var receiver := _clean_polygon(polygon)
+		if receiver.size() < 3: continue
+		var projected: Array[PackedVector2Array] = []
+		var offset := n.dot(world[0])
+		if triangles.is_empty():
+			var cylinder := _project_solid(actor, n, offset)
+			if cylinder.size() >= 3: projected.append(cylinder)
+			projection_planes += 1
+		else:
+			var plane_key := _plane_key(n, offset)
+			if not projected_planes.has(plane_key):
+				projected_planes[plane_key] = _project_actor_silhouette(vertices, convex_parts, n, offset)
+				projection_planes += 1
+				projected_triangles += triangles.size() / 3
+				projected_convex_parts += convex_parts.size()
+			projected = projected_planes[plane_key]
+		var pieces: Array[PackedVector2Array] = []
+		var overlap_bounds := Rect2()
+		var receiver_bounds := _bounds(receiver)
+		for part in projected:
+			if not receiver_bounds.intersects(_bounds(part), true): continue
+			var overlap := _convex_intersection(part, receiver)
+			if overlap.size() < 3: continue
+			var bounds := _bounds(overlap)
+			overlap_bounds = bounds if pieces.is_empty() else overlap_bounds.merge(bounds)
+			pieces.append(overlap)
+		if pieces.is_empty(): continue
 		# Terrain's ambient mask already removes this direct light. Remove that
 		# covered area so dynamic actor shadows cannot darken it a second time.
-		var pieces: Array[PackedVector2Array] = [overlap]
 		var static_shadows: Array = face.get("solar_shadows", [])
 		all_pieces+=static_shadows.size()
-		var overlap_bounds := _bounds(overlap).grow(PIXEL_EPSILON)
+		overlap_bounds = overlap_bounds.grow(PIXEL_EPSILON)
 		for shadow_index: int in _actor_shadow_candidates(face_index,overlap_bounds,static_shadows,same_faces):
 			var existing: PackedVector2Array = static_shadows[shadow_index]
+			var existing_bounds := _bounds(existing).grow(PIXEL_EPSILON)
 			tested_pieces+=1
 			var next: Array[PackedVector2Array] = []
-			for piece in pieces: next.append_array(_subtract_convex(piece, existing))
+			for piece in pieces:
+				if _bounds(piece).intersects(existing_bounds, true): next.append_array(_subtract_convex(piece, existing))
+				else: next.append(piece)
 			pieces = next
 			if pieces.is_empty(): break
 		for piece in pieces:
 			results.append({"polygon": piece, "key": String(face.get("key", "")), "face_index": face_index})
-	_last_actor_shadow_report={"ms":(Time.get_ticks_usec()-started)/1000.0,"receiver_candidates":candidates.size(),"static_pieces":all_pieces,"static_candidates":tested_pieces,"output_pieces":results.size(),"same_faces":same_faces,"spatial_index":_actor_shadow_use_spatial_index and _actor_shadow_bounds_filter_enabled}
+	_last_actor_shadow_report={"ms":(Time.get_ticks_usec()-started)/1000.0,"receiver_candidates":candidates.size(),"static_pieces":all_pieces,"static_candidates":tested_pieces,"output_pieces":results.size(),"same_faces":same_faces,"spatial_index":_actor_shadow_use_spatial_index and _actor_shadow_bounds_filter_enabled,"silhouette_mode":"sprite_contour" if not triangles.is_empty() else "legacy_cylinder","caster_plane":"light_facing_silhouette" if not triangles.is_empty() else "legacy_cylinder","caster_right":[right.x,right.y,right.z],"silhouette_triangles":triangles.size()/3,"silhouette_cache_hit":geometry.cache_hit,"silhouette_fallback":geometry.reason,"projection_planes":projection_planes,"projected_triangles":projected_triangles,"silhouette_convex_parts":convex_parts.size() if not triangles.is_empty() else 0,"projected_convex_parts":projected_convex_parts,"convex_parts_enabled":_actor_silhouette_use_convex_parts}
 	return results
 
 
 func get_actor_shadow_report() -> Dictionary:
 	var report := _last_actor_shadow_report.duplicate()
-	report.merge({"screen_bin_pixels":ACTOR_SHADOW_SCREEN_BIN,"index_references":_actor_shadow_index_references,"wide_pieces":_actor_shadow_wide_count,"index_reference_limit":ACTOR_SHADOW_MAX_INDEX_REFERENCES,"piece_bin_limit":ACTOR_SHADOW_MAX_PIECE_BINS})
+	report.merge({"screen_bin_pixels":ACTOR_SHADOW_SCREEN_BIN,"index_references":_actor_shadow_index_references,"wide_pieces":_actor_shadow_wide_count,"index_reference_limit":ACTOR_SHADOW_MAX_INDEX_REFERENCES,"piece_bin_limit":ACTOR_SHADOW_MAX_PIECE_BINS,"silhouette_cache_entries":_actor_silhouette_cache.size(),"silhouette_cache_limit":ACTOR_SILHOUETTE_CACHE_LIMIT,"silhouette_vertex_limit":ACTOR_SILHOUETTE_MAX_VERTICES})
 	return report
+
+
+func _actor_shadow_right() -> Vector3:
+	var camera_right := Vector3(_basis.x.x, 0.0, _basis.x.z)
+	if not _finite3(camera_right) or camera_right.length_squared() <= EPSILON * EPSILON: return Vector3.ZERO
+	camera_right = camera_right.normalized()
+	var light_right := Vector3(_sun.z, 0.0, -_sun.x)
+	# At zenith the horizontal sunlight direction is undefined. Retain a
+	# deterministic camera-right axis; contact shading handles the flat shadow.
+	if light_right.length_squared() <= EPSILON * EPSILON: return camera_right
+	light_right = light_right.normalized()
+	return -light_right if light_right.dot(camera_right) < 0.0 else light_right
+
+
+func _actor_silhouette_geometry(silhouette: PackedVector2Array, actor_height: float, radius: float) -> Dictionary:
+	var no_parts: Array[PackedInt32Array] = []
+	var empty := {"contour":PackedVector2Array(), "triangles":PackedInt32Array(), "parts":no_parts, "cache_hit":false, "reason":"none"}
+	if silhouette.is_empty(): return empty
+	if silhouette.size() < 3 or silhouette.size() > ACTOR_SILHOUETTE_MAX_VERTICES:
+		empty.reason = "vertex_count"
+		return empty
+	# Reject corrupt input before either cache keys or spatial-index ranges are
+	# created. Real sprite extents stay close to the caller's actor dimensions.
+	var extent_limit := maxf(actor_height, radius) * 4.0
+	for point in silhouette:
+		if not _finite2(point) or absf(point.y) > extent_limit or absf(point.x) > extent_limit:
+			empty.reason = "invalid_extent"
+			return empty
+	var key := var_to_bytes(silhouette)
+	if _actor_silhouette_cache.has(key):
+		_actor_silhouette_cache_order.erase(key)
+		_actor_silhouette_cache_order.append(key)
+		var cached: Dictionary = _actor_silhouette_cache[key].duplicate()
+		cached.cache_hit = true
+		return cached
+	var contour := _clean_polygon(silhouette)
+	var triangles := PackedInt32Array()
+	var reason := "degenerate_contour"
+	if contour.size() >= 3:
+		reason = "self_intersection"
+		if _actor_contour_is_simple(contour):
+			triangles = Geometry2D.triangulate_polygon(contour)
+			reason = "triangulation_failed"
+			if triangles.size() == (contour.size() - 2) * 3:
+				# Area agreement guards unexpected partial/overlapping output.
+				var triangle_area := 0.0
+				for i in range(0, triangles.size(), 3):
+					triangle_area += absf((contour[triangles[i + 1]] - contour[triangles[i]]).cross(contour[triangles[i + 2]] - contour[triangles[i]])) * 0.5
+				if absf(triangle_area - absf(_area(contour))) <= maxf(AREA_EPSILON, triangle_area * 0.0001):
+					reason = ""
+		if not reason.is_empty(): triangles = PackedInt32Array()
+	var parts := _actor_convex_parts(contour, triangles)
+	var geometry := {"contour":contour, "triangles":triangles, "parts":parts, "cache_hit":false, "reason":reason}
+	# Keys contain only frame-local geometry. A bounded LRU also tolerates a
+	# caller supplying arbitrary changing contours without growing forever.
+	if _actor_silhouette_cache_order.size() >= ACTOR_SILHOUETTE_CACHE_LIMIT:
+		var oldest: PackedByteArray = _actor_silhouette_cache_order.pop_front()
+		_actor_silhouette_cache.erase(oldest)
+	_actor_silhouette_cache_order.append(key)
+	_actor_silhouette_cache[key] = geometry
+	return geometry
+
+
+func _actor_triangle_parts(triangles: PackedInt32Array) -> Array[PackedInt32Array]:
+	var parts: Array[PackedInt32Array] = []
+	for i in range(0, triangles.size(), 3):
+		parts.append(PackedInt32Array([triangles[i], triangles[i + 1], triangles[i + 2]]))
+	return parts
+
+
+func _actor_convex_parts(contour: PackedVector2Array, triangles: PackedInt32Array) -> Array[PackedInt32Array]:
+	var fallback := _actor_triangle_parts(triangles)
+	if triangles.is_empty(): return fallback
+	# Decompose only on a geometry-cache miss. These are pieces of the actual
+	# concave polygon, never a convex hull around the entire character.
+	var decomposed := Geometry2D.decompose_polygon_in_convex(contour)
+	if decomposed.is_empty() or decomposed.size() >= fallback.size(): return fallback
+	var parts: Array[PackedInt32Array] = []
+	var total_area := 0.0
+	for polygon: PackedVector2Array in decomposed:
+		if polygon.size() < 3: return fallback
+		var area := _area(polygon)
+		if absf(area) <= EPSILON * EPSILON: return fallback
+		var orientation := 1.0 if area > 0.0 else -1.0
+		var indices := PackedInt32Array()
+		for i in polygon.size():
+			# Retain the exact original vertices and transform each only once per
+			# moving actor query. Suspicious/new vertices use proven triangles.
+			var index := contour.find(polygon[i])
+			if index < 0: return fallback
+			indices.append(index)
+			var edge := polygon[(i + 1) % polygon.size()] - polygon[i]
+			var next := polygon[(i + 2) % polygon.size()] - polygon[(i + 1) % polygon.size()]
+			if edge.cross(next) * orientation < -EPSILON * EPSILON: return fallback
+		total_area += absf(area)
+		parts.append(indices)
+	if absf(total_area - absf(_area(contour))) > maxf(AREA_EPSILON, total_area * 0.0001): return fallback
+	return parts
+
+
+func _actor_contour_is_simple(contour: PackedVector2Array) -> bool:
+	for i in contour.size():
+		var a := contour[i]
+		var b := contour[(i + 1) % contour.size()]
+		for j in range(i + 1, contour.size()):
+			# Neighboring edges are expected to share their one endpoint.
+			if j == i + 1 or (i == 0 and j == contour.size() - 1): continue
+			var c := contour[j]
+			var d := contour[(j + 1) % contour.size()]
+			if not Rect2(a, Vector2.ZERO).expand(b).grow(EPSILON).intersects(Rect2(c, Vector2.ZERO).expand(d).grow(EPSILON), true): continue
+			var ab := b - a
+			var cd := d - c
+			var ac := ab.cross(c - a)
+			var ad := ab.cross(d - a)
+			var ca := cd.cross(a - c)
+			var cb := cd.cross(b - c)
+			var ab_tolerance := EPSILON * ab.length()
+			var cd_tolerance := EPSILON * cd.length()
+			# Inclusive endpoint/collinear checks reject touching lobes too.
+			if absf(ac) <= ab_tolerance and (c - a).dot(c - b) <= EPSILON * EPSILON: return false
+			if absf(ad) <= ab_tolerance and (d - a).dot(d - b) <= EPSILON * EPSILON: return false
+			if absf(ca) <= cd_tolerance and (a - c).dot(a - d) <= EPSILON * EPSILON: return false
+			if absf(cb) <= cd_tolerance and (b - c).dot(b - d) <= EPSILON * EPSILON: return false
+			if ((ac > ab_tolerance and ad < -ab_tolerance) or (ac < -ab_tolerance and ad > ab_tolerance)) and ((ca > cd_tolerance and cb < -cd_tolerance) or (ca < -cd_tolerance and cb > cd_tolerance)): return false
+	return true
+
+
+func _project_actor_silhouette(vertices: PackedVector3Array, parts: Array[PackedInt32Array], normal: Vector3, offset: float) -> Array[PackedVector2Array]:
+	var result: Array[PackedVector2Array] = []
+	var denominator := normal.dot(_sun)
+	if denominator <= EPSILON: return result
+	for indices in parts:
+		var clipped := PackedVector3Array()
+		var previous := vertices[indices[indices.size() - 1]]
+		var previous_distance := normal.dot(previous) - offset - EPSILON
+		for index in indices:
+			var current := vertices[index]
+			var distance := normal.dot(current) - offset - EPSILON
+			if (previous_distance >= 0.0) != (distance >= 0.0):
+				clipped.append(previous.lerp(current, previous_distance / (previous_distance - distance)))
+			if distance >= 0.0: clipped.append(current)
+			previous = current
+			previous_distance = distance
+		var projected := PackedVector2Array()
+		for vertex in clipped:
+			var point := vertex - _sun * ((normal.dot(vertex) - offset) / denominator)
+			var screen := Vector2(point.dot(_basis.x), -point.dot(_basis.y)) * _pixels
+			if _finite2(screen): projected.append(screen)
+		var polygon := _clean_polygon(projected)
+		if polygon.size() >= 3: result.append(polygon)
+	# The sunlight map is affine on this single upright caster plane. Its
+	# nondegenerate convex parts have disjoint interiors before/after clipping;
+	# taking a convex hull here would incorrectly fill the space between legs.
+	return result
 
 
 func _index_actor_shadow_pieces(faces: Array) -> void:

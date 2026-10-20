@@ -243,6 +243,8 @@ func _prime_cutaway_pipeline() -> void:
 func _init(load_actor: bool = true) -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	if load_actor: actor_animation.load_config("res://data/config/relief_2d/actor.json", ACTOR_HEIGHT * _basis.y.y * PIXELS_PER_WORLD)
+	if actor_animation.config.get("texture_filter", "nearest") == "linear_mipmap":
+		texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_configure_sun()
 
 
@@ -638,15 +640,16 @@ func is_sun_enabled() -> bool:
 	return bool(_display_sun_config.get("enabled", true))
 
 
-func advance_actor(displacement: Vector2, delta: float) -> void:
+func advance_actor(displacement: Vector2, delta: float, facing_intent: Vector2 = Vector2(INF, INF)) -> void:
 	if _wall_cutaway != null and _wall_cutaway.advance(delta):
 		_wall_cutaway.refresh(self)
 		if _actor_cutaway_restore != null:
 			_wall_cutaway.apply_to(_actor_cutaway_restore.material)
-	if actor_animation.advance(displacement, project_plane(displacement), delta):
-		_refresh_actor_occlusion_hint()
-		_refresh_actor_cutaway_restore()
-		queue_redraw()
+	if actor_animation.advance(displacement, project_plane(displacement), delta, facing_intent):
+		# Stationary breathing/blinking changes the silhouette and its sunlight shadow.
+		_dynamic_dirty = true
+	# Position can change between two sprite frames; publish that movement too.
+	flush_dynamic()
 
 
 func set_layer(snapshot: Dictionary, known: Dictionary, completed: Dictionary, synchronous_binding: bool = false) -> void:
@@ -1805,7 +1808,7 @@ func _refresh_actor() -> void:
 	_actor_light = _solar.lighting_at(actor_world)
 	_actor_atmosphere_tint = _atmosphere.tint(Color.WHITE,actor_world,Vector3.UP,_key(_plane_coord(_actor_plane)),_actor_light,_display_sun_config,false,true)
 	if is_sun_enabled():
-		for shadow: Dictionary in _solar.project_actor_shadow(_actor_plane, _actor_height, ACTOR_HEIGHT, Profile.FOOT_RADIUS, _faces):
+		for shadow: Dictionary in _solar.project_actor_shadow(_actor_plane, _actor_height, ACTOR_HEIGHT, Profile.FOOT_RADIUS, _faces, actor_animation.shadow_contour(PIXELS_PER_WORLD, _basis.y.y)):
 			var receiver: Dictionary = _faces[int(shadow.face_index)]
 			if receiver.get("node_marker", false) or (receiver.has("rock") and not is_art_enabled()): continue
 			for visible in _visible_surface_regions(shadow.polygon, receiver):

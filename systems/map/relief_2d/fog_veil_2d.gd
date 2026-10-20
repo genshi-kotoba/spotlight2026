@@ -8,7 +8,7 @@ const TRANSITION_SECONDS := 0.18
 const FOCUS_FADE_SECONDS := 0.35
 const TARGET_TEXEL_SIZE := 3.0
 const MAX_MASK_AXIS := 1536
-const BOUNDARY_DISTANCE := 36.0
+const BOUNDARY_DISTANCE := 24.0
 const CLOUD_PATH := "res://assets/environment/env005/atmosphere-cloud.png"
 var _views: Array[SubViewport] = []
 var _masks: Array[MeshInstance2D] = []
@@ -27,7 +27,7 @@ var _focus_position := Vector2(INF, INF)
 var _focus_strength := -1.0
 ## 焦点强度的入场渐变进度，1 表示已经到位。
 var _focus_fade := 1.0
-var _focus_radius := 260.0
+var _focus_radius := 340.0
 var _atmosphere_enabled := true
 
 func _init() -> void:
@@ -36,6 +36,7 @@ func _init() -> void:
 
 func _ready() -> void:
  _material=ShaderMaterial.new();_material.shader=VeilShader;material=_material
+ _material.set_shader_parameter("focus_radius",_focus_radius)
  var cloud:=Image.new()
  if cloud.load_png_from_buffer(FileAccess.get_file_as_bytes(CLOUD_PATH))==OK:
   cloud.generate_mipmaps()

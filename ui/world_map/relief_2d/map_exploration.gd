@@ -23,6 +23,7 @@ var _fog_veil: Node2D
 var _node_hint: Node2D
 var _node_mist: Node2D
 var _animated_plane := Vector2.ZERO
+var _actor_facing_intent := Vector2.ZERO
 var _discovery_prepare_queued := false
 var _prepare_error := ""
 var _entry_started_usec := 0
@@ -48,7 +49,7 @@ func _run_settings_path() -> String:
 	return SETTINGS
 
 func _create_map_view() -> Node2D:
-	map_scale = 6.5
+	map_scale = 7.0
 	speed_multiplier = 2.0
 	var run := SaveGateway.current_run()
 	var identity := run.run_id if run != null else SeedService.get_main_seed()
@@ -147,10 +148,15 @@ func _plane_to_display(point: Vector2) -> Vector2:
 
 func _place_actor(point: Vector2) -> void:
 	_player.position = _plane_to_display(point)
-	_view.update_actor(point, support.height_at(point))
+	# Publish position and animation together once at the end of advance_actor.
+	_view.update_actor(point, support.height_at(point), true)
 
 func _direction_to_plane(direction: Vector2) -> Vector2:
 	return _view.unproject_plane(direction).normalized()
+
+func _advance_motion(direction: Vector2, delta: float) -> void:
+	_actor_facing_intent = _view.project_plane(direction) if is_instance_valid(_view) else Vector2.ZERO
+	super._advance_motion(direction, delta)
 
 func _presentation_layer() -> Dictionary:
 	var layer := height_layer.duplicate()
@@ -211,6 +217,7 @@ func _update_selection() -> void:
 	_node_hint.set_gate(node, anchor, _player.position, _camera.zoom.x)
 
 func _sync_actor(emit_notifications: bool = true) -> void:
+	_actor_facing_intent = Vector2.ZERO
 	super._sync_actor(emit_notifications)
 	if not MapPresentation.owns(self): return
 	_update_render_cache()
@@ -333,7 +340,7 @@ func _process(delta: float) -> void:
 	super._process(delta)
 	if not is_instance_valid(_view): return
 	_update_render_cache()
-	_view.advance_actor(_render_actor_plane - _animated_plane, delta)
+	_view.advance_actor(_render_actor_plane - _animated_plane, delta, _actor_facing_intent)
 	_animated_plane = _render_actor_plane
 	if is_instance_valid(_fog_veil):
 		_fog_veil.set_view(_view._cache_view)
