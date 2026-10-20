@@ -170,7 +170,7 @@ static func _play_feel(button: BaseButton, factor: float, duration: float, curve
 	if not is_instance_valid(button) or button.disabled:
 		return
 	var base: Vector2 = button.get_meta(_FEEL_BASE_SCALE, Vector2.ONE)
-	var previous: Variant = button.get_meta(_FEEL_TWEEN, null)
+	var previous: Variant = button.get_meta(_FEEL_TWEEN) if button.has_meta(_FEEL_TWEEN) else null
 	if previous is Tween and (previous as Tween).is_valid():
 		(previous as Tween).kill()
 	var tween := button.create_tween()

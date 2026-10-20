@@ -63,7 +63,7 @@ static func _usable(target: Control) -> bool:
 
 
 static func _tween(target: Control) -> Tween:
-	var existing := target.get_meta("hover_lift_tween", null) as Tween
+	var existing := target.get_meta("hover_lift_tween") as Tween if target.has_meta("hover_lift_tween") else null
 	if existing != null and existing.is_valid():
 		existing.kill()
 	var tween := target.create_tween()
