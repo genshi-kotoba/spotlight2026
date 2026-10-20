@@ -12,6 +12,7 @@ signal turn_started(turn_number: int)
 signal player_turn_started(turn_number: int)
 signal card_drawn(card: Dictionary, hand_size: int)
 signal card_discarded(card: Dictionary, reason: StringName)
+signal card_destroyed(card: Dictionary, reason: StringName)
 signal discard_pile_shuffled(draw_pile_size: int)
 signal card_committed(card: Dictionary, play_index: int)
 signal card_effect_requested(card: Dictionary, target: Variant, pointer_index: int)
@@ -89,6 +90,7 @@ var _pending_resolved_at := -1
 var _pending_pile_count := 0
 var _pending_pile_source := ""
 var _repeat_pointer_override := -1
+var _outcome_deferrals := 0
 
 
 func _init() -> void:
@@ -204,6 +206,8 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 			or not _valid_player(saved_player) or not _valid_enemy_array(saved_enemies) \
 			or not _valid_card_array(saved_draw) or not _valid_card_array(saved_discard) \
 			or not _valid_card_array(saved_hand) or not _valid_card_array(saved_play) \
+			or saved_draw.any(FinalBossRules.is_saturn) or saved_discard.any(FinalBossRules.is_saturn) \
+			or saved_play.any(FinalBossRules.is_saturn) \
 			or not _card_zones_are_disjoint([saved_draw, saved_discard, saved_hand, saved_play]):
 		return _fail(ERR_INVALID_DATA, "Battle snapshot fields are invalid")
 	# 队列结算中途不是合法存档边界；当前未序列化待执行事件和交互续接点。
@@ -290,13 +294,15 @@ func start_battle() -> Error:
 ## 队列在本调用内推进到空闲或输入暂停。选择弃牌会停在
 ## PLAYER_EFFECTS，界面调用 submit_discard_choice() 后从同一指针继续。
 func commit_player_sequence(instance_ids: Array[String], targets: Dictionary = {}) -> Error:
-	if not active or phase != Phase.PLAYER_ACTION or (instance_ids.is_empty() and play_zone.is_empty()):
-		return _fail(ERR_INVALID_PARAMETER, "A nonempty sequence is required in PLAYER_ACTION")
+	if not active or phase != Phase.PLAYER_ACTION:
+		return _fail(ERR_INVALID_PARAMETER, "Sequence can only be committed in PLAYER_ACTION")
 	var seen := {}
 	for instance_id: String in instance_ids:
 		if instance_id.strip_edges().is_empty() or seen.has(instance_id) \
 				or _find_card_index(hand, instance_id) < 0:
 			return _fail(ERR_INVALID_PARAMETER, "Sequence contains a duplicate/unknown card")
+		if FinalBossRules.is_saturn(hand[_find_card_index(hand, instance_id)]):
+			return ERR_UNAVAILABLE
 		seen[instance_id] = true
 
 	var used_slots := 0
@@ -439,8 +445,9 @@ func submit_discard_choice(instance_ids: Array[String]) -> Error:
 	var seen := {}
 	for instance_id: String in instance_ids:
 		if instance_id.strip_edges().is_empty() or seen.has(instance_id) \
-				or _find_card_index(hand, instance_id) < 0:
-			return _fail(ERR_INVALID_PARAMETER, "Discard choice contains duplicate/unknown card")
+				or _find_card_index(hand, instance_id) < 0 \
+				or not can_discard_card(hand[_find_card_index(hand, instance_id)]):
+			return ERR_INVALID_PARAMETER
 		seen[instance_id] = true
 
 	for instance_id: String in instance_ids:
@@ -527,10 +534,11 @@ func request_discard_choice(count: int) -> Error:
 	if not _resolving_card or phase != Phase.PLAYER_EFFECTS or count <= 0 \
 			or _pending_discard_count > 0:
 		return _fail(ERR_INVALID_PARAMETER, "Discard choice request is invalid")
-	_pending_discard_count = mini(count, hand.size())
+	var candidates := discardable_hand_cards()
+	_pending_discard_count = mini(count, candidates.size())
 	if _pending_discard_count > 0:
 		rules.queue.pause()
-		discard_choice_requested.emit(_pending_card.duplicate(true), _pending_discard_count, hand.duplicate(true))
+		discard_choice_requested.emit(_pending_card.duplicate(true), _pending_discard_count, candidates)
 	return OK
 
 
@@ -559,7 +567,8 @@ func apply_damage_to_enemy(enemy_id: String, amount: int, ignore_block: bool = f
 	var blocked := 0 if ignore_block else mini(int(enemy["block"]), amount * multiplier)
 	var absorbed := int(ceil(float(blocked) / multiplier))
 	enemy["block"] = int(enemy["block"]) - blocked
-	enemy["health"] = maxi(0, int(enemy["health"]) - (amount - absorbed))
+	enemy["health"] = FinalBossRules.clamp_health_after_damage(enemy,
+		maxi(0, int(enemy["health"]) - (amount - absorbed)), turn_number)
 	enemies[index] = enemy
 	block_changed.emit(&"enemy", enemy_id, enemy["block"])
 	combatant_damaged.emit(&"enemy", enemy_id, amount, blocked, enemy["health"])
@@ -625,6 +634,7 @@ func discard_from_hand(instance_id: String, reason: StringName = &"effect") -> E
 	if index < 0:
 		return _fail(ERR_INVALID_PARAMETER, "Card is not in hand")
 	var card: Dictionary = hand[index]
+	if not can_discard_card(card): return ERR_UNAVAILABLE
 	hand.remove_at(index)
 	discard_pile.append(card)
 	card_discarded.emit(card.duplicate(true), reason)
@@ -632,12 +642,61 @@ func discard_from_hand(instance_id: String, reason: StringName = &"effect") -> E
 	return OK
 
 
+func can_discard_card(card: Dictionary) -> bool:
+	return not FinalBossRules.is_saturn(card)
+
+
+func discardable_hand_cards() -> Array[Dictionary]:
+	return hand.filter(can_discard_card)
+
+
+## 从右向左跳过机制牌。全部受保护时允许超限，不销毁/弃置专属机制。
+func enforce_hand_limit() -> void:
+	var limit := int(player.get("hand_limit", 10))
+	if limit <= 0: return
+	while hand.size() > limit:
+		var eligible := -1
+		for index in range(hand.size() - 1, -1, -1):
+			if can_discard_card(hand[index]):
+				eligible = index
+				break
+		if eligible < 0: break
+		discard_from_hand(str(hand[eligible].instance_id), &"hand_limit")
+
+
+## 与弃牌分开记录，只移除战斗副本；永久牌组由 Run 持有。
+func destroy_card_from_battle(instance_id: String, reason: StringName = &"effect") -> Error:
+	for zone: Array in [hand, play_zone, draw_pile, discard_pile]:
+		var index := _find_card_index(zone, instance_id)
+		if index < 0: continue
+		var card: Dictionary = zone[index].duplicate(true)
+		var error := remove_card_from_battle(instance_id)
+		if error != OK: return error
+		card_destroyed.emit(card, reason)
+		_publish_fact("card.destroyed", {"card": card, "reason": String(reason)})
+		return OK
+	return ERR_DOES_NOT_EXIST
+
+
+## 一个队列批次可以在所有销毁/典籍反应完成后统一判定终局。
+func begin_deferred_outcome() -> void:
+	_outcome_deferrals += 1
+
+
+func end_deferred_outcome() -> void:
+	_outcome_deferrals = maxi(0, _outcome_deferrals - 1)
+	rules.publish("flow.outcome")
+
+
 ## 效果层可在玩家行动或逐张结算期间抽牌；沿用 battle.draw 流。
 func draw_cards(count: int, reason: DrawReason = DrawReason.EFFECT) -> Error:
 	# 全局残片可以在敌方攻击/回合末触发抽牌；依然必须由队列串行执行。
 	if not active or phase in [Phase.IDLE, Phase.VICTORY, Phase.DEFEAT] or count < 0:
 		return _fail(ERR_INVALID_PARAMETER, "Cards cannot be drawn in this phase")
-	return rules.submit("flow.draw.one", {"remaining": count, "draw_reason": reason})
+	rules.publish("flow.draw.one", {"remaining": count, "draw_reason": reason})
+	if reason in [DrawReason.BATTLE_START, DrawReason.TURN_START]:
+		rules.publish("cards.natural_draw_completed", {"turn": turn_number, "draw_reason": reason})
+	return rules.flush()
 
 
 func _step_draw(event: BattleEvent) -> void:
@@ -660,11 +719,13 @@ func _step_draw(event: BattleEvent) -> void:
 func discard_random_cards(count: int) -> Error:
 	if not active or not [Phase.PLAYER_ACTION, Phase.PLAYER_EFFECTS].has(phase) or count < 0:
 		return _fail(ERR_INVALID_PARAMETER, "Cards cannot be discarded in this phase")
-	for _index in mini(count, hand.size()):
-		var chosen: Variant = _discard_stream.int_range(0, hand.size())
+	for _index in mini(count, discardable_hand_cards().size()):
+		var candidates := discardable_hand_cards()
+		if candidates.is_empty(): break
+		var chosen: Variant = _discard_stream.int_range(0, candidates.size())
 		if chosen == null:
 			return _fail(_discard_stream.last_error, "Could not choose a card to discard")
-		var card: Dictionary = hand[int(chosen)]
+		var card: Dictionary = candidates[int(chosen)]
 		var error := discard_from_hand(card["instance_id"], &"random")
 		if error != OK:
 			return error
@@ -741,6 +802,7 @@ func effective_play_limit() -> int:
 
 
 func request_battle_choice(mode: String, candidates: Array, count: int) -> void:
+	if mode in ["discard", "enchantment_20", "enchantment_21"]: candidates = candidates.filter(can_discard_card)
 	if not active or candidates.is_empty(): return
 	player["battle_choice"] = {"mode": mode, "count": mini(count, candidates.size()), "candidates": candidates.duplicate(true)}
 	rules.queue.pause()
@@ -754,6 +816,13 @@ func submit_battle_choice(ids: Array[String]) -> Error:
 	var seen := {}
 	for id: String in ids:
 		if id not in allowed or seen.has(id): return ERR_INVALID_PARAMETER
+		if str(choice.mode) in ["discard", "enchantment_20", "enchantment_21"]:
+			# 附魔自带的「跳过」是虚拟选项，不是需要弃掉的真实手牌。
+			if id == "enchantment:skip" and str(choice.mode) != "discard":
+				seen[id] = true
+				continue
+			var hand_index := _find_card_index(hand, id)
+			if hand_index < 0 or not can_discard_card(hand[hand_index]): return ERR_INVALID_PARAMETER
 		seen[id] = true
 	player.erase("battle_choice")
 	rules.publish("enchantment.choice_result" if str(choice.mode).begins_with("enchantment_") else "monster.choice_result", {"mode": choice.mode, "ids": ids})
@@ -768,7 +837,18 @@ func add_generated_card(card_id: String, destination: String, reason: String, so
 	card["instance_id"] = "generated:%s:%d:%d:%s" % [node_id, battle_index, serial, reason]
 	card["card_id"] = card_id
 	card.erase("copy_id")
-	if destination == "hand" and hand.size() < int(player.get("hand_limit", 10)):
+	if FinalBossRules.is_saturn(card): destination = "hand"
+	if destination == "hand" and FinalBossRules.is_saturn(card):
+		# 专属机制必须进入手牌。位置消费既有 battle.logic 流，并在溢出时跳过所有保护牌。
+		var position: Variant = _logic_stream.int_range(0, hand.size() + 1)
+		if position == null:
+			rules.last_error = _logic_stream.last_error
+			return
+		hand.insert(int(position), card)
+		enforce_hand_limit()
+		card_drawn.emit(card.duplicate(true), hand.size())
+		_publish_fact("card.drawn", {"card": card, "hand_size": hand.size(), "draw_reason": DrawReason.EFFECT})
+	elif destination == "hand" and hand.size() < int(player.get("hand_limit", 10)):
 		hand.append(card)
 		card_drawn.emit(card.duplicate(true), hand.size())
 		_publish_fact("card.drawn", {"card": card, "hand_size": hand.size(), "draw_reason": DrawReason.EFFECT})
@@ -1000,11 +1080,9 @@ func _step_enemy_end(_event: BattleEvent) -> void:
 		block_changed.emit(&"player", "player", 0)
 
 	if discard_hand_at_turn_end:
-		while not hand.is_empty():
-			var card: Dictionary = hand.pop_back()
-			discard_pile.append(card)
-			card_discarded.emit(card.duplicate(true), &"turn_end")
-			_publish_fact("card.discarded", {"card": card, "reason": "turn_end", "from_hand": true})
+		for index in range(hand.size() - 1, -1, -1):
+			var card: Dictionary = hand[index]
+			if can_discard_card(card): discard_from_hand(str(card.instance_id), &"turn_end")
 	_start_player_turn()
 
 
@@ -1088,6 +1166,8 @@ func debug_finish_victory() -> Error:
 func _finish_if_needed() -> bool:
 	if not active:
 		return true
+	if _outcome_deferrals > 0:
+		return false
 	if int(player["health"]) <= 0:
 		_finish_battle("defeat")
 		return true
@@ -1103,6 +1183,7 @@ func _finish_if_needed() -> bool:
 
 func _finish_battle(status: String) -> void:
 	active = false
+	_outcome_deferrals = 0
 	rules.queue.clear()
 	if _resolving_card and not _pending_card.is_empty():
 		card_resolved.emit(_pending_card.duplicate(true), _pending_resolved_at)
@@ -1150,7 +1231,7 @@ func _prepare_config(config: Dictionary) -> Dictionary:
 			or not configured_enemies is Array or configured_enemies.is_empty() \
 			or not configured_deck is Array or not _valid_player(configured_player) \
 			or not _valid_enemy_array(configured_enemies) \
-			or not _valid_card_array(configured_deck):
+			or not _valid_card_array(configured_deck) or configured_deck.any(FinalBossRules.is_saturn):
 		_fail(ERR_INVALID_PARAMETER, "Battle config is invalid")
 		return {}
 	return {
@@ -1197,7 +1278,8 @@ static func _valid_enemy_array(values: Array) -> bool:
 		if not value is Dictionary or not value.get("enemy_id") is String \
 				or value["enemy_id"].strip_edges().is_empty() or ids.has(value["enemy_id"]) \
 				or not _valid_player(value) or not value.get("actions") is Array \
-				or value["actions"].is_empty() or not _json_safe(value["actions"]):
+				or value["actions"].is_empty() or not _json_safe(value["actions"]) \
+				or not FinalBossRules.valid_enemy_state(value):
 			return false
 		for action: Variant in value["actions"]:
 			if not action is Dictionary:
@@ -1212,7 +1294,7 @@ static func _valid_card_array(values: Array) -> bool:
 		if not value is Dictionary or not value.get("instance_id") is String \
 				or value["instance_id"].strip_edges().is_empty() \
 				or not value.get("card_id") is String or value["card_id"].strip_edges().is_empty() \
-				or ids.has(value["instance_id"]) or not _json_safe(value):
+				or ids.has(value["instance_id"]) or not _json_safe(value) or not FinalBossRules.valid_card_state(value):
 			return false
 		ids[value["instance_id"]] = true
 	return true

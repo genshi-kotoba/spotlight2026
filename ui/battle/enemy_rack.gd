@@ -13,6 +13,7 @@ extends Control
 signal slot_selected(enemy_id: String)
 
 const SLOT_SCRIPT := preload("res://ui/battle/enemy_slot.gd")
+const FINAL_BOSS_PORTRAIT_SCALE := 1.35
 const LEADER_WIDTH := 650.0 # 普通怪保留既有尺寸。
 const AUTHORED_PRIMARY_RECT := Rect2(530.0, 78.0, 959.5, 880.0)
 ## 道路中央的紧凑三角阵：中型侧怪靠前，轮廓可与主怪交叠，不能再站到书架或护栏上。
@@ -42,6 +43,7 @@ var slots: Array[EnemySlot] = []
 ## 三个战位始终占用相同地面范围；空位不会让其他单位扩张或移位。
 var zone := ORDINARY_ZONE
 var _large_primary := false
+var _final_boss_primary := false
 var _leader_id := ""
 var _slots_by_id: Dictionary = {}
 var _roles: Dictionary = {}
@@ -69,8 +71,10 @@ func refresh(enemies: Array, target_id: String) -> void:
 		_clear_slots()
 		_leader_id = ids[0]
 	var large_primary := str(enemies[0].get("grade", "普通")) in ["BOSS", "精英"]
-	var profile_changed := large_primary != _large_primary
+	var final_boss_primary := int(enemies[0].get("monster_id", 0)) == 23
+	var profile_changed := large_primary != _large_primary or final_boss_primary != _final_boss_primary
 	_large_primary = large_primary
+	_final_boss_primary = final_boss_primary
 	zone = LARGE_PRIMARY_ZONE if _large_primary else ORDINARY_ZONE
 	var snapshots := {}
 	for enemy: Dictionary in enemies:
@@ -117,7 +121,8 @@ func slot_for(enemy_id: String) -> EnemySlot:
 func _layout_slot(slot: EnemySlot, role: int) -> void:
 	# Boss／精英始终使用原版单体矩形，与随从数量和当前选择无关。
 	if role == 0 and _large_primary:
-		slot.layout_for(AUTHORED_PRIMARY_RECT.size.x, AUTHORED_PRIMARY_RECT.size.y)
+		slot.layout_for(AUTHORED_PRIMARY_RECT.size.x, AUTHORED_PRIMARY_RECT.size.y,
+			FINAL_BOSS_PORTRAIT_SCALE if _final_boss_primary else 1.0)
 		slot.position = AUTHORED_PRIMARY_RECT.position
 		return
 	var width := LEADER_WIDTH if role == 0 else COMPANION_WIDTH

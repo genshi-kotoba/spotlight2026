@@ -23,7 +23,7 @@ func _init(p_battle: BattleStateMachine, p_cards: Dictionary, p_buffs: Dictionar
 		for card: Dictionary in zone:
 			var data: CardData = cards.get(str(card.card_id))
 			if data != null:
-				battle.update_card_properties(str(card.instance_id), {"occupies_slot": data.occupies_slot and not CardEnchantments.has(card, 4)})
+				battle.update_card_properties(str(card.instance_id), {"occupies_slot": not FinalBossRules.is_saturn(card) and data.occupies_slot and not CardEnchantments.has(card, 4)})
 
 
 func state() -> Dictionary:
@@ -378,20 +378,26 @@ func _damaged(event: BattleEvent) -> void:
 
 
 func _damage_adjust(event: BattleEvent) -> void:
-	if event.id != int(event.metadata.get("damage_program_id", -1)) or not bool(event.metadata.get("formal_damage", false)) or str(event.payload.side) != "enemy":
+	if event.id != int(event.metadata.get("damage_program_id", -1)) or str(event.payload.side) != "enemy":
 		return
+	var formal_damage := bool(event.metadata.get("formal_damage", false))
 	var id := str(event.metadata.get("source_card", ""))
-	var bonus := int(state().get("next_damage", {}).get(id, 0))
+	if not formal_damage and (id.is_empty() or bool(event.metadata.get("dot", false)) or bool(event.metadata.get("relic_effect", false))): return
+	var bonus := int(state().get("next_damage", {}).get(id, 0)) if formal_damage else 0
 	var layout: Array = state().get("layout", [])
 	var source_index := layout.find(id)
 	var movers: Array[String] = []
 	if source_index >= 0:
 		for card: Dictionary in battle.hand:
-			if str(card.card_id) != "70" or _nullified(card):
+			if str(card.card_id) != "70" or (not FinalBossRules.is_saturn(card) and _nullified(card)):
 				continue
 			var anchor := layout.find(str(card.instance_id))
 			if anchor < 0:
 				continue
+			if FinalBossRules.is_saturn(card):
+				bonus += -1 if source_index < anchor else 2
+				continue
+			if not formal_damage: continue
 			bonus += 1 if source_index < anchor else -2
 			if source_index < anchor:
 				movers.append(str(card.instance_id))

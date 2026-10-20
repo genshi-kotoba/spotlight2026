@@ -5,9 +5,14 @@ const MAX_LIVING_ENEMIES := 3
 var battle: BattleStateMachine
 var cards: Dictionary
 var buffs: Dictionary
+var _final_boss: FinalBossRules
 
 func _init(p_battle: BattleStateMachine, p_cards: Dictionary, p_buffs: Dictionary) -> void:
 	battle = p_battle; cards = p_cards; buffs = p_buffs
+	_final_boss = FinalBossRules.new(battle)
+	for type: String in ["player.turn_started", "flow.turn.action", "cards.natural_draw_completed", "flow.enemy.begin",
+		"boss.saturn.cleanup", "boss.saturn.destroy", "boss.saturn.cleanup_finished"]:
+		battle.rules.register_rule("monsters.final_boss." + type, type, _boss_event, 90)
 	for type: String in ["player.turn_started", "enemy.turn_started", "enemy.action_requested", "monster.summon",
 		"combatant.damaged", "monster.choice", "monster.choice_result", "monster.heal", "card.resolved", "potion.use"]:
 		battle.rules.register_rule("monsters." + type, type, _event, 30)
@@ -18,6 +23,9 @@ func _init(p_battle: BattleStateMachine, p_cards: Dictionary, p_buffs: Dictionar
 	battle.rules.register_rule("monsters.card", "card.effect_requested", _before_card, 0)
 	for type: String in ["damage", "block", "heal", "buff_add", "draw", "discard_choice", "pointer_move", "pointer_rewind", "repeat_next"]:
 		battle.rules.register_rule("monsters.bleed." + type, "action." + type, _bleed, 150)
+
+func _boss_event(event: BattleEvent) -> void:
+	_final_boss.handle_event(event)
 
 func _event(event: BattleEvent) -> void:
 	if not battle.active: return
@@ -135,6 +143,7 @@ func _act(event: BattleEvent) -> void:
 			battle.rules.publish("action.damage", {"side": "player", "target": "player", "amount": int(action.damage),
 				"ignore_block": false, "use_stats": true, "source_side": "enemy", "source_id": id},
 				{"monster_attack": id, "lifesteal_enemy": id if bool(action.get("lifesteal", false)) else ""})
+	if action.has("strength"): _buff("enemy", id, "strength", int(action.strength), 0)
 	if action.has("block"): battle.rules.publish("action.block", {"side": "enemy", "target": id, "amount": int(action.block)})
 	if action.has("dot"): _loss(int(action.dot), {"dot": true})
 	if action.has("summon"): battle.rules.publish("monster.summon", {"id": action.summon, "owner": id})

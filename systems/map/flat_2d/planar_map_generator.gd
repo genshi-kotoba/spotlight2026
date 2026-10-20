@@ -7,6 +7,7 @@ const Domains = preload("res://systems/random/random_domains.gd")
 const SpaceRefiner = preload("res://systems/map/flat_2d/hex_space_refiner.gd")
 const AlchemyEvents = preload("res://systems/map/flat_2d/alchemy_event_catalog.gd")
 const NodeGeometry = preload("res://systems/map/flat_2d/node_geometry.gd")
+const SummitTemplate = preload("res://systems/map/flat_2d/summit_map_template.gd")
 const _LEXICOGRAPHIC_DIRS: Array[Vector2i] = [
 	Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, -1),
 	Vector2i(0, 1), Vector2i(1, -1), Vector2i(1, 0),
@@ -30,6 +31,12 @@ var last_error: String = ""
 
 func normalize_config(input: Dictionary) -> Dictionary:
 	last_error = ""
+	# Templates have their own complete policy. Do not merge WALK defaults or
+	# weaken its ordinary content quotas for the final-floor exception.
+	if input.has("template"):
+		if input.size() != 1 or not input.template is String or input.template != SummitTemplate.VERSION:
+			return _fail("Use only template=summit-v1 for the fixed summit map")
+		return {"template": SummitTemplate.VERSION}
 	for field in input:
 		if field not in DEFAULT_CONFIG:
 			return _fail("Unsupported generation config key: " + str(field))
@@ -86,11 +93,20 @@ func generate(seed_source, map_id: String, floor_index: int, config: Dictionary 
 		return {}
 	if map_id.strip_edges().is_empty() or floor_index < 1:
 		return _fail("A nonempty map_id and positive floor_index are required")
+	if c.has("template") and floor_index != 4:
+		return _fail("summit-v1 is only valid on floor four")
 	if not seed_source is Object or not seed_source.has_method("get_main_seed") or not seed_source.has_method("get_stream"):
 		return _fail("seed_source must expose get_main_seed/get_stream")
 	var main_seed: Variant = seed_source.get_main_seed()
 	if not main_seed is String or main_seed.is_empty():
 		return _fail("seed_source must already have an initialized main seed")
+	if c.has("template"):
+		# Fixed geometry consumes no layout, node, transition or height draws.
+		# The supplied main seed remains the run identity, not a layout input.
+		var result: Dictionary = SummitTemplate.build(main_seed, map_id)
+		result.generator_version = VERSION
+		result.generation_config = c
+		return result
 	var failures: Array = []
 	var best: Dictionary = {}
 	var best_data: Dictionary = {}

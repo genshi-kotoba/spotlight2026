@@ -91,11 +91,16 @@ var _raw_title := ""
 var _raw_effect := ""
 var _raw_intro := ""
 var _enchantment_symbols := ""
+var _boss_saturn := false
 var _texts_pending := false
 
 ## 接受具体副本而非 CardData：同名牌不会共享附魔。预 ready 调用也有效。
 func set_enchantments(card: Dictionary) -> void:
+	var variant_changed := _boss_saturn != bool(card.get("boss_saturn", false))
+	_boss_saturn = bool(card.get("boss_saturn", false))
 	_enchantment_symbols = CardEnchantments.symbols(card)
+	if variant_changed and is_node_ready() and 卡牌数据 != null and not _card_id.is_empty():
+		_render_card_data()
 	if is_node_ready():
 		%附魔符号.text = _enchantment_symbols
 		%附魔符号.visible = not _enchantment_symbols.is_empty()
@@ -386,6 +391,9 @@ func _render_card_data() -> void:
 		elif _csv_art_applied:
 			set_art_texture(null)
 			_csv_art_applied = false
+	if _boss_saturn:
+		title = FinalBossRules.card_name()
+		effect = FinalBossRules.card_description()
 	set_texts(title, effect, "")
 	card_data_applied.emit(_card_id)
 

@@ -115,6 +115,10 @@ func _prepare_presentation(candidate: RefCounted) -> bool:
 		return false
 	var snapshot: Dictionary = candidate.get_snapshot()
 	var config := _height_config(candidate.floor_index)
+	# 顶端是固定地图：地形与外围也固定，货架随机仍由独立商店流负责。
+	if candidate.floor_index == 4:
+		noise = 4042026
+		scenery = 4042027
 	var identity: String = candidate.fingerprint + "|" + JSON.stringify(config) + "|" + JSON.stringify(snapshot.get("height_recipe", {}))
 	var layer: Dictionary = MapPresentation.height_layer if identity == MapPresentation.height_identity else {}
 	var surroundings: Dictionary = MapPresentation.envelope if not layer.is_empty() else {}

@@ -247,7 +247,7 @@ func _refresh_run_controls() -> void:
 	_previous.hide()
 	_next.hide()
 	if map_run != null and map_run.current_floor > 0:
-		_floor_label.text = "第 %d / 3 层 · 测试版第三层 BOSS 后通关" % map_run.current_floor
+		_floor_label.text = "第 %d / %d 层%s" % [map_run.current_floor, EncounterFlow.final_floor_count(), " · 顶端" if map_run.current_floor == 4 else ""]
 
 
 func capture_menu_checkpoint() -> Dictionary:

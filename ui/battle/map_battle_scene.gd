@@ -60,6 +60,7 @@ func _start_test_battle() -> void:
 		hint_label.text = "没有待恢复的节点战斗，请返回主菜单继续冒险。"
 		return
 	_battle = run.current_battle
+	_battle.player["external_natural_draw"] = true
 	_battle.set_meta("presentation_owner", self)
 	var rules: Dictionary = _battle.player.get("encounter_rules", EncounterFlow.test_rules)
 	initial_draw_count = int(rules.initial_draw_count)

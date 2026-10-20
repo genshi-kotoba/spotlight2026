@@ -20,7 +20,7 @@ static func generate(seed_text: String, map_id: String, node_id: String, floor_i
 	# 稀有出现率作为测试规则暂定 50%，最多替换一格。
 	if not rare.is_empty() and int(rng.int_range(0, 2)) == 1:
 		ids[5] = rare[0]
-	var extra := clampi(floor_index - 1, 0, 2) * 50
+	var extra := _price_extra(floor_index)
 	var cards: Array = []
 	var eligible: Array = []
 	for index in ids.size():
@@ -106,6 +106,10 @@ static func _authorized(run: Node, request: Dictionary) -> bool:
 		and session.pending == request and request.get("map_id") == session.map_id \
 		and run.map_ids.find(run.current_map_id) + 1 == int(request.get("floor_index", 0))
 
+# 第四层沿用第三层价位；生成和存档校验必须共用同一条规则。
+static func _price_extra(floor_index: int) -> int:
+	return clampi(floor_index - 1, 0, 2) * 50
+
 static func valid_shops(value: Variant) -> bool:
 	if not value is Dictionary:
 		return false
@@ -114,7 +118,7 @@ static func valid_shops(value: Variant) -> bool:
 		if not shop_key is String or not shop is Dictionary or not RunStateMachine._integer_equals(shop.get("version"), 1) or not shop.get("cards") is Array or shop.cards.size() != 6 or not shop.get("enchantments") is Array or shop.enchantments.size() != 3:
 			return false
 		var floor_index: Variant = RunStateMachine._integer_value(shop.get("floor"))
-		if floor_index == null or floor_index < 1 or floor_index > 3:
+		if floor_index == null or floor_index < 1 or floor_index > 4:
 			return false
 		var seen := {}
 		var discounted: Array[int] = []
@@ -129,7 +133,7 @@ static func valid_shops(value: Variant) -> bool:
 			var discount: Variant = RunStateMachine._integer_value(offer.get("discount"))
 			if entry.is_empty() or base == null or price == null or discount == null or price < 0 or discount not in range(2, 11):
 				return false
-			var extra := (int(shop.floor) - 1) * 50
+			var extra := _price_extra(int(shop.floor))
 			if str(entry.rarity) == "稀有":
 				rares += 1
 				if base != 350 + extra or discount != 10:

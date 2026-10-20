@@ -83,6 +83,9 @@ var _intent_ring: TextureRect
 var _glow: TextureRect
 var _portrait_height := 0.0
 var _label_scale := 1.0
+var _layout_width := 0.0
+var _portrait_top := 0.0
+var _portrait_scale := 1.0
 var _foreground_primary := false
 var _masked_texture: Texture2D
 var _portrait_mask: BitMap
@@ -106,7 +109,10 @@ func feedback_z() -> int:
 ## 主怪透明区域可点到后排；其不透明身体及自身HUD优先，与实际遮挡一致。
 func _has_point(point: Vector2) -> bool:
 	if not selectable: return false
-	if not Rect2(Vector2.ZERO, Vector2(size.x, click_height())).has_point(point): return false
+	var hit_left := minf(0.0, portrait.position.x) if _portrait_scale > 1.0 else 0.0
+	var hit_right := maxf(size.x, portrait.position.x + portrait.size.x) if _portrait_scale > 1.0 else size.x
+	var hit_top := minf(0.0, portrait.position.y) if _portrait_scale > 1.0 else 0.0
+	if not Rect2(Vector2(hit_left, hit_top), Vector2(hit_right-hit_left, click_height()-hit_top)).has_point(point): return false
 	if not _foreground_primary: return true
 	for item: Control in [_bar, name_label, number_label, buff_row, shield, _intent_badge, _intent_ring]:
 		if is_instance_valid(item) and item.visible and item.get_rect().has_point(point): return true
@@ -137,7 +143,9 @@ func _refresh_portrait_mask() -> void:
 ## 宿主在布完位置后调用，按自己的宽度把内部比例全部换算一遍。
 ## 血条是超宽贴图（959.5 : 88），窄槽里用 KEEP_ASPECT_CENTERED 画会被压矮，
 ## 所以条高跟着槽宽等比缩，填充带与立绘起点一起缩，三者才不会互相错位。
-func layout_for(slot_width: float, slot_height: float) -> void:
+func layout_for(slot_width: float, slot_height: float, portrait_scale := 1.0) -> void:
+	_layout_width = slot_width
+	_portrait_scale = clampf(portrait_scale, 1.0, 1.6)
 	custom_minimum_size = Vector2(slot_width, slot_height)
 	size = custom_minimum_size
 	var ratio := slot_width / AUTHORED_WIDTH
@@ -156,10 +164,8 @@ func layout_for(slot_width: float, slot_height: float) -> void:
 	_frame.offset_top = 1.0 * v_scale
 	_frame.offset_right = 959.1 * ratio
 	_frame.offset_bottom = 87.0 * v_scale
-	var portrait_width := slot_width * (PORTRAIT_X1 - PORTRAIT_X0)
-	_portrait_height = portrait_width * PORTRAIT_ASPECT
-	portrait.position = Vector2(slot_width * PORTRAIT_X0, PORTRAIT_TOP * v_scale)
-	portrait.size = Vector2(portrait_width, _portrait_height)
+	_portrait_top = PORTRAIT_TOP * v_scale
+	_layout_portrait()
 	name_label.position = Vector2(slot_width * 0.125, 0.0)
 	name_label.size = Vector2(slot_width * 0.834, 32.0 * _label_scale)
 	number_label.position = Vector2(slot_width * 0.125, 34.0 * v_scale)
@@ -177,8 +183,33 @@ func layout_for(slot_width: float, slot_height: float) -> void:
 	intent_value.position = _intent_ring.position
 	intent_value.size = _intent_ring.size
 	shield.position = Vector2(slot_width * 0.848, 6.0 * v_scale)
-	# 光晕以立绘为基准四周外扩，位置与尺寸都跟着槽宽等比缩。
-	var spread := Vector2(portrait.size.x, portrait.size.y) * GLOW_SPREAD
+
+
+
+## 只缩放立绘。血条、战位和手牌输入区不随最终Boss放大。
+func set_portrait_texture(value: Texture2D) -> void:
+	if portrait.texture == value: return
+	portrait.texture = value
+	_layout_portrait()
+
+
+func _layout_portrait() -> void:
+	if _layout_width <= 0.0: return
+	var width := _layout_width * (PORTRAIT_X1 - PORTRAIT_X0)
+	var base_size := Vector2(width, width * PORTRAIT_ASPECT)
+	# KEEP_ASPECT_CENTERED 的图片可能是横向大图；锚点取实际图片下沿，
+	# 避免放大时连同空白画布一起把Boss抬起或压入手牌。
+	var image_size := base_size
+	if portrait.texture != null:
+		var dimensions := portrait.texture.get_size()
+		image_size = dimensions * minf(base_size.x / dimensions.x, base_size.y / dimensions.y)
+	var anchor := Vector2(_layout_width * PORTRAIT_X0 + base_size.x * 0.5,
+		_portrait_top + (base_size.y + image_size.y) * 0.5)
+	portrait.size = base_size * _portrait_scale
+	portrait.position = anchor - Vector2(portrait.size.x * 0.5,
+		(portrait.size.y + image_size.y * _portrait_scale) * 0.5)
+	_portrait_height = portrait.size.y
+	var spread := portrait.size * GLOW_SPREAD
 	_glow.position = portrait.position - spread
 	_glow.size = portrait.size + spread * 2.0
 
@@ -227,6 +258,8 @@ func click_height() -> float:
 
 ## 立绘右上角在本槽内的坐标，共享箭头按它定位。
 func arrow_corner() -> Vector2:
+	if _portrait_scale > 1.0:
+		return Vector2(_layout_width * PORTRAIT_X1, _portrait_top)
 	return portrait.position + Vector2(portrait.size.x, 0.0)
 
 

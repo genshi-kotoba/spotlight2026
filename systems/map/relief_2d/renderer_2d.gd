@@ -1382,7 +1382,8 @@ func _face_indices(rect: Rect2) -> Array:
 
 
 func _make_node(node: Dictionary) -> void:
-	if int(_source_snapshot.get("floor_index", 0)) == 1:
+	# 第四层复用已交付的 Boss/商店节点立绘及其透明、落地和遮挡处理。
+	if int(_source_snapshot.get("floor_index", 0)) in [1, 4]:
 		_make_node_marker(node)
 		return
 	# These are traversable node floor stamps, not physical props. A future art

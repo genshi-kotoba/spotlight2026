@@ -5,7 +5,7 @@ const RulesPath := "res://data/config/encounter_test_rules.json"
 const BATTLE_SCENE := "res://ui/battle/map_battle_scene.tscn"
 const MAP_SCENE := "res://ui/main_menu/menu_map_entry.tscn"
 const TOTAL_FLOORS := 4
-const IMPLEMENTED_FLOORS := 3
+const IMPLEMENTED_FLOORS := 4
 const DEBUG_VICTORY_SETTING := "debug/map_battle/enable_instant_victory"
 var map_run: RefCounted
 var session: RefCounted
@@ -174,8 +174,8 @@ func _boss_completed() -> bool:
 
 func _advance_after_boss() -> bool:
 	run.complete_current_map()
-	if map_run.current_floor >= IMPLEMENTED_FLOORS:
-		# 当前测试版以第三层为终点，领完最终 Boss 奖励后再记录最终背包。
+	if map_run.current_floor >= final_floor_count():
+		# 旧三层存档仍以其已保存的地图配置为终点；新开局为四层。
 		run.inventory_state["pending_run_victory"] = true
 		return true
 	var entry: Dictionary = map_run.enter_floor(map_run.current_floor + 1, session.capture_state())
@@ -189,6 +189,11 @@ func _advance_after_boss() -> bool:
 	# 领取 Boss 奖励期间就预热下一层全部节点，不等玩家回到地图才读贴图。
 	_preload_floor(entry.snapshot)
 	return true
+
+func final_floor_count() -> int:
+	if map_run == null or not is_instance_valid(run):
+		return IMPLEMENTED_FLOORS
+	return mini(IMPLEMENTED_FLOORS, mini(map_run.floor_count(), run.map_ids.size()))
 
 func capture_menu_checkpoint() -> Dictionary:
 	if map_run == null or session == null or not is_instance_valid(run) or run != SaveGateway.current_run():

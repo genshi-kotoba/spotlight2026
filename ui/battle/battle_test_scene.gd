@@ -589,6 +589,7 @@ func _start_test_battle() -> void:
 		_refresh_relic_hud()
 	if error == OK:
 		_sync_battle_potions()
+		_battle.player["external_natural_draw"] = true
 		error = _battle.start_battle()
 	if error == OK and _battle.active:
 		# 与正式节点战斗一致：首抽经残片自然抽牌修正。
@@ -640,6 +641,7 @@ func _connect_combat_feedback() -> void:
 	_battle.combatant_healed.connect(_on_combatant_healed)
 	_battle.block_changed.connect(_on_block_changed)
 	_battle.card_discarded.connect(_on_card_discarded_visual)
+	_battle.card_destroyed.connect(_on_card_destroyed_visual)
 
 
 func _build_block_shields() -> void:
@@ -880,7 +882,7 @@ func _on_turn_started(turn_number: int) -> void:
 	_queue_presentation("turn_started")
 	# 首回合在 start_battle 返回后按 initial_draw_count 抽牌；后续回合在
 	# PLAYER_ACTION 信号期间同步调用，符合 BattleStateMachine 的接口约束。
-	if turn_number > 1 and per_turn_draw_count > 0:
+	if turn_number > 1:
 		var count := _relics.natural_draw_count(per_turn_draw_count) if _relics != null else per_turn_draw_count
 		var error := _battle.draw_cards(count, BattleStateMachine.DrawReason.TURN_START)
 		if error != OK:
@@ -948,6 +950,9 @@ func _on_hand_card_pressed(instance_id: String) -> void:
 		hint_label.text = "当前结算未完成，请完成弃牌选择或重开战斗。"
 		return
 	var card := _find_card(_battle.hand, instance_id)
+	if FinalBossRules.is_saturn(card):
+		hint_label.text = "逆行土星为手牌机制牌，无法出牌；其光环在手牌中自动生效"
+		return
 	if _busy or (bool(card.get("occupies_slot", true)) and _used_slots() >= _battle.effective_play_limit()):
 		if not _busy:
 			hint_label.text = "出牌区已满（上限 %d 张）" % _battle.effective_play_limit()
@@ -983,6 +988,9 @@ func _sync_discard_focus() -> void:
 
 
 func _select_card_to_discard(instance_id: String) -> void:
+	if FinalBossRules.is_saturn(_find_card(_battle.hand, instance_id)):
+		hint_label.text = "逆行土星无法弃置，请选择其他手牌"
+		return
 	if _discard_selection_ids.has(instance_id) \
 			or _find_card(_battle.hand, instance_id).is_empty():
 		return
@@ -1115,7 +1123,7 @@ func _drain_resolution_events() -> void:
 	while not _resolution_events.is_empty():
 		var event: Dictionary = _resolution_events.pop_front()
 		var kind := str(event["kind"])
-		var ordinary_effect := kind in ["card_effect", "damage", "heal", "block", "card_discarded"] \
+		var ordinary_effect := kind in ["card_effect", "damage", "heal", "block", "card_discarded", "card_destroyed"] \
 			and not bool(event.get("from_relic", false))
 		# 有真实结算内容，或触发了典籍，这张牌就不算「只动了指针」。
 		if ordinary_effect or kind.begins_with("relic_"):
@@ -1186,6 +1194,10 @@ func _drain_resolution_events() -> void:
 				_set_pointer("")
 				phase_label.text = "怪物回合"
 				await _wait_resolution(enemy_turn_delay)
+				if not is_inside_tree(): return
+			"card_destroyed":
+				_queue_refresh()
+				await _wait_resolution(0.10)
 				if not is_inside_tree(): return
 			"turn_started":
 				phase_label.text = "玩家回合 · 回合开始"
@@ -1469,6 +1481,10 @@ func _hand_card_at(at: Vector2) -> String:
 
 func _begin_drag() -> void:
 	var card := _card_by_instance(_drag_card_id)
+	if FinalBossRules.is_saturn(card):
+		_drag_card_id = ""
+		hint_label.text = "逆行土星留在手牌中生效，无法拖入出牌区"
+		return
 	if card.is_empty():
 		return
 	_drag_active = true
@@ -1580,6 +1596,10 @@ func _find_hand_card(instance_id: String) -> Dictionary:
 		if String(card.get("instance_id", "")) == instance_id:
 			return card
 	return {}
+
+
+func _on_card_destroyed_visual(card: Dictionary, _reason: StringName) -> void:
+	_queue_presentation("card_destroyed", {"card": card.duplicate(true)})
 
 
 func _on_card_discarded_visual(card: Dictionary, reason: StringName) -> void:
@@ -1879,7 +1899,7 @@ func _render_enemy_slot(enemy: Dictionary) -> void:
 		return
 	var portrait := str(enemy.get("art_path", ""))
 	if not portrait.is_empty():
-		slot.portrait.texture = TextCatalogService.art_texture(portrait)
+		slot.set_portrait_texture(TextCatalogService.art_texture(portrait))
 	slot.set_frame_path(_enemy_bar_frame(str(enemy.get("grade", ""))))
 	slot.name_label.text = str(enemy.get("name", "CHR-025"))
 	var interactive := not _busy and not _animating and _battle.active and _battle.phase == BattleStateMachine.Phase.PLAYER_ACTION

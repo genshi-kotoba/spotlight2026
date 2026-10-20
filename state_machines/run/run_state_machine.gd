@@ -158,7 +158,7 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 			or saved_health < 0 or saved_health > saved_max or saved_gold < 0 or saved_total < 0 \
 			or saved_battles < 0 or saved_stages < 0 or not saved_maps.has(saved_current_map) \
 			or not _json_safe(saved_result) or not _json_safe(saved_items) or not RunRewards.valid_items(saved_items) \
-			or not _unique_string_array_valid(saved_maps) or saved_maps.size() != 3 \
+			or not _unique_string_array_valid(saved_maps) or saved_maps.size() not in [3, 4] \
 			or not _valid_map_states(saved_map_states, saved_maps) \
 			or not _valid_nonnegative_int_dictionary(saved_indices) \
 			or (saved_active and not saved_result.is_empty()) \
@@ -380,6 +380,8 @@ func start_battle(node_id: String, enemies: Array, draw_count: int = 5,
 	ensure_deck_cards()
 	for index in battle_deck.size():
 		var copy: Dictionary = deck_cards[index].duplicate(true) if temporary_deck.is_empty() else {}
+		for field: String in ["boss_saturn", "boss_owner"]:
+			copy.erase(field)
 		copy.merge({
 			"instance_id": "%s:%s:%d:%d" % [run_id, node_id, battle_index, index],
 			"card_id": battle_deck[index],
@@ -482,7 +484,7 @@ func _prepare_new_config(config: Dictionary, unlocked_cards: Array) -> Dictionar
 			or configured_gold < 0 or not _string_array_valid(catalog) \
 			or not _string_array_valid(initial_deck) or not _string_array_valid(starters) or not configured_items is Array \
 			or not _json_safe(configured_items) or not _unique_string_array_valid(configured_maps) \
-			or configured_maps.size() != 3 or not _string_array_valid(rewards) \
+			or configured_maps.size() not in [3, 4] or not _string_array_valid(rewards) \
 			or not _string_array_valid(shops) or not _string_array_valid(events) \
 			or not _string_array_valid(unlocked_cards):
 		_fail(ERR_INVALID_PARAMETER, "New run config is invalid")
@@ -547,6 +549,8 @@ static func _valid_deck_cards(values: Variant, ids: Array) -> bool:
 	for index in values.size():
 		var card: Variant = values[index]
 		if not card is Dictionary or card.get("card_id") != ids[index] or not card.get("copy_id") is String or card.copy_id.is_empty() or seen.has(card.copy_id) or not CardEnchantments.valid(card.get("enchantments")):
+			return false
+		if card.has("boss_saturn") or card.has("boss_owner"):
 			return false
 		seen[card.copy_id] = true
 	return true
