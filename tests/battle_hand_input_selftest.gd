@@ -51,7 +51,8 @@ func _run() -> void:
 	_check("同样构筑可正常进入编排", scene._battle.active and scene._battle.hand.size() == _hand_limit(scene))
 	await preload("res://tests/support/presentation_test_helper.gd").battle_settled(scene)
 
-	for index: int in [0, 3, 6]:
+	# 手牌张数随构筑变（合并后是 6 张），末位不能用写死的 6。
+	for index: int in [0, 3, maxi(0, scene.hand_cards.get_child_count() - 1)]:
 		var slot := scene.hand_cards.get_child(index) as Control
 		var button := slot.get_child(1) as Button
 		var before := slot.get_global_transform() * slot.pivot_offset
@@ -72,6 +73,88 @@ func _run() -> void:
 		await get_tree().process_frame
 		await get_tree().process_frame
 		_check("取消后回到手牌", scene._selected_ids.is_empty() and scene.hand_cards.get_child_count() == _hand_limit(scene))
+
+	# 出牌列拖回手牌区：把手牌撑开并在原位留出空位，松手牌立即落到空位。
+	var back_id := str((scene.hand_cards.get_child(0) as Control).get_meta("instance_id", ""))
+	scene._on_hand_card_pressed(back_id)
+	# 先等新入场的出牌行播完 0.16s 的淡入补间，否则它会一直把出牌行的占位透明度改回 1.0。
+	await _wait_frames(12)
+	var row := scene.play_cards.get_child(0) as Control
+	# 出牌列是叠放的，只有顶部 PLAY_STEP 高的一条真的露在外面，落点必须取在这条带子里。
+	await _drag_start(Vector2(row.global_position.x + 8.0, row.global_position.y + 8.0))
+	_check("出牌列的牌拖拽中保留半透明虚影",
+		is_equal_approx((scene.play_cards.get_child(0) as CanvasItem).modulate.a,
+			BattleTestScene.PLAY_PLACEHOLDER_ALPHA))
+	await _drag_move(scene.hand_scroll.get_global_rect().get_center())
+	await _wait_frames(14)
+	var opened_slots := scene.hand_cards.get_child_count()
+	var opened_xs := _hand_xs(scene)
+	_check("结算区的牌拖回手牌同样撑开空位", scene._hand_gap_open)
+	_check("撑开空位后出牌列的虚影不会变实心",
+		is_equal_approx(_row_alpha(scene.play_cards.get_child(0) as Control),
+			BattleTestScene.PLAY_PLACEHOLDER_ALPHA))
+	await _drag_release(scene.hand_scroll.get_global_rect().get_center())
+	_check("松手立即归位且其余手牌不动",
+		scene.hand_cards.get_child_count() == opened_slots + 1 and not scene._hand_gap_open \
+			and _same_xs(opened_xs, _hand_xs(scene)))
+	_check("拖拽收手后不残留跟随鼠标的残影",
+		not scene._drag_active and scene._drag_card_id.is_empty() \
+			and (scene._drag_ghost == null or not scene._drag_ghost.visible))
+	# 松手那一刻归位的牌正压在指针下，不该当场进入悬停；指针重新进去才恢复判定。
+	_check("松手后归位的牌不进入悬停", _hand_hovered_count(scene) == 0)
+	await _drag_move(scene.play_scroll.get_global_rect().get_center())
+	await _drag_move((scene.hand_cards.get_child(0) as Control).get_global_rect().get_center())
+	_check("指针重新进入手牌后悬停恢复", _hand_hovered_count(scene) == 1)
+
+	# 手牌拖出即收扇、不留占位，且收扇有滑动时间；拖回扇面只撑开留空位、不补牌。
+	var hand_size := scene.hand_cards.get_child_count()
+	var drag_id := str((scene.hand_cards.get_child(0) as Control).get_meta("instance_id", ""))
+	var pre_drag_xs := _hand_xs(scene)
+	await _drag_start((scene.hand_cards.get_child(0) as Control).get_global_rect().get_center())
+	_check("手牌拖出即收扇且不留半透明占位",
+		not scene._hand_gap_open and scene.hand_cards.get_child_count() == hand_size - 1)
+	# 起手还压在扇面上，这时挪一下不算「拖出去过」，扇面不该当场撑开。
+	await _drag_move(scene.hand_scroll.get_global_rect().get_center() + Vector2(40.0, 0.0))
+	_check("没出过扇面就不撑开", not scene._hand_gap_open)
+	_check("拖动途中手牌不触发悬停", _hand_hovered_count(scene) == 0)
+	var collapsing_x := (scene.hand_cards.get_child(4) as Control).position.x
+	await _wait_frames(14)
+	var collapsed_x := (scene.hand_cards.get_child(4) as Control).position.x
+	_check("收扇是滑到位的，不是瞬跳", not is_equal_approx(collapsing_x, collapsed_x))
+	# 拖到结算区：牌已出扇面，保持收扇。
+	await _drag_move(scene.play_scroll.get_global_rect().get_center())
+	_check("拖到结算区仍保持收扇",
+		not scene._hand_gap_open and scene.hand_cards.get_child_count() == hand_size - 1)
+	_check("拖动途中手牌不触发悬停", _hand_hovered_count(scene) == 0)
+	# 拖回扇面：只把扇面撑开、原位留空，牌还在光标上，不补牌也不补抽牌动画。
+	await _drag_move(scene.hand_scroll.get_global_rect().get_center())
+	_check("拖回扇面撑开且原位留空不补牌",
+		scene._hand_gap_open and scene.hand_cards.get_child_count() == hand_size - 1)
+	await _wait_frames(14)
+	_check("开扇也是滑到位的，不是瞬跳",
+		not is_equal_approx(collapsed_x,
+			(scene.hand_cards.get_child(4) as Control).position.x))
+	var opened_hand_xs := _hand_xs(scene)
+	await _drag_release(scene.hand_scroll.get_global_rect().get_center())
+	var settled_xs := _hand_xs(scene)
+	# 落回原位 = 与拖拽前同一个 x；若走了抽牌动画，这张牌会从抽牌堆飞出来、位置对不上。
+	_check("松手卡牌立即落回空位且其余手牌不动",
+		scene.hand_cards.get_child_count() == hand_size and not scene._hand_gap_open \
+			and scene._selected_ids.is_empty() \
+			and _same_xs(opened_hand_xs, settled_xs) \
+			and settled_xs.has(drag_id) \
+			and is_equal_approx(pre_drag_xs[drag_id], settled_xs[drag_id]))
+
+	# 手牌拖出去、既没落到结算区也没拖回手牌：与点击等效，直接叠到出牌列末尾。
+	var stray_id := str((scene.hand_cards.get_child(2) as Control).get_meta("instance_id", ""))
+	var stray_from := (scene.hand_cards.get_child(2) as Control).get_global_rect().get_center()
+	var stray_to := Vector2(stray_from.x, scene.play_scroll.get_global_rect().position.y - 60.0)
+	await _drag(stray_from, stray_to)
+	_check("手牌拖到空白处等同于点击叠放",
+		scene._selected_ids.has(stray_id) and scene.play_cards.get_child_count() > 0)
+	# 撤回这次叠放，后面的弃牌流程要用干净的出牌区。
+	scene._on_play_card_pressed(stray_id)
+	await _wait_frames(2)
 
 	# 真实 UI 中连续两次弃牌：第一轮提交不能擦掉同步产生的第二轮请求。
 	var discard_data: CardData = scene._resolver.card_catalog["test_discard_choice"].duplicate(true)
@@ -122,6 +205,92 @@ func _discard_ready(battle_scene: BattleTestScene) -> bool:
 func _hand_limit(battle_scene: BattleTestScene) -> int:
 	# 首抽张数来自 rules，手牌上限另有 10 张封顶，实际入手取两者较小值。
 	return mini(battle_scene.initial_draw_count, int(battle_scene._battle.player.get("hand_limit", 10)))
+
+
+## 定帧推进：本测试以 --fixed-fps 60 跑，一帧固定 1/60 秒，用来跨过按时间走的入场补间。
+func _wait_frames(count: int) -> void:
+	for index: int in count:
+		await get_tree().process_frame
+
+
+## 按下并越过 8px 阈值把拖拽拉起来，停在这里，便于检查拖拽途中的状态。
+## 走真实的按下 / 移动序列，途经 `_input` 里的自绘拖拽，而不是直接调内部方法。
+func _drag_start(from: Vector2) -> void:
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.position = from
+	press.pressed = true
+	get_viewport().push_input(press, true)
+	await get_tree().process_frame
+	var motion := InputEventMouseMotion.new()
+	motion.position = from + Vector2(20.0, 0.0)
+	get_viewport().push_input(motion, true)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+
+func _drag_release(at: Vector2) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.position = at
+	get_viewport().push_input(motion, true)
+	await get_tree().process_frame
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.position = at
+	release.pressed = false
+	get_viewport().push_input(release, true)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+
+## 手牌里「牌 -> 基准 x」的对照表，用来核对某次拖拽前后其余牌有没有挪窝。
+func _hand_xs(scene: Node) -> Dictionary:
+	var xs := {}
+	for slot: Control in scene.hand_cards.get_children():
+		xs[str(slot.get_meta("instance_id", ""))] = slot.position.x
+	return xs
+
+
+## 前后两次采样里，同名的手牌都没挪窝。
+func _same_xs(before: Dictionary, after: Dictionary) -> bool:
+	for instance_id: String in before:
+		if not after.has(instance_id) or not is_equal_approx(before[instance_id], after[instance_id]):
+			return false
+	return true
+
+
+## 出牌行实际呈现的透明度：行自身与卡槽会叠乘，用来卡住「重复压半透」。
+func _row_alpha(row: Control) -> float:
+	var alpha := (row as CanvasItem).modulate.a
+	for child in row.get_children():
+		if child is CanvasItem:
+			alpha *= (child as CanvasItem).modulate.a
+			break
+	return alpha
+
+
+## 拖拽途中只挪鼠标，不松手，用来检查跨越扇面边界那一刻的收扇 / 开扇。
+func _drag_move(to: Vector2) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.position = to
+	get_viewport().push_input(motion, true)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+
+## 手牌里当前处于悬停态的格数。
+func _hand_hovered_count(scene: Node) -> int:
+	var count := 0
+	for slot: Control in scene.hand_cards.get_children():
+		if bool(slot.get_meta("hovered", false)):
+			count += 1
+	return count
+
+
+## 一整轮拖拽：按下拖起来、移到落点、松手。
+func _drag(from: Vector2, to: Vector2) -> void:
+	await _drag_start(from)
+	await _drag_release(to)
 
 
 func _click(point: Vector2) -> void:

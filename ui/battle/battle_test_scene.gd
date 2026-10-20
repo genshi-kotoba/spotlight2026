@@ -74,6 +74,8 @@ const HAND_GAP := 6.0
 const HAND_ARC_SPREAD := 0.045
 const HAND_ARC_RADIUS := 900.0
 const HAND_MAX_WIDTH := 880.0
+## 拖拽引起的收扇 / 开扇滑动时长。
+const HAND_RELAYOUT_DURATION := 0.18
 ## 条内可填充宽度与左端起算位置：玩家条从 144 起、宽 250；Boss 条从 99 起、宽 781。
 const PLAYER_BAR_LEFT := 144.0
 const PLAYER_BAR_WIDTH := 250.0
@@ -249,6 +251,13 @@ var _drag_source := ""
 var _drag_start := Vector2.ZERO
 var _drag_active := false
 var _drag_ghost: Control
+## 拖着牌时扇面是否已撑开：撑开时手牌里给这张牌留出空位，牌本身还在光标上。
+var _hand_gap_open := false
+## 这次拖拽是否离开过扇面；出过扇面才认「拖出去过」，回来才会撑开。
+var _drag_hand_ever_outside := false
+## 收扇 / 开扇的滑动起点：instance_id -> [position, rotation]。为空时手牌瞬排。
+var _hand_pose_from: Dictionary = {}
+var _hand_relayout_tween: Tween
 var _drop_hint: Panel
 var _turn_pop_text := ""
 ## 飞书资产 UI-012「结算指针」：黑三角金边，从左往右指。
@@ -263,7 +272,7 @@ const PREVIEW_HOLD := 0.5
 ## 结算收尾取这张牌播出动画的这个比例：飘字寿命 0.70~1.00 换算成 0.32~0.45 秒。
 ## 取一部分而不是全等，是让下一张牌在数字还在上浮时就开始，整串才不显得一顿一顿。
 const FEEDBACK_SETTLE_SHARE := 0.45
-const PLAY_PLACEHOLDER_ALPHA := 0.55
+const PLAY_PLACEHOLDER_ALPHA := 0.75
 const PEEK_CARD_SCALE := 0.79
 ## 等待玩家弃牌时，蒙版与要高亮的节点各自抬到哪个层级。失活时全部还原为 0。
 const DISCARD_SHADE_Z := 20
@@ -1058,9 +1067,7 @@ func _on_hand_card_pressed(instance_id: String) -> void:
 	_selected_ids.append(instance_id)
 	_selected_cards.append(card.duplicate(true))
 	# 出牌落位不再飞牌：点完即由 _queue_refresh 重建出手牌与出牌列。
-	hint_label.text = "已编排 %d / %d 张；将按从上到下结算" % [
-		_used_slots(), _battle.effective_play_limit(),
-	]
+	hint_label.text = ""
 	_queue_refresh()
 
 
@@ -1455,15 +1462,29 @@ func _input(event: InputEvent) -> void:
 		if _drag_active:
 			var dragged := _drag_card_id
 			var source := _drag_source
+			# 落点先算完再收尾：_finish_drag 会把出处牌恢复不透明，
+			# 之后才清空 _drag_card_id，避免残留 id 让下一次移动又抓起来。
 			var index := _play_drop_index(event.position)
-			_finish_drag()
-			if not _play_area_rect().has_point(event.position):
-				return
-			if source == "play":
-				_move_play_card(_selected_ids.find(dragged), index)
-			elif not dragged.is_empty():
-				_insert_selected_card(dragged, index)
-			get_viewport().set_input_as_handled()
+			var in_play := _play_area_rect().has_point(event.position)
+			var in_hand := _hand_area_rect().has_point(event.position)
+			_finish_drag(in_hand)
+			_drag_card_id = ""
+			_drag_source = ""
+			if in_play:
+				if source == "play":
+					_move_play_card(_selected_ids.find(dragged), index)
+				elif not dragged.is_empty():
+					_insert_selected_card(dragged, index)
+				get_viewport().set_input_as_handled()
+			elif source == "play" and in_hand:
+				# 从出牌列拖回手牌区 = 撤下这张牌，等同点它一次。
+				_on_play_card_pressed(dragged)
+				get_viewport().set_input_as_handled()
+			elif source == "hand" and not in_hand:
+				# 手牌拖出去又没落到结算区：与点击等效，直接叠到出牌列末尾。
+				_on_hand_card_pressed(dragged)
+				get_viewport().set_input_as_handled()
+			return
 		_drag_card_id = ""
 		_drag_source = ""
 		return
@@ -1471,8 +1492,9 @@ func _input(event: InputEvent) -> void:
 		if not _drag_active:
 			if event.position.distance_to(_drag_start) < 8.0:
 				return
-			_begin_drag()
+			_begin_drag(event.position)
 		_move_drag_ghost(event.position)
+		_update_hand_gap(event.position)
 		_update_drop_hint(event.position)
 		_update_drag_preview(event.position)
 
@@ -1528,6 +1550,11 @@ func _set_drag_source_alpha(instance_id: String, alpha: float) -> void:
 	if index >= 0:
 		var row := play_cards.get_child(index) as CanvasItem
 		if row != null:
+			# 这一行还在播入场淡入的话会一直把透明度写回 1.0，先把它收尾。
+			var enter: Variant = row.get_meta("enter_tween") if row.has_meta("enter_tween") else null
+			if enter is Tween and enter.is_valid():
+				enter.kill()
+				row.scale = Vector2.ONE
 			row.modulate.a = alpha
 
 
@@ -1575,7 +1602,7 @@ func _hand_card_at(at: Vector2) -> String:
 	return ""
 
 
-func _begin_drag() -> void:
+func _begin_drag(at := _drag_start) -> void:
 	var card := _card_by_instance(_drag_card_id)
 	if FinalBossRules.is_saturn(card):
 		_drag_card_id = ""
@@ -1584,8 +1611,16 @@ func _begin_drag() -> void:
 	if card.is_empty():
 		return
 	_drag_active = true
-	# 只有可编排的新选牌能拖动；保留牌与空牌位不会被 UI 越权移动。
-	_set_drag_source_alpha(_drag_card_id, PLAY_PLACEHOLDER_ALPHA)
+	# 手牌来源起手就压在扇面上，这时不能算「拖出去过」，否则一动就误触发开扇。
+	_drag_hand_ever_outside = not _hand_area_rect().has_point(at)
+	_hand_gap_open = false
+	# 手牌拖出即收扇，不留半透明占位；只有出牌列的牌保留虚影。
+	if _drag_source == "play":
+		_set_drag_source_alpha(_drag_card_id, PLAY_PLACEHOLDER_ALPHA)
+	else:
+		# 收扇要有移动时间：先记下每张牌此刻的扇位，好让它们滑过去。
+		_hand_pose_from = _hand_poses()
+		_queue_refresh()
 	if _drag_ghost == null:
 		_drag_ghost = Control.new()
 		_drag_ghost.name = "HandDragGhost"
@@ -1635,19 +1670,79 @@ func _update_drop_hint(at: Vector2) -> void:
 	_drop_hint.position = Vector2(play_cards.global_position.x + PLAY_POINTER_W, y)
 
 
-func _finish_drag() -> void:
+func _finish_drag(return_to_hand := false) -> void:
 	if not _busy and _resolve_preview != null:
 		_resolve_preview.hide()
 	_drag_active = false
 	_set_drag_source_alpha(_drag_card_id, 1.0)
+	# 扇面要动的话，滑动从当前位姿接着走，别瞬跳。
+	if return_to_hand or _hand_gap_open:
+		_hand_pose_from = _hand_poses()
+	if return_to_hand and not _drag_card_id.is_empty():
+		# 归位的牌不是新抽的，不走抽牌堆的抽牌动画，直接落回空位。
+		_hand_ids_previous[_drag_card_id] = true
+	_hand_gap_open = false
+	_queue_refresh()
 	if _drag_ghost != null:
 		_drag_ghost.visible = false
 	if _drop_hint != null:
 		_drop_hint.visible = false
 
 
+## 这张牌应该排在手牌的第几位；不想留空位时返回 -1。
+## 拖动中的牌不进槽位，所以要按「含它在内」的完整列表数位次。
+func _hand_gap_index(displayed_hand: Array[Dictionary], dragged_id: String) -> int:
+	if not _hand_gap_open or dragged_id.is_empty():
+		return -1
+	var index := 0
+	for card: Dictionary in displayed_hand:
+		var instance_id := String(card["instance_id"])
+		if instance_id == dragged_id:
+			return index
+		if _selected_ids.has(instance_id) or _discard_selection_ids.has(instance_id):
+			continue
+		index += 1
+	return -1
+
+
+## 拖着牌跨越扇面边界：进扇面就撑开、在原位留出空位；出扇面就收扇。
+func _update_hand_gap(at: Vector2) -> void:
+	var inside := _hand_area_rect().has_point(at)
+	# 出过扇面才算「拖出去过」：手牌来源起手就压在扇面上，不该当场又撑开。
+	if not inside:
+		_drag_hand_ever_outside = true
+	var open := inside and _drag_hand_ever_outside
+	if open == _hand_gap_open:
+		return
+	_hand_pose_from = _hand_poses()
+	_hand_gap_open = open
+	_queue_refresh()
+
+
+## 槽位刚重建的这一刻，指针可能正压在它上面：Godot 会立刻给新槽位派发一次 mouse_entered，
+## 于是「刚松手归位的牌」当场进入悬停，和扇面的补间抢位置，看着就是抬起来却没摆正。
+## 屏蔽一帧再放开，悬停只由玩家真实的指针移动触发，下一帧指针还在上面时 Godot 会自然重派。
+func _suppress_hover_until_next_frame(slot: Control) -> void:
+	for child in slot.get_children():
+		if child is CardView:
+			var view := child as CardView
+			var original := view.mouse_filter
+			view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_restore_card_view_filter.call_deferred(view, original)
+			return
+
+
+func _restore_card_view_filter(view: CardView, original: Control.MouseFilter) -> void:
+	if is_instance_valid(view):
+		view.mouse_filter = original
+
+
 func _play_area_rect() -> Rect2:
 	return play_scroll.get_global_rect()
+
+
+func _hand_area_rect() -> Rect2:
+	return hand_scroll.get_global_rect()
 
 
 func _play_drop_index(at: Vector2) -> int:
@@ -1813,14 +1908,23 @@ func _refresh_zones() -> void:
 	var hand_slots: Array[Control] = []
 	_fan_target = null
 	var displayed_hand: Array[Dictionary] = _presented_hand if _busy else _battle.hand
+	# 拖拽中的牌挂在光标上，手牌里给它留出空位，不补牌也不飞抽牌动画。
+	var dragged_id := _drag_card_id if _drag_active else ""
+	var gap_index := _hand_gap_index(displayed_hand, dragged_id)
 	for card: Dictionary in displayed_hand:
 		var instance_id := String(card["instance_id"])
-		if not _selected_ids.has(instance_id) and not _discard_selection_ids.has(instance_id):
-			var slot := _make_card_slot(card, HAND_CARD_SCALE, true)
-			hand_cards.add_child(slot)
-			hand_slots.append(slot)
-	_layout_hand(hand_slots)
+		if _selected_ids.has(instance_id) or _discard_selection_ids.has(instance_id) \
+				or instance_id == dragged_id:
+			continue
+		var slot := _make_card_slot(card, HAND_CARD_SCALE, true)
+		hand_cards.add_child(slot)
+		# 重建这一刻指针可能正压在这个位置，Godot 会立刻给新槽位派发一次 mouse_entered。
+		# 先屏蔽一帧再放开：下一帧指针真的还在上面时才会自然重新派发，不用自己同步悬停状态。
+		_suppress_hover_until_next_frame(slot)
+		hand_slots.append(slot)
+	_layout_hand(hand_slots, gap_index)
 	_play_deal_animation(hand_slots)
+	_animate_hand_relayout(hand_slots)
 	hand_count_label.text = "%d 张" % hand_slots.size()
 
 	if _busy:
@@ -1850,6 +1954,9 @@ func _refresh_zones() -> void:
 		call_deferred("_scroll_play_to_latest")
 	_hide_transfer_targets()
 	_set_pointer(_display_pointer_id)
+	# 刷新会重造出牌列，拖拽中的虚影透明度得按当前状态补回去，否则一站到手上就变实心。
+	if _drag_active and _drag_source == "play":
+		_set_drag_source_alpha(_drag_card_id, PLAY_PLACEHOLDER_ALPHA)
 
 	_refresh_header()
 	_refresh_combat_status()
@@ -1895,6 +2002,7 @@ func _animate_new_play_row(count: int) -> void:
 	row.modulate.a = 0.0
 	row.scale = Vector2(0.9, 0.9)
 	var tween := row.create_tween()
+	row.set_meta("enter_tween", tween)
 	tween.set_parallel(true)
 	tween.tween_property(row, "modulate:a", 1.0, 0.16)
 	tween.tween_property(row, "scale", Vector2.ONE, 0.2) \
@@ -2306,9 +2414,10 @@ func _play_deal_animation(slots: Array[Control]) -> void:
 		HAND_DEAL_ANIM.play(drawn[index], origin, index)
 
 
-func _layout_hand(slots: Array[Control]) -> void:
+func _layout_hand(slots: Array[Control], gap_index := -1) -> void:
 	# 手牌按固定步长排在中轴上；扇开时在基准位置上加偏移，基准不随动画漂移。
-	var count := slots.size()
+	# gap_index >= 0 表示拖动中的牌在原位留空，扇面按含它的张数撑开，其余牌绕开空位。
+	var count := slots.size() + (1 if gap_index >= 0 else 0)
 	if count == 0:
 		hand_cards.custom_minimum_size = Vector2(HAND_AREA_WIDTH, 0.0)
 		hand_cards.size = Vector2(HAND_AREA_WIDTH, HAND_AREA_HEIGHT)
@@ -2326,8 +2435,9 @@ func _layout_hand(slots: Array[Control]) -> void:
 	var center := (count - 1) * 0.5
 	# 卡底边贴在 HandScroll 底边，边缘牌的扇形下沉由视口裁掉，与作者原版战斗 UI 一致。
 	var base_y := HAND_AREA_HEIGHT - HAND_CARD_SIZE.y
-	for index in count:
-		var slot := slots[index]
+	for order in slots.size():
+		var slot := slots[order]
+		var index := order + (1 if gap_index >= 0 and order >= gap_index else 0)
 		slot.size = HAND_CARD_SIZE
 		# 绕底边中点旋转，越靠边角度越大；同时沿弧线略微下沉，形成扇形。
 		# 悬停时绕底边中点立正，保持底边高度不变。
@@ -2346,6 +2456,40 @@ func _fan_factor(count: int) -> float:
 		return fan_factor_by_count[count]
 	# 超过 10 张沿用最小幅度，保持有扇开动作但不会挤出牌区。
 	return fan_factor_by_count[fan_factor_by_count.size() - 1] if count > 10 else 0.0
+
+
+## 记下每张手牌此刻的扇位，作为收扇 / 开扇滑动的起点。
+func _hand_poses() -> Dictionary:
+	var poses := {}
+	for slot: Control in hand_cards.get_children():
+		poses[str(slot.get_meta("instance_id", ""))] = [slot.position, slot.rotation]
+	return poses
+
+
+## 拖拽引起的收扇 / 开扇：新槽先摆回旧扇位，再滑到新布局。
+## 其它刷新没有快照，保持瞬排。
+func _animate_hand_relayout(slots: Array[Control]) -> void:
+	if _hand_pose_from.is_empty():
+		return
+	var poses := _hand_pose_from
+	_hand_pose_from = {}
+	if _hand_relayout_tween != null and _hand_relayout_tween.is_valid():
+		_hand_relayout_tween.kill()
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_CUBIC)
+	tween.set_ease(Tween.EASE_OUT)
+	for slot: Control in slots:
+		var pose: Variant = poses.get(str(slot.get_meta("instance_id", "")))
+		if pose == null:
+			continue
+		var target_position := slot.position
+		var target_rotation := slot.rotation
+		slot.position = pose[0]
+		slot.rotation = float(pose[1])
+		tween.tween_property(slot, "position", target_position, HAND_RELAYOUT_DURATION)
+		tween.tween_property(slot, "rotation", target_rotation, HAND_RELAYOUT_DURATION)
+	_hand_relayout_tween = tween
 
 
 func _refresh_hand_fan() -> void:
@@ -2398,6 +2542,9 @@ func _apply_hand_fan(hovered_slot: Control) -> void:
 
 func _on_hand_card_hover_changed(slot: Control, view: CardView, expanded: bool) -> void:
 	if not is_instance_valid(slot) or not is_instance_valid(view):
+		return
+	# 拖着牌时不响应手牌悬停：手里还抓着牌，扇面不该跟着鼠标放大抬升。
+	if _drag_active:
 		return
 	slot.set_meta("hovered", expanded)
 	var instance_id := str(slot.get_meta("instance_id", ""))
