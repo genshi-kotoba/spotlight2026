@@ -5,17 +5,7 @@
   "initial_deck": ["1", "1", "1", "50", "50", "50", "40", "40"],
   "starter_cards": ["1", "50", "40"],
   "card_catalog": ["1", "50", "40"],
-  "initial_items": [
-    {"item_id": "starter-potion-draw", "kind": "potion", "potion": 0},
-    {"item_id": "starter-potion-block", "kind": "potion", "potion": 1},
-    {"item_id": "starter-potion-copy", "kind": "potion", "potion": 2},
-    {"item_id": "starter-pack-fragment", "kind": "fragment_pack", "options": [], "rerolled": false},
-    {"item_id": "starter-pack-common", "kind": "common_pack", "options": [], "rerolled": false},
-    {"item_id": "starter-fragment-trigger-a", "kind": "fragment", "fragment_id": "FRG-001"},
-    {"item_id": "starter-fragment-trigger-b", "kind": "fragment", "fragment_id": "FRG-002"},
-    {"item_id": "starter-fragment-effect-a", "kind": "fragment", "fragment_id": "FRG-013"},
-    {"item_id": "starter-fragment-effect-b", "kind": "fragment", "fragment_id": "FRG-017"}
-  ],
+  "initial_items": [],
   "map_ids": ["world:floor-001", "world:floor-002", "world:floor-003"],
   "reward_pool": [],
   "shop_pool": [],

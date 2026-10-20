@@ -90,6 +90,8 @@ var _current_page := 1
 var _open_tween: Tween
 ## 测试装配用：非空时背包页读它，不读 GlobalState，也不落存档。
 var run_override: RunStateMachine = null
+## 当前已接上 state_changed 的那一局，换局或重载存档时要重新接。
+var _bound_run: RunStateMachine = null
 ## 战斗测试场景专用开关：打开后战斗中仍可编辑典籍。生产模式下保持 false，战斗中仍是仅查看。
 var allow_edit_in_battle := false
 var settlement_mode := false
@@ -135,6 +137,7 @@ func open(page: int = -1) -> void:
 	if page >= 0:
 		set_page(page)
 	_reset_abandon_confirm()
+	_bind_run_signals()
 	_refresh_data()
 	move_to_front()
 	_play_open_animation()
@@ -198,6 +201,7 @@ func set_page(index: int) -> void:
 
 func set_run_override(run: RunStateMachine) -> void:
 	run_override = run
+	_bind_run_signals()
 	_refresh_data()
 
 
@@ -766,9 +770,9 @@ func _build_abandon_row(page: Control) -> void:
 	_abandon_button.pressed.connect(_on_abandon_pressed)
 	page.add_child(_abandon_button)
 
-	# 二次确认就在设置面板里完成，不再另弹窗。
+	# 二次确认就在设置面板里完成，不再另弹窗。位置与「放弃本局」同一条水平线。
 	_abandon_confirm_row = HBoxContainer.new()
-	_abandon_confirm_row.position = Vector2(700, 682)
+	_abandon_confirm_row.position = Vector2(700, 710)
 	_abandon_confirm_row.add_theme_constant_override("separation", 12)
 	_abandon_confirm_row.visible = false
 	page.add_child(_abandon_confirm_row)
@@ -1327,6 +1331,28 @@ func _item_slot(run: RunStateMachine, item_index: int, slot_index: int) -> Contr
 
 func _active_run() -> RunStateMachine:
 	return run_override if is_instance_valid(run_override) else SaveGateway.current_run()
+
+
+## 背包开着的时候，别人往这一局里塞东西（快捷栏开卡包、事件奖励、拾取）也要立刻看见。
+## 快捷栏那份 LootPopup 结算时只发 state_changed，背包不接就一直是旧内容。
+func _bind_run_signals() -> void:
+	var run := _active_run()
+	if run == _bound_run:
+		return
+	if is_instance_valid(_bound_run) and _bound_run.state_changed.is_connected(_on_run_state_changed):
+		_bound_run.state_changed.disconnect(_on_run_state_changed)
+	_bound_run = run
+	if is_instance_valid(run) and not run.state_changed.is_connected(_on_run_state_changed):
+		run.state_changed.connect(_on_run_state_changed)
+
+
+func _on_run_state_changed() -> void:
+	# 拖拽残片时刷新会抽掉正拖着的那一格，等这次交互收尾再刷。
+	if not visible or _drag_source != null:
+		return
+	# 数据变了，压在某格上的选项菜单也已经过期，先收掉再重建。
+	_close_item_menu()
+	_refresh_data()
 
 
 func _can_edit_relics() -> bool:
