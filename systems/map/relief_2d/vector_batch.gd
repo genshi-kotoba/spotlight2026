@@ -2,6 +2,7 @@ extends Node2D
 ## Retained 2D triangles preserve face/shadow/label painter order. Preparation
 ## uses private CPU arrays; meshes and CanvasItem commands are main-thread only.
 const NodeArt = preload("res://systems/map/relief_2d/node_art.gd")
+const EliteSteam = preload("res://systems/map/relief_2d/elite_steam.gd")
 const Env005Material = preload("res://systems/map/relief_2d/env005_material.gd")
 const ArtShader = preload("res://systems/map/relief_2d/env005_canvas.gdshader")
 # Default-only material for hidden/prepared batches. Runtime cutaway replaces
@@ -21,6 +22,65 @@ var _dynamic_override := false
 var dynamic_triangles := 0
 var static_face_packets: Array = []
 var node_marker_only := false
+var _elite_steam_notifier: VisibleOnScreenNotifier2D
+var _elite_steam_elapsed := 0.0
+var _elite_steam_redraw_elapsed := 0.0
+
+func _init() -> void:
+	set_process(false)
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_VISIBILITY_CHANGED or what == NOTIFICATION_ENTER_TREE:
+		_sync_elite_steam_processing()
+	elif what == NOTIFICATION_EXIT_TREE:
+		set_process(false)
+
+func _sync_elite_steam_processing() -> void:
+	set_process(is_inside_tree() and is_visible_in_tree() and _elite_steam_notifier != null and _elite_steam_notifier.is_on_screen())
+
+func _refresh_elite_steam() -> void:
+	var active: Array = _dynamic_commands if _dynamic_override else commands
+	var area := Rect2()
+	for command: Dictionary in active:
+		if EliteSteam.is_active(command):
+			var steam_bounds: Rect2 = EliteSteam.bounds(command.rect)
+			area = area.merge(steam_bounds) if area.has_area() else steam_bounds
+	if not area.has_area():
+		if _elite_steam_notifier != null:
+			_elite_steam_notifier.screen_entered.disconnect(_sync_elite_steam_processing)
+			_elite_steam_notifier.screen_exited.disconnect(_sync_elite_steam_processing)
+			remove_child(_elite_steam_notifier)
+			_elite_steam_notifier.queue_free()
+			_elite_steam_notifier = null
+		_elite_steam_elapsed = 0.0
+		_elite_steam_redraw_elapsed = 0.0
+	else:
+		if _elite_steam_notifier == null:
+			# Engine culling handles hidden cached batches (visibility_layer=0),
+			# parent visibility, and offscreen nodes without an idle polling loop.
+			_elite_steam_notifier = VisibleOnScreenNotifier2D.new()
+			_elite_steam_notifier.name = "EliteSteamVisibility"
+			_elite_steam_notifier.visibility_layer = 0xFFFFF
+			_elite_steam_notifier.show_rect = false
+			_elite_steam_notifier.screen_entered.connect(_sync_elite_steam_processing)
+			_elite_steam_notifier.screen_exited.connect(_sync_elite_steam_processing)
+			add_child(_elite_steam_notifier)
+		_elite_steam_notifier.rect = area
+	_sync_elite_steam_processing()
+
+func _process(delta: float) -> void:
+	_elite_steam_elapsed += delta
+	_elite_steam_redraw_elapsed += delta
+	if _elite_steam_redraw_elapsed >= 1.0 / 30.0:
+		_elite_steam_redraw_elapsed = fmod(_elite_steam_redraw_elapsed, 1.0 / 30.0)
+		queue_redraw()
+
+func elite_steam_stats() -> Dictionary:
+	var active: Array = _dynamic_commands if _dynamic_override else commands
+	var eligible := 0
+	for command: Dictionary in active:
+		if EliteSteam.is_active(command): eligible += 1
+	return {"eligible":eligible, "processing":is_processing(), "on_screen":_elite_steam_notifier != null and _elite_steam_notifier.is_on_screen(), "visible_in_tree":is_inside_tree() and is_visible_in_tree(), "elapsed":_elite_steam_elapsed, "redraw_hz":30}
 
 class Buffer extends RefCounted:
 	var atlas := false
@@ -252,7 +312,7 @@ static func _prepare_uncached(source, next_faces: Array) -> Array:
 			var visual: Dictionary = face.get("node_display", {"label":"?", "texture":"", "completed":false})
 			var tint := Color(.93, .85, .73)
 			if visual.get("completed", false) and face.node_type in ["battle", "elite", "boss", "chest", "pile"]: tint.a = .42
-			buffer.commands.append({"node_marker":true, "rect":face.bounds, "visual":visual, "tint":tint, "contact":face.get("node_contact", PackedVector2Array())})
+			buffer.commands.append({"node_marker":true, "rect":face.bounds, "visual":visual, "tint":tint, "contact":face.get("node_contact", PackedVector2Array()), "elite_steam":bool(face.get("known", false)) and face.node_type == "elite" and not visual.get("completed", false)})
 			continue
 		buffer.begin_face(source, face)
 		var polygon: PackedVector2Array = face.polygon
@@ -341,6 +401,7 @@ func apply_prepared(next_faces: Array, prepared: Array, atlas_path: String = Env
 	if next_faces.any(func(face): return face.get("node_marker", false)):
 		texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	build_usec=Time.get_ticks_usec()-start
+	_refresh_elite_steam()
 	queue_redraw()
 
 func _mesh_commands(prepared: Array) -> Dictionary:
@@ -374,11 +435,13 @@ func set_dynamic_prepared(prepared: Array) -> void:
 	# A surface override has the current group's same art mode/material. Keep
 	# shared cutaway uniforms, texture filtering and original draw order intact.
 	if built.atlas and _atlas_texture==null: _atlas_texture=Env005Material.atlas_texture(_atlas_path)
+	_refresh_elite_steam()
 	queue_redraw()
 
 func clear_dynamic_prepared() -> void:
 	if not _dynamic_override: return
 	_dynamic_commands.clear();dynamic_triangles=0;_dynamic_override=false
+	_refresh_elite_steam()
 	queue_redraw()
 
 func build(source, next_faces: Array) -> void:
@@ -390,7 +453,9 @@ func clear() -> void:
 	clear_dynamic_prepared()
 	static_face_packets=[]
 	_atlas_texture=null
-	faces.clear();commands.clear();queue_redraw()
+	faces.clear();commands.clear()
+	_refresh_elite_steam()
+	queue_redraw()
 
 func _draw() -> void:
 	var active: Array = _dynamic_commands if _dynamic_override else commands
@@ -415,6 +480,8 @@ func _draw_node_marker(command: Dictionary) -> void:
 		draw_colored_polygon(contact, Color(.10, .08, .055, .32))
 		var rim := contact.duplicate(); rim.append(contact[0])
 		draw_polyline(rim, Color(.53, .43, .28, .42), .8, true)
+	var steam := EliteSteam.is_active(command)
+	if steam: EliteSteam.draw_behind(self, rect, _elite_steam_elapsed)
 	if tex != null:
 		var target: Rect2 = NodeArt.target_rect(rect, tex.get_size())
 		draw_texture_rect(tex, target, false, tint)
@@ -428,6 +495,7 @@ func _draw_node_marker(command: Dictionary) -> void:
 		# a cast shadow or a circular floor stamp, and matches its solid width.
 		if not visual.get("body_capsule", {}).is_empty():
 			draw_line(Vector2(rect.position.x,rect.end.y),rect.end,Color(.61,.47,.28,.8),1.0,true)
+	if steam: EliteSteam.draw_front(self, rect, _elite_steam_elapsed)
 	if visual.get("gate_closed", false):
 		var foot := Vector2(rect.get_center().x, rect.end.y-2.0)
 		draw_line(foot+Vector2(-14,0),foot+Vector2(14,0),Color(.96,.61,.27,.95),2.0,true)
