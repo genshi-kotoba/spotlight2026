@@ -844,6 +844,11 @@ func _on_rule_event_processed(event: BattleEvent) -> void:
 		_queue_presentation("enemy_turn")
 	elif event.type == &"effect.execute":
 		_queue_presentation("card_effect")
+	elif event.type == &"monster.summon":
+		# event_processed 在规则追加本次召唤后触发；保留每次增长的独立整队快照。
+		_queue_presentation("enemy_spawned")
+	elif event.type == &"enemy.action_requested":
+		_queue_presentation("enemy_action", {"entity_id": str(event.payload.get("enemy_id", ""))})
 
 
 func _on_relic_chain_limited() -> void:

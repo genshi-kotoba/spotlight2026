@@ -16,7 +16,7 @@ font_names = PackedStringArray("Microsoft YaHei", "SimHei", "Noto Sans CJK SC")
 subpixel_positioning = 0
 
 [sub_resource type="SystemFont" id="SystemFont_symbols"]
-font_names = PackedStringArray("Segoe UI Symbol", "Noto Sans Symbols 2", "Symbola")
+font_names = PackedStringArray("Segoe UI Symbol", "Noto Sans Symbols 2", "Symbola", "Apple Symbols")
 
 [node name="CardView" type="Control" unique_id=332179194]
 custom_minimum_size = Vector2(480, 818)
