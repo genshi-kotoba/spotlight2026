@@ -11,8 +11,8 @@ count = 2
 [resource]
 script = ExtResource("3_card")
 card_id = &"test_draw"
-card_name = "测试·抽牌"
-description = "抽 2 张牌；抽牌堆为空时会将弃牌堆洗回。"
+card_name = "抽牌"
+description = "抽 2 张牌。"
 kind = 3
 face_tint = 3
 effects = Array[ExtResource("1_base")]([SubResource("Effect")])

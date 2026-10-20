@@ -11,7 +11,7 @@ amount = 4
 [resource]
 script = ExtResource("3_card")
 card_id = &"test_damage_self"
-card_name = "测试·自伤"
-description = "对自己造成 4 点伤害。该伤害会消耗格挡，不受力量或虚弱修正。"
+card_name = "自伤"
+description = "对自己造成 4 点伤害。"
 face_tint = 1
 effects = Array[ExtResource("1_base")]([SubResource("Effect")])

@@ -12,8 +12,8 @@ steps = 1
 [resource]
 script = ExtResource("3_card")
 card_id = &"test_move_pointer"
-card_name = "测试·移动指针"
-description = "使指针向左回退 1 格，让前一张牌再次触发。该移动牌再次被遇到时不会重复回跳。"
+card_name = "移动指针"
+description = "指针向左回退 1 格。"
 kind = 2
 face_tint = 3
 effects = Array[ExtResource("1_base")]([SubResource("Effect")])
