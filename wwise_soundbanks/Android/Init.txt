@@ -12,6 +12,10 @@ State	ID	Name	State Group			Notes
 	748895195	None	Combat			
 	2937832959	Battle	Combat			
 
+Game Parameter	ID	Name			Wwise Object Path	Notes
+	3673881719	Volume_SFX			\Default Work Unit\Volume_SFX	
+	3891337659	Volume_Music			\Default Work Unit\Volume_Music	
+
 Audio Bus	ID	Name			Wwise Object Path	Notes
 	85412153	Ambience			\Default Work Unit\Main Audio Bus\Ambience	
 	393239870	SFX			\Default Work Unit\Main Audio Bus\SFX	
