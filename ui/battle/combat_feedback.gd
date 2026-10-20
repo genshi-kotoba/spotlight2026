@@ -94,14 +94,14 @@ func on_damaged(side: StringName, damage: int, blocked: int, entity_id := "") ->
 		return
 	_flash(side, entity_id)
 	# 立绘抖动已交给整幕统一震屏，这里不再单独摇。
-	_float(_anchor(side, entity_id), "-%d" % lost, FLOAT_TIERS[tier_of(lost)])
+	_float(_anchor(side, entity_id), "-%d" % lost, FLOAT_TIERS[tier_of(lost)], _feedback_z(side, entity_id, 60))
 	_vfx(side, VfxPlayback.Kind.ATTACK, VFX_ATTACK, entity_id)
 
 
 func on_healed(side: StringName, amount: int, entity_id := "") -> void:
 	if amount <= 0:
 		return
-	_float(_anchor(side, entity_id), "+%d" % amount, HEAL_TIER)
+	_float(_anchor(side, entity_id), "+%d" % amount, HEAL_TIER, _feedback_z(side, entity_id, 60))
 	_vfx(side, VfxPlayback.Kind.HEAL, VFX_HEAL, entity_id)
 
 
@@ -113,7 +113,7 @@ func on_block_changed(side: StringName, block: int, entity_id := "") -> void:
 	if gain <= 0:
 		# 掉格挡要么是被打掉（受伤事件已经播过），要么是回合清空，不需要提示。
 		return
-	_float(_anchor(side, entity_id), "+%d 格挡" % gain, BLOCK_TIER)
+	_float(_anchor(side, entity_id), "+%d 格挡" % gain, BLOCK_TIER, _feedback_z(side, entity_id, 60))
 	_vfx(side, VfxPlayback.Kind.BLOCK, VFX_BLOCK, entity_id)
 
 
@@ -135,6 +135,11 @@ func _enemy_view(entity_id: String) -> Dictionary:
 		return {}
 	var view: Variant = enemy_view_resolver.call(entity_id)
 	return view if view is Dictionary else {}
+
+
+func _feedback_z(side: StringName, entity_id: String, player_z: int) -> int:
+	if side == SIDE_PLAYER: return player_z
+	return int(_enemy_view(entity_id).get("feedback_z", EnemySlot.REAR_BASE_Z + EnemySlot.FEEDBACK_OFFSET_Z))
 
 
 func _flash(side: StringName, entity_id: String) -> void:
@@ -172,11 +177,12 @@ func _vfx(side: StringName, kind: int, table: Dictionary, entity_id: String) -> 
 	var vfx: Sprite2D = VfxScript.new()
 	host.add_child(vfx)
 	vfx.play(kind, at, config["size"])
+	vfx.z_index = _feedback_z(side, entity_id, 55)
 	# 特效只是手感提示，压一点不透明度，别比立绘还抢眼。
 	vfx.modulate.a = 0.85
 
 
-func _float(anchor: Vector2, text: String, tier: Dictionary) -> void:
+func _float(anchor: Vector2, text: String, tier: Dictionary, layer_z: int = 60) -> void:
 	if host == null:
 		return
 	# 飘字寿命就是这次反馈的可见时长，取最长的一次作为本张牌的收尾依据。
@@ -191,7 +197,7 @@ func _float(anchor: Vector2, text: String, tier: Dictionary) -> void:
 	label.position = anchor - Vector2(75.0, 26.0)
 	label.size = Vector2(150.0, 54.0)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.z_index = 60
+	label.z_index = layer_z
 	host.add_child(label)
 	label.pivot_offset = label.size * 0.5
 	var tween := label.create_tween()

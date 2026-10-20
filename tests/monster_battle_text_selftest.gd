@@ -203,7 +203,9 @@ func _run() -> void:
 	overlay.context_provider = func(): return {"area": Rect2(0, 0, 80, 60), "blockers": []}
 	overlay.advance(0.001)
 	_check("缩小窗口后不越界绘制旧句", overlay.active_sentences.is_empty())
-	scene._on_battle_ended({"status": "victory"})
+	for enemy: Dictionary in scene._battle.enemies:
+		if int(enemy.health) > 0: scene._battle.apply_damage_to_enemy(str(enemy.enemy_id), int(enemy.health), true)
+	await preload("res://tests/support/presentation_test_helper.gd").battle_settled(scene)
 	_check("终局停止且清除文本", not overlay._running and overlay.active_sentences.is_empty())
 	scene.queue_free()
 	await _frames(3)

@@ -1,5 +1,7 @@
 extends "res://tests/battle_animation_selftest.gd"
 
+var _acceptance_alpha_images: Dictionary = {}
+
 
 func _run() -> void:
 	get_window().size = Vector2i(1920, 1080)
@@ -37,7 +39,7 @@ func _run() -> void:
 	var main: EnemySlot = scene.enemy_rack.slot_for(owner)
 	_check("本体阶段转换后恢复正常亮度", is_equal_approx(main.portrait.modulate.a, 1.0))
 	_check("本体与随从通过独立槽位同屏且不共享血条", scene.enemy_rack.slots.size() == 3 and main.visible and knight_view.visible and thief_view.visible and main.fill != knight_view.fill and knight_view.fill != thief_view.fill)
-	_check("槽位横向排布不重叠，点击区域不遮挡手牌", main.get_rect().end.x <= knight_view.position.x and knight_view.get_rect().end.x <= thief_view.position.x and scene.enemy_rack.position.y + main.position.y + main.click_height() <= scene.hand_scroll.position.y)
+	_check_road_lineup(scene, main, knight_view, thief_view)
 	var intent_data := knight.duplicate(true)
 	intent_data.actions = [{"block": 9}]
 	knight_view.show_snapshot_status(intent_data, false, true)
@@ -73,21 +75,25 @@ func _run() -> void:
 	scene._on_play_pressed()
 	await _wait_presentation(scene)
 	_check("真实出牌伤害点选随从，不误伤本体", int(thief.health) == thief_health - 8 and int(primary.health) == int(primary.max_health))
+	var serial_before := int(scene._battle.player.get("summon_serial", 0))
+	var main_size := main.portrait.size
+	var main_at := main.portrait.get_global_rect().position
 	for index in 4: scene._battle.rules.submit("monster.summon", {"id": "4", "owner": owner})
 	await _wait_presentation(scene)
-	var fits := true
-	for slot: EnemySlot in scene.enemy_rack.slots:
-		fits = fits and scene.enemy_rack.zone.grow(0.1).encloses(slot.get_rect())
-	_check("多次召唤使用唯一槽位并缩排在敌人区域", scene.enemy_rack.slots.size() == 7 and fits)
-	await _capture("many-summoned-enemies.png")
+	_check("满员跳过额外召唤且主怪尺寸位置不变", scene.enemy_rack.slots.size() == 3 and scene._battle.enemies.size() == 3 and int(scene._battle.player.get("summon_serial", 0)) == serial_before and main.portrait.size == main_size and main.portrait.get_global_rect().position == main_at)
+	await _capture("three-summoned-enemies.png")
+	context.damage_enemy(knight_id, int(knight.health), true)
+	await _wait_presentation(scene)
+	await get_tree().create_timer(0.5).timeout
+	_check("次怪死亡后留下空位，不自动重试已跳过召唤", not knight_view.visible and scene._battle.enemies.size() == 3)
+
 	scene._battle.rules.submit("monster.summon", {"id": "5", "owner": owner})
 	await _wait_presentation(scene)
 	var guard: Dictionary = scene._battle.enemies.back()
-	knight_view = scene.enemy_rack.slot_for(knight_id)
 	thief_view = scene.enemy_rack.slot_for(thief_id)
 	main = scene.enemy_rack.slot_for(owner)
 	var guard_view: EnemySlot = scene.enemy_rack.slot_for(str(guard.enemy_id))
-	_check("嘲讽强制目标并禁用其他随从点击", scene._chosen_enemy_id() == str(guard.enemy_id) and not knight_view.selectable)
+	_check("嘲讽强制目标并禁用其他随从点击", scene._chosen_enemy_id() == str(guard.enemy_id) and not main.selectable and not thief_view.selectable)
 	scene._on_enemy_slot_selected(thief_id)
 	_check("不能绕过嘲讽选择其他目标", scene._chosen_enemy_id() == str(guard.enemy_id))
 	context.damage_enemy(str(guard.enemy_id), int(guard.health), true)
@@ -107,8 +113,38 @@ func _run() -> void:
 	get_tree().quit(failures)
 
 
+func _check_road_lineup(scene: BattleTestScene, main: EnemySlot, left: EnemySlot, right: EnemySlot) -> void:
+	# Independent authored and medium references; do not copy production rack constants.
+	var authored := EnemySlot.new()
+	scene.add_child(authored)
+	authored.layout_for(959.5, 880.0)
+	authored.position = Vector2(530.0, 78.0)
+	authored.hide()
+	authored.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_check("主怪精确保留959.5×880原始单体尺寸位置", main.size.is_equal_approx(Vector2(959.5, 880.0)) and main.global_position.is_equal_approx(authored.global_position) and main.portrait.size.is_equal_approx(authored.portrait.size) and main.portrait.get_global_rect().is_equal_approx(authored.portrait.get_global_rect()))
+	var medium := EnemySlot.new()
+	scene.add_child(medium)
+	medium.layout_for(480.0, 610.0)
+	medium.hide()
+	medium.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var sides: Array[EnemySlot] = [left, right]
+	for index: int in sides.size():
+		var side: EnemySlot = sides[index]
+		var rect: Rect2 = side.portrait.get_global_rect()
+		medium.position = Vector2([544.75, 994.75][index], 780.0 - medium.portrait.position.y - medium.portrait.size.y)
+		_check("侧怪%d使用480中型尺寸并固定在道路前景" % index, is_equal_approx(side.size.x, 480.0) and side.global_position.is_equal_approx(medium.global_position) and side.portrait.size.is_equal_approx(medium.portrait.size) and rect.is_equal_approx(medium.portrait.get_global_rect()))
+		_check("侧怪%d脚底中点在可见道路保守范围且主侧立绘矩形交叠" % index, Rect2(600.0, 740.0, 800.0, 80.0).has_point(Vector2(rect.get_center().x, rect.end.y)) and is_equal_approx(rect.end.y, 780.0) and rect.intersection(main.portrait.get_global_rect()).has_area())
+	_check("两侧仍分列主怪左右", left.portrait.get_global_rect().get_center().x < main.portrait.get_global_rect().get_center().x and main.portrait.get_global_rect().get_center().x < right.portrait.get_global_rect().get_center().x)
+	for slot: EnemySlot in [main, left, right]:
+		_check("中型阵容点击区不遮挡手牌/" + slot.enemy_id, not Rect2(slot.global_position, Vector2(slot.size.x, slot.click_height())).intersects(scene.hand_scroll.get_global_rect()))
+	authored.free()
+	medium.free()
+
+
 func _click_enemy(slot: EnemySlot) -> void:
-	var at := slot.get_global_rect().position + Vector2(slot.size.x * 0.5, minf(slot.click_height() * 0.5, 120.0))
+	var at := _visible_rear_point(slot)
+	_check("真实点击使用模型可见区域/" + slot.enemy_id, at != Vector2.INF)
+	if at == Vector2.INF: return
 	slot.get_viewport().warp_mouse(at)
 	await _frames(2)
 	for pressed: bool in [true, false]:
@@ -132,3 +168,50 @@ func _click_target(button: Button) -> void:
 		Input.parse_input_event(event)
 		await _frames(2)
 	await _frames(3)
+
+
+func _portrait_alpha(slot: EnemySlot, point: Vector2) -> float:
+	if slot.portrait.texture == null: return 0.0
+	var texture: Texture2D = slot.portrait.texture
+	var key: int = texture.get_instance_id()
+	if not _acceptance_alpha_images.has(key):
+		var read_image: Image = texture.get_image()
+		if read_image == null: return -1.0
+		if read_image.is_compressed() and read_image.decompress() != OK: return -1.0
+		_acceptance_alpha_images[key] = read_image
+	var texture_image: Image = _acceptance_alpha_images[key]
+	var rect: Rect2 = slot.portrait.get_global_rect()
+	var native: Vector2 = Vector2(texture_image.get_size())
+	var fit: float = minf(rect.size.x / native.x, rect.size.y / native.y)
+	var drawn := Rect2(rect.get_center() - native * fit * 0.5, native * fit)
+	if not drawn.has_point(point): return 0.0
+	var texel: Vector2i = Vector2i((point - drawn.position) / fit)
+	if texel.x < 2 or texel.y < 2 or texel.x >= texture_image.get_width() - 2 or texel.y >= texture_image.get_height() - 2: return 0.5
+	var lowest: float = 1.0
+	var highest: float = 0.0
+	for offset_y: int in range(-2, 3):
+		for offset_x: int in range(-2, 3):
+			var value: float = texture_image.get_pixel(texel.x + offset_x, texel.y + offset_y).a
+			lowest = minf(lowest, value)
+			highest = maxf(highest, value)
+	if lowest > 0.98: return 1.0
+	if highest < 0.02: return 0.0
+	return 0.5
+
+
+func _visible_rear_point(slot: EnemySlot) -> Vector2:
+	var rack: EnemyRack = slot.get_parent() as EnemyRack
+	var main: EnemySlot
+	for other: EnemySlot in rack.slots:
+		if other.size.x > slot.size.x: main = other
+	var area: Rect2 = Rect2(slot.global_position, Vector2(slot.size.x, slot.click_height())).intersection(slot.portrait.get_global_rect())
+	for y: int in range(int(area.position.y) + 6, int(area.end.y) - 6, 8):
+		for x: int in range(int(area.position.x) + 6, int(area.end.x) - 6, 8):
+			var point := Vector2(x, y)
+			if _portrait_alpha(slot, point) < 0.98: continue
+			if main != null and not main._snapshot_dead and _portrait_alpha(main, point) >= 0.02: continue
+			var covered: bool = false
+			for other: EnemySlot in rack.slots:
+				if other != slot and other != main and other.visible and other.selectable and Rect2(other.global_position, Vector2(other.size.x, other.click_height())).has_point(point): covered = true
+			if not covered: return point
+	return Vector2.INF

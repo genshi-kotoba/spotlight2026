@@ -1,6 +1,7 @@
 class_name MonsterBattleRules
 extends RefCounted
 ## 怪物只通过统一事件队列产生 action；UI 不决定攻击、召唤、反射或死亡。
+const MAX_LIVING_ENEMIES := 3
 var battle: BattleStateMachine
 var cards: Dictionary
 var buffs: Dictionary
@@ -25,7 +26,7 @@ func _event(event: BattleEvent) -> void:
 		"enemy.turn_started": _enemy_turn()
 		"enemy.action_requested": _act(event)
 		"combatant.damaged": _damaged(event)
-		"monster.summon": _summon(str(event.payload.id), str(event.payload.owner))
+		"monster.summon": event.metadata["summoned"] = _summon(str(event.payload.id), str(event.payload.owner))
 		"monster.heal":
 			var enemy := battle._combatant(&"enemy", str(event.payload.target))
 			if not enemy.is_empty() and int(enemy.health) > 0:
@@ -230,11 +231,21 @@ func _damaged(event: BattleEvent) -> void:
 		if monster == 15:
 			battle.player["stolen_refund"] = int(battle.player.get("stolen_refund", 0)) + maxi(0, int(enemy.get("stolen", 0)) - 50 * battle.turn_number)
 
-func _summon(id: String, owner: String) -> void:
+func _summon(id: String, owner: String) -> bool:
+	var living_count := 0
+	for existing: Dictionary in battle.enemies:
+		if int(existing.get("health", 0)) > 0:
+			living_count += 1
+	if living_count >= MAX_LIVING_ENEMIES:
+		return false
+	var formation_slot := next_formation_slot(battle.enemies)
+	if formation_slot < 0:
+		return false
 	var serial := int(battle.player.get("summon_serial", 0)) + 1
 	battle.player["summon_serial"] = serial
 	var enemy := MonsterCatalog.create(id, int(battle.player.get("encounter_floor", 2)), "%s/summon/%d" % [owner, serial])
-	if enemy.is_empty(): return
+	if enemy.is_empty(): return false
+	enemy["formation_slot"] = formation_slot
 	enemy["summoned_by"] = owner
 	enemy["spawn_turn"] = battle.turn_number
 	battle.enemies.append(enemy)
@@ -244,8 +255,54 @@ func _summon(id: String, owner: String) -> void:
 		battle.player.silver = int(battle.player.get("silver", 0)) - int(enemy.stolen)
 		_buff("enemy", str(enemy.enemy_id), "weak", int(enemy.stolen) / 20, 0)
 
+	return true
+
 func _copy_hand(id: String) -> void:
 	var index := battle._find_card_index(battle.hand, id)
 	if index < 0: return
 	var source: Dictionary = battle.hand[index]
 	battle.add_generated_card(str(source.card_id), "hand", "potion-copy", source)
+
+
+## 槽位属于敌人身份。召唤时保存槽号，读档后用同一解释重建站位。
+## 旧记录没有槽号时保留完整历史，先用空位、再回收死亡位置。
+static func formation_slots(enemies: Array) -> Dictionary:
+	var result := {}
+	var latest := {}
+	for index in enemies.size():
+		var enemy: Dictionary = enemies[index]
+		var identity := str(enemy.get("enemy_id", ""))
+		if identity.is_empty(): continue
+		var role := -1
+		var stored: Variant = enemy.get("formation_slot", -1)
+		if index == 0:
+			role = 0
+		elif (stored is int or stored is float) and float(stored) == float(int(stored)) and int(stored) in [1, 2]:
+			role = int(stored)
+		if role >= 0 and latest.has(role) and int(latest[role].get("health", 0)) > 0:
+			role = -1
+		if role < 0:
+			for candidate: int in [1, 2]:
+				if not latest.has(candidate):
+					role = candidate
+					break
+		if role < 0:
+			for candidate: int in [1, 2]:
+				if int(latest[candidate].get("health", 0)) <= 0:
+					role = candidate
+					break
+		if role >= 0:
+			result[identity] = role
+			latest[role] = enemy
+	return result
+
+
+static func next_formation_slot(enemies: Array) -> int:
+	var roles := formation_slots(enemies)
+	var used := {0: true}
+	for enemy: Dictionary in enemies:
+		var identity := str(enemy.get("enemy_id", ""))
+		if int(enemy.get("health", 0)) > 0 and roles.has(identity): used[int(roles[identity])] = true
+	for role: int in [1, 2]:
+		if not used.has(role): return role
+	return -1

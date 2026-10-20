@@ -31,11 +31,16 @@ const PORTRAIT_ASPECT := 817.0 / 872.0
 ## 点击区只覆盖立绘上部，下部要留给出牌区，避免挡住手牌与出牌列的输入。
 const CLICK_DEPTH_SHARE := 0.70
 const CLICK_DEPTH_MAX := 600.0
-## 立绘压在背景层之上、其余 HUD 之下：与原版 EnemyPortrait 的 z_index = -2 一致，
-## 立绘不会盖住手牌与出牌区。血条、名字、意图等仍画在立绘之上。
+## 每个实体占用独立层级段：后排连同HUD/反馈都低于主怪立绘；所有敌方内容低于普通UI。
 const PORTRAIT_Z := -2
+const BACKGROUND_Z := -100
+const BACKGROUND_DIM_Z := -90
+const REAR_BASE_Z := -80
+const PRIMARY_BASE_Z := -20
+const FEEDBACK_OFFSET_Z := 15
 
 static var _glow_texture: GradientTexture2D
+static var _portrait_masks: Dictionary = {}
 
 const BAR_BASE_PATH := "res://assets/ui/UI-015/超长血条底图.png"
 const BAR_FRAME_PATH := "res://assets/ui/UI-015/超长-boss血条框.png"
@@ -78,12 +83,55 @@ var _intent_ring: TextureRect
 var _glow: TextureRect
 var _portrait_height := 0.0
 var _label_scale := 1.0
+var _foreground_primary := false
+var _masked_texture: Texture2D
+var _portrait_mask: BitMap
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_build()
+
+
+func set_presentation_layer(primary: bool) -> void:
+	_foreground_primary = primary
+	z_index = PRIMARY_BASE_Z if primary else REAR_BASE_Z
+
+
+func feedback_z() -> int:
+	return z_index + FEEDBACK_OFFSET_Z
+
+
+## 主怪透明区域可点到后排；其不透明身体及自身HUD优先，与实际遮挡一致。
+func _has_point(point: Vector2) -> bool:
+	if not selectable: return false
+	if not Rect2(Vector2.ZERO, Vector2(size.x, click_height())).has_point(point): return false
+	if not _foreground_primary: return true
+	for item: Control in [_bar, name_label, number_label, buff_row, shield, _intent_badge, _intent_ring]:
+		if is_instance_valid(item) and item.visible and item.get_rect().has_point(point): return true
+	if portrait.texture == null or _portrait_mask == null: return true
+	var texture_size := Vector2(_portrait_mask.get_size())
+	var ratio := minf(portrait.size.x / texture_size.x, portrait.size.y / texture_size.y)
+	var used_size := texture_size * ratio
+	var pixel := (point - portrait.position - (portrait.size - used_size) * 0.5) / ratio
+	if not Rect2(Vector2.ZERO, texture_size).has_point(pixel): return false
+	return _portrait_mask.get_bitv(Vector2i(pixel.floor()))
+
+
+func _refresh_portrait_mask() -> void:
+	if not _foreground_primary or portrait.texture == _masked_texture: return
+	_masked_texture = portrait.texture
+	_portrait_mask = null
+	if _masked_texture == null: return
+	if not _portrait_masks.has(_masked_texture):
+		var image := _masked_texture.get_image()
+		if image == null or image.is_empty(): return
+		if image.is_compressed() and image.decompress() != OK: return
+		var mask := BitMap.new()
+		mask.create_from_image_alpha(image, 0.1)
+		_portrait_masks[_masked_texture] = mask
+	_portrait_mask = _portrait_masks[_masked_texture]
 
 
 ## 宿主在布完位置后调用，按自己的宽度把内部比例全部换算一遍。
@@ -319,6 +367,7 @@ func _label(color: Color) -> Label:
 
 ## 沿用同一份事件快照处理意图、嘲讽和退场，不读取规则侧的最终状态。
 func show_snapshot_status(enemy: Dictionary, primary: bool, interactive: bool) -> void:
+	_refresh_portrait_mask()
 	var dead := int(enemy.get("health", 0)) <= 0
 	selectable = interactive and not dead
 	var actions: Array = enemy.get("actions", [])

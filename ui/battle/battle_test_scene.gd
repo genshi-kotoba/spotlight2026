@@ -386,14 +386,15 @@ func enemy_view(entity_id: String) -> Dictionary:
 	var slot := enemy_rack.slot_for(entity_id)
 	if slot == null:
 		return {}
-	# 槽位坐标换算回本场景局部坐标；EnemyRack 与本场景同原点时两者相等，
-	# 但写明确来源，落点就不依赖场景根在屏幕上的位置。
-	var mid := enemy_rack.position + slot.position + Vector2(slot.size.x * 0.5, 0.0)
+	var portrait_rect := slot.portrait.get_rect()
+	var origin := enemy_rack.position + slot.position
 	return {
 		"portrait": slot.portrait,
-		"center": mid + Vector2(0.0, ENEMY_VFX_DROP),
-		"float_anchor": mid + Vector2(0.0, ENEMY_FLOAT_DROP),
+		"feedback_z": slot.feedback_z(),
+		"center": origin + portrait_rect.position + portrait_rect.size * 0.5,
+		"float_anchor": origin + portrait_rect.position + Vector2(portrait_rect.size.x * 0.5, portrait_rect.size.y * 0.32),
 	}
+
 
 
 ## 结算节拍：把检查器上的三个上限搬进节拍器。节拍器只是记账对象，不进场景树。
@@ -767,7 +768,9 @@ func _refresh_relic_hud() -> void:
 func _begin_presentation() -> void:
 	if _busy:
 		return
-	_refresh_combat_status()
+	# 已显示的整队快照保持冻结，不能先把刚变动的业务血量渲染出去。
+	if _presented_enemies.is_empty():
+		_refresh_combat_status()
 	_busy = true
 	_presentation_turn = _battle.turn_number
 	_presented_hand.assign(_battle.hand.duplicate(true))
@@ -844,7 +847,7 @@ func _on_rule_event_processed(event: BattleEvent) -> void:
 		_queue_presentation("enemy_turn")
 	elif event.type == &"effect.execute":
 		_queue_presentation("card_effect")
-	elif event.type == &"monster.summon":
+	elif event.type == &"monster.summon" and bool(event.metadata.get("summoned", false)):
 		# event_processed 在规则追加本次召唤后触发；保留每次增长的独立整队快照。
 		_queue_presentation("enemy_spawned")
 	elif event.type == &"enemy.action_requested":
@@ -2032,6 +2035,15 @@ func _build_buff_tip() -> void:
 func _show_buff_tip(anchor: Control, text: String) -> void:
 	if _buff_tip == null or not is_instance_valid(anchor):
 		return
+	# 提示文字也属于来源实体；后排状态说明不能借全局浮层越过主怪。
+	var layer_z := 80
+	var source: Node = anchor
+	while source != null and source != self:
+		if source is EnemySlot:
+			layer_z = source.feedback_z() + 1
+			break
+		source = source.get_parent()
+	_buff_tip.z_index = layer_z
 	_buff_tip.show_for(anchor, text)
 
 
@@ -2672,8 +2684,8 @@ static func _find_card(cards: Array[Dictionary], instance_id: String) -> Diction
 
 func _setup_monster_battle_text() -> void:
 	# 背景/怪物 < 台词 < 所有其他 UI；保留现有节点路径及输入关系。
-	$Background.z_index = -4
-	$BackgroundDim.z_index = -3
+	$Background.z_index = EnemySlot.BACKGROUND_Z
+	$BackgroundDim.z_index = EnemySlot.BACKGROUND_DIM_Z
 	_monster_text = MonsterBattleText.new()
 	_monster_text.name = "MonsterBattleText"
 	add_child(_monster_text)
