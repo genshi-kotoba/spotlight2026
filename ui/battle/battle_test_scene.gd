@@ -1,6 +1,10 @@
 class_name BattleTestScene
 extends Control
 
+## 战斗表现事件：在 _drain_resolution_events() 里按画面节奏逐条发出，
+## 音频等表现层订阅它即可与画面同帧（而不是跟随状态机的同步 drain）。
+signal presentation_event(kind: String, data: Dictionary)
+
 ## 可在检查器调整的测试参数。
 @export_range(0, 20, 1) var initial_draw_count := 12
 @export_range(1, 20, 1) var play_limit := 10
@@ -437,6 +441,8 @@ func _connect_combat_feedback() -> void:
 	_battle.combatant_damaged.connect(_on_combatant_damaged)
 	_battle.combatant_healed.connect(_on_combatant_healed)
 	_battle.block_changed.connect(_on_block_changed)
+	_battle.buff_added.connect(_on_buff_added)
+	_battle.card_committed.connect(_on_card_committed_present)
 	_battle.card_discarded.connect(_on_card_discarded_visual)
 
 
@@ -652,6 +658,11 @@ func _on_rule_event_processed(event: BattleEvent) -> void:
 		_queue_presentation("enemy_turn")
 	elif event.type == &"effect.execute":
 		_queue_presentation("card_effect")
+	elif event.type == &"pointer.moved":
+		_queue_presentation("pointer_moved", {
+			"from": int(event.payload.get("from", 0)),
+			"to": int(event.payload.get("to", 0)),
+		})
 
 
 func _on_relic_chain_limited() -> void:
@@ -672,6 +683,7 @@ func _present_battle_ended() -> void:
 	if is_instance_valid(_monster_text):
 		_monster_text.stop()
 	hint_label.text = "战斗结束，可以返回典籍页面调整残片。"
+	presentation_event.emit("battle_ended", {"status": _battle_result})
 
 
 func _on_turn_started(turn_number: int) -> void:
@@ -685,9 +697,49 @@ func _on_turn_started(turn_number: int) -> void:
 			push_error("BattleTestScene: turn draw failed: %d" % error)
 
 
+func _on_card_committed_present(card: Dictionary, _play_index: int) -> void:
+	# 玩家点“出牌”瞬间，不是异步回放：立即发，让音频跟手。
+	presentation_event.emit("card_committed", {
+		"instance_id": str(card.get("instance_id", "")),
+		"is_attack": _card_has_attack(card),
+		"is_multi_attack": _card_is_multi_attack(card),
+	})
+
+
 func _on_card_effect_requested(card: Dictionary, _target: Variant, pointer: int) -> void:
 	_flush_card_end()
-	_queue_presentation("card_start", {"instance_id": str(card.instance_id), "pointer": pointer})
+	_queue_presentation("card_start", {
+		"instance_id": str(card.instance_id),
+		"pointer": pointer,
+		"is_attack": _card_has_attack(card),
+		"is_multi_attack": _card_is_multi_attack(card),
+	})
+
+
+func _card_data_for(card: Dictionary) -> CardData:
+	if _resolver == null:
+		return null
+	return _resolver.card_catalog.get(str(card.get("card_id", ""))) as CardData
+
+
+func _card_has_attack(card: Dictionary) -> bool:
+	var data := _card_data_for(card)
+	if data == null:
+		return false
+	for effect: GameEffect in data.effects:
+		if effect is CardEffectAttack and (effect as CardEffectAttack).amount > 0:
+			return true
+	return false
+
+
+func _card_is_multi_attack(card: Dictionary) -> bool:
+	var data := _card_data_for(card)
+	if data == null:
+		return false
+	for effect: GameEffect in data.effects:
+		if effect is CardEffectAttack and (effect as CardEffectAttack).times > 1:
+			return true
+	return false
 
 
 func _on_card_resolved(card: Dictionary, pointer: int) -> void:
@@ -717,6 +769,10 @@ func _on_combatant_healed(side: StringName, _entity_id: String, amount: int,
 
 func _on_block_changed(side: StringName, _entity_id: String, block: int) -> void:
 	_queue_presentation("block", {"side": side, "block": block})
+
+
+func _on_buff_added(side: StringName, _entity_id: String, buff: Dictionary) -> void:
+	_queue_presentation("buff", {"side": side, "buff": buff.duplicate(true)})
 
 
 func _on_discard_choice_requested(card: Dictionary, count: int,
@@ -875,6 +931,8 @@ func _drain_resolution_events() -> void:
 			if not is_inside_tree(): return
 		_presentation_kind = kind
 		_apply_presentation_snapshot(event)
+		# 表现层时间点：音频等订阅者在这里接到的才是「玩家此刻看到的」。
+		presentation_event.emit(kind, event)
 		match kind:
 			"card_start":
 				var instance_id := str(event["instance_id"])

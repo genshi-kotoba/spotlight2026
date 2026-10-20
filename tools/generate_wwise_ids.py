@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""从 wwise_soundbanks/Wwise_IDs.h 生成 autoload/wwise_ids.gd（AK 常量类）。
+"""从 wwise_soundbanks/Wwise_IDs.h 生成 Wwise/resources/wwise_ids.gd（AK 常量类）。
 
 用法（在仓库根目录）：
     python tools/generate_wwise_ids.py
@@ -16,7 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 HEADER = ROOT / "wwise_soundbanks" / "Wwise_IDs.h"
-OUTPUT = ROOT / "autoload" / "wwise_ids.gd"
+OUTPUT = ROOT / "Wwise" / "resources" / "wwise_ids.gd"
 
 NS_RE = re.compile(r"^\s*namespace\s+(\w+)\s*\{?\s*$")  # 大括号可能在本行或下一行
 NS_END_RE = re.compile(r"^\s*}\s*//\s*namespace\s+(\w+)")

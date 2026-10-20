@@ -194,6 +194,7 @@ func _leave_after_resolution() -> void:
 	_return_after_rewards()
 
 func _return_after_rewards() -> void:
+	presentation_event.emit("exit_battle", {"status": _battle_result})
 	var path := EncounterFlow.MAP_SCENE if _battle_result in ["victory", "escaped"] else MENU_SCENE
 	var error := SceneTransition.change_scene_to_file(path)
 	if error != OK:

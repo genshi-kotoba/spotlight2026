@@ -1,0 +1,32 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Android",
+  "BasePlatform": "Android",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1834552886",
+    "Type": "Event",
+    "GUID": "{A8496679-F5DD-494D-A0FB-FB95749220BB}",
+    "Language": "SFX",
+    "Hash": "{AC882E9C-0BDC-C711-BF01-83FDDD3FFF24}",
+    "ObjectPath": "mus_street_calm",
+    "ShortName": "mus_street_calm",
+    "Path": "Event/mus_street_calm.bnk",
+    "Events": [
+     {
+      "Id": "1834552886",
+      "Name": "mus_street_calm",
+      "ObjectPath": "\\Events\\Default Work Unit\\Music\\mus_street_calm",
+      "GUID": "{A8496679-F5DD-494D-A0FB-FB95749220BB}",
+      "DurationType": "OneShot",
+      "DurationMin": "0",
+      "DurationMax": "0"
+     }
+    ]
+   }
+  ],
+  "FileHash": "{30A67AA6-D18C-478C-55AA-DE3D292A0AC4}"
+ }
+}

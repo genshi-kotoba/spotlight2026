@@ -4,7 +4,7 @@ extends Node
 ## 用法（程序只需要这三行）：
 ##   AudioService.play("SFX_002_UI_Click")              # 2D/UI 音，挂在全局对象上
 ##   AudioService.play("SFX_025_Foot_Wood", player_node) # 挂在某个节点上（带位置）
-##   AudioService.play_id(AK.EVENTS.SFX_002_UI_CLICK)    # 用 ID 常量，防打错字
+##   AudioService.play_id(AK.EVENTS.SFX_002_UI_CLICK)    # 用 Wwise/resources/wwise_ids.gd 里的 ID 常量
 ##
 ## Switch / State / RTPC 由音频侧调试，程序一般不直接调，但接口已备好：
 ##   AudioService.set_switch("Foot_Material", "Wood", player_node)
@@ -77,7 +77,7 @@ func play(event_name: StringName, game_object: Node = null) -> int:
 	return playing_id
 
 
-## 用 ID 常量播放（AK.EVENTS.SFX_001_UI_HOVER），编译期防打错字，推荐程序使用。
+## 用 ID 常量播放（AK.EVENTS.SFX_001_UI_HOVER，来自 Wwise/resources/wwise_ids.gd），编译期防打错字，推荐程序使用。
 func play_id(event_id: int, game_object: Node = null) -> int:
 	if not _can_play(event_id):
 		return INVALID_PLAYING_ID
@@ -98,6 +98,13 @@ func stop_all(game_object: Node = null) -> void:
 	if not is_ready:
 		return
 	Wwise.stop_all(game_object if game_object != null else default_game_object)
+
+
+## 按 playing_id 停止单个事件（比如循环呼吸、环境声）。
+func stop_event(playing_id: int, fade_ms: int = 200) -> void:
+	if not is_ready or playing_id <= 0:
+		return
+	Wwise.stop_event(playing_id, fade_ms, AkUtils.AK_CURVE_LINEAR)
 
 
 ## Switch 是 game object 作用域：game_object 省略 = 全局对象。
