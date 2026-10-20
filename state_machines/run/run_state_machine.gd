@@ -12,6 +12,7 @@ signal battle_finished(result: Dictionary)
 signal state_changed
 
 const SNAPSHOT_VERSION := 1
+const SANDBOX_RESOURCES := preload("res://systems/testing/sandbox_resources.gd")
 
 var run_id := ""
 var main_seed := ""
@@ -23,6 +24,9 @@ var health := 0
 var total_silver_earned := 0
 var gold := 0:
 	set(value):
+		if SANDBOX_RESOURCES.active(self):
+			gold = SANDBOX_RESOURCES.RESERVE
+			return
 		total_silver_earned += maxi(0, value - gold)
 		gold = value
 var deck: Array[String] = []
@@ -78,6 +82,9 @@ func initialize_new(seed_text: String, config: Dictionary,
 	starting_board.set_unlocked_cells(prepared.relic_unlocked_cells)
 	inventory_state = {"version": 1, "elixir": 0, "relic_board": starting_board.to_dictionary(),
 		"pending_rewards": {}, "rewarded_battles": {}, "next_item": 0}
+	if config.get("fixed_test_sandbox", 0) == 1 and run_id.begins_with("sandbox-"):
+		inventory_state["fixed_test_sandbox"] = 1
+		SANDBOX_RESOURCES.refill(self)
 	map_ids.assign(prepared["map_ids"])
 	current_map_id = map_ids[0]
 
@@ -158,7 +165,7 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 			or saved_health < 0 or saved_health > saved_max or saved_gold < 0 or saved_total < 0 \
 			or saved_battles < 0 or saved_stages < 0 or not saved_maps.has(saved_current_map) \
 			or not _json_safe(saved_result) or not _json_safe(saved_items) or not RunRewards.valid_items(saved_items) \
-			or not _unique_string_array_valid(saved_maps) or saved_maps.size() not in [3, 4] \
+			or not _unique_string_array_valid(saved_maps) or not preload("res://systems/testing/sandbox_launch.gd").valid_map_count(saved_maps, saved_run_id, saved_inventory.get("fixed_test_sandbox", 0) == 1) \
 			or not _valid_map_states(saved_map_states, saved_maps) \
 			or not _valid_nonnegative_int_dictionary(saved_indices) \
 			or (saved_active and not saved_result.is_empty()) \
@@ -369,7 +376,7 @@ func record_enemy_defeated(enemy_id: String) -> Error:
 
 func start_battle(node_id: String, enemies: Array, draw_count: int = 5,
 		discard_hand_at_turn_end: bool = false, play_limit: int = 10,
-		auto_start: bool = true, temporary_deck: Array = []) -> Error:
+		auto_start: bool = true, temporary_deck: Array = [], player_context: Dictionary = {}) -> Error:
 	if not active or current_battle != null or node_id.strip_edges().is_empty() \
 			or enemies.is_empty() or draw_count < 0 or play_limit <= 0:
 		return _fail(ERR_INVALID_PARAMETER, "Battle start parameters are invalid")
@@ -389,13 +396,16 @@ func start_battle(node_id: String, enemies: Array, draw_count: int = 5,
 		deck_instances.append(copy)
 	var battle := BattleStateMachine.new()
 	add_child(battle)
+	var player_config := {"health": health, "max_health": max_health, "block": 0, "silver": gold, "base_play_limit": play_limit}
+	if player_context.has("event_combat"):
+		player_config["event_combat"] = player_context.event_combat.duplicate(true)
 	var error := battle.initialize_battle({
 		"map_id": current_map_id,
 		"node_id": node_id,
 		"battle_index": battle_index,
 		"draw_count": draw_count,
 		"discard_hand_at_turn_end": discard_hand_at_turn_end,
-		"player": {"health": health, "max_health": max_health, "block": 0, "silver": gold, "base_play_limit": play_limit},
+		"player": player_config,
 		"enemies": enemies,
 		"deck_instances": deck_instances,
 	})
@@ -484,7 +494,7 @@ func _prepare_new_config(config: Dictionary, unlocked_cards: Array) -> Dictionar
 			or configured_gold < 0 or not _string_array_valid(catalog) \
 			or not _string_array_valid(initial_deck) or not _string_array_valid(starters) or not configured_items is Array \
 			or not _json_safe(configured_items) or not _unique_string_array_valid(configured_maps) \
-			or configured_maps.size() not in [3, 4] or not _string_array_valid(rewards) \
+			or not preload("res://systems/testing/sandbox_launch.gd").valid_map_count(configured_maps, configured_run_id, config.get("fixed_test_sandbox", 0) == 1) or not _string_array_valid(rewards) \
 			or not _string_array_valid(shops) or not _string_array_valid(events) \
 			or not _string_array_valid(unlocked_cards):
 		_fail(ERR_INVALID_PARAMETER, "New run config is invalid")
@@ -583,7 +593,11 @@ func _on_potion_consumed(item_id: String) -> void:
 func _attach_effect_resolver(battle: BattleStateMachine) -> Error:
 	var resolver := BattleEffectResolver.new()
 	battle.add_child(resolver)
-	return resolver.attach_to_battle(battle)
+	var error := resolver.attach_to_battle(battle)
+	if error != OK: return error
+	if battle.player.get("event_combat", {}).get("kind") == "stone":
+		return preload("res://systems/events/damage_trial_rules.gd").attach_to(battle)
+	return OK
 
 
 func _on_battle_ended(battle_result: Dictionary) -> void:
@@ -595,11 +609,15 @@ func _on_battle_ended(battle_result: Dictionary) -> void:
 	if is_instance_valid(presentation):
 		ended.reparent(presentation)
 	var player_state := ended.player
+	if player_state.get("event_combat") is Dictionary:
+		battle_result["event_combat"] = player_state.event_combat.duplicate(true)
 	var floor_index := preload("res://ui/battle/battle_environment.gd").floor_for_battle(player_state, ended.map_id)
 	inventory_state["settlement_context"] = {
 		"location_name": str(ended.enemies[0].get("name", "未知怪物")) if not ended.enemies.is_empty() else "未知怪物",
 		"background_path": preload("res://ui/battle/battle_environment.gd").path_for_floor(floor_index),
 	}
+	if player_state.get("event_combat") is Dictionary:
+		inventory_state.settlement_context["location_name"] = "与兽共斗" if player_state.event_combat.get("kind") == "beast" else "伤害石碑"
 	health = int(player_state.get("health", health))
 	gold = maxi(0, int(player_state.get("silver", gold)))
 	ensure_deck_cards()
@@ -612,7 +630,8 @@ func _on_battle_ended(battle_result: Dictionary) -> void:
 				if not str(card.get("copy_id", "")).is_empty() and str(owned.copy_id) == str(card.copy_id):
 					owned.enchantments = card.get("enchantments", []).duplicate()
 	items = items.filter(func(item: Variant): return not (item is Dictionary and str(item.get("item_id", "")) in player_state.get("used_potions", [])))
-	inventory_state.erase("conch_bound")
+	if player_state.get("event_combat", {}).get("kind") != "stone":
+		inventory_state.erase("conch_bound")
 	for enemy_id: String in battle_result.get("defeated_enemy_ids", []):
 		record_enemy_defeated(enemy_id)
 	current_battle = null

@@ -57,7 +57,7 @@ func _ready() -> void:
 		RunResults.call_deferred("complete_if_ready")
 	elif session.pending.get("type") == "shop":
 		call_deferred("_show_shop", session.pending.duplicate(true))
-	elif session.pending.get("type") == "event":
+	elif session.pending.get("type") == "event" and _gateway.current_run().current_battle == null:
 		call_deferred("_show_random_event")
 	elif session.pending.get("type") in ["chest", "pile"]:
 		call_deferred("_show_node_loot", session.pending.duplicate(true))

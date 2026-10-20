@@ -1,0 +1,7 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://ui/main_menu/main_menu.tscn" id="1"]
+[ext_resource type="Script" path="res://ui/testing/fixed_test_menu.gd" id="2"]
+
+[node name="FixedTestMenu" instance=ExtResource("1")]
+script = ExtResource("2")

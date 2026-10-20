@@ -2,6 +2,7 @@ class_name ShopPopup
 extends LootPopup
 ## 商店与选牌附魔共用一个模态层；确认目标后原子扣款，取消不占库存。
 const SHOP_BACKGROUND := "res://assets/events/EVBG-013.png"
+const SANDBOX_RESOURCES := preload("res://systems/testing/sandbox_resources.gd")
 var request: Dictionary = {}
 var _enchant_index := -1
 var close_handler: Callable
@@ -53,7 +54,7 @@ func _render() -> void:
 	var shop := RunShop.shelf(_run, request)
 	if shop.is_empty():
 		return
-	_heading.text = "第 %d 层商店　　银币：%d" % [int(shop.floor), _run.gold]
+	_heading.text = "第 %d 层商店　　银币：%s" % [int(shop.floor), SANDBOX_RESOURCES.text(_run.gold, _run)]
 	_description.text = "每家店独立备货，售出不补货。附魔每张牌最多两种；确认选牌后扣费。"
 	_continue_button.text = "取消选牌" if _enchant_index >= 0 else "返回地图"
 	_continue_button.disabled = false

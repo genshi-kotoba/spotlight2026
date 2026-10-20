@@ -42,14 +42,19 @@ theme_override_font_sizes/font_size = 36
 text = "随机事件"
 autowrap_mode = 3
 
-[node name="EventStatus" type="Label" parent="OptionsColumn"]
+[node name="EventStatus" type="RichTextLabel" parent="OptionsColumn"]
 layout_mode = 2
-mouse_filter = 2
-theme_override_colors/font_color = Color(1, 0.96, 0.89, 1)
+mouse_filter = 1
+theme_override_colors/default_color = Color(1, 0.96, 0.89, 1)
 theme_override_colors/font_outline_color = Color(0.04, 0.025, 0.02, 0.95)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/normal_font_size = 23
 autowrap_mode = 3
+
+bbcode_enabled = true
+meta_underlined = false
+fit_content = true
+scroll_active = false
 
 [node name="OptionsScroll" type="ScrollContainer" parent="OptionsColumn"]
 layout_mode = 2

@@ -1,6 +1,9 @@
 class_name RunRandomEvents
 extends RefCounted
 ## 节点事务：选择、选牌、奖励展示均持久化，重进不重抽、不重复发奖。
+const Sandbox = preload("res://systems/testing/sandbox_resources.gd")
+const Upgrade = preload("res://systems/events/material_upgrade_event.gd")
+const EventCombat = preload("res://systems/events/event_combat_flow.gd")
 const POTIONS := ["抽两张牌", "获得5点格挡", "复制一张手牌", "本回合增加一个牌位"]
 
 static func key(request: Dictionary) -> String:
@@ -14,9 +17,21 @@ static func valid_events(value: Variant) -> bool:
 		var index: Variant = RunStateMachine._integer_value(current.get("index"))
 		var plays: Variant = RunStateMachine._integer_value(current.get("plays"))
 		if index == null or index < 0 or index >= 12 or plays == null or plays < 0 or plays > 3: return false
-		if current.get("stage") not in ["choice", "inputs", "reward", "result", "done"] or not current.get("result") is String or not current.get("finished") is bool: return false
+		if current.get("stage") not in ["choice", "inputs", "reward", "battle", "result", "done"] or not current.get("result") is String or not current.get("finished") is bool: return false
 		if bool(current.finished) != (current.stage == "done"): return false
 		if not RunStateMachine._string_array_valid(current.get("inputs")) or not RunStateMachine._unique_string_array_valid(current.get("offers")): return false
+		if current.stage == "battle":
+			var battle_index: Variant = RunStateMachine._integer_value(current.get("event_battle_index"))
+			if int(index) not in [5, 6] or battle_index == null or battle_index < 0: return false
+			if current.has("pending_outcome"):
+				var outcome: Variant = current.pending_outcome
+				if not outcome is Dictionary or not EventCombat.is_result(outcome) or outcome.get("battle_index") != battle_index: return false
+		if int(index) == 10:
+			if current.has("upgrade_offers"):
+				if not current.get("upgrade_input_id") is String or current.get("upgrade_source_kind") not in ["common_pack", "potion", "fragment"]: return false
+				if not Upgrade.valid_offers(current.upgrade_offers, str(current.upgrade_source_kind), str(current.upgrade_input_id)): return false
+				if current.offers != current.upgrade_offers.map(func(offer: Dictionary): return str(offer.id)): return false
+			elif current.stage == "reward": return false
 		if int(index) == 8:
 			for offer: String in current.offers:
 				if RelicCatalog.resolve(offer) == null: return false
@@ -36,12 +51,26 @@ static func open(run: Node, request: Dictionary) -> Error:
 		"location_name": RandomEventCatalog.NAMES[event_index],
 		"background_path": preload("res://ui/battle/battle_environment.gd").path_for_floor(preload("res://ui/battle/battle_environment.gd").floor_for_battle({}, str(request.get("map_id", "")))),
 	}
-	if not state(run, request).is_empty(): return OK
+	var existing := state(run, request)
+	if not existing.is_empty():
+		if not _retryable_sandbox_exit(run, existing): return OK
+		event_index = int(existing.index)
 	var before := capture(run)
 	if not run.inventory_state.has("events"): run.inventory_state.events = {}
-	run.inventory_state.events[key(request)] = {"index": RandomEventCatalog.index_for_map_node(str(run.main_seed), str(request.map_id), request),
+	run.inventory_state.events[key(request)] = {"index": event_index,
 		"stage": "choice", "plays": 0, "inputs": [], "offers": [], "result": "", "finished": false}
 	return commit(run, before)
+
+## 测试地图允许重新打开直接离开、未执行的事件；有抽取、奖励或战斗记录的不重置。
+static func _retryable_sandbox_exit(run: Node, current: Dictionary) -> bool:
+	var index := int(current.get("index", -1))
+	return Sandbox.active(run) and index >= 0 and index < RandomEventCatalog.NAMES.size() \
+		and int(current.get("plays", 0)) == 0 \
+		and current.get("stage") == "done" and current.get("result") == "已离开，无奖励" \
+		and current.get("inputs", []).is_empty() and current.get("offers", []).is_empty() \
+		and current.get("result_fragments", []).is_empty() \
+		and not current.has("event_battle_index") and not current.has("settled_battle_index") \
+		and not current.has("pending_outcome")
 
 static func authorized(run: Node, request: Dictionary) -> bool:
 	var session: RefCounted = EncounterFlow.session
@@ -52,6 +81,13 @@ static func selectables(run: Node, request: Dictionary) -> Array:
 	var current := state(run, request)
 	var result: Array = []
 	if current.is_empty(): return result
+	if int(current.index) == 10:
+		if current.stage == "reward":
+			for offer: Dictionary in current.get("upgrade_offers", []):
+				result.append({"id": str(offer.id), "label": Upgrade.label(offer)})
+		else:
+			result.assign(Upgrade.candidates(run))
+		return result
 	if current.stage == "reward":
 		for id: String in current.offers:
 			var label := id
@@ -93,6 +129,8 @@ static func choose(run: Node, request: Dictionary, option: int) -> Error:
 	var index := int(current.index)
 	var choices := RandomEventCatalog.choices(index)
 	if option < 0 or option >= choices.size(): return ERR_INVALID_PARAMETER
+	if index in [5, 6] and option == 0:
+		return EventCombat.start(run, request)
 	var before := capture(run)
 	var rng := RandomEventCatalog.stream(str(run.main_seed), str(request.map_id), str(request.node_id), "choice-%d-%d" % [option, int(current.plays)])
 	var result: Array[String] = []
@@ -144,7 +182,9 @@ static func choose(run: Node, request: Dictionary, option: int) -> Error:
 						current.inputs = eligible.slice(0, 2)
 						run.inventory_state.events[key(request)] = current
 						return select(run, request, current.inputs, before)
-			5, 6, 10: result.append("测试：已点击模拟完成；未虚构战斗或素材升级奖励")
+			10:
+				if Upgrade.candidates(run).is_empty(): return ERR_UNAVAILABLE
+				current.stage = "inputs"
 			7:
 				if option == 0: add_card(run, "69"); result.append("获得圣杯幻象"); give(run, "rare_pack", result)
 				else: run.gold += 100; result.append("获得100银币")
@@ -180,6 +220,7 @@ static func select(run: Node, request: Dictionary, ids: Array, rollback: Diction
 	if not authorized(run, request): return ERR_UNAUTHORIZED
 	var current := state(run, request)
 	if current.stage not in ["inputs", "reward"]: return ERR_BUSY
+	if int(current.index) == 10: return _select_upgrade(run, request, current, ids)
 	var before := capture(run) if rollback.is_empty() else rollback
 	var allowed := selectables(run, request).map(func(e: Dictionary): return str(e.id))
 	var unique := {}
@@ -231,6 +272,45 @@ static func select(run: Node, request: Dictionary, ids: Array, rollback: Diction
 	if not result.is_empty():
 		current.stage = "result"; current.result = "\n".join(result)
 		current["result_fragments"] = _new_fragments(run, before)
+	run.inventory_state.events[key(request)] = current
+	return commit(run, before)
+
+
+static func _select_upgrade(run: Node, request: Dictionary, current: Dictionary, ids: Array) -> Error:
+	if ids.size() != 1 or not ids[0] is String: return ERR_INVALID_PARAMETER
+	var before := capture(run)
+	var chosen: Dictionary = {}
+	if current.stage == "inputs":
+		var sources := Upgrade.candidates(run)
+		var source: Dictionary = {}
+		for entry: Dictionary in sources:
+			if entry.id == ids[0]: source = entry
+		if source.is_empty(): return ERR_INVALID_PARAMETER
+		var rng := RandomEventCatalog.stream(str(run.main_seed), str(request.map_id), str(request.node_id), "upgrade-" + str(ids[0]))
+		var offers := Upgrade.offers(run, str(ids[0]), rng)
+		if rng.last_error != OK: return rng.last_error
+		if not Upgrade.valid_offers(offers, str(source.kind), str(ids[0])): return ERR_INVALID_DATA
+		current["inputs"] = ids.duplicate()
+		current["upgrade_input_id"] = str(ids[0])
+		current["upgrade_source_kind"] = str(source.kind)
+		current["upgrade_source_label"] = str(source.label)
+		current["upgrade_offers"] = offers
+		current["offers"] = offers.map(func(offer: Dictionary): return str(offer.id))
+		if offers.size() == 3:
+			current.stage = "reward"
+			run.inventory_state.events[key(request)] = current
+			return commit(run, before)
+		chosen = offers[0]
+	else:
+		if not Upgrade.valid_offers(current.get("upgrade_offers"), str(current.get("upgrade_source_kind", "")), str(current.get("upgrade_input_id", ""))): return ERR_INVALID_DATA
+		for offer: Dictionary in current.upgrade_offers:
+			if offer.id == ids[0]: chosen = offer
+		if chosen.is_empty(): return ERR_INVALID_PARAMETER
+	var outcome := Upgrade.apply_choice(run, str(current.upgrade_input_id), chosen)
+	if int(outcome.error) != OK: restore(run, before); return int(outcome.error)
+	current["stage"] = "result"
+	current["result"] = str(outcome.result)
+	current["result_fragments"] = outcome.result_fragments
 	run.inventory_state.events[key(request)] = current
 	return commit(run, before)
 

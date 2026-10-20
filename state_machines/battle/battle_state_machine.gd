@@ -211,7 +211,7 @@ func restore_from_dictionary(data: Dictionary) -> Error:
 			or saved_phase < Phase.IDLE or saved_phase > Phase.DEFEAT \
 			or saved_turn == null or saved_turn < 0 or saved_pointer == null \
 			or saved_pointer < 0 or saved_resolutions == null or saved_resolutions < 0 \
-			or not _valid_player(saved_player) or not _valid_enemy_array(saved_enemies) \
+			or not _valid_player(saved_player) or not _valid_enemy_array(saved_enemies, saved_player) \
 			or not _valid_card_array(saved_draw) or not _valid_card_array(saved_discard) \
 			or not _valid_card_array(saved_hand) or not _valid_card_array(saved_play) \
 			or saved_draw.any(FinalBossRules.is_saturn) or saved_discard.any(FinalBossRules.is_saturn) \
@@ -598,13 +598,17 @@ func apply_damage_to_enemy(enemy_id: String, amount: int, ignore_block: bool = f
 	var blocked := 0 if ignore_block else mini(int(enemy["block"]), amount * multiplier)
 	var absorbed := int(ceil(float(blocked) / multiplier))
 	enemy["block"] = int(enemy["block"]) - blocked
-	enemy["health"] = FinalBossRules.clamp_health_after_damage(enemy,
-		maxi(0, int(enemy["health"]) - (amount - absorbed)), turn_number)
+	var received := maxi(0, amount - absorbed)
+	var trial_target := _is_damage_trial_target(enemy_id)
+	if not trial_target:
+		enemy["health"] = FinalBossRules.clamp_health_after_damage(enemy,
+			maxi(0, int(enemy["health"]) - received), turn_number)
 	enemies[index] = enemy
 	block_changed.emit(&"enemy", enemy_id, enemy["block"])
 	combatant_damaged.emit(&"enemy", enemy_id, amount, blocked, enemy["health"])
 	_publish_fact("combatant.damaged", {"side": "enemy", "entity_id": enemy_id, "damage": amount,
-		"blocked": blocked, "health_after": enemy["health"], "health_loss": before - int(enemy["health"])})
+		"blocked": blocked, "health_after": enemy["health"],
+		"health_loss": received if trial_target else before - int(enemy["health"])})
 	rules.submit("flow.outcome")
 	return OK
 
@@ -1016,6 +1020,11 @@ func _start_player_turn() -> Error:
 
 
 func _step_turn_start(_event: BattleEvent) -> void:
+	# 第三轮敌方回合及其派生事件照常排空；第四轮的开始、抽牌和存在类效果不入场。
+	if is_damage_trial() and turn_number >= 3:
+		player.event_combat["completed_turns"] = 3
+		player.event_combat["finish_pending"] = true
+		return
 	pointer_index = 0
 	_intents_ready = false
 	for enemy: Dictionary in enemies: _clear_intent_preview(enemy)
@@ -1077,7 +1086,7 @@ func _refresh_enemy_intents() -> void:
 				and str(enemy.get("intent_actor", "")) == actor:
 			continue
 		_clear_intent_preview(enemy)
-		if int(enemy.get("health", 0)) <= 0 or int(enemy.get("intent_first_action_turn", 0)) > turn_number:
+		if int(enemy.get("health", 0)) <= 0 or _is_damage_trial_target(actor) or int(enemy.get("intent_first_action_turn", 0)) > turn_number:
 			enemy["intent_plan"] = []
 		elif enemy.has("monster_id"):
 			enemy["intent_plan"] = MonsterCatalog.plan(enemy, turn_number, _logic_stream).duplicate(true)
@@ -1189,6 +1198,8 @@ func _step_enemy_end(_event: BattleEvent) -> void:
 		for index in range(hand.size() - 1, -1, -1):
 			var card: Dictionary = hand[index]
 			if can_discard_card(card): discard_from_hand(str(card.instance_id), &"turn_end")
+	if is_damage_trial():
+		player.event_combat["completed_turns"] = mini(turn_number, 3)
 	_start_player_turn()
 
 
@@ -1269,6 +1280,37 @@ func debug_finish_victory() -> Error:
 	return OK
 
 
+## 专属事件入口；组件只在第三轮全部派生事件排空后调用。
+func finish_damage_trial() -> Error:
+	if not is_damage_trial() or not active or bool(player.event_combat.get("finished", false)):
+		return ERR_UNAUTHORIZED
+	if turn_number != 3 or phase != Phase.ENEMY_BUFF or int(player.health) <= 0 \
+			or not bool(player.event_combat.get("finish_pending", false)) \
+			or int(player.event_combat.get("completed_turns", 0)) != 3 \
+			or rules.queue.processing or rules.queue.paused or rules.queue.pending_count() != 0 \
+			or rules.last_error != OK:
+		return ERR_BUSY
+	player.event_combat["finished"] = true
+	player.event_combat["finish_pending"] = false
+	_finish_battle("victory")
+	return OK
+
+
+func is_damage_trial() -> bool:
+	var context: Variant = player.get("event_combat")
+	if enemies.size() != 1 or not _damage_trial_enemy_matches(enemies[0], context):
+		return false
+	var request: Variant = context.get("request")
+	return request is Dictionary and request.get("type") == "event" \
+		and request.get("map_id") == map_id and request.get("node_id") == node_id \
+		and context.get("event_key") == "%s/%s" % [map_id, node_id] \
+		and int(context.get("floor", 0)) in [1, 2, 3]
+
+
+func _is_damage_trial_target(enemy_id: String) -> bool:
+	return is_damage_trial() and str(enemies[0].enemy_id) == enemy_id
+
+
 func _finish_if_needed() -> bool:
 	if not active:
 		return true
@@ -1336,7 +1378,7 @@ func _prepare_config(config: Dictionary) -> Dictionary:
 			or not configured_discard is bool or not configured_player is Dictionary \
 			or not configured_enemies is Array or configured_enemies.is_empty() \
 			or not configured_deck is Array or not _valid_player(configured_player) \
-			or not _valid_enemy_array(configured_enemies) \
+			or not _valid_enemy_array(configured_enemies, configured_player) \
 			or not _valid_card_array(configured_deck) or configured_deck.any(FinalBossRules.is_saturn):
 		_fail(ERR_INVALID_PARAMETER, "Battle config is invalid")
 		return {}
@@ -1378,14 +1420,15 @@ static func _valid_relic_runtime(value: Variant) -> bool:
 	return true
 
 
-static func _valid_enemy_array(values: Array) -> bool:
+static func _valid_enemy_array(values: Array, configured_player: Dictionary = {}) -> bool:
 	var ids := {}
 	for value: Variant in values:
 		if not value is Dictionary or not value.get("enemy_id") is String \
 				or value["enemy_id"].strip_edges().is_empty() or ids.has(value["enemy_id"]) \
 				or not _valid_player(value) or not value.get("actions") is Array \
-				or value["actions"].is_empty() or not _json_safe(value["actions"]) \
-				or not FinalBossRules.valid_enemy_state(value):
+				or not _json_safe(value["actions"]) or not FinalBossRules.valid_enemy_state(value):
+			return false
+		if value.actions.is_empty() and not (values.size() == 1 and _damage_trial_enemy_matches(value, configured_player.get("event_combat"))):
 			return false
 		for action: Variant in value["actions"]:
 			if not action is Dictionary:
@@ -1433,6 +1476,18 @@ static func _valid_intent_action(action: Dictionary) -> bool:
 	# Original generic action dictionaries also support wait/no-op actions.
 	# Validate known fields without requiring an effect the old API never required.
 	return true
+
+
+static func _damage_trial_enemy_matches(enemy: Dictionary, context: Variant) -> bool:
+	if not context is Dictionary or context.get("kind") != "stone" \
+			or not context.get("event_key") is String or str(context.event_key).is_empty() \
+			or not _integer_equals(context.get("turn_limit"), 3):
+		return false
+	return enemy.get("damage_trial_target", false) == true \
+		and enemy.get("enemy_id") == "damage-trial:" + str(context.event_key) \
+		and _integer_equals(enemy.get("monster_id"), 0) \
+		and _integer_equals(enemy.get("health"), 1) and _integer_equals(enemy.get("max_health"), 1) \
+		and enemy.get("actions") is Array and enemy.actions.is_empty()
 
 
 static func _valid_card_array(values: Array) -> bool:

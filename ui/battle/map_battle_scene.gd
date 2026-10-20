@@ -1,5 +1,8 @@
 extends "res://ui/battle/battle_test_scene.gd"
 ## 正式节点入口复用已有卡牌、动画、事件队列；不创建第二场测试战斗。
+const EventCombat = preload("res://systems/events/event_combat_flow.gd")
+const StoneHud = preload("res://ui/events/damage_trial_hud.gd")
+var _event_retry_button: Button
 var _leaving := false
 var _opening := false
 var _opening_prepared := false
@@ -19,6 +22,10 @@ func _ready() -> void:
 		SceneTransition.call_deferred("change_scene_to_file", MENU_SCENE)
 		return
 	super._ready()
+	if _battle.is_damage_trial():
+		var trial_hud := StoneHud.new()
+		add_child(trial_hud)
+		trial_hud.bind_battle(_battle)
 	# 战斗内改典籍、开卡包只属于测试装配点，生产战斗必须关掉；药水走的是 _battle 引用，不受此开关影响。
 	_run_menu.allow_edit_in_battle = false
 	if EncounterFlow.debug_victory_enabled():
@@ -180,6 +187,14 @@ func _leave_after_resolution() -> void:
 		if not is_inside_tree(): return
 	if not EncounterFlow.last_error.is_empty():
 		hint_label.text = EncounterFlow.last_error
+		if _battle.player.has("event_combat") and not is_instance_valid(_event_retry_button):
+			_event_retry_button = Button.new()
+			_event_retry_button.text = "重试事件结算"
+			_event_retry_button.position = Vector2(24, 150)
+			_event_retry_button.size = Vector2(220, 52)
+			CommonUiSkin.style_button(_event_retry_button)
+			_event_retry_button.pressed.connect(_retry_event_settlement, CONNECT_DEFERRED)
+			add_child(_event_retry_button)
 		_leaving = false
 		return
 	var run := SaveGateway.current_run()
@@ -192,12 +207,22 @@ func _leave_after_resolution() -> void:
 		return
 	_return_after_rewards()
 
+func _retry_event_settlement() -> void:
+	var error := EventCombat.retry_settlement(SaveGateway.current_run(), EncounterFlow.session.pending)
+	if error == OK:
+		EncounterFlow.last_error = ""
+		if is_instance_valid(_event_retry_button): _event_retry_button.queue_free()
+		_leave_after_resolution()
+	else: hint_label.text = "事件结算未保存，请重试（%d）" % error
+
 func _return_after_rewards() -> void:
 	if RunResults.complete_if_ready() or not RunResults.pending_record.is_empty():
 		RunResults.present(self)
 		return
 	presentation_event.emit("exit_battle", {"status": _battle_result})
 	var path := EncounterFlow.MAP_SCENE if _battle_result in ["victory", "escaped"] else MENU_SCENE
+	if _battle_result in ["victory", "escaped"] and _battle.player.has("event_combat"):
+		path = RandomEventCatalog.SCENE
 	var error := SceneTransition.change_scene_to_file(path)
 	if error != OK:
 		_leaving = false
@@ -209,6 +234,8 @@ func _map_snapshot_data() -> Dictionary:
 
 func _refresh_header() -> void:
 	super._refresh_header()
+	if is_instance_valid(_battle) and _battle.is_damage_trial():
+		phase_label.text = "伤害石碑 · 第 %d / 3 回合" % clampi(_battle.turn_number, 1, 3)
 	_refresh_debug_victory_button()
 	_restart_button.hide()
 	if is_instance_valid(_reward_popup):

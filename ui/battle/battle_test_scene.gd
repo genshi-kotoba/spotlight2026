@@ -96,6 +96,7 @@ const HEALTH_FLASH_COLOR := Color(1.0, 0.62, 0.68)
 const HEALTH_TRAIL_SCRIPT := preload("res://ui/battle/health_bar_trail.gd")
 const HAND_DEAL_ANIM := preload("res://ui/battle/hand_deal_anim.gd")
 const RUN_MENU := preload("res://ui/hud/run_menu_overlay.gd")
+const SANDBOX_RESOURCES := preload("res://systems/testing/sandbox_resources.gd")
 const VFX_SCRIPT := preload("res://ui/battle/vfx_playback.gd")
 const FEEDBACK_SCRIPT := preload("res://ui/battle/combat_feedback.gd")
 const HIT_STOP_SCRIPT := preload("res://ui/battle/hit_stop.gd")
@@ -188,6 +189,7 @@ var player_block_shield: Control
 var _run_menu: RunMenuOverlay
 ## 战斗测试场景自带的一局，用于战斗内编辑残片；生产场景没有它。
 var _test_run: RunStateMachine = null
+var _sandbox_resource_run: Node = null
 var _settings_button: SettingsButton
 var _map_page_source: Control
 var _selected_ids: Array[String] = []
@@ -456,7 +458,8 @@ func _exit_tree() -> void:
 
 
 func _refresh_coin() -> void:
-	var run := SaveGateway.current_run()
+	var sandbox_run := _refill_sandbox_battle_resources()
+	var run := _test_run if _test_run != null else SaveGateway.current_run()
 	var silver := test_silver
 	var elixir := 0
 	if run != null:
@@ -466,8 +469,24 @@ func _refresh_coin() -> void:
 	if is_instance_valid(_battle):
 		var shown: Dictionary = _presented_player if _busy and not _presented_player.is_empty() else _battle.player
 		silver = int(shown.get("silver", silver))
-	$Coin/Count.text = str(silver)
-	$Elixir/Count.text = str(elixir)
+	$Coin/Count.text = SANDBOX_RESOURCES.text(silver, sandbox_run)
+	$Elixir/Count.text = SANDBOX_RESOURCES.text(elixir, sandbox_run)
+
+
+func _refill_sandbox_battle_resources() -> Node:
+	# 独立 battle-test 有自己的 run；只有固定地图实际持有的战斗才能使用无限货币。
+	if _test_run != null or not is_instance_valid(_battle):
+		return null
+	var run := SaveGateway.current_run()
+	if not SANDBOX_RESOURCES.active(run):
+		return null
+	if run.current_battle == _battle:
+		_sandbox_resource_run = run
+	# 战后 current_battle 已清空，保留本场的显示归属直到场景退出。
+	if not is_instance_valid(_sandbox_resource_run) or _sandbox_resource_run != run:
+		return null
+	SANDBOX_RESOURCES.refill(run)
+	return run
 
 
 ## 正式新局的初始卡组，与主菜单新游戏读同一份配置；读不到才退回测试卡。
@@ -907,6 +926,7 @@ func _present_battle_ended() -> void:
 
 
 func _on_turn_started(turn_number: int) -> void:
+	_refill_sandbox_battle_resources()
 	_queue_presentation("turn_started")
 	# 首回合在 start_battle 返回后按 initial_draw_count 抽牌；后续回合在
 	# PLAYER_ACTION 信号期间同步调用，符合 BattleStateMachine 的接口约束。
@@ -927,6 +947,7 @@ func _on_card_committed_present(card: Dictionary, _play_index: int) -> void:
 
 
 func _on_card_effect_requested(card: Dictionary, _target: Variant, pointer: int) -> void:
+	_refill_sandbox_battle_resources()
 	_flush_card_end()
 	_queue_presentation("card_start", {
 		"instance_id": str(card.instance_id),
@@ -963,6 +984,7 @@ func _card_is_multi_attack(card: Dictionary) -> bool:
 
 
 func _on_card_resolved(card: Dictionary, pointer: int) -> void:
+	_refill_sandbox_battle_resources()
 	_flush_card_end()
 	# card.resolved / pointer.moved 仍可派生残片。到下一续接点才展示完成，
 	# 让这些反应也属于当前卡牌的可见收尾。
@@ -2051,7 +2073,7 @@ func _render_health(fill: Control, block: ColorRect, number: Label,
 		block.offset_right = minf(fill_right + BLOCK_MARKER_WIDTH, left + bar_width + slant)
 	block.visible = false
 	_render_block_shield(side, block_layers, entity_id)
-	number.text = "%d/%d" % [health, max_health]
+	number.text = "∞" if side == &"enemy" and bool(data.get("damage_trial_target", false)) else "%d/%d" % [health, max_health]
 
 
 ## 掉血那一拍血条自己亮一下再收回，对齐《驳回！》的 barHit。

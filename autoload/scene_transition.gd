@@ -71,6 +71,7 @@ func is_loading() -> bool:
 
 ## OK 表示请求已受理；异步失败通过信号和可关闭提示报告，恢复原来的操作状态。
 func change_scene_to_file(path: String) -> Error:
+	path = preload("res://systems/testing/sandbox_launch.gd").scene_path(path)
 	if not path.begins_with("res://") or not ResourceLoader.exists(path, "PackedScene"):
 		return ERR_FILE_NOT_FOUND
 	if _busy:

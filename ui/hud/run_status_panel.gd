@@ -7,6 +7,7 @@ extends Control
 
 signal menu_requested
 
+const SANDBOX_RESOURCES := preload("res://systems/testing/sandbox_resources.gd")
 const HP_BAR_RECT := Rect2(-16, 7, 444.44, 140.62)
 const HP_FILL_RECT := Rect2(144, 41, 250, 26)
 const HP_FILL_SLANT := 14.0
@@ -97,9 +98,10 @@ func set_health(health: int, max_health: int, block: int = 0, buffs: Array = [])
 	_set_buffs(buffs, block)
 
 
-func set_resources(silver: int, elixir: int) -> void:
-	_coin_count.text = str(silver)
-	_elixir_count.text = str(elixir)
+func set_resources(silver: int, elixir: int, run: Node = null) -> void:
+	var resource_run: Node = SaveGateway.current_run() if run == null else run
+	_coin_count.text = SANDBOX_RESOURCES.text(silver, resource_run)
+	_elixir_count.text = SANDBOX_RESOURCES.text(elixir, resource_run)
 
 
 func set_relic_board(catalog: Dictionary, board: RelicBoard) -> void:

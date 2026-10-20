@@ -37,6 +37,8 @@ var _saved_active_run: Dictionary = {}
 
 
 func _ready() -> void:
+	if preload("res://systems/testing/sandbox_launch.gd").requested():
+		save_path = preload("res://systems/testing/sandbox_launch.gd").SAVE_PATH
 	load_save()
 
 

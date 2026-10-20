@@ -100,7 +100,7 @@ func _player_turn() -> void:
 			15:
 				if not bool(enemy.get("stole", false)):
 					enemy.stole = true
-					enemy["stolen"] = int(floor(int(battle.player.get("silver", 0)) * 0.3))
+					enemy["stolen"] = int(floor(int(battle.player.get("sandbox_reference_silver", battle.player.get("silver", 0))) * 0.3))
 					battle.player.silver = int(battle.player.get("silver", 0)) - int(enemy.stolen)
 					_buff("enemy", str(enemy.enemy_id), "weak", int(enemy.stolen) / 20, 0)
 			16:
@@ -260,7 +260,7 @@ func _summon(id: String, owner: String) -> bool:
 	battle.enemies.append(enemy)
 	# 盗贼的入场行为也用于被召唤，不等待下一个回合重抽银币。
 	if id == "15":
-		enemy.stole = true; enemy.stolen = int(floor(int(battle.player.get("silver", 0)) * 0.3))
+		enemy.stole = true; enemy.stolen = int(floor(int(battle.player.get("sandbox_reference_silver", battle.player.get("silver", 0))) * 0.3))
 		battle.player.silver = int(battle.player.get("silver", 0)) - int(enemy.stolen)
 		_buff("enemy", str(enemy.enemy_id), "weak", int(enemy.stolen) / 20, 0)
 
