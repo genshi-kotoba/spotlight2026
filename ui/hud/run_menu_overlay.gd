@@ -3,7 +3,7 @@ extends Control
 
 ## 冒险菜单浮层：点头像打开背包，点右上角齿轮打开设置，点小地图打开地图页，M 键也进地图。
 ## 三个页面用 open(page) 直接指定，不再在面板里摆分页按钮。
-## 地图页只查看：给小地图放大倍率，可拖动镜头，但不移动角色本体。
+## 地图页支持拖动、缩放；传送请求由地图宿主校验并处理。
 ## 背包使用 main 的真实牌组与物品，残片装配统一走 RunRewards 事务。
 
 signal closed
@@ -498,11 +498,6 @@ func _build_map_page(page: Control) -> void:
 	_map_placeholder.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_map_placeholder.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_map_slot.add_child(_map_placeholder)
-	var map_hint := _label("滚轮缩放 · 拖动平移", 14, Color(0.749, 0.682, 0.553, 0.7))
-	map_hint.position = Vector2(CONTENT_RECT.position.x + 4.0,
-		CONTENT_RECT.size.y - 26.0)
-	map_hint.size = Vector2(320, 22)
-	page.add_child(map_hint)
 
 
 func _build_bag_page(page: Control) -> void:

@@ -228,6 +228,29 @@ func _sync_actor(emit_notifications: bool = true) -> void:
 		_fog_veil.set_focus(_view.project_plane(_view._actor_plane, _view._actor_height + _view.ACTOR_HEIGHT * 0.32), 0.6)
 	MapPresentation.present(self)
 
+
+func _after_fast_travel() -> void:
+	# A discontinuous move is not walking: reset animation displacement along
+	# with the flat host's render path, while normal support supplies elevation.
+	_animated_plane = session.actor_plane
+	_actor_facing_intent = Vector2.ZERO
+	_view.advance_actor(Vector2.ZERO, 0.0, Vector2.ZERO)
+
+
+func _fast_travel_ready() -> bool:
+	return is_map_ready()
+
+func _fast_travel_portrait() -> Dictionary:
+	var animation = _view.actor_animation
+	var feet: Vector2 = _view.project_plane(session.actor_plane, support.height_at(session.actor_plane))
+	var transform := _view.get_global_transform_with_canvas()
+	var rect: Rect2 = animation.draw_rect(feet)
+	var body: Rect2 = animation.body_rect(feet)
+	return {"feet": transform * feet,
+		"rect": Rect2(transform * rect.position, rect.size * transform.get_scale().abs()),
+		"body": Rect2(transform * body.position, body.size * transform.get_scale().abs()),
+		"texture": animation.textures.get(str(animation.frame().get("path", "")))}
+
 func _queue_discovery() -> void:
 	if _discovery_prepare_queued: return
 	_discovery_prepare_queued = true
