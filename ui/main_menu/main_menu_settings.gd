@@ -10,15 +10,15 @@ const DIAGNOSTICS_SETTINGS := preload("res://ui/components/diagnostics_settings.
 
 func _ready() -> void:
 	var body := CATALOG_UI.shell(self, "设置", "拖动即生效，不需要确认。返回用右上角按钮。")
-	var holder := Control.new()
-	holder.name = "Volume"
-	holder.custom_minimum_size = VOLUME_SETTINGS.BLOCK_SIZE
-	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	body.add_child(holder)
-	VOLUME_SETTINGS.build(holder)
 	var diagnostics := Control.new()
 	diagnostics.name = "Diagnostics"
 	diagnostics.custom_minimum_size = DIAGNOSTICS_SETTINGS.BLOCK_SIZE
 	diagnostics.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	body.add_child(diagnostics)
 	DIAGNOSTICS_SETTINGS.build(diagnostics)
+	var holder := Control.new()
+	holder.name = "Volume"
+	holder.custom_minimum_size = VOLUME_SETTINGS.BLOCK_SIZE
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	body.add_child(holder)
+	VOLUME_SETTINGS.build(holder)

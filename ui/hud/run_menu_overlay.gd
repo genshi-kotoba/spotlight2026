@@ -664,7 +664,8 @@ func _build_settings_page(page: Control) -> void:
 	# 音量块与开始界面设置页共用一份，两处外观不会漂。
 	VOLUME_SETTINGS.build(page, Vector2(580, 292))
 	# 诊断块同样共用；跑图内也要能一键导出，测试者不必先退回主菜单。
-	DIAGNOSTICS_SETTINGS.build(page, Vector2(40, 292))
+	# 与音量块同一列，排在它上方，不再单独挂在左半边。
+	DIAGNOSTICS_SETTINGS.build(page, Vector2(580, 120))
 
 	var divider := ColorRect.new()
 	divider.color = Color(0.910, 0.706, 0.333, 0.28)

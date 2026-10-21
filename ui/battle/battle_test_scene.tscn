@@ -48,6 +48,14 @@ texture_margin_top = 8.0
 texture_margin_right = 10.0
 texture_margin_bottom = 8.0
 
+[sub_resource type="StyleBoxTexture" id="StyleBtnDim"]
+texture = SubResource("Atlas_btn")
+texture_margin_left = 10.0
+texture_margin_top = 8.0
+texture_margin_right = 10.0
+texture_margin_bottom = 8.0
+modulate_color = Color(0.58, 0.56, 0.5, 0.9)
+
 [sub_resource type="StyleBoxFlat" id="SlotBox"]
 bg_color = Color(0.101961, 0.0745098, 0.0470588, 0.62)
 border_width_left = 1
@@ -776,7 +784,7 @@ theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBtnHover")
 theme_override_styles/hover = SubResource("StyleBtnHover")
 theme_override_styles/pressed = SubResource("StyleBtn")
-theme_override_styles/disabled = SubResource("ButtonDisabled")
+theme_override_styles/disabled = SubResource("StyleBtnDim")
 text = "结算 0"
 
 [node name="CancelButton" type="Button" parent="."]

@@ -12,6 +12,8 @@ const CHUNK_BYTES := 2 * 1024 * 1024
 const KEEP_SESSIONS := 3
 const STACK_DEPTH := 5
 const GODOT_LOG_PATH := "user://logs/godot.log"
+## 攒到这么多字符就先落盘，避免长时间不刷新时缓冲区无限增长。
+const FLUSH_BYTES := 64 * 1024
 
 static var _dir := LOG_DIR
 static var _installed := false
@@ -19,6 +21,8 @@ static var _path := ""
 static var _chunk := 0
 static var _seq := 0
 static var _ring: Array = []
+static var _pending := ""
+static var _flush_hooked := false
 
 
 ## 测试用：在 install() 之前换目录，生产路径不需要调用。
@@ -39,7 +43,7 @@ static func install(context: Dictionary = {}) -> void:
 	var body := _runtime_context()
 	for key: String in context:
 		body[key] = context[key]
-	_write("session", body)
+	_write("session", body, true)
 
 
 static func event(tag: String, data: Dictionary = {}) -> void:
@@ -91,6 +95,8 @@ static func current_path() -> String:
 static func export_bundle() -> String:
 	if not _installed:
 		install()
+	# 导出的是磁盘文件，缓冲区里的最新事件必须先落盘。
+	flush()
 	var dir := _dir.path_join("export-" + _stamp())
 	var global_dir := ProjectSettings.globalize_path(dir)
 	if DirAccess.make_dir_recursive_absolute(global_dir) != OK:
@@ -128,14 +134,39 @@ static func summary() -> String:
 	return "\n".join(lines)
 
 
-static func _write(tag: String, data: Dictionary) -> void:
+static func _write(tag: String, data: Dictionary, immediate: bool = false) -> void:
 	_seq += 1
 	var record := {"t": _now_ms(), "n": _seq, "tag": tag, "data": data}
 	_ring.append(record)
 	if _ring.size() > RING_LIMIT:
 		_ring = _ring.slice(_ring.size() - RING_LIMIT)
-	var line := JSON.stringify(record) + "\n"
-	_rotate_if_full(line.length())
+	# 一行一次 open/flush/close 会把结算这类一秒几十条事件的流程拖成肉眼可见的卡顿，
+	# 先攒在内存里，每帧末落盘一次；会话头与导出前强制立即写。
+	_pending += JSON.stringify(record) + "\n"
+	if immediate or _pending.length() >= FLUSH_BYTES:
+		flush()
+		return
+	_hook_frame_flush()
+
+
+## 每帧末统一落盘。没有可用的 SceneTree（如 --script 自测）时退回逐条写。
+static func _hook_frame_flush() -> void:
+	if _flush_hooked:
+		return
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		flush()
+		return
+	tree.process_frame.connect(flush)
+	_flush_hooked = true
+
+
+static func flush() -> void:
+	if _pending.is_empty():
+		return
+	var payload := _pending
+	_pending = ""
+	_rotate_if_full(payload.length())
 	# READ_WRITE 不建文件，首条事件用 WRITE 建，之后追加。
 	var file: FileAccess = null
 	if FileAccess.file_exists(_path):
@@ -146,7 +177,7 @@ static func _write(tag: String, data: Dictionary) -> void:
 		file = FileAccess.open(_path, FileAccess.WRITE)
 	if file == null:
 		return
-	file.store_string(line)
+	file.store_string(payload)
 	file.flush()
 	file = null
 

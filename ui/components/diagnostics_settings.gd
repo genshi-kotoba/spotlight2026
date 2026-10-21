@@ -7,7 +7,7 @@
 
 const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
 
-const BLOCK_SIZE := Vector2(536, 108)
+const BLOCK_SIZE := Vector2(536, 140)
 const TITLE_FONT_SIZE := 20
 const BUTTON_FONT_SIZE := 20
 const HINT_FONT_SIZE := 14
@@ -31,20 +31,20 @@ static func build(parent: Control, origin: Vector2 = Vector2.ZERO) -> Control:
 	block.add_child(title)
 
 	var hint := _label(HINT_TEXT, HINT_FONT_SIZE, COL_TEXT)
-	hint.position = Vector2(300, 46)
-	hint.size = Vector2(236, 56)
-	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.position = Vector2(0, 112)
+	hint.size = Vector2(480, 24)
 	block.add_child(hint)
 
 	var button := Button.new()
 	button.text = "导出诊断日志"
 	button.position = Vector2(0, 44)
-	button.size = Vector2(280, 56)
+	button.size = Vector2(360, 64)
 	button.focus_mode = Control.FOCUS_NONE
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	button.add_theme_font_size_override("font_size", BUTTON_FONT_SIZE)
 	button.add_theme_color_override("font_color", Color(0.949, 0.890, 0.776))
 	button.add_theme_color_override("font_hover_color", Color(1.0, 0.914, 0.722))
-	CommonUiSkin.style_button(button, Vector4.ZERO)
+	CommonUiSkin.style_button(button, Vector4(18, 8, 18, 8))
 	button.pressed.connect(_on_export_pressed.bind(hint))
 	block.add_child(button)
 	return block

@@ -2099,7 +2099,7 @@ func _refresh_header() -> void:
 	for card: Dictionary in _battle.play_zone:
 		if not bool(card.get("slot_empty", false)):
 			locked_count += 1
-	var to_commit := _selected_ids.size() + locked_count
+	var to_commit := _used_slots() if _busy else _selected_ids.size() + locked_count
 	# 结算数为 0 时按钮照样可点，点它就是结束回合，不再单独换文案。
 	play_button.text = "结算 %d" % to_commit
 	play_count_label.text = "%d/%d" % [_used_slots(), _battle.effective_play_limit()]
@@ -3149,8 +3149,11 @@ func _card_display_name(instance_id: String) -> String:
 
 
 func _used_slots() -> int:
+	# 结算期间 _selected_cards 与 play_zone 是同一批牌的副本，一起数会把上限顶穿；
+	# 这时只认结算区实际展示的牌，数值也不再跟着指针跳格漂移。
+	var zones: Array = [_display_cards] if _busy else [_selected_cards, _battle.play_zone]
 	var result := 0
-	for zone: Array in [_selected_cards, _battle.play_zone]:
+	for zone: Array in zones:
 		for card: Dictionary in zone:
 			if not bool(card.get("slot_empty", false)) and bool(card.get("occupies_slot", true)):
 				result += 1
