@@ -4,6 +4,7 @@ extends Control
 ## 它不判任何游戏状态：有没有可继续的局问网关，开局之后的事归状态机。
 
 const AUDIO_SETTINGS := preload("res://systems/audio/audio_settings.gd")
+const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
 
 ## 薄装配层复用 main 的地图视图、生成器和存档状态机，不导入占位玩法。
 @export var game_scene: String = "res://ui/main_menu/menu_map_entry.tscn"
@@ -69,6 +70,7 @@ func refresh() -> void:
 
 
 func _on_continue_pressed() -> void:
+	RUNTIME_LOG.event("ui.press", {"button": "continue", "enabled": not _continue_button.disabled})
 	var error: Error = _gateway.continue_saved_run()
 	if error != OK:
 		return
@@ -77,6 +79,8 @@ func _on_continue_pressed() -> void:
 
 ## 没有未完成游戏时直接开局，否则必须先确认覆盖。
 func _on_new_game_pressed() -> void:
+	RUNTIME_LOG.event("ui.press", {"button": "new_game", "enabled": not _new_game_button.disabled,
+		"has_continuable": bool(_gateway.has_continuable_run())})
 	if _pending_new_run:
 		return
 	if bool(_gateway.has_continuable_run()):
@@ -112,6 +116,7 @@ func _on_settings_pressed() -> void:
 
 
 func _on_quit_pressed() -> void:
+	RUNTIME_LOG.event("ui.press", {"button": "quit"})
 	_gateway.quit_game()
 
 

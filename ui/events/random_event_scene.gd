@@ -9,6 +9,7 @@ const EventCombat = preload("res://systems/events/event_combat_flow.gd")
 const Stone = preload("res://systems/events/damage_trial_rules.gd")
 const DECK_PICKER := preload("res://ui/events/event_deck_picker.gd")
 const SANDBOX_RESOURCES := preload("res://systems/testing/sandbox_resources.gd")
+const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
 @export_group("选项按钮")
 @export var option_button_min_size := Vector2(0, 76)
 @export_range(12, 48, 1) var option_button_font_size := 23
@@ -91,6 +92,9 @@ func _refresh() -> void:
 			elif index == 10:
 				_status_text += "\n普通卡包 → 药水三选一\n药水 → 典籍残片三选一\n典籍残片 → 稀有卡包\n免费，单向1换1，每个节点一次。"
 			var choices := RandomEventCatalog.choices(index)
+			RUNTIME_LOG.event("event.enter", {"index": index, "event_id": "EV-%03d" % (index + 1),
+				"health": run.health, "max_health": run.max_health, "gold": run.gold,
+				"options": choices})
 			for option in choices.size():
 				_button(str(choices[option]), _choose.bind(option))
 			if index == 2: _status_text += " · 已抽 %d / 3 次" % int(current.plays)

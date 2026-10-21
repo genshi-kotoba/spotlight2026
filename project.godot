@@ -37,6 +37,11 @@ WwiseRuntimeManager="*res://addons/Wwise/runtime/wwise_runtime_manager.gd"
 AudioService="*res://autoload/audio_service.gd"
 AudioIntegration="*res://autoload/audio_integration.gd"
 
+[debug]
+
+file_logging/enable_file_logging=true
+file_logging/enable_file_logging.pc=true
+
 [display]
 
 window/size/viewport_width=1920

@@ -1,6 +1,8 @@
 class_name BattleRuleEngine
 extends RefCounted
 
+const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
+
 ## 事件类型 -> 有序规则（条件、优先级、处理器）。规则可修改指令或产生新事件。
 var queue := BattleEventQueue.new()
 var last_error: Error = OK
@@ -49,7 +51,25 @@ func publish(type: String, payload: Dictionary = {}, metadata: Dictionary = {},
 	event.metadata = parent.metadata.duplicate(true) if parent != null else {}
 	event.metadata.merge(metadata, true)
 	queue.enqueue(event)
+	RUNTIME_LOG.event("battle.event", _diag(type, event))
 	return event
+
+
+## 只留可读的标量与数组长度。手牌类 payload 整份序列化会写出几十 KB 的噪音。
+func _diag(type: String, event: BattleEvent) -> Dictionary:
+	var record := {"type": type, "id": event.id, "parent": event.parent_id, "root": event.root_id}
+	var payload := event.payload
+	var kept := {}
+	for key: String in payload:
+		var value: Variant = payload[key]
+		if value is String or value is int or value is float or value is bool or value == null:
+			kept[key] = value
+		elif value is Array:
+			kept[key] = "array(%d)" % (value as Array).size()
+		elif value is Dictionary:
+			kept[key] = "dict(%d)" % (value as Dictionary).size()
+	record["payload"] = kept
+	return record
 
 
 func submit(type: String, payload: Dictionary = {}, metadata: Dictionary = {}) -> Error:

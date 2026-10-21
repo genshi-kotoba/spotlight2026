@@ -10,6 +10,7 @@ const IMPLEMENTED_FLOORS := 4
 const DEBUG_VICTORY_SETTING := "debug/map_battle/enable_instant_victory"
 const SandboxResources = preload("res://systems/testing/sandbox_resources.gd")
 const SandboxLayout = preload("res://systems/testing/fixed_test_map_layout.gd")
+const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
 var map_run: RefCounted
 var session: RefCounted
 var run: RunStateMachine
@@ -93,6 +94,9 @@ func begin_encounter(request: Dictionary) -> bool:
 	if error != OK:
 		return _fail("创建节点战斗失败：%d" % error)
 	var battle := run.current_battle
+	RUNTIME_LOG.event("map.node", {"map_id": str(session.pending.map_id),
+		"node_id": str(session.pending.node_id), "type": str(session.pending.type),
+		"floor": map_run.current_floor, "enemy_id": str(monster.id)})
 	# 固定本场战场外观，随战斗快照保存；Boss 推进楼层不影响旧战场。
 	battle.player["encounter_floor"] = map_run.current_floor
 	battle.player["encounter_rules"] = test_rules.duplicate(true)
@@ -158,6 +162,8 @@ func _on_battle_finished(result: Dictionary) -> void:
 	var pending: Dictionary = session.pending.duplicate(true)
 	var victory: bool = result.get("status") == "victory"
 	var completed: bool = victory or result.get("status") == "escaped"
+	RUNTIME_LOG.event("battle.end", {"map_id": str(pending.map_id), "node_id": str(pending.node_id),
+		"status": str(result.get("status", "")), "battle_index": int(result.get("battle_index", 0))})
 	if not session.resolve_request({"request_id": pending.request_id, "status": "completed" if completed else "failed"}):
 		_fail(session.last_error)
 		return
@@ -233,5 +239,6 @@ func waiting_for_fourth_floor() -> bool:
 
 func _fail(message: String) -> bool:
 	last_error = message
+	RUNTIME_LOG.failure("map.fail", FAILED, message)
 	push_warning("EncounterFlow: " + message)
 	return false
