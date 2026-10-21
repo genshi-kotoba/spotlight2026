@@ -132,6 +132,8 @@ func _initial_snapshot() -> Dictionary:
 		var entry: Dictionary = map_run.get_floor(map_run.current_floor)
 		_saved_entry_state = entry.get("state", {}).duplicate(true)
 		return entry.get("snapshot", {})
+	# A legacy three-map run without a planar checkpoint still keeps its old end.
+	_floor_configs = _floor_configs.slice(0, run.map_ids.size())
 	if not map_run.attach_existing_run(_floor_configs):
 		return {}
 	if not _enable_monster_assignments():
@@ -241,11 +243,15 @@ func _show_random_event() -> void:
 
 func _close_shop() -> Error:
 	var old_state: Dictionary = session.capture_state()
+	var run: RunStateMachine = _gateway.current_run()
+	var old_inventory: Dictionary = run.inventory_state.duplicate(true)
 	var pending: Dictionary = session.pending.duplicate(true)
 	if pending.get("type") != "shop" or not session.resolve_request({"request_id": pending.request_id, "status": "completed"}):
 		return ERR_INVALID_DATA
+	RunUpgrades.award_node(run, str(pending.map_id), str(pending.node_id))
 	var error: Error = _gateway.save_current()
 	if error != OK:
+		run.inventory_state = old_inventory
 		session.restore_state(old_state)
 		# restore_state 会更新回调令牌，弹窗必须同步。
 		_shop_popup.request = session.pending.duplicate(true)

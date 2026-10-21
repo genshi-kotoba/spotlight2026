@@ -5,6 +5,7 @@ const DATA_PATH := "res://data/relics/test_fragments.csv"
 const FORMAL_PATH := "res://data/relics/fragments.csv"
 # 仅保留旧存档 ID 的解析；不再进入生成池或拥有任何效果。
 const RETIRED_IDS := ["FRG-021"]
+const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
 static var _cache: Dictionary = {}
 
 
@@ -57,6 +58,18 @@ static func negative_ids(catalog: Dictionary) -> Array[String]:
 ## Self-describing, allowlisted ID; neither a save nor a caller can supply executable actions.
 ## Old FRG/test/composite IDs stay valid and are never rerolled on load.
 static func resolve(id: String, definitions: Dictionary = {}) -> RelicFragmentData:
+	if id.begins_with("RC1|"):
+		var original := id.trim_prefix("RC1|")
+		if original.begins_with("RC1|"): return null
+		var base := resolve(original, definitions)
+		if base == null or base.negative_action.is_empty(): return null
+		var clean: RelicFragmentData = base.duplicate(true)
+		clean.fragment_id = id
+		clean.negative_action = ""
+		clean.auxiliary_id = ""
+		clean.extra_description = ""
+		clean.description = clean.primary_description if not clean.primary_description.is_empty() else clean.description.get_slice("\n负面：", 0)
+		return clean
 	if definitions.has(id):
 		return definitions[id]
 	var values := load_definitions()
@@ -129,6 +142,8 @@ static func generate(rng: RandomStream, primary_id: String = "", auxiliary_id: S
 static func _read(path: String, result: Dictionary) -> bool:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
+		RUNTIME_LOG.event("data.load_fail", {"category": "relics", "path": path,
+			"error": FileAccess.get_open_error(), "message": "cannot open"})
 		push_error("RelicCatalog: cannot open " + DATA_PATH)
 		return false
 	file.get_csv_line()
@@ -137,6 +152,8 @@ static func _read(path: String, result: Dictionary) -> bool:
 		if row.size() == 1 and row[0].is_empty():
 			continue
 		if row.size() != 8:
+			RUNTIME_LOG.event("data.load_fail", {"category": "relics", "path": path,
+				"error": ERR_INVALID_DATA, "message": "row has %d cells" % row.size()})
 			push_error("RelicCatalog: invalid CSV row")
 			return false
 		var kinds := {"trigger": RelicFragmentData.Kind.TRIGGER,
@@ -148,6 +165,9 @@ static func _read(path: String, result: Dictionary) -> bool:
 			"vertical": RelicFragmentData.Reach.VERTICAL, "all": RelicFragmentData.Reach.ALL}
 		if row[0].is_empty() or result.has(row[0]) or not kinds.has(row[3]) \
 				or not reaches.has(row[5]) or not row[7].is_valid_int():
+			var detail := "invalid fragment " + (row[0] if not row[0].is_empty() else "<empty>")
+			RUNTIME_LOG.event("data.load_fail", {"category": "relics", "path": path,
+				"error": ERR_INVALID_DATA, "message": detail})
 			push_error("RelicCatalog: invalid fragment " + row[0])
 			return false
 		var data := RelicFragmentData.new()

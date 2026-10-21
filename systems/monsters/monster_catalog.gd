@@ -1,8 +1,18 @@
 class_name MonsterCatalog
 extends RefCounted
-## 正式怪物数值来自策划案；17 按当前测试要求暂定100血、10攻击。
-const HEALTH := [128, 64, 18, 32, 28, 24, 26, 24, 164, 135, 70, 118, 89, 46, 38, 205, 100, 101, 99, 80, 89, 50, 305]
-const DAMAGE := [10, 2, 4, 5, 0, 4, 1, 4, 3, 6, 4, 10, 6, 6, 10, 2, 10, 0, 0, 10, 3, 6, 8]
+## 正式怪物数值来自策划案；17 按当前测试要求暂定100血、10攻击；23接入第四层完整机制。
+const HEALTH := [96, 64, 18, 32, 28, 24, 26, 24, 164, 135, 70, 118, 89, 46, 38, 205, 100, 101, 99, 80, 89, 50, 305]
+const DAMAGE := [4, 2, 4, 5, 0, 4, 2, 4, 3, 6, 4, 10, 6, 6, 10, 2, 10, 0, 0, 10, 3, 6, 8]
+
+## 行动次数不是攻击段数；例如学徒先 Buff 后攻击，唱诗班一次行动可攻击五段。
+## 计划与意图共用固定行动数；不抽取随机数或提前生成计划。
+static func action_count(enemy: Dictionary) -> int:
+	match int(enemy.get("monster_id", 0)):
+		2: return 4
+		7, 23: return 3
+		1, 4, 9, 15, 21: return 2
+		11: return 2 if int(enemy.get("phase", 1)) == 1 else 1
+		_: return 1
 
 static func create(id: String, floor_index := 1, identity := "") -> Dictionary:
 	var entry := TextCatalog.entry("monsters", id)
@@ -26,7 +36,7 @@ static func plan(enemy: Dictionary, turn: int, rng: RandomStream) -> Array:
 	var result: Array = []
 	match id:
 		1:
-			result = [{"damage": 10}, {"summon": "4"} if turn >= 2 and turn % 2 == 0 else {"damage": 10}]
+			result = [{"damage": int(DAMAGE[0])}, {"summon": "4"} if turn >= 2 and turn % 2 == 0 else {"damage": int(DAMAGE[0])}]
 		2:
 			var block_at := int(rng.int_range(0, 5)) # 4代表本轮不格挡；最多一次。
 			for index in 4: result.append({"block": 1} if index == block_at else {"damage": 2})
@@ -34,7 +44,9 @@ static func plan(enemy: Dictionary, turn: int, rng: RandomStream) -> Array:
 		4: result = [{"random_buff": true}, {"damage": int(floor(5.0 * pow(1.2, max(0, turn - int(enemy.get("spawn_turn", 1))))))}]
 		5: result = [{"dot": 4}]
 		6: result = [{"damage": 4, "bleed": true}]
-		7: result = [{"damage": 1, "lifesteal": true}, {"damage": 1, "lifesteal": true}, {"damage": 1, "lifesteal": true}]
+		7:
+			for index in action_count(enemy):
+				result.append({"damage": int(DAMAGE[6]), "lifesteal": true})
 		8: result = [{"damage": 4, "forget": true}]
 		9: result = [{"damage": 3}, {"damage": 3}]
 		10: result = [{"damage": 6}]

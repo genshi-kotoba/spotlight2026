@@ -40,7 +40,7 @@ static func generate(seed_text: String, map_id: String, node_id: String, floor_i
 	for index in 3:
 		var id := str(rng.pick(enchant_ids))
 		enchantments.append({"id": id, "price": int(CardEnchantments.DEFINITIONS[id].price), "sold": false})
-	return {"version": 1, "floor": floor_index, "cards": cards, "enchantments": enchantments}
+	return {"version": 1, "floor": floor_index, "cards": cards, "enchantments": enchantments, "removals": 0, "exorcised": false}
 
 static func open(run: Node, request: Dictionary) -> Error:
 	if not _authorized(run, request):
@@ -117,6 +117,8 @@ static func valid_shops(value: Variant) -> bool:
 		var shop: Variant = value[shop_key]
 		if not shop_key is String or not shop is Dictionary or not RunStateMachine._integer_equals(shop.get("version"), 1) or not shop.get("cards") is Array or shop.cards.size() != 6 or not shop.get("enchantments") is Array or shop.enchantments.size() != 3:
 			return false
+		var removals: Variant = RunStateMachine._integer_value(shop.get("removals", 0))
+		if removals == null or removals < 0 or removals > 3 or not shop.get("exorcised", false) is bool: return false
 		var floor_index: Variant = RunStateMachine._integer_value(shop.get("floor"))
 		if floor_index == null or floor_index < 1 or floor_index > 4:
 			return false
@@ -151,3 +153,58 @@ static func valid_shops(value: Variant) -> bool:
 			if not offer is Dictionary or not CardEnchantments.DEFINITIONS.has(offer.get("id")) or not offer.get("sold") is bool or offer.get("price") != 100:
 				return false
 	return true
+
+static func removal_price(shop: Dictionary) -> int:
+	var used := int(shop.get("removals", 0))
+	return [0, 50, 100][used] if used < 3 else -1
+
+static func remove_card(run: Node, request: Dictionary, copy_id: String) -> Error:
+	if not _authorized(run, request): return ERR_UNAUTHORIZED
+	var shop := shelf(run, request)
+	if shop.is_empty(): return ERR_DOES_NOT_EXIST
+	var price := removal_price(shop)
+	run.ensure_deck_cards()
+	if price < 0 or run.gold < price or run.deck_cards.size() <= 1: return ERR_UNAVAILABLE
+	var at := -1
+	for index in run.deck_cards.size():
+		if str(run.deck_cards[index].copy_id) == copy_id: at = index
+	if at < 0: return ERR_DOES_NOT_EXIST
+	var before := RunRewards._capture(run)
+	run.gold -= price
+	run.remove_card_at(at)
+	run.inventory_state.shops[key(str(request.map_id), str(request.node_id))]["removals"] = int(shop.get("removals", 0)) + 1
+	return RunRewards._commit(run, before)
+
+static func cursed_fragments(run: Node) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var board := RunRewards.board_for_run(run)
+	for index in board.cells.size():
+		var data := RelicCatalog.resolve(board.cells[index])
+		if data != null and not data.negative_action.is_empty():
+			result.append({"token": "cell:%d" % index, "fragment_id": board.cells[index]})
+	for item: Variant in run.items:
+		if item is Dictionary and item.get("kind") == "fragment":
+			var data := RelicCatalog.resolve(str(item.fragment_id))
+			if data != null and not data.negative_action.is_empty():
+				result.append({"token": "item:" + str(item.item_id), "fragment_id": str(item.fragment_id)})
+	return result
+
+static func exorcise(run: Node, request: Dictionary, token: String) -> Error:
+	if not _authorized(run, request): return ERR_UNAUTHORIZED
+	var shop := shelf(run, request)
+	if shop.is_empty(): return ERR_DOES_NOT_EXIST
+	if bool(shop.get("exorcised", false)) or run.gold < 300: return ERR_UNAVAILABLE
+	var original := ""
+	for entry: Dictionary in cursed_fragments(run):
+		if entry.token == token: original = str(entry.fragment_id)
+	if original.is_empty(): return ERR_INVALID_PARAMETER
+	var cleaned := "RC1|" + original
+	if RelicCatalog.resolve(cleaned) == null: return ERR_INVALID_DATA
+	var before := RunRewards._capture(run)
+	if token.begins_with("cell:"):
+		run.inventory_state.relic_board.cells[int(token.trim_prefix("cell:"))] = cleaned
+	else:
+		run.items[RunRewards._item_index(run, token.trim_prefix("item:"))].fragment_id = cleaned
+	run.gold -= 300
+	run.inventory_state.shops[key(str(request.map_id), str(request.node_id))]["exorcised"] = true
+	return RunRewards._commit(run, before)

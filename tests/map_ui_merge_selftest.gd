@@ -15,7 +15,7 @@ func _run() -> void:
 	get_tree().current_scene = map
 	await _frames(6)
 	_check("正式入口使用新版2.5D渲染器并已就绪", map.is_map_ready() and map._view == MapPresentation.renderer and not map.height_layer.is_empty())
-	_check("地图表现保留main八张初始牌和12格典籍", run.deck.size() == 8 and RunRewards.board_for_run(run).cells.size() == 12)
+	_check("地图表现保留main八张初始牌和完整典籍", run.deck.size() == 8 and RunRewards.board_for_run(run).cells.size() == RelicBoard.CELL_COUNT)
 	await _capture("map-relief.png")
 	var renderer: Node2D = map._view
 	var target := _approach(map)
@@ -28,7 +28,7 @@ func _run() -> void:
 		return
 	_check("离开地图只隐藏缓存不重建或泄漏画面", MapPresentation.renderer == renderer and not renderer.visible)
 	_check("新版战斗读取真实银币和万灵药", battle.get_node("Coin/Count").text == "321" and battle.get_node("Elixir/Count").text == "2")
-	_check("新UI书页仍然12格，出牌卡面仍是手牌一半", battle._relic_book._cells.size() == 12 and is_equal_approx(battle.PLAY_CARD_SCALE, battle.HAND_CARD_SCALE * 0.5))
+	_check("新UI书页格数不变，出牌卡面仍是手牌一半", battle._relic_book._cells.size() == RelicBoard.CELL_COUNT and is_equal_approx(battle.PLAY_CARD_SCALE, battle.HAND_CARD_SCALE * 0.5))
 	var first_id := str(battle._battle.hand[0].instance_id)
 	var second_id := str(battle._battle.hand[1].instance_id)
 	battle._on_hand_card_pressed(first_id)

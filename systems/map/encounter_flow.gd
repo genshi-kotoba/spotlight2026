@@ -10,6 +10,7 @@ const IMPLEMENTED_FLOORS := 4
 const DEBUG_VICTORY_SETTING := "debug/map_battle/enable_instant_victory"
 const SandboxResources = preload("res://systems/testing/sandbox_resources.gd")
 const SandboxLayout = preload("res://systems/testing/fixed_test_map_layout.gd")
+const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
 var map_run: RefCounted
 var session: RefCounted
 var run: RunStateMachine
@@ -86,13 +87,16 @@ func begin_encounter(request: Dictionary) -> bool:
 			if member.is_empty(): return _fail("固定测试阵容缺少怪物配置")
 			member["formation_slot"] = index
 			enemies.append(member)
-	# 只在原牌组为空时使用临时联调牌，不改变正式牌组或任何解锁状态。
+	# 只在原牌组为空时使用临时联调牌，不改变正式牌组。
 	var temporary: Array = test_rules.empty_deck_fallback if run.deck.is_empty() else []
 	var error := run.start_battle(str(session.pending.node_id), enemies, 0, false,
 		int(test_rules.play_limit), false, temporary)
 	if error != OK:
 		return _fail("创建节点战斗失败：%d" % error)
 	var battle := run.current_battle
+	RUNTIME_LOG.event("map.node", {"map_id": str(session.pending.map_id),
+		"node_id": str(session.pending.node_id), "type": str(session.pending.type),
+		"floor": map_run.current_floor, "enemy_id": str(monster.id)})
 	# 固定本场战场外观，随战斗快照保存；Boss 推进楼层不影响旧战场。
 	battle.player["encounter_floor"] = map_run.current_floor
 	battle.player["encounter_rules"] = test_rules.duplicate(true)
@@ -158,6 +162,8 @@ func _on_battle_finished(result: Dictionary) -> void:
 	var pending: Dictionary = session.pending.duplicate(true)
 	var victory: bool = result.get("status") == "victory"
 	var completed: bool = victory or result.get("status") == "escaped"
+	RUNTIME_LOG.event("battle.end", {"map_id": str(pending.map_id), "node_id": str(pending.node_id),
+		"status": str(result.get("status", "")), "battle_index": int(result.get("battle_index", 0))})
 	if not session.resolve_request({"request_id": pending.request_id, "status": "completed" if completed else "failed"}):
 		_fail(session.last_error)
 		return
@@ -233,5 +239,6 @@ func waiting_for_fourth_floor() -> bool:
 
 func _fail(message: String) -> bool:
 	last_error = message
+	RUNTIME_LOG.failure("map.fail", FAILED, message)
 	push_warning("EncounterFlow: " + message)
 	return false

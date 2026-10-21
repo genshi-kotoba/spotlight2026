@@ -37,7 +37,7 @@ static func generate(seed_text: String, map_id: String, node_id: String, floor_i
 		entry["fragment_id"] = RelicCatalog.generate(rng)
 		if str(entry.fragment_id).is_empty(): return {}
 	return {"version":VERSION, "map_id":map_id, "node_id":node_id, "floor_index":floor_index,
-		"source":source_kind, "entries":[entry], "claimed":false}
+		"source":source_kind, "entries":[entry, {"id":"node-loot/" + key(map_id, node_id) + "/elixir", "kind":"elixir", "amount":2}], "claimed":false}
 
 static func open(run: Node, request: Dictionary) -> Error:
 	if not _authorized(run, request): return ERR_UNAUTHORIZED
@@ -52,6 +52,21 @@ static func open(run: Node, request: Dictionary) -> Error:
 	if not run.inventory_state.has("node_loot"): run.inventory_state.node_loot = {}
 	run.inventory_state.node_loot[address] = generated
 	var error := SaveGateway.save_current()
+	if error != OK: run.inventory_state = before
+	return error
+
+## 宝箱交互立即领取：生成、发放、账本与地图完成只落盘一次。
+## 失败时连首次生成也一同回滚；重试仍由节点种子生成同一份奖励。
+static func collect_chest(run: Node, request: Dictionary) -> Error:
+	if request.get("type") != "chest" or not _authorized(run, request): return ERR_UNAUTHORIZED
+	var before: Dictionary = run.inventory_state.duplicate(true)
+	if record(run, request).is_empty():
+		var generated := generate(str(run.main_seed), str(request.map_id), str(request.node_id), int(request.floor_index), "chest")
+		var address := key(str(request.map_id), str(request.node_id))
+		if generated.is_empty() or not valid_records({address:generated}): return ERR_INVALID_DATA
+		if not run.inventory_state.has("node_loot"): run.inventory_state.node_loot = {}
+		run.inventory_state.node_loot[address] = generated
+	var error := claim(run, request)
 	if error != OK: run.inventory_state = before
 	return error
 
@@ -70,6 +85,7 @@ static func claim(run: Node, request: Dictionary) -> Error:
 		if not RunRewards.item(run, str(entry.id)).is_empty(): return ERR_ALREADY_EXISTS
 	for entry: Dictionary in loot.entries:
 		if entry.kind == "silver": run.gold += int(entry.amount)
+		elif entry.kind == "elixir": run.inventory_state.elixir = int(run.inventory_state.elixir) + int(entry.amount)
 		elif entry.kind == "potion": run.items.append({"item_id":str(entry.id), "kind":"potion", "potion":int(entry.potion)})
 		else: run.items.append({"item_id":str(entry.id), "kind":"fragment", "fragment_id":str(entry.fragment_id)})
 	loot.claimed = true
@@ -88,6 +104,7 @@ static func claim(run: Node, request: Dictionary) -> Error:
 
 static func cancel(run: Node, request: Dictionary) -> Error:
 	if not _authorized(run, request): return ERR_UNAUTHORIZED
+	if request.get("type") == "chest": return ERR_UNAVAILABLE
 	var before: Dictionary = EncounterFlow.session.capture_state()
 	if not EncounterFlow.session.resolve_request({"request_id":request.request_id, "status":"cancelled"}): return ERR_INVALID_DATA
 	var error := SaveGateway.save_current()
@@ -122,8 +139,11 @@ static func valid_records(value: Variant) -> bool:
 				or not loot.get("map_id") is String or str(loot.map_id).is_empty() \
 				or not loot.get("node_id") is String or str(loot.node_id).is_empty() \
 				or address != key(loot.map_id, loot.node_id) or loot.get("source") not in ["chest", "pile"] \
-				or not loot.get("claimed") is bool or not loot.get("entries") is Array or loot.entries.size() != 1:
+				or not loot.get("claimed") is bool or not loot.get("entries") is Array or loot.entries.size() not in [1, 2]:
 			return false
+		if loot.entries.size() == 2:
+			var extra: Variant = loot.entries[1]
+			if not extra is Dictionary or extra.get("id") != "node-loot/" + str(address) + "/elixir" or extra.get("kind") != "elixir" or not RunStateMachine._integer_equals(extra.get("amount"), 2): return false
 		var floor_index: Variant = RunStateMachine._integer_value(loot.get("floor_index"))
 		if floor_index == null or floor_index < 1 or floor_index > 20: return false
 		var entry: Variant = loot.entries[0]

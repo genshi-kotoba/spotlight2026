@@ -36,7 +36,7 @@ func _run() -> void:
 	_approach(view)
 	await _press_e()
 	var battle_ui: Node = get_tree().current_scene
-	_check("真实交互使用八张牌与空典籍", battle_ui.scene_file_path == EncounterFlow.BATTLE_SCENE and battle_ui._battle.hand.size() == 8 and battle_ui._relics.activation_count == 0)
+	_check("真实交互按当前首抽数发牌且典籍为空", battle_ui.scene_file_path == EncounterFlow.BATTLE_SCENE and battle_ui._battle.hand.size() == battle_ui.initial_draw_count and battle_ui._relics.activation_count == 0)
 	if battle_ui.scene_file_path != EncounterFlow.BATTLE_SCENE:
 		get_tree().quit(1)
 		return
@@ -58,7 +58,7 @@ func _run() -> void:
 		await get_tree().create_timer(0.01).timeout
 	var popup: LootPopup = battle_ui._reward_popup
 	var first_battle_key := str(RunRewards.pending(run).battle_key)
-	_check("胜利停留奖励弹窗且未自动领取", is_instance_valid(popup) and RunRewards.pending(run).entries.size() == 3 and run.gold == 0 and run.items.is_empty())
+	_check("胜利停留奖励弹窗且未自动领取", is_instance_valid(popup) and RunRewards.pending(run).entries.size() == 4 and run.gold == 0 and run.items.is_empty())
 	if not is_instance_valid(popup):
 		print("REWARD_FIXTURE_DIAGNOSTIC ", JSON.stringify({"active":battle_ui._battle.active,"enemies":battle_ui._battle.enemies,"pending":RunRewards.pending(run),"busy":battle_ui._busy,"opening":battle_ui._opening,"leaving":battle_ui._leaving,"result":battle_ui._battle_result,"presentation_pending":battle_ui._presentation_pending(),"flow_error":EncounterFlow.last_error,"resolution_events":battle_ui._resolution_events}))
 		get_tree().quit(1)
@@ -66,6 +66,8 @@ func _run() -> void:
 	await _capture("ordinary-rewards.png")
 	await _click(popup._options.get_node("Reward_silver"))
 	_check("点击领取100银币，重复领取被拒绝", run.gold == 100 and RunRewards.claim(run, "silver") == ERR_ALREADY_EXISTS)
+	await _click(popup._options.get_node("Reward_elixir"))
+	_check("普通战斗领取两药且不能重复领取", int(run.inventory_state.elixir) == 2 and RunRewards.claim(run, "elixir") == ERR_ALREADY_EXISTS)
 	# 注入保存失败，保证领取标记与物资在内存中同时回滚。
 	var old_error: Error = SaveGateway._load_error
 	SaveGateway._load_error = ERR_CANT_OPEN
@@ -84,16 +86,17 @@ func _run() -> void:
 	view._open_run_menu(1)
 	await _frames(4)
 	var bag: RunMenuOverlay = view._run_menu
-	_check("背包显示真实资源及21格空位，不注入额外物品", bag._resources.text.contains("100") and bag._item_grid.get_child_count() == 21 and run.items.size() == 2 and bag._relic_cells[0].text.is_empty())
+	_check("背包显示真实资源及平台容量空位，不注入额外物品", bag._resources.text.contains("100") and bag._item_grid.get_child_count() == bag.ITEM_CAPACITY and run.items.size() == 2 and bag._relic_cells[0].text.is_empty())
 	var fragment_pack_id := _pack_id(run, "fragment_pack")
 	run.inventory_state.relic_board.cells[0] = "FRG-021"
 	await _click(bag._item_grid.get_child(0))
 	# 当前正式交互先打开使用/丢弃菜单，再通过真实鼠标选择“使用”。
-	_check("残片包点击后显示可用的使用操作", is_instance_valid(bag._item_menu) and bag._item_menu.visible and bag._item_menu._rows.get_child_count() == 2 and bag._item_menu._rows.get_child(0).text == "使用" and not bag._item_menu._rows.get_child(0).disabled)
+	var use_button := _menu_button(bag._item_menu, "使用")
+	_check("残片包点击后显示可用的使用操作", is_instance_valid(bag._item_menu) and bag._item_menu.visible and is_instance_valid(use_button) and not use_button.disabled)
 	if not is_instance_valid(bag._item_menu) or not bag._item_menu.visible:
 		get_tree().quit(1)
 		return
-	await _click(bag._item_menu._rows.get_child(0))
+	await _click(use_button)
 	popup = bag._pack_popup
 	_check("实际使用残片包后出现选择弹窗", is_instance_valid(popup))
 	if not is_instance_valid(popup):
@@ -159,7 +162,7 @@ func _run() -> void:
 			await _click(popup._options.get_node("Reward_" + str(entry.id)))
 		await _click(popup._continue_button)
 		_check(grade + "重复战斗结果不再发奖励", RunRewards.stage_victory(run, "fixture-map", "fixture-" + grade, grade, 0) == OK and RunRewards.pending(run).is_empty())
-	_check("资源合计正确", run.gold == 500 and int(run.inventory_state.elixir) == 2)
+	_check("资源合计正确", run.gold == 500 and int(run.inventory_state.elixir) == 6)
 	var rare_id := _pack_id(run, "rare_pack")
 	_check("稀有包可打开", RunRewards.open_pack(run, rare_id) == OK)
 	var rare: Array = RunRewards.item(run, rare_id).options
@@ -260,6 +263,15 @@ func _pack_id(run: RunStateMachine, kind: String) -> String:
 		if value.get("kind") == kind:
 			return str(value.item_id)
 	return ""
+
+func _menu_button(menu: Control, label: String) -> Button:
+	if not is_instance_valid(menu):
+		return null
+	for child: Node in menu.find_children("*", "Button", true, false):
+		var button := child as Button
+		if button != null and button.text == label:
+			return button
+	return null
 
 func _unique(values: Array, count: int) -> bool:
 	var seen := {}

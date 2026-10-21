@@ -32,8 +32,7 @@ func _test_card_and_buff_resolution() -> void:
 		"initial_deck": ["bonk", "spit", "one_shot"],
 		"map_ids": ["map-001", "map-002", "map-003"],
 	}
-	var error := run.initialize_new("integrated-effects-seed", config,
-		["bonk", "spit", "one_shot"])
+	var error := run.initialize_new("integrated-effects-seed", config)
 	_check("局内状态可使用新卡牌资源", error == OK)
 	if error != OK:
 		return

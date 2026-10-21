@@ -1,6 +1,6 @@
 extends Node
 
-## 开始界面的适配层。局内状态/随机/解锁仍以 main 的 GlobalState 为准。
+## 开始界面的适配层。局内状态、随机与历史记录仍以 GlobalState 为准。
 ## 地图检查点是存档顶层可选扩展，不修改状态机或伪造 active_run。
 signal save_changed
 signal save_reloaded
@@ -11,6 +11,7 @@ signal save_failed(error: int, message: String)
 const MAP_KEY := "menu_map_checkpoint"
 const PlanarRun := preload("res://state_machines/run/planar_map_run.gd")
 const SANDBOX_RESOURCES := preload("res://systems/testing/sandbox_resources.gd")
+const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
 
 var save_path := GlobalStateMachine.DEFAULT_SAVE_PATH
 var _state: GlobalStateMachine
@@ -22,6 +23,7 @@ var _error_notice := ""
 
 
 func _ready() -> void:
+	RUNTIME_LOG.install()
 	_state = get_node("/root/GlobalState") as GlobalStateMachine
 	_state.save_on_window_close = false
 	_state.save_failed.connect(_forward_error)
@@ -33,6 +35,8 @@ func _ready() -> void:
 		_load_error = _migrate_legacy_save()
 	if _load_error == OK:
 		_load_error = load_current()
+	RUNTIME_LOG.event("save.ready", {"save_path": save_path, "error": _load_error,
+		"message": _error_notice})
 
 
 func _notification(what: int) -> void:
@@ -62,7 +66,7 @@ func start_new_run(seed_text: String, config: Dictionary, overwrite_confirmed :=
 	var version := str(ProjectSettings.get_setting("application/config/seed_content_version", ""))
 	var random := SeedRegistry.new(version)
 	var prepared := RunStateMachine.new()
-	error = prepared.initialize_new(seed_text, config, _state.unlocked_cards, random)
+	error = prepared.initialize_new(seed_text, config, random)
 	if error != OK:
 		prepared.free()
 		return _fail(error, "新游戏初始化失败，原存档与进度保持不变。")
@@ -89,6 +93,8 @@ func start_new_run(seed_text: String, config: Dictionary, overwrite_confirmed :=
 		return _fail(error, "新游戏已保存，但内存载入失败，请重新启动游戏。")
 	_map_checkpoint.clear()
 	_map_view = null
+	RUNTIME_LOG.event("run.new", {"run_id": _state.current_run.run_id if _state.current_run != null else "",
+		"seed": seed_text})
 	run_started.emit()
 	save_changed.emit()
 	return OK
@@ -99,10 +105,12 @@ func continue_saved_run() -> Error:
 		return _fail(ERR_DOES_NOT_EXIST, "没有可继续的游戏。")
 	# 保存并返回菜单后，本局仍在内存中；不能再次恢复/重置随机流。
 	if _state.run_active and _state.current_run != null:
+		RUNTIME_LOG.event("run.continue", {"run_id": _state.current_run.run_id})
 		run_continued.emit()
 		return OK
 	var error := _state.continue_saved_run()
 	if error == OK:
+		RUNTIME_LOG.event("run.continue", {"run_id": _state.current_run.run_id if _state.current_run != null else ""})
 		run_continued.emit()
 	return error
 
@@ -121,6 +129,7 @@ func abandon_run() -> Error:
 		error = _state.last_error
 	if error == OK:
 		save_changed.emit()
+		RUNTIME_LOG.event("run.abandon", {})
 	return error
 
 
@@ -169,6 +178,7 @@ func save_current() -> Error:
 		return _fail(error, "保存失败，原存档已保留。")
 	_map_checkpoint = checkpoint
 	_state.last_error = OK
+	RUNTIME_LOG.event("run.save", {})
 	save_changed.emit()
 	return OK
 
@@ -182,47 +192,67 @@ func quit_game() -> void:
 
 
 func _validate_save(path: String) -> Error:
+	var loaded := _read_json(path)
+	if loaded.error == OK:
+		var data: Dictionary = loaded.data
+		RUNTIME_LOG.event("save.file", {"path": path, "present": true,
+			"active_run": data.get("active_run") is Dictionary,
+			"map_checkpoint": data.get("menu_map_checkpoint") != null,
+			"run_history": (data.get("run_history") as Array).size() if data.get("run_history") is Array else 0})
+	else:
+		RUNTIME_LOG.event("save.file", {"path": path, "present": false, "error": loaded.error})
 	var candidate := GlobalStateMachine.new()
 	candidate.save_path = path
 	var error := candidate.load_save()
 	candidate.free()
 	if error != OK:
-		return error
-	var loaded := _read_json(path)
+		return _invalid("state.load", path, {"error": error}, error)
 	if loaded.error == ERR_FILE_NOT_FOUND:
 		return OK
 	if loaded.error != OK:
-		return loaded.error
-	var extension: Variant = loaded.data.get(MAP_KEY)
+		return _invalid("file.read", path, {"error": loaded.error}, loaded.error)
+	var data_root: Dictionary = loaded.data
+	var extension: Variant = data_root.get(MAP_KEY)
 	var node_loot: Variant = {}
-	var active_data: Variant = loaded.data.get("active_run")
+	var active_data: Variant = data_root.get("active_run")
 	if active_data is Dictionary and active_data.get("run_snapshot") is Dictionary:
-		if not RunRewards.valid_items(active_data.run_snapshot.get("items")): return ERR_INVALID_DATA
+		if not RunRewards.valid_items(active_data.run_snapshot.get("items")):
+			return _invalid("items", path)
 		var inventory: Variant = active_data.run_snapshot.get("inventory_state", {})
-		if not inventory is Dictionary or not RunStateMachine._valid_inventory_state(inventory): return ERR_INVALID_DATA
+		if not inventory is Dictionary or not RunStateMachine._valid_inventory_state(inventory):
+			return _invalid("inventory_state", path)
 		var saved_battle: Variant = active_data.run_snapshot.get("current_battle")
 		if saved_battle != null:
 			if not saved_battle is Dictionary or not saved_battle.get("player") is Dictionary \
-					or not BattleStateMachine._valid_player(saved_battle.player): return ERR_INVALID_DATA
+					or not BattleStateMachine._valid_player(saved_battle.player):
+				return _invalid("battle_player", path)
 		node_loot = inventory.get("node_loot", {})
-		if not RunNodeLoot.valid_records(node_loot): return ERR_INVALID_DATA
+		if not RunNodeLoot.valid_records(node_loot):
+			return _invalid("node_loot", path)
 	if extension != null:
-		var active: Variant = loaded.data.get("active_run")
+		var active: Variant = data_root.get("active_run")
 		if not extension is Dictionary or not extension.get("snapshot") is Dictionary \
 				or not active is Dictionary or not active.get("run_snapshot") is Dictionary \
 				or extension.get("run_id") != active.run_snapshot.get("run_id"):
-			return ERR_INVALID_DATA
+			return _invalid("map_extension_shape", path)
 		var version := str(ProjectSettings.get_setting("application/config/seed_content_version", ""))
 		var candidate_map := PlanarRun.new(SeedRegistry.new(version), version)
 		if not candidate_map.restore_snapshot(extension.snapshot) or candidate_map.current_floor <= 0:
-			return ERR_INVALID_DATA
+			return _invalid("map_extension_snapshot", path)
 		if JSON.stringify(extension.snapshot.get("seed_snapshot")) != JSON.stringify(active.get("seed_snapshot")):
-			return ERR_INVALID_DATA
+			return _invalid("map_seed_mismatch", path)
 		if not RunNodeLoot.valid_map_records(node_loot, extension.snapshot.floors):
-			return ERR_INVALID_DATA
+			return _invalid("map_node_loot", path)
 	elif not node_loot.is_empty():
-		return ERR_INVALID_DATA
+		return _invalid("node_loot_without_map", path)
 	return OK
+
+
+## 校验失败统一从这里出去：日志里留下是哪一项不合法，不然只有一个裸错误码。
+## code 默认 ERR_INVALID_DATA；真实读写错误原样透传，调用方拿到的码与之前一致。
+func _invalid(reason: String, path: String, extra: Dictionary = {}, code: Error = ERR_INVALID_DATA) -> Error:
+	RUNTIME_LOG.event("data.invalid", {"reason": reason, "path": path, "extra": extra})
+	return code
 
 
 func load_current() -> Error:
@@ -318,11 +348,13 @@ func _write_json(path: String, data: Dictionary) -> Error:
 
 
 func _forward_error(error: int, message: String) -> void:
+	RUNTIME_LOG.failure("save.state_fail", error, message)
 	_error_notice = message
 	save_failed.emit(error, message)
 
 
 func _fail(error: Error, message: String) -> Error:
+	RUNTIME_LOG.failure("save.fail", error, message)
 	_error_notice = message
 	save_failed.emit(error, message)
 	return error

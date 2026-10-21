@@ -54,12 +54,11 @@ var current_battle: BattleStateMachine
 var last_error: Error = OK
 
 
-func initialize_new(seed_text: String, config: Dictionary,
-		unlocked_cards: Array, seed_source: Variant = null) -> Error:
+func initialize_new(seed_text: String, config: Dictionary, seed_source: Variant = null) -> Error:
 	if active or current_battle != null:
 		return _fail(ERR_ALREADY_IN_USE, "Run is already initialized")
 
-	var prepared := _prepare_new_config(config, unlocked_cards)
+	var prepared := _prepare_new_config(config)
 	if prepared.is_empty():
 		return last_error
 	# 覆盖存档时可先用独立随机上下文预备新局，写盘成功前不影响原局的随机流。
@@ -284,7 +283,7 @@ func change_gold(delta: int) -> Error:
 
 func add_card(card_id: String, notify: bool = true) -> Error:
 	if not active or not card_pool.has(card_id):
-		return _fail(ERR_INVALID_PARAMETER, "Card is not in this run's unlocked pool")
+		return _fail(ERR_INVALID_PARAMETER, "Card is not registered in this run's card pool")
 	ensure_deck_cards()
 	deck.append(card_id)
 	deck_cards.append(_new_deck_card(card_id))
@@ -375,7 +374,7 @@ func record_enemy_defeated(enemy_id: String) -> Error:
 
 
 func start_battle(node_id: String, enemies: Array, draw_count: int = 5,
-		discard_hand_at_turn_end: bool = false, play_limit: int = 10,
+		discard_hand_at_turn_end: bool = false, play_limit: int = 3,
 		auto_start: bool = true, temporary_deck: Array = [], player_context: Dictionary = {}) -> Error:
 	if not active or current_battle != null or node_id.strip_edges().is_empty() \
 			or enemies.is_empty() or draw_count < 0 or play_limit <= 0:
@@ -396,6 +395,7 @@ func start_battle(node_id: String, enemies: Array, draw_count: int = 5,
 		deck_instances.append(copy)
 	var battle := BattleStateMachine.new()
 	add_child(battle)
+	play_limit += RunUpgrades.play_level(self)
 	var player_config := {"health": health, "max_health": max_health, "block": 0, "silver": gold, "base_play_limit": play_limit}
 	if player_context.has("event_combat"):
 		player_config["event_combat"] = player_context.event_combat.duplicate(true)
@@ -470,14 +470,13 @@ static func history_record_from_snapshot(snapshot: Dictionary, end_result: Dicti
 	}
 
 
-func _prepare_new_config(config: Dictionary, unlocked_cards: Array) -> Dictionary:
+func _prepare_new_config(config: Dictionary) -> Dictionary:
 	var configured_run_id: Variant = config.get("run_id")
 	var configured_max: Variant = _integer_value(config.get("max_health"))
 	var configured_health: Variant = _integer_value(config.get("initial_health"))
 	var configured_gold: Variant = _integer_value(config.get("initial_gold", 0))
 	var catalog: Variant = config.get("card_catalog", [])
 	var initial_deck: Variant = config.get("initial_deck", [])
-	var starters: Variant = config.get("starter_cards", [])
 	var configured_items: Variant = config.get("initial_items", [])
 	var configured_maps: Variant = config.get("map_ids", [])
 	var rewards: Variant = config.get("reward_pool", [])
@@ -492,25 +491,18 @@ func _prepare_new_config(config: Dictionary, unlocked_cards: Array) -> Dictionar
 			or configured_max == null or configured_health == null or configured_gold == null \
 			or configured_max <= 0 or configured_health <= 0 or configured_health > configured_max \
 			or configured_gold < 0 or not _string_array_valid(catalog) \
-			or not _string_array_valid(initial_deck) or not _string_array_valid(starters) or not configured_items is Array \
+			or not _string_array_valid(initial_deck) or not configured_items is Array \
 			or not _json_safe(configured_items) or not _unique_string_array_valid(configured_maps) \
 			or not preload("res://systems/testing/sandbox_launch.gd").valid_map_count(configured_maps, configured_run_id, config.get("fixed_test_sandbox", 0) == 1) or not _string_array_valid(rewards) \
-			or not _string_array_valid(shops) or not _string_array_valid(events) \
-			or not _string_array_valid(unlocked_cards):
+			or not _string_array_valid(shops) or not _string_array_valid(events):
 		_fail(ERR_INVALID_PARAMETER, "New run config is invalid")
 		return {}
 
-	var unlocked := {}
-	for card_id: String in unlocked_cards:
-		unlocked[card_id] = true
 	var eligible: Array[String] = []
-	for card_id: String in catalog:
-		# 显式新局赠牌仅授予本局可用性，不清空/伪造局外解锁进度。
-		if unlocked.has(card_id) or starters.has(card_id):
-			eligible.append(card_id)
+	eligible.assign(catalog)
 	for card_id: String in initial_deck:
 		if not eligible.has(card_id):
-			_fail(ERR_INVALID_PARAMETER, "Initial deck contains a locked/unknown card: " + card_id)
+			_fail(ERR_INVALID_PARAMETER, "Initial deck contains an unknown card: " + card_id)
 			return {}
 	return {
 		"run_id": configured_run_id,
@@ -693,6 +685,7 @@ static func _valid_inventory_state(data: Dictionary) -> bool:
 			or serial == null or serial < 0 or not data.get("relic_board") is Dictionary \
 			or not data.get("pending_rewards") is Dictionary or not data.get("rewarded_battles") is Dictionary:
 		return false
+	if not RunUpgrades.valid_state(data): return false
 	if data.has("shops") and not RunShop.valid_shops(data.shops):
 		return false
 	if data.has("events") and not RunRandomEvents.valid_events(data.events): return false
@@ -717,6 +710,7 @@ static func _valid_inventory_state(data: Dictionary) -> bool:
 			or pending.get("grade") not in ["普通", "精英", "BOSS"] or not pending.get("entries") is Array:
 		return false
 	var kinds: Array = ["silver", "fragment_pack", "common_pack"] if pending.grade == "普通" else ["silver", "elixir", "fragment_pack", "common_pack", "rare_pack"]
+	if pending.grade == "普通" and pending.entries.size() == 4: kinds.append("elixir")
 	# 保留旧版五项未领奖存档；新版精英/BOSS末尾追加附魔书。
 	if pending.grade != "普通" and pending.entries.size() == 6: kinds.append("enchantment_book")
 	if pending.entries.size() != kinds.size():
@@ -725,7 +719,7 @@ static func _valid_inventory_state(data: Dictionary) -> bool:
 		var entry: Variant = pending.entries[index]
 		var amount := (100 if pending.grade == "普通" else 200) if index == 0 else 1
 		if not entry is Dictionary or entry.get("id") != kinds[index] or entry.get("kind") != kinds[index] \
-				or not _integer_equals(entry.get("amount"), amount) or not entry.get("claimed") is bool:
+				or (not _integer_equals(entry.get("amount"), amount) and not (kinds[index] == "elixir" and _integer_equals(entry.get("amount"), 2))) or not entry.get("claimed") is bool:
 			return false
 	return true
 

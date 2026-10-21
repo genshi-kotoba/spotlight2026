@@ -53,10 +53,10 @@ func _test_run_state_and_seed_restore() -> void:
 	var stats: Array[StringName] = []
 	run.stat_updated.connect(func(metric: StringName, _value: Variant): stats.append(metric))
 	var error := run.initialize_new(
-		"state-machine-seed", _base_run_config("run-test-001"), ["card-a", "card-b"]
+		"state-machine-seed", _base_run_config("run-test-001")
 	)
 	_check("新局初始化成功", error == OK)
-	_check("锁定卡未进入局内卡池", run.card_pool == ["card-a", "card-b"])
+	_check("配置的所有卡牌直接进入局内卡池", run.card_pool == ["card-a", "card-b", "card-locked"])
 	_check("三张地图已初始化", run.map_ids.size() == 3 and run.map_states.size() == 3)
 	_check("奖励/商店/事件池已初始化",
 		run.reward_pool.size() == 3 and run.shop_pool.size() == 3 and run.event_pool.size() == 3)
@@ -64,7 +64,7 @@ func _test_run_state_and_seed_restore() -> void:
 	run.change_gold(5)
 	run.change_health(-2)
 	run.update_map_node("map-001", "hex:1,2", {"visited": true, "kind": "event"})
-	_check("可触发成就的数值均发出更新信号",
+	_check("局内数值仍正常发出更新信号",
 		stats.has(&"gold") and stats.has(&"health") and stats.has(&"map_node_updates"))
 
 	var run_snapshot := run.to_dictionary()
@@ -216,8 +216,6 @@ func _test_global_save_round_trip() -> void:
 
 	var global_state := GlobalStateMachine.new()
 	global_state.save_path = path
-	global_state.unlock_card("card-a")
-	global_state.unlock_card("card-b")
 	global_state.set_setting("master_volume", 0.75)
 	_check("非有限浮点数不能写入 JSON 设置",
 		global_state.set_setting("invalid_number", INF) == ERR_INVALID_PARAMETER)
@@ -230,8 +228,8 @@ func _test_global_save_round_trip() -> void:
 	loaded.save_path = path
 	error = loaded.load_save()
 	_check("JSON 存档可读取", error == OK)
-	_check("局外设置与解锁恢复",
-		loaded.settings.get("master_volume") == 0.75 and loaded.unlocked_cards == ["card-a", "card-b"])
+	_check("局外设置恢复，保存不再依赖解锁字段",
+		loaded.settings.get("master_volume") == 0.75 and not loaded.capture_save_data().has("unlocked_cards"))
 	_check("活动局可继续", loaded.has_continuable_run())
 	error = loaded.continue_saved_run()
 	_check("继续游戏同时恢复随机和局内状态", error == OK and loaded.current_run != null)

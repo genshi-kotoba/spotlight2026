@@ -66,7 +66,8 @@ func show_loot(pending: Dictionary) -> void:
 	request = pending.duplicate(true)
 	_heading.text = "发现残堆" if request.get("type") == "pile" else "发现宝箱"
 	_image.texture = load("res://assets/map_nodes/alchemy/%s.png" % str(request.type))
-	_ensure_offer()
+	if request.get("type") == "chest": _claim()
+	else: _ensure_offer()
 
 func _ensure_offer() -> void:
 	var error := RunNodeLoot.open(_run, request)
@@ -75,19 +76,24 @@ func _ensure_offer() -> void:
 
 func _render() -> void:
 	var loot := RunNodeLoot.record(_run, request)
-	_claim_button.text = "重试开启" if loot.is_empty() else ("已领取" if _claimed else "领取")
+	var chest: bool = request.get("type") == "chest"
+	_claim_button.text = "重试领取" if chest and not _claimed else "重试开启" if loot.is_empty() else ("已领取" if _claimed else "领取")
 	_claim_button.disabled = _claimed
-	_close_button.text = "继续探索" if _claimed else "稍后领取"
+	_close_button.text = "继续探索" if _claimed else "领取成功后继续" if chest else "稍后领取"
+	_close_button.disabled = chest and not _claimed
 	_set_description("正在确认箱中物品……")
+	var descriptions: Array[String] = []
 	for entry: Dictionary in loot.get("entries", []):
-		if entry.kind == "silver": _set_description("银币 × %d" % int(entry.amount))
-		elif entry.kind == "potion": _set_description("药水 × 1\n%s" % RunRandomEvents.POTIONS[int(entry.potion)])
+		if entry.kind == "elixir": descriptions.append("万灵药 × %d" % int(entry.amount))
+		elif entry.kind == "silver": descriptions.append("银币 × %d" % int(entry.amount))
+		elif entry.kind == "potion": descriptions.append("药水 × 1\n%s" % RunRandomEvents.POTIONS[int(entry.potion)])
 		else:
 			var fragment: RelicFragmentData = RelicCatalog.resolve(str(entry.fragment_id))
 			if fragment != null:
-				_set_description("典籍残片\n" + fragment.rich_text(32), true)
+				descriptions.append("典籍残片\n" + fragment.rich_text(32))
 			else:
-				_set_description("典籍残片（描述暂不可用）")
+				descriptions.append("典籍残片（描述暂不可用）")
+	if not descriptions.is_empty(): _set_description("\n\n".join(descriptions), true)
 
 func _set_description(text: String, rich: bool = false) -> void:
 	_description.bbcode_enabled = rich
@@ -96,10 +102,11 @@ func _set_description(text: String, rich: bool = false) -> void:
 func _claim() -> void:
 	if _working or _claimed: return
 	_working = true
-	if RunNodeLoot.record(_run, request).is_empty():
+	var chest: bool = request.get("type") == "chest"
+	if not chest and RunNodeLoot.record(_run, request).is_empty():
 		_ensure_offer(); _working = false; return
 	var completed_request := request.duplicate(true)
-	var error := RunNodeLoot.claim(_run, request)
+	var error := RunNodeLoot.collect_chest(_run, request) if chest else RunNodeLoot.claim(_run, request)
 	_working = false
 	if error == OK:
 		_claimed = true
@@ -117,6 +124,7 @@ func _refresh_request() -> void:
 
 func _close() -> void:
 	if _working: return
+	if request.get("type") == "chest" and not _claimed: return
 	_working = true
 	var error: Error = OK if _claimed else close_handler.call(request) if close_handler.is_valid() else ERR_UNCONFIGURED
 	_working = false

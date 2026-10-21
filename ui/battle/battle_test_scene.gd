@@ -6,9 +6,9 @@ extends Control
 signal presentation_event(kind: String, data: Dictionary)
 
 ## 可在检查器调整的测试参数。
-@export_range(0, 20, 1) var initial_draw_count := 12
-@export_range(1, 20, 1) var play_limit := 10
-@export_range(0, 20, 1) var per_turn_draw_count := 2
+@export_range(0, 20, 1) var initial_draw_count := 6
+@export_range(1, 20, 1) var play_limit := 3
+@export_range(0, 20, 1) var per_turn_draw_count := 3
 ## 结算收尾的上限。有真实效果反馈的牌实际等待跟着这张牌播出的动画走（见
 ## `CombatFeedback.card_animation_time`），只有上限才用这个数；上限与动画时长的
 ## 比例在 `FEEDBACK_SETTLE_SHARE`。
@@ -22,6 +22,9 @@ signal presentation_event(kind: String, data: Dictionary)
 ## 常规提速的上限。再快就看不清指针落点，重结算部分另有应急档。
 @export_range(1.0, 5.0, 0.1) var resolution_max_speed := 2.2
 @export_range(0.05, 3.0, 0.05) var enemy_turn_delay := 0.75
+## 每次行动与每段攻击独立播放，避免低伤害连击在同帧覆盖；不阻塞规则队列。
+@export_range(0.0, 1.0, 0.01) var enemy_action_delay := 0.12
+@export_range(0.15, 1.0, 0.01) var enemy_hit_delay := 0.32
 @export_range(1.0, 2.0, 0.05) var hand_hover_multiplier := 1.5
 ## 悬停放大用短过渡：0.42 的弹簧节奏经试玩判定为拖沓。
 @export_range(0.0, 1.0, 0.01) var hand_hover_duration := 0.06
@@ -452,6 +455,8 @@ func _on_enemy_slot_selected(enemy_id: String) -> void:
 
 
 func _exit_tree() -> void:
+	for instance_id: String in _card_transfers.keys():
+		_cancel_card_transfer(instance_id)
 	# 全部临时状态只属于此场景；退出不碰真实战斗队列与保存状态。
 	for animation: Tween in _relic_flash_tweens.values():
 		if animation != null and animation.is_valid(): animation.kill()
@@ -545,7 +550,7 @@ func _setup_test_run() -> bool:
 	_test_run.deck.clear()
 	for card_id: String in _initial_deck_from_config():
 		_test_run.deck.append(card_id)
-	RunRewards.allow_detached_edit = true
+	_test_run.set_meta("battle_test_sandbox", true)
 	_run_menu.set_run_override(_test_run)
 	_run_menu.relic_board_updated.connect(_refresh_relic_hud)
 	_refresh_backpack()
@@ -852,6 +857,7 @@ func _queue_presentation(kind: String, fields: Dictionary = {}) -> void:
 		or bool(current.metadata.get("relic_effect", false)))
 	var event := {
 		"kind": kind,
+		"monster_attack": str(current.metadata.get("monster_attack", "")) if current != null else "",
 		"from_relic": from_relic,
 		"turn": _battle.turn_number,
 		"player": _battle.player.duplicate(true),
@@ -908,7 +914,13 @@ func _on_rule_event_processed(event: BattleEvent) -> void:
 		# event_processed 在规则追加本次召唤后触发；保留每次增长的独立整队快照。
 		_queue_presentation("enemy_spawned")
 	elif event.type == &"enemy.action_requested":
-		_queue_presentation("enemy_action", {"entity_id": str(event.payload.get("enemy_id", ""))})
+		_queue_presentation("enemy_action", {
+			"entity_id": str(event.payload.get("enemy_id", "")),
+			"action_index": int(event.payload.get("action_index", 1)),
+			"action_count": int(event.payload.get("action_count", 1)),
+		})
+	elif event.type == &"flow.enemy.resolved":
+		_queue_presentation("enemy_action_end")
 	elif event.type in [&"enemy.intents_ready", &"enemy.intents_changed"]:
 		_queue_presentation("intent_updated")
 
@@ -1229,7 +1241,7 @@ func _drain_resolution_events() -> void:
 		# 有真实结算内容，或触发了典籍，这张牌就不算「只动了指针」。
 		if ordinary_effect or kind.begins_with("relic_"):
 			_card_pointer_only = false
-		if ordinary_effect or kind in ["card_start", "card_end", "enemy_turn", "turn_started"]:
+		if ordinary_effect or kind in ["card_start", "card_end", "enemy_turn", "enemy_action", "enemy_action_end", "turn_started"]:
 			await _wait_relic_presentation()
 			if not is_inside_tree(): return
 		_presentation_kind = kind
@@ -1297,6 +1309,20 @@ func _drain_resolution_events() -> void:
 				_set_pointer("")
 				phase_label.text = "怪物回合"
 				await _wait_resolution(enemy_turn_delay)
+				if not is_inside_tree(): return
+			"enemy_action":
+				var acting_name := "怪物"
+				for enemy: Dictionary in event["enemies"]:
+					if str(enemy.enemy_id) == str(event.entity_id):
+						acting_name = str(enemy.get("name", "怪物"))
+						break
+				phase_label.text = "%s · 第 %d/%d 次行动" % [
+					acting_name, int(event.action_index), int(event.action_count)]
+				_queue_refresh()
+				await _wait_resolution(enemy_action_delay)
+				if not is_inside_tree(): return
+			"enemy_action_end":
+				await _wait_resolution(enemy_action_delay)
 				if not is_inside_tree(): return
 			"card_destroyed":
 				_queue_refresh()
@@ -1369,6 +1395,12 @@ func _play_damage_feedback(event: Dictionary) -> void:
 	var damage := int(event["damage"])
 	var blocked := int(event["blocked"])
 	_feedback.on_damaged(side, damage, blocked, str(event.get("entity_id", "")))
+	# 包含全额格挡的攻击也占一拍；五连击与三个独立行动都能逐次看清。
+	# 快照已先应用，等待使血条有时间完成本次过渡，不拿最终状态倒灌中间帧。
+	if not str(event.get("monster_attack", "")).is_empty():
+		_queue_refresh()
+		await _wait_resolution(enemy_hit_delay)
+		if not is_inside_tree(): return
 	var lost := maxi(damage - blocked, 0)
 	if lost <= 0:
 		return
@@ -1821,9 +1853,16 @@ func _transfer_source(instance_id: String, from_play: bool) -> CardView:
 func _begin_card_transfer(card: Dictionary, destination: String, from_play := false) -> void:
 	var instance_id := str(card.instance_id)
 	var source := _transfer_source(instance_id, from_play)
-	if source == null:
+	if source == null and destination != "hand":
 		return
-	var source_transform := get_global_transform_with_canvas().affine_inverse() * source.get_global_transform_with_canvas()
+	var inverse := get_global_transform_with_canvas().affine_inverse()
+	var source_transform: Transform2D
+	if destination == "hand":
+		var center := inverse * draw_button.get_global_rect().get_center()
+		var travel_scale := Vector2.ONE * CARD_TRANSFER.TRAVEL_SCALE
+		source_transform = Transform2D(0.0, travel_scale, 0.0, center - Vector2(240, 409) * travel_scale)
+	else:
+		source_transform = inverse * source.get_global_transform_with_canvas()
 	# 快速出牌/取消时不留下重影；前一飞牌若尚未落位，则从其当前位置继续。
 	if _card_transfers.has(instance_id):
 		var old_ghost: Control = _card_transfers[instance_id].ghost
@@ -1840,7 +1879,7 @@ func _begin_card_transfer(card: Dictionary, destination: String, from_play := fa
 	view.apply_compact_layout(HAND_CARD_SCALE, px.x, px.y)
 	ghost.add_child(view)
 	add_child(ghost)
-	# 等待出牌列布局和自动滚动结束，再启动；等待期间保留源牌的真实姿态。
+	# 等待手牌/出牌列布局和自动滚动结束，再启动；等待期间保留起飞姿态。
 	ghost.size = Vector2(480, 818)
 	ghost.pivot_offset = ghost.size * 0.5
 	ghost.position = source_transform * ghost.pivot_offset - ghost.pivot_offset
@@ -1850,7 +1889,8 @@ func _begin_card_transfer(card: Dictionary, destination: String, from_play := fa
 	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_card_transfers[instance_id] = {"ghost": ghost, "destination": destination, "from_play": from_play}
 	ghost.completed.connect(_finish_card_transfer.bind(instance_id, ghost))
-	source.modulate.a = 0.0
+	if source != null:
+		source.modulate.a = 0.0
 	call_deferred("_launch_card_transfer", instance_id, ghost, source_transform)
 
 
@@ -1866,22 +1906,42 @@ func _launch_card_transfer(instance_id: String, ghost: Control, source_transform
 
 
 ## 飞牌只剩弃牌，目标固定为弃牌堆按钮。
-func _card_transfer_target(_instance_id: String) -> Dictionary:
+func _card_transfer_target(instance_id: String) -> Dictionary:
+	var transfer: Dictionary = _card_transfers[instance_id]
 	var inverse := get_global_transform_with_canvas().affine_inverse()
+	if str(transfer.destination) in ["play", "hand"]:
+		var in_play := str(transfer.destination) == "play"
+		var view := _transfer_source(instance_id, in_play)
+		if view != null:
+			var transform := inverse * view.get_global_transform_with_canvas()
+			return {"center": transform * Vector2(240, 409), "scale": transform.get_scale().x,
+				"rotation": transform.get_rotation()}
+		if not in_play:
+			return {"center": inverse * hand_cards.get_global_rect().get_center(), "scale": HAND_CARD_SCALE}
+		return {"center": inverse * _play_area_rect().get_center(), "scale": PLAY_CARD_SCALE}
 	return {"center": inverse * discard_button.get_global_rect().get_center(), "scale": 0.025}
 
 
 func _hide_transfer_targets() -> void:
-	# 飞牌只剩弃牌：从手牌入弃隐藏手牌，从出牌区入弃隐藏出牌列。
 	for instance_id: String in _card_transfers:
-		var view := _transfer_source(instance_id, bool(_card_transfers[instance_id].from_play))
-		if view != null:
-			view.modulate.a = 0.0
+		var transfer: Dictionary = _card_transfers[instance_id]
+		if str(transfer.destination) == "play" or bool(transfer.from_play):
+			var view := _transfer_source(instance_id, true)
+			if view != null:
+				view.modulate.a = 0.0
+		else:
+			var view := _transfer_source(instance_id, false)
+			if view != null:
+				view.modulate.a = 0.0
 
 
 func _finish_card_transfer(instance_id: String, ghost: Control) -> void:
 	if not _card_transfers.has(instance_id) or _card_transfers[instance_id].ghost != ghost:
 		return
+	if str(_card_transfers[instance_id].destination) in ["play", "hand"]:
+		var view := _transfer_source(instance_id, str(_card_transfers[instance_id].destination) == "play")
+		if view != null:
+			view.modulate.a = 1.0
 	_card_transfers.erase(instance_id)
 
 
@@ -2397,6 +2457,9 @@ func _make_card_slot(card: Dictionary, card_scale: float, clickable: bool,
 ## 已经在手上的牌直接落位，不跟着重飞一遍。
 func _play_deal_animation(slots: Array[Control]) -> void:
 	var current_ids := {}
+	var actual_hand: Array[Dictionary] = _presented_hand if _busy else _battle.hand
+	for card: Dictionary in actual_hand:
+		current_ids[str(card.instance_id)] = true
 	var drawn: Array[Control] = []
 	for slot in slots:
 		var instance_id := str(slot.get_meta("instance_id"))
@@ -2537,6 +2600,9 @@ func _apply_hand_fan(hovered_slot: Control) -> void:
 				3: magnitude = fan_offset_short
 			if magnitude > 0.0:
 				offset = magnitude * factor * (1.0 if index > hovered_index else -1.0)
+			var step := minf(HAND_CARD_SIZE.x + HAND_GAP, (HAND_MAX_WIDTH - HAND_CARD_SIZE.x) / maxf(count - 1, 1.0))
+			var required := maxf(0.0, HAND_CARD_SIZE.x * (1.0 + (hand_hover_multiplier - 1.0) * 0.5) + HAND_GAP + 24.0 - absi(index - hovered_index) * step)
+			offset = maxf(absf(offset), required) * (1.0 if index > hovered_index else -1.0)
 		tween.tween_property(slot, "position:x", base_x + offset, duration)
 
 
@@ -2993,6 +3059,13 @@ func _monster_text_context() -> Dictionary:
 	var viewport_area: Rect2 = get_global_transform_with_canvas().affine_inverse() * get_viewport_rect()
 	var visible_area := Rect2(Vector2.ZERO, size).intersection(viewport_area)
 	var blocked: Array[Rect2] = []
+	# EnemyRack 立绘不避让，其中的血条、意图与 Buff 仍是应避让的 UI。
+	var inverse := get_global_transform_with_canvas().affine_inverse()
+	for slot: EnemySlot in enemy_rack.slots:
+		if not slot.is_visible_in_tree(): continue
+		for control: Control in [slot._bar, slot.name_label, slot.buff_row, slot.intent_strip, slot.shield]:
+			if control.is_visible_in_tree():
+				blocked.append((inverse * control.get_global_transform_with_canvas()) * Rect2(Vector2.ZERO, control.size))
 	for child: Node in get_children():
 		if not child is Control or not child.is_visible_in_tree() or child == _monster_text \
 				or child.name in [&"Background", &"BackgroundDim", &"EnemyRack", &"RunMenuOverlay", &"PeekLayer", &"CombatFeedback", &"BuffTip", &"IntentTip"]:
@@ -3246,7 +3319,7 @@ func _chosen_enemy_id() -> String:
 ## 药水原地弹选项，两者都不再占用这里的按钮位。
 func _refresh_battle_actions() -> void:
 	if _battle == null or not is_instance_valid(_manual_discard_button): return
-	_manual_discard_button.text = "弃牌机会 %d · 手牌上限 %d" % [_relics.manual_discard_count() if _relics != null else 0, int(_battle.player.get("hand_limit", 10))]
+	_manual_discard_button.text = "弃牌机会 %d" % [_relics.manual_discard_count() if _relics != null else 0]
 	_manual_discard_button.disabled = _busy or _relics == null or _relics.manual_discard_count() <= 0
 
 

@@ -19,6 +19,7 @@ func _run() -> void:
 	var primary: Dictionary = scene._battle.enemies[0]
 	var owner := str(primary.enemy_id)
 	scene._refresh_combat_status()
+	var original_portrait := scene.enemy_rack.slots[0].portrait.get_global_rect()
 	await get_tree().create_timer(0.35).timeout
 	var context := BattleEffectContext.new(scene._battle, owner, scene._resolver.buff_catalog)
 	context.damage_enemy(owner, int(primary.health), true)

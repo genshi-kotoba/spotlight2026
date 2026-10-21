@@ -25,7 +25,7 @@ func _run() -> void:
 	var scene: Node = get_tree().current_scene
 	_check("真实E打开独立随机事件场景", scene.scene_file_path == RandomEventCatalog.SCENE)
 	if scene.scene_file_path != RandomEventCatalog.SCENE: get_tree().quit(1); return
-	_check("事件页无边框无全屏暗罩", scene.get_child_count() == 2 and scene.has_node("EventBackground") and scene.has_node("OptionsColumn"))
+	_check("事件页无边框无全屏暗罩", scene.get_children().filter(func(node: Node): return node is Control).size() == 2 and scene.has_node("EventBackground") and scene.has_node("OptionsColumn"))
 	_check("背景铺满，选项列位于右侧且不出屏", scene._background.get_rect().size.is_equal_approx(scene.size) and scene.get_node("OptionsColumn").position.x >= scene.size.x * 0.5 and scene.get_node("OptionsColumn").get_rect().end.x <= scene.size.x)
 	_request = scene.request.duplicate(true)
 	var current := RunRandomEvents.state(run, _request)

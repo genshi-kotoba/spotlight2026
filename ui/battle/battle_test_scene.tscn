@@ -206,7 +206,7 @@ offset_right = 548.0
 offset_bottom = 136.0
 theme_override_colors/font_color = Color(1, 1, 1, 0.7)
 theme_override_font_sizes/font_size = 16
-text = "首抽 12  |  每回合抽 2  |  出牌上限 10"
+text = "首抽 6  |  每回合抽 3  |  出牌上限 3"
 
 [node name="PlayerPortrait" type="Control" parent="."]
 layout_mode = 0

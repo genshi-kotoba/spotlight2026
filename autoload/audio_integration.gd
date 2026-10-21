@@ -52,6 +52,36 @@ var _current_ambient_event := ""
 var _ambient_playing_id := 0
 var _current_combat_state := ""
 
+# 音乐：所有 mus_* 事件都指向同一个 Blend Container，只播一次，
+# 用 Music_Combat RTPC 0/100 自动交叉淡化探索/战斗版。
+const MUSIC_EVENT_DEFAULT := "mus_alchemy"
+const MUSIC_EVENT_BY_SCENE := {
+	"Workshop": "mus_alchemy",
+	"Slum": "mus_alchemy",
+	"Church": "mus_church",
+	"ChurchTop": "mus_church",
+}
+const MUSIC_RTPC := "Music_Combat"
+const MUSIC_EXPLORE_VALUE := 0.0
+const MUSIC_BATTLE_VALUE := 100.0
+## 换曲淡出时长（alchemy ↔ church）
+const MUSIC_EVENT_FADE_MS := 4000
+## Wwise 里 Music_Combat 的交叉区（截图：30–70）。
+## 代码只在 30↔70 之间做坡度，实际交叉淡化时长 = MUSIC_CROSSFADE_SEC。
+const MUSIC_RTPC_EDGE_LOW := 30.0
+const MUSIC_RTPC_EDGE_HIGH := 70.0
+const MUSIC_CROSSFADE_SEC := 2.5
+const AMBIENT_FADE_MS := 800
+var _music_playing_id := 0
+var _music_mode_battle := false
+var _current_music_event := ""
+var _music_rtpc_tween: Tween
+var _music_rtpc_value := 0.0
+## 场景过渡黑屏期间先记待切，等 transition_finished 再真正切歌
+var _scene_transition: Node
+var _music_apply_pending := false
+var _menu_music_pending := false
+
 # 脚步：生产地图用 MapEvents.player_cell_entered，进图那一次不算迈步
 ## 用格子间隔估计步频，再用 Timer 按平滑节奏播放，避免逐格触发忽快忽慢
 const FOOTSTEP_INTERVAL_MIN_MS := 200.0
@@ -120,6 +150,13 @@ func _ready() -> void:
 	_footstep_timer.timeout.connect(_on_footstep_tick)
 	add_child(_footstep_timer)
 
+	_scene_transition = get_node_or_null("/root/SceneTransition")
+	if _scene_transition != null:
+		if _scene_transition.has_signal("transition_finished"):
+			_scene_transition.transition_finished.connect(_on_scene_transition_finished)
+		if _scene_transition.has_signal("transition_failed"):
+			_scene_transition.transition_failed.connect(_on_scene_transition_failed)
+
 	_global = get_node_or_null(GLOBAL_STATE_PATH)
 	if _global != null:
 		_global.run_started.connect(_on_run_started)
@@ -147,15 +184,15 @@ func _on_node_added(node: Node) -> void:
 		_connect_slider(node)
 	elif node is MapScene:
 		# MapScene 的 @onready 成员要等 _ready 后才赋值
-		node.ready.connect(_connect_map_scene.bind(node), CONNECT_ONE_SHOT)
+		_connect_once(node.ready, _connect_map_scene.bind(node), CONNECT_ONE_SHOT)
 	elif node is BattleStateMachine:
 		_connect_battle(node)
 	elif node is BattleTestScene:
 		_connect_battle_ui(node)
 	elif node is RunMenuOverlay:
-		node.visibility_changed.connect(_on_run_menu_visibility_changed.bind(node))
+		_connect_once(node.visibility_changed, _on_run_menu_visibility_changed.bind(node))
 	elif node is MonsterBattleText:
-		node.sentence_started.connect(_on_monster_text_sentence)
+		_connect_once(node.sentence_started, _on_monster_text_sentence)
 
 
 func _connect_button(btn: Button) -> void:
@@ -163,9 +200,9 @@ func _connect_button(btn: Button) -> void:
 	if _connected_ui.has(id):
 		return
 	_connected_ui[id] = true
-	btn.mouse_entered.connect(_play_ui.bind(UI_SFX["hover"]))
-	btn.pressed.connect(_on_ui_button_pressed.bind(btn))
-	btn.tree_exited.connect(func() -> void: _connected_ui.erase(id))
+	_connect_once(btn.mouse_entered, _play_ui.bind(UI_SFX["hover"]))
+	_connect_once(btn.pressed, _on_ui_button_pressed.bind(btn))
+	_connect_once(btn.tree_exited, func() -> void: _connected_ui.erase(id), CONNECT_ONE_SHOT)
 
 
 func _on_ui_button_pressed(btn: Button) -> void:
@@ -223,8 +260,8 @@ func _connect_slider(slider: HSlider) -> void:
 	if _connected_ui.has(id):
 		return
 	_connected_ui[id] = true
-	slider.mouse_entered.connect(_play_ui.bind(UI_SFX["hover"]))
-	slider.tree_exited.connect(func() -> void: _connected_ui.erase(id))
+	_connect_once(slider.mouse_entered, _play_ui.bind(UI_SFX["hover"]))
+	_connect_once(slider.tree_exited, func() -> void: _connected_ui.erase(id), CONNECT_ONE_SHOT)
 
 
 # ------------------------------------------------------------------ Run / 成就
@@ -232,8 +269,8 @@ func _connect_slider(slider: HSlider) -> void:
 func _on_run_started(run: RunStateMachine) -> void:
 	_current_run = run
 	_update_deck_size_rtpc(run)
-	run.stat_updated.connect(_on_run_stat_updated)
-	run.battle_started.connect(_on_run_battle_started)
+	_connect_once(run.stat_updated, _on_run_stat_updated)
+	_connect_once(run.battle_started, _on_run_battle_started)
 
 
 func _on_run_battle_started(battle: BattleStateMachine) -> void:
@@ -245,6 +282,7 @@ func _on_run_finished(result: Dictionary) -> void:
 	_current_combat_state = ""
 	# 结束返回主菜单/地图时保持 Explore 状态
 	_set_combat_state("Explore")
+	_stop_music()
 
 
 func _on_run_stat_updated(metric: StringName, value: Variant) -> void:
@@ -372,19 +410,26 @@ func _connect_battle(battle: BattleStateMachine) -> void:
 		return
 	_connected_battles[id] = true
 	_current_battle = battle
-	battle.tree_exited.connect(func() -> void:
+	_connect_once(battle.tree_exited, func() -> void:
 		_connected_battles.erase(id)
 		if _current_battle == battle:
 			_current_battle = null
-	)
+	, CONNECT_ONE_SHOT)
 	# 生命周期与即时操作：走状态机
-	battle.battle_started.connect(_on_battle_started)
-	battle.battle_ended.connect(_on_battle_ended)
-	battle.card_drawn.connect(_on_card_drawn)
-	battle.discard_pile_shuffled.connect(_on_discard_pile_shuffled)
+	_connect_once(battle.battle_started, _on_battle_started)
+	_connect_once(battle.battle_ended, _on_battle_ended)
+	_connect_once(battle.card_drawn, _on_card_drawn)
+	_connect_once(battle.discard_pile_shuffled, _on_discard_pile_shuffled)
 	# 血量 RTPC 需要原始数值：只更新 RTPC，不发声（发声交给表现层）
-	battle.combatant_damaged.connect(_on_battle_health_changed)
-	battle.combatant_healed.connect(_on_battle_health_changed_heal)
+	_connect_once(battle.combatant_damaged, _on_battle_health_changed)
+	_connect_once(battle.combatant_healed, _on_battle_health_changed_heal)
+	# 存档恢复的战斗不会再发 battle_started，延后一帧检查 active 状态补同步
+	call_deferred("_sync_restored_battle", battle)
+
+
+func _connect_once(signal_source: Signal, callback: Callable, flags: int = 0) -> void:
+	if not signal_source.is_connected(callback):
+		signal_source.connect(callback, flags)
 
 
 func _on_battle_started(snapshot: Dictionary) -> void:
@@ -392,15 +437,31 @@ func _on_battle_started(snapshot: Dictionary) -> void:
 	_combo_count = 0
 	_set_rtpc("Combo_Count", 0.0)
 	_set_combat_state("Battle")
+	_apply_music_for_state()
 	_play("SFX_022_TRANS_EnterBattle")
 	var player: Dictionary = snapshot.get("player", {})
 	_update_health_rtpc(int(player.get("health", 0)), int(player.get("max_health", 100)))
 
 
 func _on_battle_ended(_result: Dictionary) -> void:
-	# 胜负音效等表现层真正收尾时再播（presentation_event "battle_ended"）
 	_stop_breath()
+	# 战斗音乐先保留：领奖励、看结算时还应该听到战斗版，
+	# 真正回地图的 exit_battle 才切回探索。
 	_set_combat_state("Explore")
+
+
+## 冷恢复的战斗已经 active，但不会再次 emit battle_started。
+func _sync_restored_battle(battle: BattleStateMachine) -> void:
+	if not is_instance_valid(battle) or not battle.active:
+		return
+	_current_battle = battle
+	_presented_relic_count = 0
+	_combo_count = 0
+	_set_rtpc("Combo_Count", 0.0)
+	_set_combat_state("Battle")
+	var player: Dictionary = battle.player
+	_update_health_rtpc(int(player.get("health", 0)), int(player.get("max_health", 100)))
+	_apply_music_for_state()
 
 
 func _on_card_drawn(_card: Dictionary, _hand_size: int) -> void:
@@ -451,8 +512,8 @@ func _connect_battle_ui(ui: BattleTestScene) -> void:
 	if _connected_battle_uis.has(id):
 		return
 	_connected_battle_uis[id] = true
-	ui.presentation_event.connect(_on_battle_presentation)
-	ui.tree_exited.connect(func() -> void: _connected_battle_uis.erase(id))
+	_connect_once(ui.presentation_event, _on_battle_presentation)
+	_connect_once(ui.tree_exited, func() -> void: _connected_battle_uis.erase(id), CONNECT_ONE_SHOT)
 
 
 func _on_battle_presentation(kind: String, data: Dictionary) -> void:
@@ -497,6 +558,7 @@ func _on_battle_presentation(kind: String, data: Dictionary) -> void:
 		"exit_battle":
 			_stop_breath()
 			_play("SFX_024_Trans_ExitBattle")
+			_apply_music_for_state()
 
 
 func _on_presented_damage(data: Dictionary) -> void:
@@ -543,11 +605,17 @@ func _on_presented_relic_completed() -> void:
 func _set_scene_from_map(map_id: String) -> void:
 	var state := _map_id_to_scene_state(map_id)
 	if state == _current_scene_state:
+		# 场景没变（比如新局重进同一层）时，若音乐被停过则重新起
+		if _current_combat_state != "Battle" and _music_playing_id == 0:
+			_apply_music_for_state()
 		return
 	_current_scene_state = state
 	if _audio != null and _audio.is_ready:
 		_audio.set_state("Scene", state)
 	_apply_ambient(state)
+	# 地图里切场景时，若不在战斗中则切 calm 音乐
+	if _current_combat_state != "Battle":
+		_apply_music_for_state()
 
 
 ## 环境声是 Infinite 循环：换场景时先停旧的，再播新的，避免叠声。
@@ -559,12 +627,156 @@ func _apply_ambient(state: String) -> void:
 	if _audio == null or not _audio.is_ready:
 		return
 	if _ambient_playing_id != 0:
-		_audio.stop_event(_ambient_playing_id)
+		_audio.stop_event(_ambient_playing_id, AMBIENT_FADE_MS)
 		_ambient_playing_id = 0
 	if not ambient.is_empty():
 		var playing_id: int = _audio.play(ambient)
 		if playing_id > 0:
 			_ambient_playing_id = playing_id
+
+
+## 按当前 Scene / Combat 状态切 calm 或 battle 音乐；同一首不重播。
+## 冷启动/存档恢复时场景状态可能还没从地图事件里拿到，用当前局的 map_id 兜底。
+func _apply_music_for_state() -> void:
+	if _is_transitioning():
+		_music_apply_pending = true
+		return
+	_apply_music_for_state_now()
+
+
+func _apply_music_for_state_now() -> void:
+	var scene := _current_scene_state
+	if scene.is_empty() and is_instance_valid(_current_run):
+		scene = _map_id_to_scene_state(_current_run.current_map_id)
+	_set_music_mode(_current_combat_state == "Battle", scene)
+
+
+## 只播一次 Blend Container；探索/战斗通过 Music_Combat 自动交叉淡化。
+func _set_music_mode(battle: bool, scene: String) -> void:
+	_music_mode_battle = battle
+	if _audio == null or not _audio.is_ready:
+		return
+	var event_name: String = MUSIC_EVENT_BY_SCENE.get(scene, MUSIC_EVENT_DEFAULT)
+	var switching_event := event_name != _current_music_event or _music_playing_id == 0
+	if switching_event:
+		# 换曲时直接对齐到目标静区，再 post，避免新事件从默认交叉位置开始
+		_set_music_rtpc(MUSIC_BATTLE_VALUE if battle else MUSIC_EXPLORE_VALUE)
+	else:
+		_ramp_music_mode(battle)
+	_ensure_music_playing(event_name)
+
+
+## 只在 30↔70 之间推 RTPC；两端的静区直接跳过去，保证淡变时长就是 2.5s。
+func _ramp_music_mode(battle: bool) -> void:
+	if _audio == null or not _audio.is_ready:
+		return
+	var from := _music_rtpc_value
+	var to_edge := MUSIC_RTPC_EDGE_HIGH if battle else MUSIC_RTPC_EDGE_LOW
+	var final_value := MUSIC_BATTLE_VALUE if battle else MUSIC_EXPLORE_VALUE
+	if battle and from < MUSIC_RTPC_EDGE_LOW:
+		_apply_music_rtpc(MUSIC_RTPC_EDGE_LOW)
+		from = MUSIC_RTPC_EDGE_LOW
+	elif not battle and from > MUSIC_RTPC_EDGE_HIGH:
+		_apply_music_rtpc(MUSIC_RTPC_EDGE_HIGH)
+		from = MUSIC_RTPC_EDGE_HIGH
+	var span := MUSIC_RTPC_EDGE_HIGH - MUSIC_RTPC_EDGE_LOW
+	var duration := MUSIC_CROSSFADE_SEC * clampf(absf(to_edge - from) / span, 0.0, 1.0)
+	if duration <= 0.001:
+		_apply_music_rtpc(final_value)
+		return
+	if _music_rtpc_tween != null and _music_rtpc_tween.is_valid():
+		_music_rtpc_tween.kill()
+	_music_rtpc_tween = create_tween()
+	_music_rtpc_tween.set_trans(Tween.TRANS_LINEAR)
+	_music_rtpc_tween.tween_method(_apply_music_rtpc, from, to_edge, duration)
+	_music_rtpc_tween.finished.connect(func() -> void: _apply_music_rtpc(final_value))
+
+
+## 音乐交叉淡化 RTPC 显式设在默认 2D 发声对象上，
+## 避免某些 Blend 交叉只读 game object 作用域的值。
+func _set_music_rtpc(value: float) -> void:
+	if _audio == null or not _audio.is_ready:
+		return
+	if _music_rtpc_tween != null and _music_rtpc_tween.is_valid():
+		_music_rtpc_tween.kill()
+	_apply_music_rtpc(value)
+
+
+func _apply_music_rtpc(value: float) -> void:
+	_music_rtpc_value = value
+	if _audio == null or not _audio.is_ready:
+		return
+	var target: Node = _audio.default_game_object
+	_audio.set_rtpc(MUSIC_RTPC, value, target)
+
+
+func _ensure_music_playing(event_name: String) -> void:
+	if event_name == _current_music_event and _music_playing_id != 0:
+		return
+	if _audio == null or not _audio.is_ready:
+		return
+	if _music_playing_id != 0:
+		_audio.stop_event(_music_playing_id, MUSIC_EVENT_FADE_MS)
+		_music_playing_id = 0
+	var playing_id: int = _audio.play(event_name)
+	if playing_id > 0:
+		_music_playing_id = playing_id
+		_current_music_event = event_name
+
+
+func _is_transitioning() -> bool:
+	return _scene_transition != null and _scene_transition.has_method("is_loading") \
+		and bool(_scene_transition.call("is_loading"))
+
+
+func _on_scene_transition_finished(_path: String) -> void:
+	if _menu_music_pending:
+		_menu_music_pending = false
+		_music_apply_pending = false
+		_play_menu_music_now()
+	elif _music_apply_pending:
+		_music_apply_pending = false
+		_apply_music_for_state_now()
+
+
+func _on_scene_transition_failed(_path: String, _error: int) -> void:
+	_on_scene_transition_finished(_path)
+
+
+## 主菜单音乐（第 1/2 层 calm）；进图后由 _set_scene_from_map 接管。
+func play_menu_music() -> void:
+	if _is_transitioning():
+		_menu_music_pending = true
+		return
+	_menu_music_pending = false
+	_play_menu_music_now()
+
+
+func _play_menu_music_now() -> void:
+	_current_scene_state = ""
+	_current_combat_state = ""
+	if _audio != null and _audio.is_ready:
+		_audio.set_state("Scene", "None")
+		_audio.set_state("Combat", "Explore")
+	_stop_ambient()
+	_stop_breath()
+	_set_music_rtpc(MUSIC_EXPLORE_VALUE)
+	_ensure_music_playing(MUSIC_EVENT_DEFAULT)
+
+
+func _stop_ambient() -> void:
+	if _ambient_playing_id != 0 and _audio != null and _audio.is_ready:
+		_audio.stop_event(_ambient_playing_id, AMBIENT_FADE_MS)
+	_ambient_playing_id = 0
+	_current_ambient_event = ""
+
+
+func _stop_music() -> void:
+	if _music_playing_id != 0 and _audio != null and _audio.is_ready:
+		_audio.stop_event(_music_playing_id, MUSIC_EVENT_FADE_MS)
+	_music_playing_id = 0
+	_music_mode_battle = false
+	_current_music_event = ""
 
 
 func _call_deferred_set_scene_from_map(map_id: String) -> void:
@@ -724,5 +936,3 @@ func _guess_foot_material(map_id: String) -> String:
 			return "Stone"
 		_:
 			return "Wood"
-
-

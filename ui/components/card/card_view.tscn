@@ -51,7 +51,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 6
 
 [node name="卡框" type="TextureRect" parent="." unique_id=298441134]
 unique_name_in_owner = true

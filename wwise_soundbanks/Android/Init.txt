@@ -17,10 +17,13 @@ Game Parameter	ID	Name			Wwise Object Path	Notes
 	3891337659	Volume_Music			\Default Work Unit\Volume_Music	
 
 Audio Bus	ID	Name			Wwise Object Path	Notes
+	76192297	Scene_Slum			\Default Work Unit\Main Audio Bus\Scene_Slum	
 	85412153	Ambience			\Default Work Unit\Main Audio Bus\Ambience	
 	393239870	SFX			\Default Work Unit\Main Audio Bus\SFX	
+	1050881735	Scene_Church			\Default Work Unit\Main Audio Bus\Scene_Church	
 	1551306167	UI			\Default Work Unit\Main Audio Bus\UI	
 	2246998526	Main Audio Bus			\Default Work Unit\Main Audio Bus	
+	2277638669	Scene_Workshop			\Default Work Unit\Main Audio Bus\Scene_Workshop	
 	3170124113	Voice			\Default Work Unit\Main Audio Bus\Voice	
 	3991942870	Music			\Default Work Unit\Main Audio Bus\Music	
 

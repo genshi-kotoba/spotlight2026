@@ -15,27 +15,18 @@ const EntryFade = preload("res://ui/world_map/flat_2d/map_entry_fade.gd")
 const MAP_PATH := "res://data/config/flat_2d/demo_map.json"
 const SETTINGS_PATH := "res://data/config/flat_2d/demo_settings.json"
 const LABELS := {"battle": "普通战斗", "elite": "精英战斗", "shop": "商店", "boss": "Boss", "event": "随机事件", "chest": "宝箱", "pile": "残堆"}
-const WALK_ACCELERATION_DELAY := 2.0
-const WALK_ACCELERATION_DURATION := 1.0
-const WALK_ACCELERATION_MAX := 1.5
 ## 起步与停步的速度变化率，平面单位/秒²。按基础速度 4.2 算，起步约 0.10 秒、停步约 0.12 秒。
 const WALK_START_ACCEL := 42.0
 const WALK_STOP_ACCEL := 34.0
-## 顶着障碍还按着方向时，先给这么久的宽限，再清零加速进度。
-const WALK_BLOCKED_GRACE := 0.2
 
 @export var demo_interactions_enabled := true
 var session = Session.new()
 var cell_radius_px := 60.0
 var map_scale := 4.0
 var move_speed := 2.1
-## User-adjustable base speed; the continuous-walk bonus never changes it.
-var speed_multiplier := 2.0
-var _continuous_walk_seconds := 0.0
+## 所有地图固定 1.5 倍基础移速，保留起步与停步平滑。
+const FIXED_MOVE_MULTIPLIER := 1.5
 var _velocity := Vector2.ZERO
-## 移动中按住加速键，直接吃满连续行走的加速档。
-var _sprint_held := false
-var _blocked_seconds := 0.0
 var paused := false
 var _map_snapshot: Dictionary = {}
 var _view: Node2D
@@ -47,7 +38,6 @@ var _header: Label
 var _seed_label: Label
 var _status: Label
 var _prompt: Label
-var _speed_label: Label
 var _dialog: ConfirmationDialog
 var _dialog_request_id := ""
 var _selected := ""
@@ -179,6 +169,10 @@ func _handle_menu_hotkeys(event: InputEvent) -> bool:
 	if _run_menu == null or not event is InputEventKey or event.is_echo() or _dialog.visible:
 		return false
 	var open := _run_menu.is_open()
+	if is_instance_valid(_run_menu._upgrade_layer):
+		if event.is_action_pressed("ui_cancel"): _run_menu._close_relic_upgrade()
+		get_viewport().set_input_as_handled()
+		return true
 	var page := _run_menu.current_page()
 	if event.is_action_pressed("ui_cancel"):
 		if open:
@@ -259,9 +253,7 @@ func _on_map_fast_travel(node_id: String, map_id: String, fingerprint: String) -
 	_travel_failure = ""
 	_travel_return_paused = _menu_paused_before
 	_velocity = Vector2.ZERO
-	_sprint_held = false
 	_mouse_steering_held = false
-	_reset_walk_acceleration()
 	_run_menu.close()
 	if not _travel_effect.play(_fast_travel_portrait(), direction,
 			_commit_fast_travel.bind(node_id, map_id, fingerprint, session), _fast_travel_portrait):
@@ -287,7 +279,6 @@ func _commit_fast_travel(node_id: String, map_id: String, fingerprint: String, a
 		_travel_failure = "保存失败，仍停留原位置；请重试"
 		return false
 	_mouse_steering_held = false
-	_reset_walk_acceleration()
 	_selected = node_id if node_id in session.nearby_nodes() else ""
 	_manual_selection = not _selected.is_empty()
 	_selection_origin = session.actor_plane
@@ -397,7 +388,7 @@ func _initial_state() -> Dictionary:
 	return {}
 
 func _register_input() -> void:
-	var actions := {"map2d_left": [KEY_A, KEY_LEFT], "map2d_right": [KEY_D, KEY_RIGHT], "map2d_up": [KEY_W, KEY_UP], "map2d_down": [KEY_S, KEY_DOWN], "map2d_interact": [KEY_E], "map2d_pause": [KEY_ESCAPE], "map2d_cycle": [KEY_Q], "map2d_sprint": [KEY_SHIFT]}
+	var actions := {"map2d_left": [KEY_A, KEY_LEFT], "map2d_right": [KEY_D, KEY_RIGHT], "map2d_up": [KEY_W, KEY_UP], "map2d_down": [KEY_S, KEY_DOWN], "map2d_interact": [KEY_E], "map2d_pause": [KEY_ESCAPE], "map2d_cycle": [KEY_Q]}
 	for action in actions:
 		if not InputMap.has_action(action):
 			InputMap.add_action(action)
@@ -426,54 +417,24 @@ func _build_hud() -> void:
 	root.add_child(_run_panel)
 	_refresh_run_panel()
 	_run_panel.menu_requested.connect(_open_run_menu)
-	var bar_style := _bar_style()
 	# 冒险菜单：点头像打开，地图页里放的是同一份地图数据的放大版。
 	_run_menu = RunMenu.new()
 	_run_menu.name = "RunMenuOverlay"
 	root.add_child(_run_menu)
 	_run_menu.closed.connect(_on_run_menu_closed)
 	_run_menu.relic_board_updated.connect(_refresh_run_panel)
-	# 地图信息与调试控件放右下角，与左下的操作提示同高、左右对称。
-	var top := PanelContainer.new()
-	top.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	top.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	top.offset_left = -950
-	top.offset_right = -18
-	top.offset_top = -166
-	top.offset_bottom = -18
-	top.add_theme_stylebox_override("panel", bar_style)
-	root.add_child(top)
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 6)
-	top.add_child(box)
-	_info_column = box
+	# 底部调试面板已移除；保留非可见状态容器供地图适配器更新数据。
+	var hidden_state := VBoxContainer.new()
+	hidden_state.name = "MapInternalState"
+	hidden_state.hide()
+	root.add_child(hidden_state)
+	_info_column = hidden_state
 	_header = Label.new()
-	_header.add_theme_font_size_override("font_size", 20)
-	_header.add_theme_color_override("font_color", Color(0.910, 0.706, 0.333))
-	box.add_child(_header)
 	_seed_label = Label.new()
-	_seed_label.add_theme_font_size_override("font_size", 16)
-	_seed_label.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
-	box.add_child(_seed_label)
-	var controls := HBoxContainer.new()
-	box.add_child(controls)
-	controls.add_child(_button("重开本图", _reset_map))
-	var speed_row := HBoxContainer.new()
-	box.add_child(speed_row)
-	_speed_label = Label.new()
-	_update_speed_label()
-	_speed_label.custom_minimum_size.x = 120
-	_speed_label.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
-	speed_row.add_child(_speed_label)
-	var slider := HSlider.new()
-	slider.min_value = 0.25
-	slider.max_value = 4.0
-	slider.step = 0.25
-	slider.value = speed_multiplier
-	slider.custom_minimum_size = Vector2(230, 24)
-	slider.focus_mode = Control.FOCUS_NONE
-	slider.value_changed.connect(func(value): speed_multiplier = value; _update_speed_label())
-	speed_row.add_child(slider)
+	_prompt = Label.new()
+	_status = Label.new()
+	for label: Label in [_header, _seed_label, _prompt, _status]:
+		hidden_state.add_child(label)
 	var mini_box := PanelContainer.new()
 	mini_box.add_theme_stylebox_override("panel", CommonUiSkin.panel("small"))
 	mini_box.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
@@ -492,35 +453,6 @@ func _build_hud() -> void:
 	_mini.gui_input.connect(_on_minimap_input)
 	_mini.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	mini_column.add_child(_mini)
-	var footer := PanelContainer.new()
-	footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	footer.offset_left = 18
-	footer.offset_right = -970
-	footer.offset_top = -166
-	footer.offset_bottom = -18
-	footer.add_theme_stylebox_override("panel", bar_style)
-	root.add_child(footer)
-	var footer_box := VBoxContainer.new()
-	footer_box.add_theme_constant_override("separation", 6)
-	footer.add_child(footer_box)
-	var row := HBoxContainer.new()
-	footer_box.add_child(row)
-	_prompt = Label.new()
-	_prompt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_prompt.add_theme_font_size_override("font_size", 20)
-	_prompt.add_theme_color_override("font_color", Color(0.949, 0.890, 0.776))
-	row.add_child(_prompt)
-	var help := Label.new()
-	help.text = "WASD / 方向键移动 · E 交互 · 滚轮缩放 · Q 切换目标 · Tab 背包 · M 地图 · Esc 设置"
-	help.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
-	footer_box.add_child(help)
-	var legend := Label.new()
-	legend.text = "节点：战斗 · 商店 · 宝箱 · ? 未开启事件 · Boss · 事件开启后显示名称或专属图"
-	legend.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
-	footer_box.add_child(legend)
-	_status = Label.new()
-	_status.add_theme_color_override("font_color", Color(0.749, 0.682, 0.553))
-	footer_box.add_child(_status)
 	_dialog = ConfirmationDialog.new()
 	CommonUiSkin.style_dialog(_dialog)
 	_dialog.title = "节点接入演示"
@@ -684,32 +616,14 @@ func _physics_process(delta: float) -> void:
 	var direction := Vector2.ZERO
 	if not paused and session.pending.is_empty() and DisplayServer.window_is_focused():
 		direction = _movement_direction()
-	# 按住加速键就直接进满档，跳过连续行走的蓄力段；松手后回到原来的蓄力判定。
-	_sprint_held = not direction.is_zero_approx() and Input.is_action_pressed("map2d_sprint")
 	_advance_motion(direction, delta)
 
 func _advance_motion(direction: Vector2, delta: float) -> void:
 	var step_delta := clampf(delta, 0.0, 0.05)
 	var stopping := direction.is_zero_approx()
-	if stopping:
-		_sprint_held = false
-		_reset_walk_acceleration()
 	var rate := WALK_STOP_ACCEL if stopping else WALK_START_ACCEL
 	_velocity = _velocity.move_toward(direction * move_speed * _walking_speed_multiplier(), rate * step_delta)
-	var before: Vector2 = session.actor_plane
 	session.move_actor(_velocity * step_delta)
-	# Count collision-resolved movement, including sliding and direction changes.
-	# A fully blocked frame resets the bonus instead of charging it at a wall.
-	if session.actor_plane != before:
-		_blocked_seconds = 0.0
-		if not stopping:
-			_continuous_walk_seconds = minf(_continuous_walk_seconds + step_delta,
-				WALK_ACCELERATION_DELAY + WALK_ACCELERATION_DURATION)
-	else:
-		_blocked_seconds = 0.0 if stopping else _blocked_seconds + step_delta
-		# 擦墙一帧不算停下，顶着障碍持续过宽限期才清零加速进度。
-		if stopping or _blocked_seconds >= WALK_BLOCKED_GRACE:
-			_reset_walk_acceleration()
 	_render_path.assign(session.motion_path)
 	_render_path_length = 0.0
 	for i in range(1, _render_path.size()):
@@ -717,22 +631,7 @@ func _advance_motion(direction: Vector2, delta: float) -> void:
 	_notify_actor_cell()
 
 func _walking_speed_multiplier() -> float:
-	if _sprint_held:
-		return speed_multiplier * WALK_ACCELERATION_MAX
-	var progress := clampf((_continuous_walk_seconds - WALK_ACCELERATION_DELAY)
-		/ WALK_ACCELERATION_DURATION, 0.0, 1.0)
-	return speed_multiplier * lerpf(1.0, WALK_ACCELERATION_MAX, progress)
-
-func _reset_walk_acceleration() -> void:
-	_continuous_walk_seconds = 0.0
-	_update_speed_label()
-
-func _update_speed_label() -> void:
-	if not is_instance_valid(_speed_label):
-		return
-	var text := "移速 %.2f×（基础 %.2f×）" % [_walking_speed_multiplier(), speed_multiplier]
-	if _speed_label.text != text:
-		_speed_label.text = text
+	return FIXED_MOVE_MULTIPLIER
 
 func _movement_direction() -> Vector2:
 	if get_viewport().gui_get_focus_owner() != null:
@@ -784,7 +683,6 @@ func _process(delta: float) -> void:
 		_prompt.text = "交互目标：%s  %s%s%s" % [_node_label(node), _selected, " · 路线关口" if node.is_route_gate else "", " · 可再次访问" if session.completed.has(_selected) else ""]
 	if _status_elapsed >= 0.25:
 		_status_elapsed = 0
-		_update_speed_label()
 		_status.text = "位置 (%d, %d) · 已完成 %d / %d · %.0f FPS%s" % [_last_cell.x, _last_cell.y, session.completed.size(), session.nodes.size(), Engine.get_frames_per_second(), " · " + _toast if _toast_left > 0 else ""]
 
 func _input(event: InputEvent) -> void:
@@ -830,13 +728,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_ENTER_TREE:
-		_reset_walk_acceleration()
 	# A node's modal temporarily takes focus from the root window. Pending
 	# already blocks movement, so do not leave the map paused on its return.
 	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT and is_inside_tree():
 		_mouse_steering_held = false
-		_reset_walk_acceleration()
 		if session.pending.is_empty():
 			_resume_after_focus = not paused
 			_set_paused(true)
@@ -848,7 +743,6 @@ func _notification(what: int) -> void:
 func _set_paused(value: bool) -> void:
 	paused = value
 	_mouse_steering_held = false
-	_reset_walk_acceleration()
 	if is_instance_valid(_player):
 		_sync_actor(false)
 
@@ -860,7 +754,6 @@ func _interact() -> void:
 	if request.is_empty():
 		return
 	_mouse_steering_held = false
-	_reset_walk_acceleration()
 	if request.type == "event": _sync_view()
 	_sync_actor(false)
 	var active = session

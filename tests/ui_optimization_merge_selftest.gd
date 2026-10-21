@@ -27,7 +27,7 @@ func _run() -> void:
 	add_child(menu)
 	menu.open(1)
 	await _settle()
-	_check("UI补齐21空槽不注入物品或限制背包容量", menu._item_grid.get_child_count() == 21 and run.items.is_empty())
+	_check("UI按当前平台显示容量补齐空槽且不注入物品", menu._item_grid.get_child_count() == menu.ITEM_CAPACITY and run.items.is_empty())
 	run.items.assign([
 		{"item_id": "fragment-a", "kind": "fragment", "fragment_id": "deal_damage"},
 		{"item_id": "fragment-b", "kind": "fragment", "fragment_id": "deal_damage"},
@@ -55,11 +55,9 @@ func _run() -> void:
 	var before_item_click := JSON.stringify(run.to_dictionary())
 	await _click(menu._item_grid.get_child(0))
 	_check("真实单击残片打开选项菜单并精确选中副本", menu._item_menu != null and menu._item_menu.is_open() and menu._selected_fragment_id == "fragment-a" and JSON.stringify(run.to_dictionary()) == before_item_click)
-	# UseDiscardMenu deliberately consumes the outside press which dismisses it.
+	# 外点先收菜单，但不能吞掉同一次对典籍格的点击；一次点击即完成已选残片装配。
 	await _click(menu._relic_drop_cells[2])
-	_check("真实外点只关闭选项菜单，保留选择且不改变存档", not menu._item_menu.is_open() and menu._selected_fragment_id == "fragment-a" and JSON.stringify(run.to_dictionary()) == before_item_click)
-	await _click(menu._relic_drop_cells[2])
-	_check("关闭选项后保留真实点击空格装配方式", RunRewards.board_for_run(run).cells[2] == "deal_damage" and RunRewards.item(run, "fragment-a").is_empty())
+	_check("真实外点关闭菜单且不吞掉点击空格装配", not menu._item_menu.is_open() and RunRewards.board_for_run(run).cells[2] == "deal_damage" and RunRewards.item(run, "fragment-a").is_empty())
 	# 清除选中状态后从已装格拖回背包，走与右键相同的事务。
 	await _drag(menu._relic_drop_cells[2], menu._item_grid.get_child(3))
 	_check("拖回背包不丢失副本", RunRewards.board_for_run(run).cells[2].is_empty() and run.items.size() == 2)
@@ -110,7 +108,7 @@ func _run() -> void:
 	battle._on_play_card_hover(row.get_child(0), false, str(battle._selected_ids[0]))
 	_check("离开出牌列收起预览", not battle._resolve_preview.visible)
 	await _capture("battle.png")
-	var hand_slot: Control = battle.hand_cards.get_child(5)
+	var hand_slot: Control = battle.hand_cards.get_child(maxi(0, battle.hand_cards.get_child_count() - 1))
 	battle._on_hand_card_hover_changed(hand_slot, hand_slot.get_child(0), true)
 	await get_tree().create_timer(0.6).timeout
 	await _capture("hand-hover.png")

@@ -1,17 +1,14 @@
 extends Control
 
 const CATEGORY_LABELS := {"cards": "卡牌", "fragments": "典籍残片", "monsters": "怪物"}
-const MODE_LABELS := ["显示所有", "显示已解锁", "显示未解锁"]
 const MONSTER_LOCATIONS := {"1": "炼金工坊", "2": "贫民窟", "3": "修道院", "4": "教堂顶"}
 
 var category := "cards"
-var display_mode: TextCatalogService.DisplayMode = TextCatalogService.DisplayMode.ALL
 var visible_entries: Array[Dictionary] = []
 var detail_entry: Dictionary = {}
 var _grid: GridContainer
 var _scroll: ScrollContainer
 var _status: Label
-var _mode_button: Button
 var _category_buttons: Dictionary = {}
 var _detail: Control
 var _detail_card: CenterContainer
@@ -32,9 +29,6 @@ func _ready() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	navigation.add_child(spacer)
-	_mode_button = CatalogUi.button(MODE_LABELS[0], "DisplayMode")
-	_mode_button.pressed.connect(cycle_display_mode)
-	navigation.add_child(_mode_button)
 	_status = CatalogUi.label("")
 	_status.name = "Status"
 	body.add_child(_status)
@@ -52,7 +46,6 @@ func _ready() -> void:
 	_scroll.resized.connect(_resize_grid)
 	_build_detail()
 	TextCatalog.catalog_changed.connect(refresh)
-	TextCatalog.progress_changed.connect(refresh)
 	refresh()
 
 
@@ -66,30 +59,17 @@ func select_category(value: String) -> void:
 	refresh()
 
 
-func cycle_display_mode() -> void:
-	set_display_mode((int(display_mode) + 1) % MODE_LABELS.size())
-
-
-func set_display_mode(value: int) -> void:
-	if value < 0 or value >= MODE_LABELS.size():
-		return
-	display_mode = value as TextCatalogService.DisplayMode
-	_scroll.scroll_vertical = 0
-	refresh()
-
-
 func refresh() -> void:
 	if not is_node_ready():
 		return
-	visible_entries = TextCatalog.entries(category, display_mode)
+	visible_entries = TextCatalog.entries(category)
 	if category == "fragments":
 		visible_entries = visible_entries.filter(_is_catalog_entry_visible)
-	_mode_button.text = MODE_LABELS[int(display_mode)]
 	for key: String in _category_buttons:
 		_category_buttons[key].disabled = key == category
 	CatalogUi.clear(_grid)
 	var error := TextCatalog.error_message(category)
-	_status.text = "%s · %s · %d 项" % [CATEGORY_LABELS[category], MODE_LABELS[int(display_mode)], visible_entries.size()]
+	_status.text = "%s · %d 项" % [CATEGORY_LABELS[category], visible_entries.size()]
 	if not error.is_empty():
 		_status.text = "暂时无法读取图鉴。"
 		push_warning("图鉴读取失败：" + error)
@@ -144,7 +124,7 @@ func open_detail(id: String) -> void:
 		var labels: Array = TextCatalogService.CARD_HEADERS if category == "cards" else TextCatalogService.FRAGMENT_HEADERS
 		var keys: Array = TextCatalogService.CARD_KEYS if category == "cards" else TextCatalogService.ENTRY_KEYS
 		for i: int in keys.size():
-			# 隐藏展示字段，不修改导入数据、编号排序或解锁筛选。
+			# 隐藏展示字段，不修改导入数据和编号排序。
 			if keys[i] in ["id", "art_path", "text", "name", "effect"]:
 				continue
 			_add_detail_field(str(keys[i]), str(labels[i]), str(record.get(keys[i], "")))
