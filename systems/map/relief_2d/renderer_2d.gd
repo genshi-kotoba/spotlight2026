@@ -1808,8 +1808,15 @@ func _heap_pop(heap: Array[int]) -> int:
 
 ## 角色太阳投影与墙体遮蔽批次逐帧重建会把地图从 320 帧压到 34 帧。
 ## 阴影是低对比度的软投影，按屏幕位移和最长间隔触发即可。
-var actor_shadow_min_pixels := 6.0
-var actor_shadow_refresh_hz := 10.0
+var actor_shadow_min_pixels := 18.0
+var actor_shadow_refresh_hz := 4.0
+## 单次重建超过该耗时，下一次重建要求角色走得更远，避免墙体密集处反复掉帧。
+const ACTOR_SHADOW_COST_BUDGET_MS := 5.0
+const ACTOR_SHADOW_BACKOFF_PIXELS := 48.0
+## 同一接收面上的投影碎片过多时，逐片减去静态遮蔽的成本按平方增长。
+## 只保留面积最大的这些片，被丢掉的都是遮蔽边缘的细碎残片。
+const ACTOR_SHADOW_MAX_PIECES := 10
+var _actor_shadow_backoff := 0.0
 var _actor_shadow_dirty := true
 var _last_actor_shadow_usec := 0
 var _last_shadow_feet := Vector2(INF, INF)
@@ -1826,10 +1833,12 @@ func _refresh_actor() -> void:
 	_hidden_actor_regions.clear()
 	var feet_for_gate := project_plane(_actor_plane, _actor_height)
 	var shadows_due := _actor_shadow_dirty
-	if not shadows_due and _actor_valid:
-		shadows_due = _last_shadow_feet.distance_to(feet_for_gate) >= actor_shadow_min_pixels
-	if not shadows_due and actor_shadow_refresh_hz > 0.0:
-		shadows_due = Time.get_ticks_usec() - _last_actor_shadow_usec >= int(1000000.0 / actor_shadow_refresh_hz)
+	if not shadows_due and _actor_valid and not _wall_shadow_pending:
+		shadows_due = _last_shadow_feet.distance_to(feet_for_gate) >= maxf(actor_shadow_min_pixels, _actor_shadow_backoff)
+	if not shadows_due and actor_shadow_refresh_hz > 0.0 and not _wall_shadow_pending:
+		# 退让期间站点呼吸也放慢到接近不动，避免站着也按满速重建。
+		var hz := actor_shadow_refresh_hz * (0.4 if _actor_shadow_backoff > 0.0 else 1.0)
+		shadows_due = Time.get_ticks_usec() - _last_actor_shadow_usec >= int(1000000.0 / hz)
 	if not _actor_valid:
 		_actor_solar_shadows.clear()
 		_clear_wall_shadow_overrides()
@@ -1981,6 +1990,8 @@ func _refresh_actor() -> void:
 	if shadow_batches_due:
 		_refresh_wall_shadow_overrides()
 		_refresh_art_actor_shadow()
+		# 一次重建超预算就退让，下一段路走得更远才再重建。
+		_actor_shadow_backoff = ACTOR_SHADOW_BACKOFF_PIXELS if float(_wall_shadow_stats.build_ms) > ACTOR_SHADOW_COST_BUDGET_MS else 0.0
 	_refresh_actor_emission()
 	_refresh_actor_occlusion_hint()
 	_refresh_actor_cutaway_restore()
@@ -2117,7 +2128,12 @@ func _refresh_wall_shadow_overrides() -> void:
 	_clear_wall_shadow_overrides()
 	_wall_shadow_stats.updates+=1
 	var by_batch: Dictionary = {}
-	for shadow: Dictionary in _actor_solar_shadows:
+	var solar_shadows: Array = _actor_solar_shadows
+	if solar_shadows.size() > ACTOR_SHADOW_MAX_PIECES:
+		var ranked := solar_shadows.duplicate()
+		ranked.sort_custom(func(a, b): return absf(_signed_area(a.polygon)) > absf(_signed_area(b.polygon)))
+		solar_shadows = ranked.slice(0, ACTOR_SHADOW_MAX_PIECES)
+	for shadow: Dictionary in solar_shadows:
 		if not _is_actor_shadow_receiver(shadow.receiver): continue
 		var index := int(shadow.face_index)
 		var batch = _wall_shadow_batches.get(index)
