@@ -50,6 +50,7 @@ const RELIC_DROP_CELL_SCRIPT := "res://ui/hud/relic_drop_cell.gd"
 const USE_DISCARD_MENU_SCRIPT := "res://ui/components/use_discard_menu.gd"
 const HOVER_LIFT := preload("res://ui/components/hover_lift.gd")
 const VOLUME_SETTINGS := preload("res://ui/components/volume_settings.gd")
+const DIAGNOSTICS_SETTINGS := preload("res://ui/components/diagnostics_settings.gd")
 const ITEM_CAPACITY := ITEM_COLUMNS * ITEM_VISIBLE_ROWS # 一屏容量，不改变 main 背包规则。
 ## 立绘越出面板左/下边框，是刻意的出血。
 const SLOT_FRAME_A := "res://assets/ui/UI-004/物品边框1.png"
@@ -662,6 +663,8 @@ func _build_deck_zone(page: Control) -> void:
 func _build_settings_page(page: Control) -> void:
 	# 音量块与开始界面设置页共用一份，两处外观不会漂。
 	VOLUME_SETTINGS.build(page, Vector2(580, 292))
+	# 诊断块同样共用；跑图内也要能一键导出，测试者不必先退回主菜单。
+	DIAGNOSTICS_SETTINGS.build(page, Vector2(40, 292))
 
 	var divider := ColorRect.new()
 	divider.color = Color(0.910, 0.706, 0.333, 0.28)

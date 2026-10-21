@@ -20,6 +20,7 @@ const CARD_KEYS := ["id", "art_path", "name", "effect", "type", "text", "rarity"
 const ITEM_HEADERS := ["编号", "物品名", "图标路径", "效果文本"]
 const ITEM_KEYS := ["id", "name", "icon_path", "effect"]
 
+const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
 
 var paths: Dictionary = DEFAULT_PATHS.duplicate()
 var _tables: Dictionary = {}
@@ -46,8 +47,12 @@ func reload() -> Error:
 		if category == "fragments":
 			_tables[category] = result.records.filter(func(record: Dictionary) -> bool: return str(record.id) not in RelicCatalog.RETIRED_IDS)
 		_errors[category] = result.message
-		if result.error != OK and first_error == OK:
-			first_error = result.error
+		if result.error != OK:
+			RUNTIME_LOG.event("data.load_fail", {"category": category,
+				"path": str(paths.get(category, "")), "error": result.error,
+				"message": result.message})
+			if first_error == OK:
+				first_error = result.error
 	catalog_changed.emit()
 	return first_error
 
