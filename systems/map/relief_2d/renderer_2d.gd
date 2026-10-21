@@ -273,6 +273,7 @@ func set_sun_config(config: Dictionary, rebuild: bool = true) -> bool:
 	next.direct = clampf(next.direct, 0.0, 1.0 - next.ambient)
 	if next == _sun_config: return true
 	_sun_config = next
+	_actor_shadow_dirty = true
 	_invalidate_presentation_cache()
 	_sun_dirty = true
 	if is_rebuilding(): _request_geometry(_pending_layer,_pending_known,_pending_completed,true)
@@ -654,6 +655,7 @@ func advance_actor(displacement: Vector2, delta: float, facing_intent: Vector2 =
 
 
 func set_layer(snapshot: Dictionary, known: Dictionary, completed: Dictionary, synchronous_binding: bool = false) -> void:
+	_actor_shadow_dirty = true
 	if not _presentation_cache_plan.is_empty():
 		if _cache_config_signature()!=_presentation_cache_signature: _invalidate_presentation_cache()
 		var layout_changed := false
@@ -933,6 +935,7 @@ func is_actor_occlusion_hint_enabled() -> bool:
 func update_actor(plane: Vector2, height: float, defer_refresh: bool = false) -> void:
 	if _actor_valid and _actor_plane.is_equal_approx(plane) and is_equal_approx(_actor_height, height):
 		return
+	if not _actor_valid: _actor_shadow_dirty = true
 	_actor_plane = plane
 	_actor_height = height
 	_actor_valid = true
@@ -941,7 +944,7 @@ func update_actor(plane: Vector2, height: float, defer_refresh: bool = false) ->
 
 
 func flush_dynamic() -> void:
-	if _dynamic_dirty:
+	if _dynamic_dirty or _wall_shadow_pending:
 		_dynamic_dirty = false
 		_refresh_actor()
 
@@ -1802,34 +1805,57 @@ func _heap_pop(heap: Array[int]) -> int:
 	return result
 
 
+## 角色太阳投影与墙体遮蔽批次逐帧重建会把地图从 320 帧压到 34 帧。
+## 阴影是低对比度的软投影，按屏幕位移和最长间隔触发即可。
+var actor_shadow_min_pixels := 6.0
+var actor_shadow_refresh_hz := 10.0
+var _actor_shadow_dirty := true
+var _last_actor_shadow_usec := 0
+var _last_shadow_feet := Vector2(INF, INF)
+## 墙体批次重建推迟到下一帧，避免同一帧里投影、可见性裁剪与重构批次叠在一起。
+var _wall_shadow_pending := false
+
 func _refresh_actor() -> void:
 	_dynamic_dirty = false
 	_refresh_wall_cutaway()
 	_surface_light.refresh(self)
 	_wall_restore_regions.clear()
 	_front_faces.clear()
-	_actor_solar_shadows.clear()
 	_visible_actor_regions.clear()
 	_hidden_actor_regions.clear()
+	var feet_for_gate := project_plane(_actor_plane, _actor_height)
+	var shadows_due := _actor_shadow_dirty
+	if not shadows_due and _actor_valid:
+		shadows_due = _last_shadow_feet.distance_to(feet_for_gate) >= actor_shadow_min_pixels
+	if not shadows_due and actor_shadow_refresh_hz > 0.0:
+		shadows_due = Time.get_ticks_usec() - _last_actor_shadow_usec >= int(1000000.0 / actor_shadow_refresh_hz)
 	if not _actor_valid:
+		_actor_solar_shadows.clear()
 		_clear_wall_shadow_overrides()
+		_wall_shadow_pending = false
 		_refresh_actor_cutaway_restore()
 		_refresh_actor_occlusion_hint()
 		_refresh_actor_emission()
 		queue_redraw()
 		return
+	if shadows_due:
+		_actor_shadow_dirty = false
+		_last_actor_shadow_usec = Time.get_ticks_usec()
+		_last_shadow_feet = feet_for_gate
+		_actor_solar_shadows.clear()
 	var actor_world := Vector3(_actor_plane.x,_actor_height+ACTOR_HEIGHT*.55,_actor_plane.y)
 	_actor_light = _solar.lighting_at(actor_world)
 	_actor_atmosphere_tint = _atmosphere.tint(Color.WHITE,actor_world,Vector3.UP,_key(_plane_coord(_actor_plane)),_actor_light,_display_sun_config,false,true)
-	if is_sun_enabled():
-		for shadow: Dictionary in _solar.project_actor_shadow(_actor_plane, _actor_height, ACTOR_HEIGHT, Profile.FOOT_RADIUS, _faces, actor_animation.shadow_contour(PIXELS_PER_WORLD, _basis.y.y)):
+	if shadows_due and is_sun_enabled():
+		var projected_shadows: Array = _solar.project_actor_shadow(_actor_plane, _actor_height, ACTOR_HEIGHT, Profile.FOOT_RADIUS, _faces, actor_animation.shadow_contour(PIXELS_PER_WORLD, _basis.y.y))
+		for shadow: Dictionary in projected_shadows:
 			var receiver: Dictionary = _faces[int(shadow.face_index)]
 			if receiver.get("node_marker", false) or (receiver.has("rock") and not is_art_enabled()): continue
 			for visible in _visible_surface_regions(shadow.polygon, receiver):
 				_actor_solar_shadows.append({"polygon": visible, "factor": float(receiver.get("solar_factor", 1.0)), "receiver":receiver, "face_index":int(shadow.face_index)})
-	var feet := project_plane(_actor_plane, _actor_height)
 	# Cover the union of every original animation frame AND the foot shadow.
 	# A silhouette fitted to one idle pose leaks walking legs around foreground.
+	var feet := feet_for_gate
 	var silhouette := actor_animation.body_rect(feet)
 	var shadow := Rect2(feet + Vector2(-16, -6) * Profile.VISUAL_SCALE, Vector2(36, 14) * Profile.VISUAL_SCALE)
 	_actor_aperture = silhouette.merge(shadow).grow(1.0)
@@ -1946,8 +1972,14 @@ func _refresh_actor() -> void:
 		"duplicate_cell_keys": _duplicate_cells.duplicate(), "skipped_nodes": _skipped_nodes.duplicate(),
 		"limits": ["Scoped convex extruded hex/footprint geometry, not general intersecting art", "Static painter cycles use a reported deterministic fallback", "No general pixel-perfect sprite alpha/depth reconstruction", "Movement/collision/fog discovery are controller responsibilities"]
 	}
-	_refresh_wall_shadow_overrides()
-	_refresh_art_actor_shadow()
+	var shadow_batches_due := _wall_shadow_pending
+	_wall_shadow_pending = false
+	if shadows_due:
+		# 本帧只做投影与可见性裁剪，批次重构留到下一帧，避免单帧把两件事叠在一起。
+		_wall_shadow_pending = true
+	if shadow_batches_due:
+		_refresh_wall_shadow_overrides()
+		_refresh_art_actor_shadow()
 	_refresh_actor_emission()
 	_refresh_actor_occlusion_hint()
 	_refresh_actor_cutaway_restore()
