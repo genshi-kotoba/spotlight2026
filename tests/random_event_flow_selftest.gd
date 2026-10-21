@@ -17,7 +17,7 @@ func _run() -> void:
 	_check("地图有可交互事件节点", not id.is_empty())
 	if id.is_empty(): get_tree().quit(1); return
 	var run := SaveGateway.current_run()
-	var expected := RandomEventCatalog.index_for_node(run.main_seed, view.session.map_id, id)
+	var expected := RandomEventCatalog.index_for_map_node(run.main_seed, view.session.map_id, view.session.nodes[id])
 	var resources := ScenePreloader.node_status(view.session.map_id, id)
 	_check("事件背景和专用场景已登记预加载", int(resources.total) >= 4)
 	var seed_before := JSON.stringify(SeedService.capture_snapshot())
@@ -40,6 +40,7 @@ func _run() -> void:
 	run = SaveGateway.current_run()
 	_check("冷恢复自动进入同一随机事件而非Demo", scene.scene_file_path == RandomEventCatalog.SCENE and int(RunRandomEvents.state(run, scene.request).index) == expected)
 	var gold := run.gold
+	var elixir := int(run.inventory_state.elixir)
 	var options := RandomEventCatalog.choices(expected)
 	var button := scene._content.get_child(options.size() - 1) as Button
 	button.pressed.emit()
@@ -51,6 +52,7 @@ func _run() -> void:
 	view = get_tree().current_scene
 	_check("结果展示后自动回地图并完成原节点", view.scene_file_path == EncounterFlow.MAP_SCENE and view.session.completed.has(id) and view.session.pending.is_empty() and run.gold == gold)
 	_check("完成事件状态保留而不会重新生成奖励", run.inventory_state.events[RunRandomEvents.key(_request)].finished)
+	_check("随机事件完成不额外赠送万灵药", int(run.inventory_state.elixir) == elixir)
 	var next_id := _approach_event(view)
 	_check("还有另一个未完成事件用于测试立即返回", not next_id.is_empty() and next_id != id)
 	await _press_e()

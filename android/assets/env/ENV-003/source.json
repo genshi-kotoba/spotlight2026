@@ -1,0 +1,27 @@
+{
+  "asset_id": "ENV-003",
+  "retrieved_at": "2026-10-19",
+  "files": [
+    {
+      "name": "ENV_003_01.PNG",
+      "record": "reczz28ITaxCFQbZ",
+      "file_token": "VQBUbHIySoJknSxx1VYcoC5unoc",
+      "sha256": "38b114f103444e3bbac9ced8a5b90c10876327ce4b69cfd68d7cd537c89e49f1",
+      "runtime": "res://assets/env/ENV-003/ENV_003_01.PNG"
+    },
+    {
+      "name": "ENV_003_02.JPG",
+      "record": "reczz28ITaxCFQbZ",
+      "file_token": "KzYpbfreboY0AUxLvoRcAHu7nFk",
+      "sha256": "e8f0cd8b5976b11cc141d22bcec956bb3ec285d2fc9978ffd94db69e7da7e7d1",
+      "runtime": "res://assets/env/ENV-003/ENV_003_02.JPG"
+    },
+    {
+      "name": "ENV-003.JPG",
+      "record": "reczz28ITaxCFQbZ",
+      "file_token": "KoQ5bBecuoR5WQxkHvgcZ61insh",
+      "sha256": "4cbb7475d5e0f42dcd6ca1ea240a7e298744f1023250a3e0cef822e4abe0fc8f",
+      "runtime": "res://assets/env/ENV-003/ENV-003.JPG"
+    }
+  ]
+}

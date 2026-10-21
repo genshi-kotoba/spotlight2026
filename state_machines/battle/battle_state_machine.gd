@@ -1341,10 +1341,19 @@ func _finish_if_needed() -> bool:
 		_finish_battle("defeat")
 		return true
 	var living := 0
+	var boss_bodies := 0
+	var living_boss_bodies := 0
 	for enemy: Dictionary in enemies:
 		if int(enemy["health"]) > 0:
 			living += 1
-	if living == 0:
+		# Original Boss bodies are the objectives; their summons never hold up
+		# victory. Derive this from saved actor identity so v1 cold restores keep
+		# the same goal, including multiple original Bosses and phase changes.
+		if enemy.get("grade", "") == "BOSS" and not enemy.has("summoned_by"):
+			boss_bodies += 1
+			if int(enemy["health"]) > 0:
+				living_boss_bodies += 1
+	if (living_boss_bodies == 0 if boss_bodies > 0 else living == 0):
 		_finish_battle("victory")
 		return true
 	return false

@@ -13,6 +13,8 @@ const ACTOR_SILHOUETTE_MAX_VERTICES := 160
 const EPSILON := 0.00001
 const AREA_EPSILON := 0.0001
 const PIXEL_EPSILON := 0.001
+## 屏幕像素平方。低于该面积的投影碎片肉眼不可见，直接丢弃。
+const ACTOR_SHADOW_MIN_PIXEL_AREA := 1.0
 const DEFAULT_SUN := Vector3(-0.6, 1.0, -0.8)
 const SceneVolume = preload("res://systems/map/relief_2d/scene_volume.gd")
 
@@ -317,6 +319,8 @@ func project_actor_shadow(center: Vector2, feet_height: float, actor_height: flo
 			if not receiver_bounds.intersects(_bounds(part), true): continue
 			var overlap := _convex_intersection(part, receiver)
 			if overlap.size() < 3: continue
+			# 亚像素碎片在屏幕上不可见，但每个碎片都要走一遍可见性裁剪与批次重构。
+			if absf(_area(overlap)) < ACTOR_SHADOW_MIN_PIXEL_AREA: continue
 			var bounds := _bounds(overlap)
 			overlap_bounds = bounds if pieces.is_empty() else overlap_bounds.merge(bounds)
 			pieces.append(overlap)

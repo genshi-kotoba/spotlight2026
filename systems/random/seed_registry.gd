@@ -97,7 +97,7 @@ func capture_snapshot() -> Dictionary:
 func restore_snapshot(snapshot: Dictionary) -> Error:
 	if not _version_matches(snapshot.get("snapshot_version"), SNAPSHOT_VERSION) \
 			or not _version_matches(snapshot.get("rng_protocol_version"), RNG_PROTOCOL_VERSION) \
-			or snapshot.get("engine_build") != _engine_build \
+			or not _engine_build_matches(snapshot.get("engine_build")) \
 			or _content_version.is_empty() or snapshot.get("content_version") != _content_version:
 		return _fail("Snapshot protocol, engine build or content version is incompatible", ERR_INVALID_DATA)
 	var master: Variant = snapshot.get("main_seed")
@@ -151,6 +151,28 @@ func restore_snapshot(snapshot: Dictionary) -> Error:
 	_streams = replacement
 	last_error = OK
 	return OK
+
+
+## Steam 编辑器与官方导出模板可能来自完全相同的源码提交。
+## 发布渠道标签不改变 RNG；版本、提交哈希、协议和内容版本仍须一致。
+func _engine_build_matches(saved: Variant) -> bool:
+	if not saved is String:
+		return false
+	if saved == _engine_build:
+		return true
+	var original := String(saved).split("|", true)
+	var current := _engine_build.split("|", true)
+	if original.size() != 2 or current.size() != 2 \
+			or current[1].length() != 40 or original[1] != current[1]:
+		return false
+	return _engine_version_without_distribution(original[0]) == _engine_version_without_distribution(current[0])
+
+
+static func _engine_version_without_distribution(version: String) -> String:
+	for suffix: String in [" (steam)", " (official)"]:
+		if version.ends_with(suffix):
+			return version.trim_suffix(suffix)
+	return version
 
 
 static func _encode_address(master: String, domain: String, ids: Array,

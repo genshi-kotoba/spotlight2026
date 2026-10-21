@@ -55,7 +55,7 @@ func _init() -> void:
 static func parse_sentences(source: String) -> Array[String]:
 	var result: Array[String] = []
 	var pending := ""
-	var lines := source.trim_prefix("\uFEFF").replace("\r\n", "\n").replace("\r", "\n").split("\n")
+	var lines := source.trim_prefix(String.chr(0xFEFF)).replace("\r\n", "\n").replace("\r", "\n").split("\n")
 	for raw: String in lines:
 		var line := raw.strip_edges()
 		if line.is_empty():

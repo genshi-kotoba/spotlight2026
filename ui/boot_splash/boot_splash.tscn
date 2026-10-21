@@ -34,7 +34,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="CenterContainer/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
-text = "SPOTLIGHT 2026"
+text = "炼金术士的十日谈"
 horizontal_alignment = 1
 
 [node name="Loading" type="Label" parent="CenterContainer/VBox"]

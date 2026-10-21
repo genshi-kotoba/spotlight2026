@@ -1,0 +1,75 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="炼金术士的十日谈"
+run/main_scene="res://ui/boot_splash/boot_splash.tscn"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="spotlight2026-android"
+config/features=PackedStringArray("4.7", "Mobile")
+config/icon="res://icon.png"
+config/seed_content_version="jam-map-seed-v1"
+
+[autoload]
+
+SeedService="*res://autoload/seed_service.gd"
+GlobalState="*res://state_machines/global/global_state_machine.gd"
+MapEvents="*res://core/signals/map_events.gd"
+TextCatalog="*res://systems/text/text_catalog.gd"
+SaveGateway="*res://autoload/save_gateway.gd"
+EncounterFlow="*res://systems/map/encounter_flow.gd"
+MapPresentation="*res://autoload/map_presentation.gd"
+SceneTransition="*res://autoload/scene_transition.gd"
+ScenePreloader="*res://autoload/scene_preloader.gd"
+RegionTitles="*res://autoload/region_titles.gd"
+RunResults="*res://autoload/run_results.gd"
+WwiseRuntimeManager="*res://addons/Wwise/runtime/wwise_runtime_manager.gd"
+AudioService="*res://autoload/audio_service.gd"
+MobileInput="*res://autoload/mobile_input.gd"
+AudioIntegration="*res://autoload/audio_integration.gd"
+
+[debug]
+
+file_logging/enable_file_logging=true
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1920
+window/size/window_height_override=1080
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/card_preview/plugin.cfg", "res://addons/monster_battle_text/plugin.cfg", "res://addons/runtime_assets_export/plugin.cfg")
+
+[input_devices]
+
+pointing/emulate_mouse_from_touch=false
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"
+renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
+anti_aliasing/quality/msaa_3d=3
+
+[wwise]
+
+common_user_settings/root_output_path="res://wwise_soundbanks"
+project_settings/windows_platform_info="res://Wwise/resources/Windows.tres"
+project_settings/android_platform_info="res://Wwise/resources/Android.tres"

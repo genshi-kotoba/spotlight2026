@@ -1,0 +1,6 @@
+Auxiliary Bus	ID	Name			Wwise Object Path	Notes
+	4135238417	Reverb_Church			\Default Work Unit\Main Audio Bus\Reverb_Church	
+
+Effect plug-ins	ID	Name	Type				Notes
+	3416043182	Rev_Church	Wwise RoomVerb			
+

@@ -8,7 +8,11 @@ static func key(map_id: String, node_id: String) -> String:
 	return JSON.stringify([map_id, node_id])
 
 static func record(run: Node, request: Dictionary) -> Dictionary:
-	return run.inventory_state.get("node_loot", {}).get(key(str(request.get("map_id", "")), str(request.get("node_id", ""))), {}).duplicate(true)
+	var loot: Dictionary = run.inventory_state.get("node_loot", {}).get(key(str(request.get("map_id", "")), str(request.get("node_id", ""))), {}).duplicate(true)
+	# 旧版本已封存但尚未领取的宝箱/残堆也采用新规则；保留原随机主奖励。
+	if not loot.is_empty():
+		loot.entries = loot.entries.filter(func(entry: Dictionary): return entry.get("kind") != "elixir")
+	return loot
 
 static func generate(seed_text: String, map_id: String, node_id: String, floor_index: int, source_kind: String = "chest") -> Dictionary:
 	if source_kind not in ["chest", "pile"]: return {}
@@ -37,7 +41,7 @@ static func generate(seed_text: String, map_id: String, node_id: String, floor_i
 		entry["fragment_id"] = RelicCatalog.generate(rng)
 		if str(entry.fragment_id).is_empty(): return {}
 	return {"version":VERSION, "map_id":map_id, "node_id":node_id, "floor_index":floor_index,
-		"source":source_kind, "entries":[entry, {"id":"node-loot/" + key(map_id, node_id) + "/elixir", "kind":"elixir", "amount":2}], "claimed":false}
+		"source":source_kind, "entries":[entry], "claimed":false}
 
 static func open(run: Node, request: Dictionary) -> Error:
 	if not _authorized(run, request): return ERR_UNAUTHORIZED
@@ -52,6 +56,21 @@ static func open(run: Node, request: Dictionary) -> Error:
 	if not run.inventory_state.has("node_loot"): run.inventory_state.node_loot = {}
 	run.inventory_state.node_loot[address] = generated
 	var error := SaveGateway.save_current()
+	if error != OK: run.inventory_state = before
+	return error
+
+## 宝箱交互立即领取：生成、发放、账本与地图完成只落盘一次。
+## 失败时连首次生成也一同回滚；重试仍由节点种子生成同一份奖励。
+static func collect_chest(run: Node, request: Dictionary) -> Error:
+	if request.get("type") != "chest" or not _authorized(run, request): return ERR_UNAUTHORIZED
+	var before: Dictionary = run.inventory_state.duplicate(true)
+	if record(run, request).is_empty():
+		var generated := generate(str(run.main_seed), str(request.map_id), str(request.node_id), int(request.floor_index), "chest")
+		var address := key(str(request.map_id), str(request.node_id))
+		if generated.is_empty() or not valid_records({address:generated}): return ERR_INVALID_DATA
+		if not run.inventory_state.has("node_loot"): run.inventory_state.node_loot = {}
+		run.inventory_state.node_loot[address] = generated
+	var error := claim(run, request)
 	if error != OK: run.inventory_state = before
 	return error
 
@@ -70,7 +89,6 @@ static func claim(run: Node, request: Dictionary) -> Error:
 		if not RunRewards.item(run, str(entry.id)).is_empty(): return ERR_ALREADY_EXISTS
 	for entry: Dictionary in loot.entries:
 		if entry.kind == "silver": run.gold += int(entry.amount)
-		elif entry.kind == "elixir": run.inventory_state.elixir = int(run.inventory_state.elixir) + int(entry.amount)
 		elif entry.kind == "potion": run.items.append({"item_id":str(entry.id), "kind":"potion", "potion":int(entry.potion)})
 		else: run.items.append({"item_id":str(entry.id), "kind":"fragment", "fragment_id":str(entry.fragment_id)})
 	loot.claimed = true

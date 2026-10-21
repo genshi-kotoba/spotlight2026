@@ -5,6 +5,8 @@ const AUDIO_SETTINGS := preload("res://systems/audio/audio_settings.gd")
 ## 开始界面。只做三件事：把按钮接到 SaveGateway、把网关读到的状态画到屏上、失败时报提示条。
 ## 它不判任何游戏状态：有没有可继续的局问网关，开局之后的事归状态机。
 
+const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
+
 ## 薄装配层复用 main 的地图视图、生成器和存档状态机，不导入占位玩法。
 @export var game_scene: String = "res://ui/main_menu/menu_map_entry.tscn"
 @export var settings_scene: String = ""
@@ -29,6 +31,10 @@ var _pending_new_run := false
 
 func _ready() -> void:
 	AUDIO_SETTINGS.install()
+	# 主菜单音乐（第 1/2 层 calm）；音频未就绪时 AudioIntegration 会自行忽略
+	var audio_integration := get_node_or_null("/root/AudioIntegration")
+	if audio_integration != null and audio_integration.has_method("play_menu_music"):
+		audio_integration.play_menu_music()
 	$按钮底板.add_theme_stylebox_override("panel", CommonUiSkin.panel("panel"))
 	for button: Button in [$按钮列/继续游戏, $按钮列/新游戏, $按钮列/设置, $按钮列/图鉴, $按钮列/感谢名单, $按钮列/退出游戏]:
 		CommonUiSkin.style_button(button, Vector4(24, 12, 24, 12))
@@ -65,6 +71,7 @@ func refresh() -> void:
 
 
 func _on_continue_pressed() -> void:
+	RUNTIME_LOG.event("ui.press", {"button": "continue", "enabled": not _continue_button.disabled})
 	var error: Error = _gateway.continue_saved_run()
 	if error != OK:
 		return
@@ -73,6 +80,8 @@ func _on_continue_pressed() -> void:
 
 ## 没有未完成游戏时直接开局，否则必须先确认覆盖。
 func _on_new_game_pressed() -> void:
+	RUNTIME_LOG.event("ui.press", {"button": "new_game", "enabled": not _new_game_button.disabled,
+		"has_continuable": bool(_gateway.has_continuable_run())})
 	if _pending_new_run:
 		return
 	if bool(_gateway.has_continuable_run()):
@@ -108,6 +117,7 @@ func _on_settings_pressed() -> void:
 
 
 func _on_quit_pressed() -> void:
+	RUNTIME_LOG.event("ui.press", {"button": "quit"})
 	_gateway.quit_game()
 
 

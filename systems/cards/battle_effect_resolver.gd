@@ -83,14 +83,13 @@ func _load_catalogs() -> Error:
 
 static func _resource_paths(directory: String) -> Array[String]:
 	var result: Array[String] = []
-	var dir := DirAccess.open(directory)
-	if dir == null:
-		return result
-	for file_name: String in dir.get_files():
-		if file_name.ends_with(".tres"):
-			result.append(directory + "/" + file_name)
-	for child_directory: String in dir.get_directories():
-		result.append_array(_resource_paths(directory + "/" + child_directory))
+	# ResourceLoader exposes original resource names even when export remaps
+	# .tres files to binary .res; DirAccess only sees physical .remap entries.
+	for entry: String in ResourceLoader.list_directory(directory):
+		if entry.ends_with("/"):
+			result.append_array(_resource_paths(directory.path_join(entry.trim_suffix("/"))))
+		elif entry.get_extension() in ["tres", "res"]:
+			result.append(directory.path_join(entry))
 	result.sort()
 	return result
 

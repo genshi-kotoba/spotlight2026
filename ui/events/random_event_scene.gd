@@ -9,6 +9,7 @@ const EventCombat = preload("res://systems/events/event_combat_flow.gd")
 const Stone = preload("res://systems/events/damage_trial_rules.gd")
 const DECK_PICKER := preload("res://ui/events/event_deck_picker.gd")
 const SANDBOX_RESOURCES := preload("res://systems/testing/sandbox_resources.gd")
+const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
 @export_group("选项按钮")
 @export var option_button_min_size := Vector2(0, 76)
 @export_range(12, 48, 1) var option_button_font_size := 23
@@ -26,6 +27,7 @@ var _leaving := false
 var _deck_picker: CanvasLayer
 var _upgrade_picker: CanvasLayer
 var _reference_preview: CanvasLayer
+var _suspend_button: Button
 var _status_references: Dictionary = {}
 var _status_text := "":
 	set(value):
@@ -62,6 +64,11 @@ func _build() -> void:
 	_status.meta_hover_ended.connect(func(_meta: Variant): _reference_preview.hide_for(_status))
 	_status.mouse_exited.connect(func(): _reference_preview.hide_for(_status))
 	_content.add_theme_constant_override("separation", option_button_spacing)
+	# 固定在选项滚动区之外，长列表也能随时暂返地图。
+	_suspend_button = _button("暂时返回地图（保留事件）", _suspend)
+	_suspend_button.name = "EventSuspend"
+	_content.remove_child(_suspend_button)
+	$OptionsColumn.add_child(_suspend_button)
 
 func _refresh() -> void:
 	if not is_instance_valid(run) or not run.active:
@@ -72,9 +79,14 @@ func _refresh() -> void:
 	_close_upgrade_picker()
 	_generation += 1
 	_selected.clear()
+	_suspend_button.hide()
 	for child: Node in _content.get_children(): _content.remove_child(child); child.queue_free()
 	var current := RunRandomEvents.state(run, request)
 	if current.is_empty(): return
+	if current.stage in ["inputs", "reward"]:
+		var allowed := RunRandomEvents.selectables(run, request).map(func(entry: Dictionary): return str(entry.id))
+		for id: String in current.get("selection_draft", []):
+			if allowed.has(id): _selected.append(id)
 	var index := int(current.index)
 	_title.text = "EV-%03d · %s" % [index + 1, RandomEventCatalog.NAMES[index]]
 	_background.texture = load(RandomEventCatalog.background(index))
@@ -91,8 +103,12 @@ func _refresh() -> void:
 			elif index == 10:
 				_status_text += "\n普通卡包 → 药水三选一\n药水 → 典籍残片三选一\n典籍残片 → 稀有卡包\n免费，单向1换1，每个节点一次。"
 			var choices := RandomEventCatalog.choices(index)
+			RUNTIME_LOG.event("event.enter", {"index": index, "event_id": "EV-%03d" % (index + 1),
+				"health": run.health, "max_health": run.max_health, "gold": run.gold,
+				"options": choices})
 			for option in choices.size():
-				_button(str(choices[option]), _choose.bind(option))
+				var label := "结束事件并离开（不再进入）" if option == choices.size() - 1 else str(choices[option])
+				_button(label, _choose.bind(option))
 			if index == 2: _status_text += " · 已抽 %d / 3 次" % int(current.plays)
 		"battle":
 			if run.current_battle != null:
@@ -102,16 +118,21 @@ func _refresh() -> void:
 				_status_text += "\n挑战已结束，专属奖励等待保存。"
 				_button("重试保存挑战结果", _retry_event_settlement)
 		"inputs", "reward":
+			if current.stage == "reward" and not RunRandomEvents.reward_materials_available(run, request):
+				_status_text += "\n所选素材已使用或更改，请重新选择素材。"
+				_button("重新选择素材", _reselect_inputs)
+				_add_suspend_button()
+				return
 			if index == 10 and current.stage == "reward":
 				_status_text += "\n候选已保存；确认升级后才会消耗所选素材。"
 				_button("打开升级三选一", _open_upgrade_picker)
-				_button("取消并离开", _cancel)
+				_add_suspend_button()
 				_open_upgrade_picker()
 				return
 			if index == 9 and current.stage == "inputs":
 				_status_text += "\n从完整牌组中点击选择两张合成素材。"
 				_button("打开牌组选择", _open_deck_picker)
-				_button("取消并离开", _cancel)
+				_add_suspend_button()
 				_open_deck_picker()
 				return
 			var count := 1 if current.stage == "reward" or index in [8, 10] else 2
@@ -121,12 +142,12 @@ func _refresh() -> void:
 				if not str(entry.get("rich_label", "")).is_empty():
 					_fragment_option(button, str(entry.rich_label))
 				button.toggle_mode = true
+				button.set_pressed_no_signal(_selected.has(str(entry.id)))
 				button.toggled.connect(func(pressed: bool):
 					if pressed: _selected.append(str(entry.id))
 					else: _selected.erase(str(entry.id))
 					if _selected.size() > count: _selected.erase(str(entry.id)); button.set_pressed_no_signal(false))
 			_button("确认升级素材" if index == 10 else "确认选择", _confirm)
-			if current.stage == "inputs": _button("取消并离开", _cancel)
 		"result":
 			_status_text += "\n\n" + _result_summary(current)
 			for fragment_id: String in current.get("result_fragments", []):
@@ -142,6 +163,11 @@ func _refresh() -> void:
 				return_button.name = "EventReturnNow"
 				_auto_finish(_generation)
 		"done": call_deferred("_leave")
+	if current.stage != "done": _add_suspend_button()
+
+
+func _add_suspend_button() -> void:
+	_suspend_button.visible = run.current_battle == null
 
 
 func _on_status_reference(meta: Variant) -> void:
@@ -242,6 +268,7 @@ func _close_deck_picker() -> void:
 func _set_options_disabled(disabled: bool) -> void:
 	for button: Button in _content.find_children("*", "Button", true, false):
 		button.disabled = disabled
+	if is_instance_valid(_suspend_button): _suspend_button.disabled = disabled
 
 func _result_summary(current: Dictionary) -> String:
 	var summary := str(current.get("result", "")).replace("，无奖励", "")
@@ -327,17 +354,38 @@ func _result(error: Error) -> void:
 		_status_text = "无法完成：生命、银币或可选素材不足，或选择数量不符（%d）。" % error
 	else: _refresh()
 
-func _cancel() -> void:
-	if is_instance_valid(_deck_picker) or is_instance_valid(_upgrade_picker): return
-	# 未消费素材；取消也走一次事务，不能丢弃已提交奖励。
-	var before := RunRandomEvents.capture(run)
-	var current := RunRandomEvents.state(run, request)
-	current.stage = "result"; current.result = "已离开，无奖励"
-	run.inventory_state.events[RunRandomEvents.key(request)] = current
-	_result(RunRandomEvents.commit(run, before))
+func _suspend() -> void:
+	if _leaving or is_instance_valid(_deck_picker) or is_instance_valid(_upgrade_picker): return
+	_generation += 1
+	_leaving = true
+	var suspended_request := request.duplicate(true)
+	var error := RunRandomEvents.suspend(run, request, _selected)
+	if error != OK:
+		var session: RefCounted = EncounterFlow.session
+		if session != null and session.pending.get("map_id") == request.get("map_id") and session.pending.get("node_id") == request.get("node_id"):
+			request = session.pending.duplicate(true)
+		_leaving = false
+		_status_text = "暂时返回未保存，事件已保留，请重试（%d）。" % error
+		return
+	MapEvents.node_interaction_resolved.emit(str(suspended_request.request_id), str(suspended_request.node_id), "cancelled")
+	error = SceneTransition.change_scene_to_file(EncounterFlow.MAP_SCENE)
+	if error != OK:
+		_status_text = "事件已保留，返回地图失败：%d" % error
+		_button("重试返回地图", _return_map)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("ui_cancel"): return
+	if is_instance_valid(_deck_picker):
+		return # 选牌弹窗先处理自己的关闭，关闭后再按 Esc 悬置事件。
+	if is_instance_valid(_upgrade_picker): return
+	_suspend()
+	get_viewport().set_input_as_handled()
 
 func _gamble_again() -> void:
 	_result(RunRandomEvents.acknowledge(run, request, true))
+
+func _reselect_inputs() -> void:
+	_result(RunRandomEvents.reselect_inputs(run, request))
 
 func _auto_finish(generation: int) -> void:
 	await get_tree().create_timer(2.0).timeout

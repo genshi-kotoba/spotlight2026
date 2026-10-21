@@ -2373,11 +2373,8 @@ func _buff_tooltip(buff_id: String, layers: int) -> String:
 func _buff_text(buff_id: String) -> Dictionary:
 	if _buff_text_by_id.has(buff_id):
 		return _buff_text_by_id[buff_id]
-	var dir := DirAccess.open("res://data/buffs")
-	if dir == null:
-		return {}
-	for file in dir.get_files():
-		if not file.ends_with(".tres"):
+	for file: String in ResourceLoader.list_directory("res://data/buffs"):
+		if file.get_extension() not in ["tres", "res"]:
 			continue
 		var data := load("res://data/buffs/%s" % file) as BuffData
 		if data == null:

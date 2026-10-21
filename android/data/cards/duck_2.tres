@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="1_ygl0r"]
+[ext_resource type="Script" path="res://systems/cards/effects/card_effect_block.gd" id="2_t2gfr"]
+[ext_resource type="Script" path="res://systems/cards/card_data.gd" id="3_k6t8d"]
+
+[sub_resource type="Resource" id="Resource_2ld46"]
+script = ExtResource("2_t2gfr")
+
+[resource]
+script = ExtResource("3_k6t8d")
+card_id = &"duck"
+card_name = "我躲一下"
+description = "我躲一下（原型卡第 2 份，同名两份用于验证实例区分）"
+kind = 1
+face_tint = 1
+effects = Array[ExtResource("1_ygl0r")]([SubResource("Resource_2ld46")])

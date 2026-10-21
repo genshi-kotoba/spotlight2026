@@ -1,0 +1,50 @@
+# Android 横屏适配副本
+
+这是桌面 main 在 2026-10-20 的独立完整副本。请打开本目录的 `project.godot`，不要打开上一级工程进行手机端修改。未复制 Git、导入缓存、第三方参考工程和本地工作文件。
+
+## 持续同步约束
+
+从 2026-10-20 起，所有桌面 main 的后续修改、修复、资源/数据更新与版本合并，都必须同步到本 Android 工程，不再将它视为一次性快照。同步时保留本工程的手机输入、UI 布局、宽屏安全区域、平台配置及独立存档；不得直接覆盖这些适配，也不得复制 `.godot/` 缓存或嵌套复制 `android/`。交付前同时检查两端并说明验证结果。完整工作约束见上一级 `AGENTS.md`。
+
+## 操作
+
+- 地图：点击已探索地块自动寻路；第一次点结点选定目的地，在交互距离内再点同一结点执行原 E 交互。不会穿过障碍、迷雾或未开放关口。
+- 小地图左侧齿轮：打开与战斗相同的局内设置页；打开时停止行走，关闭后恢复地图操作。
+- 短按：点击。长按约 0.42 秒：悬停查看，松手不会选牌/使用物品。
+- 拖动：卡牌和残片沿用原拖放逻辑；列表上下滑动滚动。出牌列或残片背包需要滚动时直接竖滑，需要排序/装配时长按后拖动。
+- 地图查看器可拖动平移；非列表的滚轮区域可用上下滑动模拟滚轮。
+- 背包使用/丢弃菜单放大，增加明确的“取消”。只读背包、奖励悬置、模态弹窗及加载遮罩仍遵守原有权限，不穿透操作。
+
+## 布局与可调位置
+
+- `autoload/mobile_input.gd`：长按时长、移动阈值、触摸到鼠标/滚动的转换。引擎默认触摸鼠标模拟已关闭，防止一次触摸点击两次。
+- `ui/mobile/mobile_layout.gd`：战斗 HUD 放大比例、手机宽屏的出牌区右移、手牌/按钮/设置位置、刘海与系统栏安全区域。
+- `ui/battle/battle_test_scene.gd`：手牌缩放为 0.34；出牌卡仍为手牌的 1/2；手牌区高度 440，保留原弹簧和飞牌动画。
+- `ui/hud/run_status_panel.gd`：地图血条、背包快捷栏、典籍放大为 1.35 倍。
+- `ui/hud/run_menu_overlay.gd`：背包牌组改为四列大卡，放大道具格和典籍格，正常局内菜单在横向扩展画面中居中。结算记录继续使用原只读布局流程。
+- `ui/components/use_discard_menu.gd`：物品菜单每行 240×70、字号 28。
+- `ui/world_map/flat_2d/map_demo.gd`：点选目标、路径跟随、第二次点击交互及地图设置按钮；`ui/world_map/relief_2d/map_exploration.gd` 使用实际高程进行拾取。
+- `systems/map/mobile_map_navigation.gd`：复用 Session 的碰撞校验和关口规则的导航图。加载地图时提前准备导航，减少首点等待。
+- `ui/battle/enemy_slot.gd`：怪物命中区适应放大后的手牌区；立绘本身不缩小。
+
+基准仍为 1920×1080 横屏，宽屏横向扩展，背景铺满、出牌区贴近安全区域右侧。移动端存档目录为独立的 `spotlight2026-android`，不会读取或覆盖桌面 `spotlight2026` 存档。
+
+## 验证与运行范围
+
+新增 `tests/mobile_adaptation_selftest.tscn` 和 `tests/mobile_map_interaction_selftest.tscn`，使用真实触摸事件及隔离存档测试点击、长按、滑动、拖牌、地图移动、设置与进入真实战斗。另复测原手牌输入、血条/飞牌动画、召唤、奖励和结算流程。
+
+Windows 上运行移动副本及模拟 16:9、20:9 画面用于本地验证；尚未完成 Android 真机、性能、安装包和系统输入法测试。本目录是 Godot 工程，不是 APK。Android 导出还需正确配置 SDK/JDK、导出模板与 Wwise Android AAR/Gradle；Wwise 的原 Android 原生库和音频资源已随工程复制。
+
+已通过触屏短按、长按、列表滑动、标准确认弹窗、手牌拖放/取消、背包使用/取消、奖励悬停/领取以及地图进战斗测试；原血条/飞牌、召唤、奖励悬置、结算和历史记录回归通过。测试存档和截图均在本副本 `.godot/` 内，不写桌面正式存档。
+
+2026-10-22 起，手机版工程随上一级 main 一起纳入 GitHub 快照。`android/android/` 是 Godot 生成的 Gradle 构建模板，不入库；`.godot/`、`_local/`、签名私钥和测试产物也不入库。桌面与手机的工程配置、触控适配和存档目录仍各自独立。
+
+## 2026-10-20 编辑器启动崩溃排查
+
+Windows 的三次启动崩溃转储均落在 Godot 4.7.2 的脚本文档生成线程：`EditorHelp::_reload_scripts_documentation` 遍历 `EditorFileSystemDirectory` 时发生原生访问冲突，并非触屏脚本的 GDScript 异常。启动日志同时存在 Wwise 资源刷新；是否由此引起目录失效尚未得到稳定复现，不能据此判定音频 DLL 或显卡驱动损坏。
+
+已将原编辑器目录索引、文档缓存保留在 `.godot/crash-diagnostics/`，让编辑器正常重建，没有删除游戏存档。`WwiseProject/.gdignore` 排除 Wwise Authoring 源工程的无效 Godot 导入；游戏实际使用的 `wwise_soundbanks`、`Wwise/resources`、原生音频插件均保留。
+
+请正常打开本目录 `project.godot`。缓存重建后的普通图形编辑器启动可正常完成；此处是本机缓存恢复和导入隔离，不是修改或升级 Godot 引擎，仍需保留对再次崩溃的观察。
+
+本次处理后，连续三次普通图形编辑器启动/退出均为退出码 0，其中一次主动移开文档缓存后冷启动并正常重新生成；触控回归 30 项、地图交互及进战斗回归 11 项全部通过。对应日志为 `.godot/crash-diagnostics/editor-after-1.log`、`editor-after-2.log`、`editor-cold-after.log`、`touch-after.log` 和 `map-after.log`。

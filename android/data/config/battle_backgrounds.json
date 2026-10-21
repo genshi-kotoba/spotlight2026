@@ -1,0 +1,6 @@
+{
+  "1": {"default": 0, "variants": ["res://assets/env/ENV-001/ENV-001.PNG"]},
+  "2": {"default": 1, "variants": ["res://assets/env/ENV-002/ENV-002.png", "res://assets/env/ENV-002/ENV-002-2.png"]},
+  "3": {"default": 1, "variants": ["res://assets/env/ENV-003/ENV-003.JPG", "res://assets/env/ENV-003/ENV_003_01.PNG", "res://assets/env/ENV-003/ENV_003_02.JPG"]},
+  "4": {"default": 0, "variants": ["res://assets/env/ENV-004/ENV-004.JPG"]}
+}

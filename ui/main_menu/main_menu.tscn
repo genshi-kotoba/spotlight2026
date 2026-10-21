@@ -130,3 +130,4 @@ horizontal_alignment = 2
 [node name="提示条" parent="." instance=ExtResource("2_bar")]
 
 [node name="确认弹窗" parent="." instance=ExtResource("3_dialog")]
+layout_mode = 1

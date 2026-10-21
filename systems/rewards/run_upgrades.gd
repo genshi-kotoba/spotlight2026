@@ -1,6 +1,6 @@
 class_name RunUpgrades
 extends RefCounted
-## 局内升级与结点赠药共用原子保存，不影响其他局的存档。
+## 局内升级使用原子保存，不影响其他局的存档。
 const PLAY_COSTS := [2, 5, 6, 9, 11]
 const RELIC_GROUPS := [
 	{"cells": [3, 7], "cost": 4},
@@ -50,20 +50,10 @@ static func buy_relic_group(run: Node, index: int) -> Error:
 	run.inventory_state.relic_board = board.to_dictionary()
 	return RunRewards._commit(run, before)
 
-## 非战斗结点完成时调用，在宿主已有的保存事务里一起提交/回滚。
-static func award_node(run: Node, map_id: String, node_id: String) -> bool:
-	RunRewards.ensure_state(run)
-	var address := JSON.stringify([map_id, node_id])
-	var ledger: Dictionary = run.inventory_state.get("node_elixir_rewards", {})
-	if ledger.has(address): return false
-	ledger[address] = true
-	run.inventory_state["node_elixir_rewards"] = ledger
-	run.inventory_state.elixir = int(run.inventory_state.elixir) + 2
-	return true
-
 static func valid_state(data: Dictionary) -> bool:
 	var level: Variant = RunStateMachine._integer_value(data.get("play_slot_upgrades", 0))
 	if level == null or level < 0 or level > PLAY_COSTS.size(): return false
+	# 只兼容读取旧赠药账本，当前版本不再生成或发放非战斗结点万灵药。
 	var ledger: Variant = data.get("node_elixir_rewards", {})
 	if not ledger is Dictionary: return false
 	for key: Variant in ledger:

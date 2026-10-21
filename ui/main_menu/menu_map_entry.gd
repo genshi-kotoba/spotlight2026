@@ -20,8 +20,13 @@ class ExistingSeedSource extends RefCounted:
 	func capture_snapshot() -> Dictionary:
 		return SeedService.capture_snapshot()
 	func restore_snapshot(snapshot: Dictionary) -> Error:
+		# 只在独立候选中校验并规范化构建渠道，不重装全局随机上下文。
+		# 否则旧 Steam 档案通过网关后，仍会与官方模板当前快照误判不相等。
+		var candidate := SeedRegistry.new(str(ProjectSettings.get_setting("application/config/seed_content_version", "")))
+		if candidate.restore_snapshot(snapshot) != OK:
+			return ERR_INVALID_DATA
 		# JSON 读盘把整数变成浮点；比较前双方都做相同的 JSON 规范化。
-		var saved: Variant = JSON.parse_string(JSON.stringify(snapshot))
+		var saved: Variant = JSON.parse_string(JSON.stringify(candidate.capture_snapshot()))
 		var current: Variant = JSON.parse_string(JSON.stringify(SeedService.capture_snapshot()))
 		return OK if JSON.stringify(saved) == JSON.stringify(current) else ERR_INVALID_DATA
 
@@ -248,7 +253,6 @@ func _close_shop() -> Error:
 	var pending: Dictionary = session.pending.duplicate(true)
 	if pending.get("type") != "shop" or not session.resolve_request({"request_id": pending.request_id, "status": "completed"}):
 		return ERR_INVALID_DATA
-	RunUpgrades.award_node(run, str(pending.map_id), str(pending.node_id))
 	var error: Error = _gateway.save_current()
 	if error != OK:
 		run.inventory_state = old_inventory

@@ -7,6 +7,7 @@ signal trigger_activated(cell: int, chained: bool)
 signal chain_limited
 
 const MAX_CHAIN_EFFECTS := 128
+const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
 
 var catalog: Dictionary = {}
 var board := RelicBoard.new()
@@ -185,17 +186,23 @@ func _on_custom_event(event: BattleEvent) -> void:
 func _trigger(event_id: String, target_id: String, event: BattleEvent) -> void:
 	if not _battle.active:
 		return
+	var matched: Array[int] = []
 	for index in RelicBoard.CELL_COUNT:
 		var data: RelicFragmentData = catalog.get(board.cells[index])
 		if data == null: continue
 		if not data.presence_action.is_empty() and data.presence_event == event_id:
+			matched.append(index)
 			_enqueue(index, index, target_id, [], event.root_id, true)
 		if data.event_id == event_id:
 			if data.kind == RelicFragmentData.Kind.PRESENCE:
+				matched.append(index)
 				_enqueue(index, index, target_id, [], event.root_id)
 			elif data.kind == RelicFragmentData.Kind.TRIGGER:
+				matched.append(index)
 				state().chain_charges[str(index)] = true
 				_queue_spread(index, false, target_id, event.root_id)
+	RUNTIME_LOG.event("relic.trigger", {"event": event_id, "target": target_id,
+		"cells": matched, "root": event.root_id})
 
 
 func _limit(root_id: int) -> void:
@@ -239,6 +246,12 @@ func _enqueue(trigger: int, effect: int, target: String, ancestry: Array, root_i
 	_pending[root_id] = int(_pending.get(root_id, 0)) + 1
 	_battle.rules.publish("relic.activate", {"trigger": trigger, "effect": effect, "target": target, "presence":presence},
 		{"relic_ancestry": ancestry.duplicate() if not ancestry.is_empty() else [effect]})
+	var trigger_data: RelicFragmentData = catalog.get(board.cells[trigger])
+	var effect_data: RelicFragmentData = catalog.get(board.cells[effect])
+	RUNTIME_LOG.event("relic.activate", {"trigger": trigger, "effect": effect,
+		"target": target, "presence": presence, "root": root_id,
+		"trigger_id": str(trigger_data.fragment_id) if trigger_data != null else "",
+		"effect_id": str(effect_data.fragment_id) if effect_data != null else ""})
 
 
 func _execute(event: BattleEvent) -> void:
@@ -294,8 +307,12 @@ func _execute(event: BattleEvent) -> void:
 				state()["next_slots"] = int(state().get("next_slots", 0)) + 1
 				state()["next_slot_counts"] = counts
 		"rewind":
-			if _battle.phase == BattleStateMachine.Phase.PLAYER_EFFECTS and _battle.pointer_index > 0:
+			var before := int(_battle.pointer_index)
+			var applied := _battle.phase == BattleStateMachine.Phase.PLAYER_EFFECTS and before > 0
+			if applied:
 				context.rewind_pointer(data.amount)
+			RUNTIME_LOG.event("relic.rewind", {"steps": data.amount, "from": before,
+				"to": int(_battle.pointer_index), "phase": int(_battle.phase), "applied": applied})
 		"extra_pointer":
 			if not bool(event.metadata.get("extra_pointer", false)) and int(state().get("extra_used", 0)) < 2:
 				state()["extra_used"] = int(state().get("extra_used", 0)) + 1

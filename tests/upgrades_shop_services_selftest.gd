@@ -41,10 +41,14 @@ func _run() -> void:
 		for entry: Dictionary in pending.entries: RunRewards.claim(run, str(entry.id))
 		RunRewards.finish_rewards(run)
 	run.items.clear()
-	_check("同结点只赠药一次", RunUpgrades.award_node(run, "fixture", "shop") and not RunUpgrades.award_node(run, "fixture", "shop"))
 	for kind: String in ["chest", "pile"]:
 		var loot := RunNodeLoot.generate("fixed", "floor", kind, 1, kind)
-		_check(kind + "包含两药且通过校验", loot.entries[1].amount == 2 and RunNodeLoot.valid_records({RunNodeLoot.key("floor", kind):loot}))
+		_check(kind + "不包含万灵药且通过校验", loot.entries.size() == 1 and loot.entries[0].kind != "elixir" and RunNodeLoot.valid_records({RunNodeLoot.key("floor", kind):loot}))
+		var legacy := loot.duplicate(true)
+		legacy.entries.append({"id":"node-loot/" + RunNodeLoot.key("floor", kind) + "/elixir", "kind":"elixir", "amount":2})
+		run.inventory_state["node_loot"] = {RunNodeLoot.key("floor", kind):legacy}
+		_check("旧" + kind + "奖励可读取但不再显示或发放额外万灵药", RunNodeLoot.valid_records(run.inventory_state.node_loot) and RunNodeLoot.record(run, {"map_id":"floor", "node_id":kind}).entries.size() == 1)
+	run.inventory_state.erase("node_loot")
 	_check("保存初始准备", SaveGateway.save_current() == OK)
 	var view: Node = load(EncounterFlow.MAP_SCENE).instantiate()
 	get_tree().root.add_child(view)
@@ -127,7 +131,7 @@ func _run() -> void:
 	popup._render()
 	before_elixir = int(run.inventory_state.elixir)
 	await _click(popup._continue_button)
-	_check("离店赠两药", int(run.inventory_state.elixir) == before_elixir + 2)
+	_check("离店不赠万灵药", int(run.inventory_state.elixir) == before_elixir)
 	await _cold_continue()
 	run = SaveGateway.current_run()
 	view = get_tree().current_scene

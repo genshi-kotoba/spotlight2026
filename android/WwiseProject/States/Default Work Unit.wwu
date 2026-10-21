@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{51C5F9E7-EE40-4F5F-9C55-8B06D1556197}" SchemaVersion="133">
+	<States>
+		<WorkUnit Name="Default Work Unit" ID="{51C5F9E7-EE40-4F5F-9C55-8B06D1556197}" PersistMode="Standalone">
+			<ChildrenList>
+				<StateGroup Name="Scene" ID="{213840C3-182D-4528-87C9-C0FABCC84972}">
+					<ChildrenList>
+						<State Name="None" ID="{30875109-F9C6-4A9F-B91A-93ECFE162438}"/>
+						<State Name="Workshop" ID="{32B9012B-C982-4B6A-831E-2AE9203813D3}"/>
+						<State Name="Slum" ID="{8760184A-B0FB-4DF6-A3F1-E7C103D47A07}"/>
+						<State Name="Church" ID="{2131ACEA-52D1-4AAC-92CB-CCF511EB8526}"/>
+						<State Name="ChurchTop" ID="{8E40CA07-F65E-46F7-8C32-E9E27A08EC17}"/>
+					</ChildrenList>
+				</StateGroup>
+				<StateGroup Name="Combat" ID="{51CA5444-6895-47B4-B429-004992B5F000}">
+					<ChildrenList>
+						<State Name="None" ID="{7C3EFB85-C89C-42A4-97A8-05B6D1E12CB2}"/>
+						<State Name="Explore" ID="{D21491C0-861D-4524-AD0C-E3E58142FE81}"/>
+						<State Name="Battle" ID="{898ACA29-C162-489D-ABE9-A66FFCAC676B}"/>
+					</ChildrenList>
+				</StateGroup>
+			</ChildrenList>
+		</WorkUnit>
+	</States>
+</WwiseDocument>

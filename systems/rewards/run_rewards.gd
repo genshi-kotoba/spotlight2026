@@ -106,6 +106,8 @@ static func open_pack(run: Node, item_id: String) -> Error:
 	if index < 0 or str(run.items[index].get("kind", "")) not in PACKS:
 		return ERR_DOES_NOT_EXIST
 	if not run.items[index].options.is_empty():
+		if str(run.items[index].kind) in ["common_pack", "rare_pack"] and run.items[index].options.any(func(id): return str(id) in FormalCardCatalog.NEGATIVE_CARD_IDS):
+			return _repair_card_offer(run, index)
 		return OK
 	return _generate_offer(run, index, false)
 
@@ -298,9 +300,36 @@ static func valid_items(values: Variant) -> bool:
 static func _card_pool(kind: String) -> Array[String]:
 	var result: Array[String] = []
 	for entry: Dictionary in TextCatalog.entries("cards"):
+		if str(entry.id) in FormalCardCatalog.NEGATIVE_CARD_IDS:
+			continue
 		if str(entry.rarity) == ("稀有" if kind == "rare_pack" else "普通"):
 			result.append(str(entry.id))
 	return result
+
+## Old opened packs may already contain a negative card. Preserve their valid
+## choices and refresh flag; replace only invalid choices, then save atomically.
+static func _repair_card_offer(run: Node, index: int) -> Error:
+	var pack: Dictionary = run.items[index]
+	var pool := _card_pool(str(pack.kind))
+	var retained: Array[String] = []
+	for id: Variant in pack.options:
+		if id is String and str(id) in pool and str(id) not in retained:
+			retained.append(str(id))
+	pool = pool.filter(func(id): return id not in retained)
+	if retained.size() + pool.size() < 3:
+		return ERR_UNAVAILABLE
+	pool.sort()
+	var source := SeedRegistry.new(str(ProjectSettings.get_setting("application/config/seed_content_version", "")))
+	source.begin_run(str(run.main_seed))
+	var stream := source.get_stream(RandomDomains.REWARD, ["pack-negative-filter", str(pack.item_id), 1 if bool(pack.rerolled) else 0])
+	if stream == null or stream.shuffle_in_place(pool) != OK:
+		return ERR_UNCONFIGURED
+	for id: String in pool:
+		if retained.size() == 3: break
+		retained.append(id)
+	var before := _capture(run)
+	pack.options = retained
+	return _commit(run, before)
 
 static func _item_index(run: Node, item_id: String) -> int:
 	for index in run.items.size():

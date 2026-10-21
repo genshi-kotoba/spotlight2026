@@ -1,6 +1,6 @@
 extends RefCounted
 ## 纯展示引用：只读取已知名称和已生成物品，不抽奖励、不修改事件或存档。
-const NEGATIVE_CARDS := ["68", "69", "70"]
+const NEGATIVE_CARDS := FormalCardCatalog.NEGATIVE_CARD_IDS
 const RED := "ff7878"
 const GOLD := "edc985"
 const POTIONS := ["抽两张牌", "获得5点格挡", "复制一张手牌", "本回合增加一个牌位"]

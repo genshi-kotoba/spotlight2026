@@ -10,12 +10,176 @@
     "Type": "User",
     "GUID": "{129CFB0E-0AD4-44FA-A500-0751B4710B97}",
     "Language": "SFX",
-    "Hash": "{24E5C870-ECC9-0C67-2ADD-497979A2E044}",
+    "Hash": "{DF1D78E2-4D89-09B2-D32D-D38EE3EAB245}",
     "ObjectPath": "\\SoundBanks\\Default Work Unit\\Music",
     "ShortName": "Music",
-    "Path": "Music.bnk"
+    "Path": "Music.bnk",
+    "Media": [
+     {
+      "Id": "82081401",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\mus_church_battle.wav",
+      "CachePath": "76/{769BA733-7FB9-FE8A-93DE-67259529F1C1}.wem"
+     },
+     {
+      "Id": "487954409",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\mus_church_calm.wav",
+      "CachePath": "D4/{D43D55B9-A371-D0D1-AF68-0C7C007C35A6}.wem"
+     },
+     {
+      "Id": "656174178",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\mus_alchemy_calm.wav",
+      "CachePath": "79/{79B01236-E751-6111-3128-DE421A1E666A}.wem"
+     },
+     {
+      "Id": "782559520",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Memory",
+      "ShortName": "SFX\\mus_alchemy_battle.wav",
+      "CachePath": "C7/{C73B46D7-BD4C-8D39-FA8C-57FFA28C2886}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "3790302614",
+      "Name": "mus_alchemy",
+      "ObjectPath": "\\Events\\Default Work Unit\\Music\\mus_alchemy",
+      "GUID": "{1917D9D4-1D9A-4ABA-8CAC-E474F2E878AB}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "656174178"
+       },
+       {
+        "Id": "782559520"
+       }
+      ]
+     },
+     {
+      "Id": "2307077735",
+      "Name": "mus_alchemy_battle",
+      "ObjectPath": "\\Events\\Default Work Unit\\Music\\mus_alchemy_battle",
+      "GUID": "{712A007E-842A-477F-A322-8EC924FF0BD9}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "656174178"
+       },
+       {
+        "Id": "782559520"
+       }
+      ]
+     },
+     {
+      "Id": "3541367596",
+      "Name": "mus_alchemy_calm",
+      "ObjectPath": "\\Events\\Default Work Unit\\Music\\mus_alchemy_calm",
+      "GUID": "{AE747B81-6DDD-4CA4-8596-221E348DD9CA}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "656174178"
+       },
+       {
+        "Id": "782559520"
+       }
+      ]
+     },
+     {
+      "Id": "3406848652",
+      "Name": "mus_church",
+      "ObjectPath": "\\Events\\Default Work Unit\\Music\\mus_church",
+      "GUID": "{76BDF4F1-FCF1-4725-A6FD-35CCEDF4017D}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "82081401"
+       },
+       {
+        "Id": "487954409"
+       }
+      ]
+     },
+     {
+      "Id": "3016252705",
+      "Name": "mus_church_battle",
+      "ObjectPath": "\\Events\\Default Work Unit\\Music\\mus_church_battle",
+      "GUID": "{E6AAC87D-56C2-490B-89FF-F81778E40C06}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "82081401"
+       },
+       {
+        "Id": "487954409"
+       }
+      ]
+     },
+     {
+      "Id": "1707269606",
+      "Name": "mus_church_calm",
+      "ObjectPath": "\\Events\\Default Work Unit\\Music\\mus_church_calm",
+      "GUID": "{7E0E77F1-2A34-41B7-BE6D-AC123D0ED0EA}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "82081401"
+       },
+       {
+        "Id": "487954409"
+       }
+      ]
+     },
+     {
+      "Id": "1226321073",
+      "Name": "mus_street_battle",
+      "ObjectPath": "\\Events\\Default Work Unit\\Music\\mus_street_battle",
+      "GUID": "{F9D30EDB-7786-45CE-9174-2ED7D5551273}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "656174178"
+       },
+       {
+        "Id": "782559520"
+       }
+      ]
+     },
+     {
+      "Id": "1834552886",
+      "Name": "mus_street_calm",
+      "ObjectPath": "\\Events\\Default Work Unit\\Music\\mus_street_calm",
+      "GUID": "{BF4A4DCA-8E5F-47EE-810A-89D2D266852B}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "656174178"
+       },
+       {
+        "Id": "782559520"
+       }
+      ]
+     }
+    ],
+    "GameParameters": [
+     {
+      "Id": "3944980085",
+      "Name": "Music_Combat",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\Music_Combat",
+      "GUID": "{1BD67451-C88E-4C9D-911C-D0EFA88819B9}"
+     }
+    ]
    }
   ],
-  "FileHash": "{FDFDEE99-D9A1-6850-986E-89D2CF5680B1}"
+  "FileHash": "{661EB45F-E1CC-B4C1-233D-344CEFC4FAE5}"
  }
 }

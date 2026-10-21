@@ -10,7 +10,8 @@ static func read(path: String, headers: Array, keys: Array) -> Dictionary:
 
 
 static func parse(source: String, headers: Array, keys: Array) -> Dictionary:
-	if source.begins_with("\uFEFF"):
+	# BOM-only string constants can decode as empty in exported token streams.
+	if not source.is_empty() and source.unicode_at(0) == 0xFEFF:
 		source = source.substr(1)
 	var rows: Array = []
 	var row: Array = []
@@ -54,7 +55,7 @@ static func parse(source: String, headers: Array, keys: Array) -> Dictionary:
 		row.append(field)
 		rows.append(row)
 	if rows.is_empty() or rows[0] != headers or headers.size() != keys.size():
-		return _failure(ERR_INVALID_DATA, "CSV 表头必须为：" + ",".join(headers))
+		return _failure(ERR_INVALID_DATA, "CSV 表头必须为：" + ",".join(headers) + "；实际：" + JSON.stringify(rows[0] if not rows.is_empty() else []))
 	var records: Array[Dictionary] = []
 	var ids: Dictionary = {}
 	for r: int in range(1, rows.size()):

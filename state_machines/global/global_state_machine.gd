@@ -13,8 +13,13 @@ signal settings_changed(key: String, value: Variant)
 
 const SAVE_VERSION := 1
 const DEFAULT_SAVE_PATH := "user://save/game.json"
+const RELEASE_SAVE_PATH := "user://player/save/game.json"
 
-var save_path := DEFAULT_SAVE_PATH
+## 编辑器历史数据不带入发行包；发行路径固定，不随导出批次或启动次数变化。
+static func default_save_path() -> String:
+	return DEFAULT_SAVE_PATH if OS.has_feature("editor") else RELEASE_SAVE_PATH
+
+var save_path := default_save_path()
 var settings: Dictionary = {}
 var run_history: Array[Dictionary] = []
 ## 跨局保留的地区首次入场记录；旧版 v1 缺省为空。

@@ -2,6 +2,8 @@ class_name FormalCardCatalog
 extends RefCounted
 
 const PROGRAM_PATH := "res://data/cards/formal/programs.json"
+## These cards remain playable when granted by an event or enemy, but are not normal rewards.
+const NEGATIVE_CARD_IDS := ["68", "69", "70"]
 
 static func load_definitions() -> Dictionary:
 	var table := CsvTextTable.read("res://data/text/cards.csv", TextCatalogService.CARD_HEADERS, TextCatalogService.CARD_KEYS)

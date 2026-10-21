@@ -1,0 +1,2 @@
+# Wwise Authoring sources are not Godot runtime assets.
+# Runtime audio uses res://wwise_soundbanks and res://Wwise/resources.

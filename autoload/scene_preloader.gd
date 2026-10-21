@@ -198,7 +198,7 @@ func _process(_delta: float) -> void:
 		if path.ends_with(".txt"):
 			var file := FileAccess.open(path, FileAccess.READ)
 			if file != null:
-				_texts[path] = {"text": file.get_as_text().trim_prefix("\uFEFF"), "modified": FileAccess.get_modified_time(path)}
+				_texts[path] = {"text": file.get_as_text().trim_prefix(String.chr(0xFEFF)), "modified": FileAccess.get_modified_time(path)}
 			else:
 				_errors[path] = FileAccess.get_open_error()
 		else:
@@ -224,8 +224,8 @@ func _trim_floor_cache() -> void:
 	# 无法取消的旧楼层线程正常收尾，完成后按 _wanted 丢弃，不污染新局。
 
 func _collect_resources(directory: String) -> void:
-	for file: String in DirAccess.get_files_at(directory):
-		if file.ends_with(".tres"):
-			_rule_resources.append(directory.path_join(file))
-	for child: String in DirAccess.get_directories_at(directory):
-		_collect_resources(directory.path_join(child))
+	for entry: String in ResourceLoader.list_directory(directory):
+		if entry.ends_with("/"):
+			_collect_resources(directory.path_join(entry.trim_suffix("/")))
+		elif entry.get_extension() in ["tres", "res"]:
+			_rule_resources.append(directory.path_join(entry))

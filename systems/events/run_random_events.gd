@@ -20,6 +20,7 @@ static func valid_events(value: Variant) -> bool:
 		if current.get("stage") not in ["choice", "inputs", "reward", "battle", "result", "done"] or not current.get("result") is String or not current.get("finished") is bool: return false
 		if bool(current.finished) != (current.stage == "done"): return false
 		if not RunStateMachine._string_array_valid(current.get("inputs")) or not RunStateMachine._unique_string_array_valid(current.get("offers")): return false
+		if current.has("selection_draft") and not RunStateMachine._unique_string_array_valid(current.selection_draft): return false
 		if current.stage == "battle":
 			var battle_index: Variant = RunStateMachine._integer_value(current.get("event_battle_index"))
 			if int(index) not in [5, 6] or battle_index == null or battle_index < 0: return false
@@ -33,6 +34,7 @@ static func valid_events(value: Variant) -> bool:
 				if current.offers != current.upgrade_offers.map(func(offer: Dictionary): return str(offer.id)): return false
 			elif current.stage == "reward": return false
 		if int(index) == 8:
+			if current.has("input_fragment") and (not current.input_fragment is String or RelicCatalog.resolve(current.input_fragment) == null): return false
 			for offer: String in current.offers:
 				if RelicCatalog.resolve(offer) == null: return false
 		if current.has("result_fragments"):
@@ -76,6 +78,59 @@ static func authorized(run: Node, request: Dictionary) -> bool:
 	var session: RefCounted = EncounterFlow.session
 	return RunRewards._can_edit(run) and RunRewards.pending(run).is_empty() and session != null \
 		and request.get("type") == "event" and request == session.pending and str(request.get("map_id")) == session.map_id
+
+## 只释放地图交互锁；事件阶段、投入、固定候选及已发放结果都不回退。
+## 已开始的战斗仍走战斗自己的退出/恢复规则，不能通过悬置撤销战斗。
+static func suspend(run: Node, request: Dictionary, selection: Array = []) -> Error:
+	if not authorized(run, request): return ERR_UNAUTHORIZED
+	var current := state(run, request)
+	if current.is_empty() or current.stage == "done": return ERR_BUSY
+	if not RunStateMachine._unique_string_array_valid(selection): return ERR_INVALID_PARAMETER
+	var session: RefCounted = EncounterFlow.session
+	var before := capture(run)
+	var map_before: Dictionary = session.capture_state()
+	if current.stage in ["inputs", "reward"]:
+		current["selection_draft"] = selection.duplicate()
+		run.inventory_state.events[key(request)] = current
+	if not session.resolve_request({"request_id":request.request_id, "status":"cancelled"}):
+		restore(run, before)
+		return ERR_INVALID_DATA
+	var error := SaveGateway.save_current()
+	if error != OK:
+		restore(run, before)
+		# 恢复会轮换 callback token，调用者必须从 session 重新读取 request。
+		if not session.restore_state(map_before): return ERR_INVALID_DATA
+		if EncounterFlow.map_run != null and not EncounterFlow.map_run.store_current(session.capture_state()): return ERR_INVALID_DATA
+	run.state_changed.emit()
+	return error
+
+## 悬置期间可正常使用背包和商店；素材失效时允许重选，不能免费重抽有效素材的候选。
+static func reward_materials_available(run: Node, request: Dictionary) -> bool:
+	var current := state(run, request)
+	if current.get("stage") != "reward": return true
+	match int(current.index):
+		8:
+			if current.inputs.size() != 1: return false
+			var fragment := fragment_at(run, str(current.inputs[0]))
+			return not fragment.is_empty() and fragment == str(current.get("input_fragment", fragment))
+		9:
+			return current.inputs.size() == 2 and current.inputs.all(func(id): return run.deck_cards.any(func(card: Dictionary): return str(card.copy_id) == str(id)))
+		10:
+			return Upgrade.candidates(run).any(func(source: Dictionary): return source.id == current.get("upgrade_input_id") and source.kind == current.get("upgrade_source_kind"))
+	return true
+
+static func reselect_inputs(run: Node, request: Dictionary) -> Error:
+	if not authorized(run, request): return ERR_UNAUTHORIZED
+	var current := state(run, request)
+	if current.get("stage") != "reward" or reward_materials_available(run, request): return ERR_UNAVAILABLE
+	var before := capture(run)
+	current.stage = "inputs"
+	current.inputs = []
+	current.offers = []
+	for field: String in ["selection_draft", "input_fragment", "upgrade_input_id", "upgrade_source_kind", "upgrade_source_label", "upgrade_offers"]:
+		current.erase(field)
+	run.inventory_state.events[key(request)] = current
+	return commit(run, before)
 
 static func selectables(run: Node, request: Dictionary) -> Array:
 	var current := state(run, request)
@@ -220,6 +275,7 @@ static func select(run: Node, request: Dictionary, ids: Array, rollback: Diction
 	if not authorized(run, request): return ERR_UNAUTHORIZED
 	var current := state(run, request)
 	if current.stage not in ["inputs", "reward"]: return ERR_BUSY
+	if current.stage == "reward" and not reward_materials_available(run, request): return ERR_UNAVAILABLE
 	if int(current.index) == 10: return _select_upgrade(run, request, current, ids)
 	var before := capture(run) if rollback.is_empty() else rollback
 	var allowed := selectables(run, request).map(func(e: Dictionary): return str(e.id))
@@ -230,6 +286,7 @@ static func select(run: Node, request: Dictionary, ids: Array, rollback: Diction
 	var index := int(current.index)
 	var count := 1 if current.stage == "reward" or index == 8 else 2
 	if ids.size() != count: return ERR_INVALID_PARAMETER
+	current.erase("selection_draft")
 	var rng := RandomEventCatalog.stream(str(run.main_seed), str(request.map_id), str(request.node_id), "selection")
 	var result: Array[String] = []
 	if current.stage == "inputs":
@@ -246,6 +303,7 @@ static func select(run: Node, request: Dictionary, ids: Array, rollback: Diction
 			var pool: Array = RelicCatalog.reward_ids() if index == 8 else RunRewards._card_pool("rare_pack" if int(rng.int_range(0, 100)) < 20 else "common_pack")
 			if index == 8:
 				var consumed := fragment_at(run, str(ids[0]))
+				current["input_fragment"] = consumed
 				var data := RelicCatalog.resolve(consumed)
 				pool = pool.filter(func(id: String) -> bool: return RelicCatalog.resolve(id).kind in [RelicFragmentData.Kind.TRIGGER, RelicFragmentData.Kind.EFFECT])
 				if data != null: pool.erase(data.base_fragment_id if not data.base_fragment_id.is_empty() else consumed.get_slice("~", 0))
@@ -279,6 +337,7 @@ static func select(run: Node, request: Dictionary, ids: Array, rollback: Diction
 static func _select_upgrade(run: Node, request: Dictionary, current: Dictionary, ids: Array) -> Error:
 	if ids.size() != 1 or not ids[0] is String: return ERR_INVALID_PARAMETER
 	var before := capture(run)
+	current.erase("selection_draft")
 	var chosen: Dictionary = {}
 	if current.stage == "inputs":
 		var sources := Upgrade.candidates(run)
@@ -332,7 +391,6 @@ static func acknowledge(run: Node, request: Dictionary, continue_gamble := false
 	else:
 		current.stage = "done"
 		current.finished = true
-		RunUpgrades.award_node(run, str(request.map_id), str(request.node_id))
 	run.inventory_state.events[key(request)] = current
 	return commit(run, before)
 

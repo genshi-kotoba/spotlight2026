@@ -1,0 +1,10 @@
+[remap]
+
+importer="keep"
+
+[deps]
+
+
+source_file="res://data/text/items.csv"
+
+[params]

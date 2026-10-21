@@ -4,6 +4,7 @@ extends Control
 signal chosen(id: String)
 
 const CARD_SCENE := preload("res://ui/components/card/card_view.tscn")
+const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
 const FLIGHT_TIME := 0.16
 const FOLD_TIME := 0.20
 const THUMBNAIL_SCALE := 0.16
@@ -29,6 +30,7 @@ func _ready() -> void:
 	clip_contents = false
 
 func configure(options: Array, fragments: bool) -> void:
+	RUNTIME_LOG.event("reward.offer", {"kind": "fragment" if fragments else "card", "options": options})
 	_item_size = Vector2(330, 470) if fragments else Vector2(240, 409)
 	var cards: Dictionary = {} if fragments else FormalCardCatalog.load_definitions().cards
 	for value: String in options:

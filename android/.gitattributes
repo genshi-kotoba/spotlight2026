@@ -1,0 +1,5 @@
+# Normalize EOL for all files that Git considers text files.
+* text=auto eol=lf
+
+# Preserve Wwise authoring line endings in the working tree.
+WwiseProject/**/*.wproj text eol=crlf

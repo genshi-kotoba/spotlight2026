@@ -39,7 +39,7 @@ func _run() -> void:
 	if view.scene_file_path != ENTRY or view.map_run.current_floor <= 0:
 		_finish()
 		return
-	_check("真实状态机开局且三张地图配置合法", GlobalState.run_active and GlobalState.current_run.map_ids.size() == 3)
+	_check("真实状态机开局且四张地图配置合法", GlobalState.run_active and GlobalState.current_run.map_ids.size() == 4)
 	_check("新局固定八张初始牌且不需要局外解锁", GlobalState.current_run.deck == ["1", "1", "1", "50", "50", "50", "40", "40"] and not GlobalState.has_method("unlock_card"))
 	var run_id: String = GlobalState.current_run.run_id
 	var map_before: String = _json(view._map_snapshot)

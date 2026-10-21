@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://ui/main_menu/confirm_dialog.gd" id="1_dialog"]
 
 [node name="确认弹窗" type="Control"]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
@@ -11,6 +13,8 @@ visible = false
 script = ExtResource("1_dialog")
 
 [node name="遮罩" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
@@ -19,6 +23,8 @@ mouse_filter = 0
 color = Color(0, 0, 0, 0.55)
 
 [node name="面板" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
