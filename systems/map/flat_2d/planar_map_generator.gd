@@ -63,8 +63,9 @@ func normalize_config(input: Dictionary) -> Dictionary:
 		if c.normal != 3 or c.elite != 0 or c.events != 4 or c.min_boss_content_nodes != 4:
 			return _fail("alchemy_floor1 requires normal=3, elite=0, events=4, min_boss_content_nodes=4")
 	elif c.content_profile == "alchemy_floor1_pile":
-		if c.normal != 3 or c.elite != 0 or c.events != 5 or c.min_boss_content_nodes != 4:
-			return _fail("alchemy_floor1_pile requires normal=3, elite=0, events=5, min_boss_content_nodes=4")
+		# Preserve old zero-elite snapshots while admitting the current floor-one quota.
+		if c.normal != 3 or c.elite not in [0, 1] or c.events != 5 or c.min_boss_content_nodes != 4:
+			return _fail("alchemy_floor1_pile requires normal=3, elite=0..1, events=5, min_boss_content_nodes=4")
 	elif c.normal < 2 or c.normal > 8 or c.elite < 1 or c.elite > 5 or c.normal + c.elite < 4:
 		return _fail("Use 2..8 normal, 1..5 elite, and at least four combat nodes")
 	if c.events < 4 or c.events > 16:
