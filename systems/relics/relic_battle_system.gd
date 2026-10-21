@@ -250,8 +250,8 @@ func _enqueue(trigger: int, effect: int, target: String, ancestry: Array, root_i
 	var effect_data: RelicFragmentData = catalog.get(board.cells[effect])
 	RUNTIME_LOG.event("relic.activate", {"trigger": trigger, "effect": effect,
 		"target": target, "presence": presence, "root": root_id,
-		"trigger_id": str(trigger_data.id) if trigger_data != null else "",
-		"effect_id": str(effect_data.id) if effect_data != null else ""})
+		"trigger_id": str(trigger_data.fragment_id) if trigger_data != null else "",
+		"effect_id": str(effect_data.fragment_id) if effect_data != null else ""})
 
 
 func _execute(event: BattleEvent) -> void:
