@@ -55,6 +55,21 @@ static func open(run: Node, request: Dictionary) -> Error:
 	if error != OK: run.inventory_state = before
 	return error
 
+## 宝箱交互立即领取：生成、发放、账本与地图完成只落盘一次。
+## 失败时连首次生成也一同回滚；重试仍由节点种子生成同一份奖励。
+static func collect_chest(run: Node, request: Dictionary) -> Error:
+	if request.get("type") != "chest" or not _authorized(run, request): return ERR_UNAUTHORIZED
+	var before: Dictionary = run.inventory_state.duplicate(true)
+	if record(run, request).is_empty():
+		var generated := generate(str(run.main_seed), str(request.map_id), str(request.node_id), int(request.floor_index), "chest")
+		var address := key(str(request.map_id), str(request.node_id))
+		if generated.is_empty() or not valid_records({address:generated}): return ERR_INVALID_DATA
+		if not run.inventory_state.has("node_loot"): run.inventory_state.node_loot = {}
+		run.inventory_state.node_loot[address] = generated
+	var error := claim(run, request)
+	if error != OK: run.inventory_state = before
+	return error
+
 static func claim(run: Node, request: Dictionary) -> Error:
 	if not _authorized(run, request): return ERR_UNAUTHORIZED
 	var loot := record(run, request)
@@ -89,6 +104,7 @@ static func claim(run: Node, request: Dictionary) -> Error:
 
 static func cancel(run: Node, request: Dictionary) -> Error:
 	if not _authorized(run, request): return ERR_UNAUTHORIZED
+	if request.get("type") == "chest": return ERR_UNAVAILABLE
 	var before: Dictionary = EncounterFlow.session.capture_state()
 	if not EncounterFlow.session.resolve_request({"request_id":request.request_id, "status":"cancelled"}): return ERR_INVALID_DATA
 	var error := SaveGateway.save_current()
