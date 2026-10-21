@@ -50,7 +50,6 @@ func _run_settings_path() -> String:
 
 func _create_map_view() -> Node2D:
 	map_scale = clampf(float(_height_settings.get("map_scale", 7.0)), 0.5, 16.0)
-	speed_multiplier = 2.0
 	var run := SaveGateway.current_run()
 	var identity := run.run_id if run != null else SeedService.get_main_seed()
 	var view: Node2D = MapPresentation.acquire(self, identity)

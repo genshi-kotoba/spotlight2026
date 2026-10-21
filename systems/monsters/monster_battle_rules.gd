@@ -138,7 +138,8 @@ func _act(event: BattleEvent) -> void:
 		for hit in int(action.get("hits", 1)):
 			battle.rules.publish("action.damage", {"side": "player", "target": "player", "amount": int(action.damage),
 				"ignore_block": false, "use_stats": true, "source_side": "enemy", "source_id": id},
-				{"monster_attack": id, "lifesteal_enemy": id if bool(action.get("lifesteal", false)) else ""})
+				{"monster_attack": id, "hit_index": hit + 1, "hit_count": int(action.get("hits", 1)),
+				"lifesteal_enemy": id if bool(action.get("lifesteal", false)) else ""})
 	if action.has("strength"): _buff("enemy", id, "strength", int(action.strength), 0)
 	if action.has("block"): battle.rules.publish("action.block", {"side": "enemy", "target": id, "amount": int(action.block)})
 	if action.has("dot"): _loss(int(action.dot), {"dot": true})

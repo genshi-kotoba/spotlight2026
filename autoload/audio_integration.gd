@@ -147,15 +147,15 @@ func _on_node_added(node: Node) -> void:
 		_connect_slider(node)
 	elif node is MapScene:
 		# MapScene 的 @onready 成员要等 _ready 后才赋值
-		node.ready.connect(_connect_map_scene.bind(node), CONNECT_ONE_SHOT)
+		_connect_once(node.ready, _connect_map_scene.bind(node), CONNECT_ONE_SHOT)
 	elif node is BattleStateMachine:
 		_connect_battle(node)
 	elif node is BattleTestScene:
 		_connect_battle_ui(node)
 	elif node is RunMenuOverlay:
-		node.visibility_changed.connect(_on_run_menu_visibility_changed.bind(node))
+		_connect_once(node.visibility_changed, _on_run_menu_visibility_changed.bind(node))
 	elif node is MonsterBattleText:
-		node.sentence_started.connect(_on_monster_text_sentence)
+		_connect_once(node.sentence_started, _on_monster_text_sentence)
 
 
 func _connect_button(btn: Button) -> void:
@@ -163,9 +163,9 @@ func _connect_button(btn: Button) -> void:
 	if _connected_ui.has(id):
 		return
 	_connected_ui[id] = true
-	btn.mouse_entered.connect(_play_ui.bind(UI_SFX["hover"]))
-	btn.pressed.connect(_on_ui_button_pressed.bind(btn))
-	btn.tree_exited.connect(func() -> void: _connected_ui.erase(id))
+	_connect_once(btn.mouse_entered, _play_ui.bind(UI_SFX["hover"]))
+	_connect_once(btn.pressed, _on_ui_button_pressed.bind(btn))
+	_connect_once(btn.tree_exited, func() -> void: _connected_ui.erase(id), CONNECT_ONE_SHOT)
 
 
 func _on_ui_button_pressed(btn: Button) -> void:
@@ -223,8 +223,8 @@ func _connect_slider(slider: HSlider) -> void:
 	if _connected_ui.has(id):
 		return
 	_connected_ui[id] = true
-	slider.mouse_entered.connect(_play_ui.bind(UI_SFX["hover"]))
-	slider.tree_exited.connect(func() -> void: _connected_ui.erase(id))
+	_connect_once(slider.mouse_entered, _play_ui.bind(UI_SFX["hover"]))
+	_connect_once(slider.tree_exited, func() -> void: _connected_ui.erase(id), CONNECT_ONE_SHOT)
 
 
 # ------------------------------------------------------------------ Run / 成就
@@ -232,8 +232,8 @@ func _connect_slider(slider: HSlider) -> void:
 func _on_run_started(run: RunStateMachine) -> void:
 	_current_run = run
 	_update_deck_size_rtpc(run)
-	run.stat_updated.connect(_on_run_stat_updated)
-	run.battle_started.connect(_on_run_battle_started)
+	_connect_once(run.stat_updated, _on_run_stat_updated)
+	_connect_once(run.battle_started, _on_run_battle_started)
 
 
 func _on_run_battle_started(battle: BattleStateMachine) -> void:
@@ -372,19 +372,24 @@ func _connect_battle(battle: BattleStateMachine) -> void:
 		return
 	_connected_battles[id] = true
 	_current_battle = battle
-	battle.tree_exited.connect(func() -> void:
+	_connect_once(battle.tree_exited, func() -> void:
 		_connected_battles.erase(id)
 		if _current_battle == battle:
 			_current_battle = null
-	)
+	, CONNECT_ONE_SHOT)
 	# 生命周期与即时操作：走状态机
-	battle.battle_started.connect(_on_battle_started)
-	battle.battle_ended.connect(_on_battle_ended)
-	battle.card_drawn.connect(_on_card_drawn)
-	battle.discard_pile_shuffled.connect(_on_discard_pile_shuffled)
+	_connect_once(battle.battle_started, _on_battle_started)
+	_connect_once(battle.battle_ended, _on_battle_ended)
+	_connect_once(battle.card_drawn, _on_card_drawn)
+	_connect_once(battle.discard_pile_shuffled, _on_discard_pile_shuffled)
 	# 血量 RTPC 需要原始数值：只更新 RTPC，不发声（发声交给表现层）
-	battle.combatant_damaged.connect(_on_battle_health_changed)
-	battle.combatant_healed.connect(_on_battle_health_changed_heal)
+	_connect_once(battle.combatant_damaged, _on_battle_health_changed)
+	_connect_once(battle.combatant_healed, _on_battle_health_changed_heal)
+
+
+func _connect_once(signal_source: Signal, callback: Callable, flags: int = 0) -> void:
+	if not signal_source.is_connected(callback):
+		signal_source.connect(callback, flags)
 
 
 func _on_battle_started(snapshot: Dictionary) -> void:
@@ -451,8 +456,8 @@ func _connect_battle_ui(ui: BattleTestScene) -> void:
 	if _connected_battle_uis.has(id):
 		return
 	_connected_battle_uis[id] = true
-	ui.presentation_event.connect(_on_battle_presentation)
-	ui.tree_exited.connect(func() -> void: _connected_battle_uis.erase(id))
+	_connect_once(ui.presentation_event, _on_battle_presentation)
+	_connect_once(ui.tree_exited, func() -> void: _connected_battle_uis.erase(id), CONNECT_ONE_SHOT)
 
 
 func _on_battle_presentation(kind: String, data: Dictionary) -> void:
@@ -724,5 +729,3 @@ func _guess_foot_material(map_id: String) -> String:
 			return "Stone"
 		_:
 			return "Wood"
-
-

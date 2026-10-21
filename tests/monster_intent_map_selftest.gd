@@ -2,7 +2,7 @@ extends "res://tests/map_entry_input_selftest.gd"
 ## Production map entry, real input, save/menu and cold restore; no fixture battle subclass.
 var checks := 0
 var results: Array[Dictionary] = []
-var output_root := "res://../verification/map"
+var output_root := "res://.godot/verification/map"
 
 func _run() -> void:
 	fixture_root = "res://.godot/intent-map-%d" % Time.get_ticks_usec()

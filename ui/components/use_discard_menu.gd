@@ -66,6 +66,10 @@ func close() -> void:
 	closed.emit()
 
 
+func _has_point(point: Vector2) -> bool:
+	return visible and is_instance_valid(_plate) and _plate.get_rect().has_point(point)
+
+
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		close()
@@ -73,6 +77,10 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	# 关闭菜单但不吃掉面板外的点击：仍可直接点典籍格装配已选中的残片。
+	if visible and event is InputEventMouseButton and event.pressed \
+			and not _plate.get_global_rect().has_point(event.position):
+		close()
 	# 菜单开着时 Esc 只收菜单，不把冒险菜单一起关掉。
 	if visible and event.is_action_pressed("ui_cancel"):
 		close()

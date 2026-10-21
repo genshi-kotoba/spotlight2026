@@ -219,6 +219,11 @@ func _arrow_layers(owner: String, label: String) -> bool:
 		var point: Vector2 = _visible_click_point(slot)
 		if not _expect(label + " 箭头命中样本存在/" + id, point != Vector2.INF): return false
 		if not await _pointer_select(slot, point, label + " 箭头分层/" + id): return false
+		if "--skip-native-hover" in OS.get_cmdline_user_args():
+			# Hidden automation windows cannot reliably warp the system cursor.
+			# Still verify the production arrow-layer API, not native hover selection.
+			skipped_native_checks.append(label + "/" + id + " 原生箭头悬停（改用分层API验证）")
+			scene.enemy_rack._aim_arrow(slot)
 		var arrow_z: int = _effective_z(scene.enemy_rack._arrow)
 		if id == owner:
 			if not _expect(label + " 主怪箭头高于主怪模型且低于手牌", arrow_z > _effective_z(main.portrait) and arrow_z < _effective_z(scene.hand_scroll)): return false
@@ -271,6 +276,9 @@ func _trigger_feedback(id: String, kind: String) -> Array[CanvasItem]:
 func _sentinel_fixture(resolution: Vector2i) -> bool:
 	var tag := "sentinel-%d" % resolution.x
 	if not await _new_battle(["1", "4", "4"], "test_block", tag): return false
+	if scene._monster_text != null:
+		scene._monster_text.stop()
+		scene._monster_text.hide()
 	_notice("DETERMINISTIC SENTINEL: cyan primary / magenta rear; real production nodes and feedback")
 	var owner: String = str(scene._battle.enemies[0]["enemy_id"])
 	var main: EnemySlot = scene.enemy_rack.slot_for(owner)

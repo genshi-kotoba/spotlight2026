@@ -1,7 +1,7 @@
 class_name GlobalStateMachine
 extends Node
 
-## PRG-002：局外状态、JSON 存档、卡牌解锁、成就状态与对局历史。
+## PRG-002：局外设置、JSON 存档与对局历史。
 ## Autoload 名称为 GlobalState；业务代码不应再实例化第二个常驻全局状态机。
 
 signal save_loaded
@@ -9,21 +9,13 @@ signal save_failed(error: Error, message: String)
 signal run_started(run: RunStateMachine)
 signal run_continued(run: RunStateMachine)
 signal run_finished(result: Dictionary)
-signal achievement_check_requested(metric: StringName, value: Variant, run_snapshot: Dictionary)
-signal achievement_unlocked(achievement_id: String)
 signal settings_changed(key: String, value: Variant)
-signal unlocked_cards_changed(card_ids: Array[String])
-signal collection_unlocked(category: String, entry_id: String)
 
 const SAVE_VERSION := 1
 const DEFAULT_SAVE_PATH := "user://save/game.json"
 
 var save_path := DEFAULT_SAVE_PATH
 var settings: Dictionary = {}
-var achievements: Dictionary = {}
-var unlocked_cards: Array[String] = []
-var unlocked_fragments: Array[String] = []
-var unlocked_monsters: Array[String] = []
 var run_history: Array[Dictionary] = []
 ## 跨局保留的地区首次入场记录；旧版 v1 缺省为空。
 var seen_region_titles: Array[String] = []
@@ -60,7 +52,7 @@ func start_new_run(seed_text: String, config: Dictionary) -> Error:
 	var run := RunStateMachine.new()
 	add_child(run)
 	_connect_run(run)
-	var error := run.initialize_new(seed_text, config, unlocked_cards)
+	var error := run.initialize_new(seed_text, config)
 	if error != OK:
 		run.queue_free()
 		return _fail(error, "Could not initialize the new run")
@@ -147,10 +139,6 @@ func build_save_payload() -> Dictionary:
 	var payload := {
 		"save_version": SAVE_VERSION,
 		"settings": settings.duplicate(true),
-		"achievements": achievements.duplicate(true),
-		"unlocked_cards": unlocked_cards.duplicate(),
-		"unlocked_fragments": unlocked_fragments.duplicate(),
-		"unlocked_monsters": unlocked_monsters.duplicate(),
 		"run_history": run_history.duplicate(true),
 		"active_run": active_payload,
 	}
@@ -214,46 +202,6 @@ func set_setting(key: String, value: Variant) -> Error:
 	return OK
 
 
-func unlock_card(card_id: String) -> Error:
-	var normalized := card_id.strip_edges()
-	if normalized.is_empty():
-		return _fail(ERR_INVALID_PARAMETER, "Card id is empty")
-	if not unlocked_cards.has(normalized):
-		unlocked_cards.append(normalized)
-		unlocked_cards.sort()
-		unlocked_cards_changed.emit(unlocked_cards.duplicate())
-	return OK
-
-
-func unlock_collection(category: String, entry_id: String) -> Error:
-	var normalized := entry_id.strip_edges()
-	if category not in ["fragments", "monsters"] or normalized.is_empty():
-		return _fail(ERR_INVALID_PARAMETER, "Collection category/id is invalid")
-	var target: Array[String] = unlocked_fragments if category == "fragments" else unlocked_monsters
-	if not target.has(normalized):
-		target.append(normalized)
-		target.sort()
-		collection_unlocked.emit(category, normalized)
-	return OK
-
-
-## 具体成就条件由外部规则监听检查请求，满足后调用本方法。
-func complete_achievement(achievement_id: String, metadata: Dictionary = {}) -> Error:
-	var normalized := achievement_id.strip_edges()
-	if normalized.is_empty() or not _is_json_safe(metadata):
-		return _fail(ERR_INVALID_PARAMETER, "Achievement id or metadata is invalid")
-	var existing: Variant = achievements.get(normalized)
-	if existing is Dictionary and bool(existing.get("completed", false)):
-		return OK
-	achievements[normalized] = {
-		"completed": true,
-		"completed_at": Time.get_datetime_string_from_system(true),
-		"metadata": metadata.duplicate(true),
-	}
-	achievement_unlocked.emit(normalized)
-	return OK
-
-
 func abandon_current_run() -> Error:
 	if not run_active or current_run == null:
 		return _fail(ERR_UNCONFIGURED, "No active run")
@@ -261,14 +209,7 @@ func abandon_current_run() -> Error:
 
 
 func _connect_run(run: RunStateMachine) -> void:
-	run.stat_updated.connect(_on_run_stat_updated)
 	run.run_ended.connect(_on_run_ended)
-
-
-func _on_run_stat_updated(metric: StringName, value: Variant) -> void:
-	if current_run == null:
-		return
-	achievement_check_requested.emit(metric, value, current_run.to_dictionary())
 
 
 func _on_run_ended(result: Dictionary) -> void:
@@ -317,22 +258,14 @@ func _install_save(data: Dictionary) -> Error:
 	if not _integer_equals(data.get("save_version"), SAVE_VERSION):
 		return ERR_INVALID_DATA
 	var loaded_settings: Variant = data.get("settings")
-	var loaded_achievements: Variant = data.get("achievements")
-	var loaded_cards: Variant = data.get("unlocked_cards")
-	# 可选字段保持旧版 v1 存档兼容，缺省为空，不从 CSV 重置已有进度。
-	var loaded_fragments: Variant = data.get("unlocked_fragments", [])
-	var loaded_monsters: Variant = data.get("unlocked_monsters", [])
+	# 旧 v1 的成就和局外解锁字段已退役：读取时忽略，之后保存时不再写入。
 	var loaded_history: Variant = data.get("run_history")
 	var loaded_regions: Variant = data.get("seen_region_titles", [])
 	var loaded_active: Variant = data.get("active_run")
-	if not loaded_settings is Dictionary or not loaded_achievements is Dictionary \
-			or not loaded_cards is Array or not loaded_history is Array \
-			or not loaded_fragments is Array or not loaded_monsters is Array \
+	if not loaded_settings is Dictionary or not loaded_history is Array \
 			or (loaded_active != null and not loaded_active is Dictionary):
 		return ERR_INVALID_DATA
-	if not _string_array_valid(loaded_cards) or not _is_json_safe(loaded_settings) \
-			or not _string_array_valid(loaded_fragments) or not _string_array_valid(loaded_monsters) \
-			or not _is_json_safe(loaded_achievements) or not _is_json_safe(loaded_history) \
+	if not _is_json_safe(loaded_settings) or not _is_json_safe(loaded_history) \
 			or (loaded_active != null and not _is_json_safe(loaded_active)):
 		return ERR_INVALID_DATA
 
@@ -348,13 +281,6 @@ func _install_save(data: Dictionary) -> Error:
 			return ERR_INVALID_DATA
 	seen_region_titles.assign(loaded_regions)
 	settings = loaded_settings.duplicate(true)
-	achievements = loaded_achievements.duplicate(true)
-	unlocked_cards.assign(loaded_cards)
-	unlocked_cards.sort()
-	unlocked_fragments.assign(loaded_fragments)
-	unlocked_monsters.assign(loaded_monsters)
-	unlocked_fragments.sort()
-	unlocked_monsters.sort()
 	run_history.clear()
 	for record: Variant in loaded_history:
 		run_history.append(record.duplicate(true))
@@ -367,10 +293,6 @@ func _install_save(data: Dictionary) -> Error:
 func _reset_loaded_data() -> void:
 	seen_region_titles.clear()
 	settings.clear()
-	achievements.clear()
-	unlocked_cards.clear()
-	unlocked_fragments.clear()
-	unlocked_monsters.clear()
 	run_history.clear()
 	_saved_active_run.clear()
 	run_active = false
@@ -407,13 +329,6 @@ func _write_atomic(text: String) -> Error:
 	if FileAccess.file_exists(backup):
 		DirAccess.remove_absolute(absolute_backup)
 	return OK
-
-
-static func _string_array_valid(values: Array) -> bool:
-	for value: Variant in values:
-		if not value is String or value.strip_edges().is_empty():
-			return false
-	return true
 
 
 static func _is_json_safe(value: Variant) -> bool:

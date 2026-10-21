@@ -16,10 +16,6 @@ config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 config/seed_content_version="jam-map-seed-v1"
 
-[audio]
-
-buses/default_bus_layout="res://default_bus_layout.tres"
-
 [autoload]
 
 SeedService="*res://autoload/seed_service.gd"

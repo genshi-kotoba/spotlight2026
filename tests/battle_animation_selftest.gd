@@ -236,7 +236,7 @@ func _check_transfers(scene: BattleTestScene) -> void:
 	var hand_before := scene._battle.hand.size()
 	scene._on_hand_card_pressed(id)
 	await _frames(5)
-	_check("点手牌瞬时落位出牌区且不生成飞牌", not scene._card_transfers.has(id) and scene._selected_ids.has(id) and scene.play_cards.get_child_count() >= 1 and scene._battle.hand.size() == hand_before)
+	_check("点手牌直接编排且不提前改变业务手牌", not scene._card_transfers.has(id) and scene._selected_ids.has(id) and scene.play_cards.get_child_count() >= 1 and scene.hand_cards.get_child_count() == hand_before - 1 and scene._battle.hand.size() == hand_before)
 	scene._on_cancel_pressed()
 	await _frames(4)
 	_check("取消后手牌还原且无残留飞牌", scene._card_transfers.is_empty() and scene._selected_ids.is_empty() and scene.hand_cards.get_child_count() == hand_before)

@@ -27,6 +27,7 @@ func _run() -> void:
 	_check("半角标点和末尾没有换行", MonsterBattleText.parse_sentences("A;\nB.\nC") == ["A;\nB.", "C"])
 	_check("旧档编号变动以图片绑定TXT", TextCatalog.monster_battle_text_path({"enemy_id": "1", "art_path": "res://assets/chr/CHR-016.png"}) == "res://assets/chr/CHR-016.txt")
 	var scene: BattleTestScene = load("res://ui/battle/battle_test_scene.tscn").instantiate()
+	scene.test_enemy_count = 1
 	scene.relic_board_path = EncounterFlow.relic_board_path
 	add_child(scene)
 	await _frames(5)
@@ -203,8 +204,7 @@ func _run() -> void:
 	overlay.context_provider = func(): return {"area": Rect2(0, 0, 80, 60), "blockers": []}
 	overlay.advance(0.001)
 	_check("缩小窗口后不越界绘制旧句", overlay.active_sentences.is_empty())
-	for enemy: Dictionary in scene._battle.enemies:
-		if int(enemy.health) > 0: scene._battle.apply_damage_to_enemy(str(enemy.enemy_id), int(enemy.health), true)
+	scene._battle._finish_battle("victory")
 	await preload("res://tests/support/presentation_test_helper.gd").battle_settled(scene)
 	_check("终局停止且清除文本", not overlay._running and overlay.active_sentences.is_empty())
 	scene.queue_free()

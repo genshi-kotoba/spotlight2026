@@ -86,7 +86,7 @@ func begin_encounter(request: Dictionary) -> bool:
 			if member.is_empty(): return _fail("固定测试阵容缺少怪物配置")
 			member["formation_slot"] = index
 			enemies.append(member)
-	# 只在原牌组为空时使用临时联调牌，不改变正式牌组或任何解锁状态。
+	# 只在原牌组为空时使用临时联调牌，不改变正式牌组。
 	var temporary: Array = test_rules.empty_deck_fallback if run.deck.is_empty() else []
 	var error := run.start_battle(str(session.pending.node_id), enemies, 0, false,
 		int(test_rules.play_limit), false, temporary)

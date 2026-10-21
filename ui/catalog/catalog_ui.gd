@@ -9,7 +9,7 @@ const MUTED := Color("aaa395")
 
 
 static func install_theme(root: Control) -> void:
-	# 图鉴/成就与战斗、开始界面共用同一套暗金皮：深棕底 + 金边 + 奶油字。
+	# 图鉴与战斗、开始界面共用同一套暗金皮：深棕底 + 金边 + 奶油字。
 	var skin := Theme.new()
 	var font := SystemFont.new()
 	font.font_names = PackedStringArray(["Microsoft YaHei", "Noto Sans CJK SC", "SimHei"])

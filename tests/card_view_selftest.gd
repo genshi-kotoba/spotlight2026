@@ -174,6 +174,9 @@ func _test_scene_shape() -> void:
 
 	var art := card.get_node("%插画位") as Control
 	var frame := card.get_node("%卡框") as Control
+	_check("插画等比例覆盖整个图框、不留缩放白边",
+		(art as TextureRect).expand_mode == TextureRect.EXPAND_IGNORE_SIZE
+		and (art as TextureRect).stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_COVERED)
 	_check(
 		"ArtSlot 画在 Frame 之前（插画区是透明洞）",
 		art.get_index() < frame.get_index(),

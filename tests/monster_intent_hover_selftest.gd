@@ -2,7 +2,7 @@ extends "res://tests/monster_intent_native_selftest.gd"
 ## Real native hover, menu input, and shared Buff UI lifecycle regression.
 
 func _run() -> void:
-	output_root = "res://../verification/hover"
+	output_root = "res://.godot/verification/hover"
 	DirAccess.make_dir_recursive_absolute(fixture_root)
 	DirAccess.make_dir_recursive_absolute(output_root)
 	SaveGateway.save_path = fixture_root.path_join("hover-%d.json" % Time.get_ticks_usec())

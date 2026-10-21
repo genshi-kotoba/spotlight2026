@@ -46,3 +46,6 @@ lark_login_qr*.png
 _work/
 *.rpp-bak
 *.bak
+
+# GDExtension hot-reload duplicates, not distributable audio libraries.
+addons/Wwise/native/lib/**/~*

@@ -106,6 +106,9 @@ var _battle: BattleStateMachine
 var _card_catalog: Dictionary = {}
 var _battle_board: RelicBoard
 var _resources: Label
+var _upgrade_play: Button
+var _upgrade_relic: Button
+var _upgrade_layer: CanvasLayer
 var _bag_hint: Label
 var _selected_fragment_id := ""
 var _pack_popup: LootPopup
@@ -164,6 +167,7 @@ func current_page() -> int:
 
 
 func close() -> void:
+	if is_instance_valid(_upgrade_layer): return
 	if settlement_mode: return
 	if _pack_selection_locked(): return
 	_end_relic_drag(true)
@@ -181,6 +185,7 @@ func is_open() -> bool:
 
 
 func set_page(index: int) -> void:
+	if is_instance_valid(_upgrade_layer): return
 	if settlement_mode: index = 1
 	if _pack_selection_locked(): return
 	_end_relic_drag(true)
@@ -242,6 +247,7 @@ func _refresh_data() -> void:
 	_reload_deck(deck_ids, deck_copies)
 	_reload_relics()
 	_reload_items(run)
+	_refresh_upgrade_buttons()
 
 
 func _reload_deck(deck_ids: Array[String], copies: Array[Dictionary] = []) -> void:
@@ -510,6 +516,7 @@ func _build_bag_page(page: Control) -> void:
 	_build_relic_zone(page)
 	_build_item_zone(page)
 	_build_deck_zone(page)
+	if not settlement_mode: _build_upgrade_buttons(page)
 
 
 func _zone_title(page: Control, title: Label, x: float, y: float = 0.0) -> void:
@@ -892,9 +899,10 @@ func _close_item_menu() -> void:
 func _equip_selected(cell: int) -> void:
 	if not _can_edit_relics() or _selected_fragment_id.is_empty():
 		return
-	var error := RunRewards.equip_fragment(SaveGateway.current_run(), _selected_fragment_id, cell)
+	var error := RunRewards.equip_fragment(_active_run(), _selected_fragment_id, cell)
 	if error == OK:
 		_selected_fragment_id = ""
+		_sync_battle_board()
 		_refresh_data()
 		relic_board_updated.emit()
 	else:
@@ -918,6 +926,11 @@ func _item_slot_empty(index: int) -> Control:
 
 
 func _input(event: InputEvent) -> void:
+	if is_instance_valid(_upgrade_layer):
+		if event is InputEventKey:
+			if event.is_action_pressed("ui_cancel"): _close_relic_upgrade()
+			get_viewport().set_input_as_handled()
+		return
 	if not is_visible_in_tree() or _drag_ghost == null:
 		return
 	if event is InputEventMouseMotion:
@@ -1407,3 +1420,113 @@ func _on_pack_suspension_changed(suspended: bool) -> void:
 		if slot is RelicDragItem: slot.editable = _can_edit_relics()
 	_close_button.disabled = true
 	_bag_hint.text = "选择尚未完成：背包仅供查看，不能使用物品或装配残片。\n点击“恢复选择”继续。" if suspended else "正在选择奖励，点击“悬置”可收起选项并只读查看背包。"
+
+func _build_upgrade_buttons(page: Control) -> void:
+	_upgrade_play = Button.new()
+	_upgrade_play.name = "UpgradePlaySlots"
+	_upgrade_relic = Button.new()
+	_upgrade_relic.name = "UpgradeRelicSlots"
+	for button: Button in [_upgrade_play, _upgrade_relic]:
+		button.position = Vector2(0, 680 + 82 * (0 if button == _upgrade_play else 1))
+		button.size = Vector2(BAG_RELIC_RECT.position.x - 18, 72)
+		button.add_theme_font_size_override("font_size", 20)
+		CommonUiSkin.style_button(button)
+		page.add_child(button)
+	_upgrade_play.pressed.connect(_buy_play_upgrade)
+	_upgrade_relic.pressed.connect(_open_relic_upgrade)
+
+func _refresh_upgrade_buttons() -> void:
+	if _upgrade_play == null: return
+	var run := _active_run()
+	var editable := _can_edit_relics() and not is_instance_valid(_battle) and RunUpgrades.can_upgrade(run)
+	var cost := RunUpgrades.play_cost(run) if run != null else -1
+	_upgrade_play.text = "牌位已升满" if cost < 0 else "每回合牌位 +1\n%d 万灵药" % cost
+	_upgrade_play.disabled = not editable or cost < 0 or (run != null and int(run.inventory_state.elixir) < cost)
+	_upgrade_relic.text = "解锁典籍格子\n整组 4 / 8 万灵药"
+	var locked := false
+	if run != null:
+		locked = RunRewards.board_for_run(run).unlocked_cells.size() < RelicBoard.CELL_COUNT
+	_upgrade_relic.disabled = not editable or not locked
+
+func _buy_play_upgrade() -> void:
+	var error := RunUpgrades.buy_play_slot(_active_run())
+	_refresh_data()
+	_bag_hint.text = "牌位 +1，下一场战斗生效。" if error == OK else "升级失败，物资未改变（%d）。" % error
+
+func _open_relic_upgrade() -> void:
+	if not _can_edit_relics() or not RunUpgrades.can_upgrade(_active_run()): return
+	_end_relic_drag(true)
+	_hide_item_tip()
+	_close_item_menu()
+	_upgrade_layer = CanvasLayer.new()
+	_upgrade_layer.layer = 120
+	add_child(_upgrade_layer)
+	var root := Control.new()
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_upgrade_layer.add_child(root)
+	var shade := ColorRect.new()
+	shade.color = Color(0, 0, 0, 0.82)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.add_child(shade)
+	var title := _label("选择未解锁格子，一次付费解锁整个分组", 26, CommonUiSkin.TEXT)
+	title.position = Vector2(430, 46)
+	title.size = Vector2(1080, 44)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	root.add_child(title)
+	var board := RunRewards.board_for_run(_active_run())
+	var origin := _relic_drop_cells[0].get_global_rect().position
+	for index in RelicBoard.CELL_COUNT:
+		var rect := _relic_drop_cells[index].get_global_rect()
+		var button := Button.new()
+		button.name = "UnlockRelic_%d" % index
+		button.position = origin + Vector2(index % 4, index / 4) * (rect.size + RELIC_GAP)
+		button.size = rect.size
+		for state: String in ["normal", "hover", "pressed", "disabled", "focus"]:
+			button.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+		var group := RunUpgrades.relic_group(index)
+		button.set_meta("upgrade_group", group.get("cells", []))
+		var art := _texture_rect(RelicPieceArt.slot_texture(index), Vector2.ZERO, rect.size)
+		art.name = "GroupArt"
+		art.modulate = Color(0.55, 0.52, 0.46) if board.is_unlocked(index) else Color(1.0, 0.90, 0.68)
+		button.add_child(art)
+		var caption := _label("已解锁" if board.is_unlocked(index) else "%d 万灵药\n整组 %d 格" % [int(group.get("cost", 0)), group.get("cells", []).size()], 18, Color(0.20, 0.12, 0.06))
+		caption.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		caption.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		button.add_child(caption)
+		button.tooltip_text = "一次解锁同组全部格子，费用不按格数重复计算。"
+		button.mouse_entered.connect(_highlight_upgrade_group.bind(group.get("cells", []), true))
+		button.mouse_exited.connect(_highlight_upgrade_group.bind(group.get("cells", []), false))
+		button.disabled = board.is_unlocked(index) or group.is_empty()
+		if not button.disabled: button.pressed.connect(_buy_relic_upgrade.bind(index, title))
+		root.add_child(button)
+	var cancel := Button.new()
+	cancel.text = "取消"
+	cancel.position = Vector2(840, 942)
+	cancel.size = Vector2(240, 64)
+	CommonUiSkin.style_button(cancel)
+	cancel.pressed.connect(_close_relic_upgrade)
+	root.add_child(cancel)
+
+func _buy_relic_upgrade(index: int, status: Label) -> void:
+	var error := RunUpgrades.buy_relic_group(_active_run(), index)
+	if error != OK:
+		status.text = "万灵药不足或保存失败，未扣费。请选择其他分组或取消。"
+		return
+	_close_relic_upgrade()
+	_refresh_data()
+	relic_board_updated.emit()
+
+func _close_relic_upgrade() -> void:
+	if is_instance_valid(_upgrade_layer): _upgrade_layer.queue_free()
+	_upgrade_layer = null
+
+func _highlight_upgrade_group(group: Array, active: bool) -> void:
+	if not is_instance_valid(_upgrade_layer): return
+	for node: Node in _upgrade_layer.find_children("UnlockRelic_*", "Button", true, false):
+		var art := node.get_node("GroupArt") as TextureRect
+		if node.disabled:
+			art.modulate = Color(0.55, 0.52, 0.46)
+		else:
+			art.modulate = Color(1.0, 1.0, 0.88) if active and node.get_meta("upgrade_group") == group else Color(1.0, 0.90, 0.68)
