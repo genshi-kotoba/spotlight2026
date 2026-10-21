@@ -10,7 +10,7 @@
     "Type": "User",
     "GUID": "{701ECBBD-9C7B-4030-8CDB-749EE5D1C7B9}",
     "Language": "SFX",
-    "Hash": "{A9B076DF-0410-B7B8-21EA-5180F268A760}",
+    "Hash": "{C3BE1CA8-15F9-4E3D-CF28-96583BBC133D}",
     "ObjectPath": "Init",
     "ShortName": "Init",
     "Path": "Init.bnk",
@@ -78,6 +78,20 @@
     },
     "Busses": [
      {
+      "Id": "76192297",
+      "Name": "Scene_Slum",
+      "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus\\Scene_Slum",
+      "GUID": "{8BD804F9-152A-404D-BBEE-24F7B224D091}",
+      "AuxBusRefs": [
+       {
+        "Id": "1225611939",
+        "Name": "Reverb_Slum",
+        "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus\\Reverb_Slum",
+        "GUID": "{8BA0662E-326F-440C-AFE1-FE45799C682D}"
+       }
+      ]
+     },
+     {
       "Id": "85412153",
       "Name": "Ambience",
       "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus\\Ambience",
@@ -97,6 +111,20 @@
       }
      },
      {
+      "Id": "1050881735",
+      "Name": "Scene_Church",
+      "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus\\Scene_Church",
+      "GUID": "{0AE28A0A-B550-49FF-965A-D41DE7188B89}",
+      "AuxBusRefs": [
+       {
+        "Id": "4135238417",
+        "Name": "Reverb_Church",
+        "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus\\Reverb_Church",
+        "GUID": "{F6EA1BCD-832A-4EEA-AB9B-83EF8CCFAEF9}"
+       }
+      ]
+     },
+     {
       "Id": "1551306167",
       "Name": "UI",
       "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus\\UI",
@@ -107,6 +135,20 @@
       "Name": "Main Audio Bus",
       "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus",
       "GUID": "{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}"
+     },
+     {
+      "Id": "2277638669",
+      "Name": "Scene_Workshop",
+      "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus\\Scene_Workshop",
+      "GUID": "{644968E5-090F-4D43-8438-8CFA808B9A91}",
+      "AuxBusRefs": [
+       {
+        "Id": "4256874363",
+        "Name": "Reverb_Workshop",
+        "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus\\Reverb_Workshop",
+        "GUID": "{DB38CA55-F3BB-4C9A-A4CF-FACFED221E9F}"
+       }
+      ]
      },
      {
       "Id": "3170124113",
@@ -223,6 +265,12 @@
       "Name": "Volume_Music",
       "ObjectPath": "\\Game Parameters\\Default Work Unit\\Volume_Music",
       "GUID": "{1871E77C-2B0D-413B-A931-76B31717816A}"
+     },
+     {
+      "Id": "3944980085",
+      "Name": "Music_Combat",
+      "ObjectPath": "\\Game Parameters\\Default Work Unit\\Music_Combat",
+      "GUID": "{1BD67451-C88E-4C9D-911C-D0EFA88819B9}"
      }
     ],
     "StateGroups": [
@@ -471,6 +519,6 @@
     ]
    }
   ],
-  "FileHash": "{7BAB2156-DB21-1147-98E2-E71BE9785977}"
+  "FileHash": "{4798D2EF-52D0-0D72-5B5E-975089B0C075}"
  }
 }

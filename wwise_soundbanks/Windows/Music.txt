@@ -1,0 +1,19 @@
+Event	ID	Name			Wwise Object Path	Notes
+	1226321073	mus_street_battle			\Default Work Unit\Music\mus_street_battle	
+	1707269606	mus_church_calm			\Default Work Unit\Music\mus_church_calm	
+	1834552886	mus_street_calm			\Default Work Unit\Music\mus_street_calm	
+	2307077735	mus_alchemy_battle			\Default Work Unit\Music\mus_alchemy_battle	
+	3016252705	mus_church_battle			\Default Work Unit\Music\mus_church_battle	
+	3406848652	mus_church			\Default Work Unit\Music\mus_church	
+	3541367596	mus_alchemy_calm			\Default Work Unit\Music\mus_alchemy_calm	
+	3790302614	mus_alchemy			\Default Work Unit\Music\mus_alchemy	
+
+Game Parameter	ID	Name			Wwise Object Path	Notes
+	3944980085	Music_Combat			\Default Work Unit\Music_Combat	
+
+In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
+	82081401	mus_church_battle_01	.cache\76\{769BA733-7FB9-FE8A-93DE-67259529F1C1}.wem		\Containers\Default Work Unit\Music\mus_church_blend\mus_church_battle_01		5120096
+	487954409	mus_church_calm_01	.cache\D4\{D43D55B9-A371-D0D1-AF68-0C7C007C35A6}.wem		\Containers\Default Work Unit\Music\mus_church_blend\mus_church_calm_01		5120096
+	656174178	mus_alchemy_calm_01	.cache\79\{79B01236-E751-6111-3128-DE421A1E666A}.wem		\Containers\Default Work Unit\Music\mus_alchemy_blend\mus_alchemy_calm_01		10240144
+	782559520	mus_alchemy_battle_01	.cache\C7\{C73B46D7-BD4C-8D39-FA8C-57FFA28C2886}.wem		\Containers\Default Work Unit\Music\mus_alchemy_blend\mus_alchemy_battle_01		5120096
+

@@ -94,43 +94,6 @@
 										</Action>
 									</ChildrenList>
 								</Event>
-								<Event Name="SFX_011_Battle_Pointer_Rewind" ID="{C915BE6F-6273-441F-A9E6-5E61913A2DAA}">
-									<PropertyList>
-										<Property Name="Color" Type="int16" Value="10"/>
-										<Property Name="OverrideColor" Type="bool" Value="True"/>
-									</PropertyList>
-									<ChildrenList>
-										<Action Name="SFX-011_Battle_Pointer_Rewind" ID="{DD8A32D8-224E-48F9-BB32-2411B1464845}" ShortID="370785583">
-											<ReferenceList>
-												<Reference Name="Target">
-													<ObjectRef Name="SFX_011_Battle_Pointer_Rewind" ID="{0ABA3260-6A0B-48F3-9964-82D93B4CAD0C}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-												</Reference>
-											</ReferenceList>
-										</Action>
-										<Action Name="SFX-011_Battle_Pointer_Rewind_Energy" ID="{5E4AB253-9EB0-4162-91CB-C7A658DD153C}" ShortID="352706907">
-											<ReferenceList>
-												<Reference Name="Target">
-													<ObjectRef Name="SFX_010_Battle_Pointer_Tick_L2" ID="{FB72A3F5-8DE4-45ED-B022-F48B57964296}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-												</Reference>
-											</ReferenceList>
-										</Action>
-									</ChildrenList>
-								</Event>
-								<Event Name="SFX_036_Battle_HitResolve" ID="{6BF4EE0B-AAAF-445C-8A0B-6F745DF316A4}">
-									<PropertyList>
-										<Property Name="Color" Type="int16" Value="10"/>
-										<Property Name="OverrideColor" Type="bool" Value="True"/>
-									</PropertyList>
-									<ChildrenList>
-										<Action Name="SFX-036_Battle_HitResolve" ID="{AC7B6624-2F03-4957-955D-536CD446FADF}" ShortID="1040372932">
-											<ReferenceList>
-												<Reference Name="Target">
-													<ObjectRef Name="SFX_036_Battle_HitResolve" ID="{F3950DA3-C4BE-440D-B871-901755A66F2F}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-												</Reference>
-											</ReferenceList>
-										</Action>
-									</ChildrenList>
-								</Event>
 								<Event Name="SFX_037_Battle_Block" ID="{D327F56B-6DF3-4DB6-9915-832A50775B82}">
 									<PropertyList>
 										<Property Name="Color" Type="int16" Value="10"/>
@@ -141,21 +104,6 @@
 											<ReferenceList>
 												<Reference Name="Target">
 													<ObjectRef Name="SFX_037_Battle_Block" ID="{8B48A61B-17E2-4D2C-BAB9-B6D24B2F6D25}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-												</Reference>
-											</ReferenceList>
-										</Action>
-									</ChildrenList>
-								</Event>
-								<Event Name="SFX_038_Battle_Heal" ID="{AC15E048-3C7E-4174-8C66-BC0517BD4A0A}">
-									<PropertyList>
-										<Property Name="Color" Type="int16" Value="10"/>
-										<Property Name="OverrideColor" Type="bool" Value="True"/>
-									</PropertyList>
-									<ChildrenList>
-										<Action Name="SFX-038_Battle_Heal" ID="{EA3536E9-5F7E-4811-B53E-9705AFCB4E44}" ShortID="380529089">
-											<ReferenceList>
-												<Reference Name="Target">
-													<ObjectRef Name="SFX_038_Battle_Heal" ID="{E58A1522-7976-4B45-BED6-3B9574D58337}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
 												</Reference>
 											</ReferenceList>
 										</Action>
@@ -306,17 +254,6 @@
 											<ReferenceList>
 												<Reference Name="Target">
 													<ObjectRef Name="SFX_034_Card_Transform" ID="{5A4DDA16-DFEC-4886-9DF8-EB1C83DB7CC1}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-												</Reference>
-											</ReferenceList>
-										</Action>
-									</ChildrenList>
-								</Event>
-								<Event Name="SFX_032_Card_Trigger_Attack" ID="{096643D5-ADE6-4101-A86B-E3E025FF64EF}">
-									<ChildrenList>
-										<Action Name="SFX_032_Card_Trigger_Attack" ID="{C7C225C0-596E-422B-AB01-CC8A0EA1FCEC}" ShortID="57431768">
-											<ReferenceList>
-												<Reference Name="Target">
-													<ObjectRef Name="SFX_032_Card_Trigger_Attack" ID="{D59B87D7-9086-40C7-815E-CFE46780C138}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
 												</Reference>
 											</ReferenceList>
 										</Action>
@@ -517,32 +454,6 @@
 											<ReferenceList>
 												<Reference Name="Target">
 													<ObjectRef Name="SFX_035_Player_Hit_Heavy" ID="{8C2C17F6-D5EA-4E5A-9BE4-1327120EE8F7}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-												</Reference>
-											</ReferenceList>
-										</Action>
-									</ChildrenList>
-								</Event>
-								<Event Name="SFX_043_Player_LowHP" ID="{03B67CA1-3F6F-4311-926D-CEE07F175C0F}">
-									<PropertyList>
-										<Property Name="Color" Type="int16" Value="8"/>
-										<Property Name="OverrideColor" Type="bool" Value="True"/>
-									</PropertyList>
-									<ChildrenList>
-										<Action Name="SFX-043_Player_LowHP" ID="{89FCE158-B760-43EB-A9AA-187B5310B37F}" ShortID="260206710">
-											<ReferenceList>
-												<Reference Name="Target">
-													<ObjectRef Name="SFX_043_Player_LowHP" ID="{D52D14D2-4337-4317-BDD9-1159FD54CCD3}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
-												</Reference>
-											</ReferenceList>
-										</Action>
-									</ChildrenList>
-								</Event>
-								<Event Name="SFX_060_Player_AttackThrow" ID="{E5E18C2C-1F63-4435-87BD-EE21027461E8}">
-									<ChildrenList>
-										<Action Name="SFX_060_Player_AttackThrow" ID="{87BE6E0F-5C18-4275-A0C4-7D5831E4B368}" ShortID="288651554">
-											<ReferenceList>
-												<Reference Name="Target">
-													<ObjectRef Name="SFX_060_Player_AttackThrow" ID="{EA654ED7-EC55-4D5D-974C-C7749029DE97}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
 												</Reference>
 											</ReferenceList>
 										</Action>
@@ -861,6 +772,98 @@
 								</Event>
 							</ChildrenList>
 						</Folder>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="Music" ID="{C5450511-2800-454A-A961-B1B46E0B36C9}" ShortID="726492247">
+					<ChildrenList>
+						<Event Name="mus_alchemy" ID="{1917D9D4-1D9A-4ABA-8CAC-E474F2E878AB}">
+							<ChildrenList>
+								<Action Name="mus_alchemy" ID="{2711976C-D605-4C24-9915-89E07A485E43}" ShortID="482389973">
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="mus_alchemy_blend" ID="{813C776E-6170-4C3E-BE60-06FC5B7B308E}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
+						<Event Name="mus_alchemy_calm" ID="{AE747B81-6DDD-4CA4-8596-221E348DD9CA}">
+							<ChildrenList>
+								<Action Name="mus_alchemy_calm" ID="{CCCED5D8-3FEF-481D-A3AA-EFE9E5B822AC}" ShortID="485565334">
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="mus_alchemy_blend" ID="{813C776E-6170-4C3E-BE60-06FC5B7B308E}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
+						<Event Name="mus_alchemy_battle" ID="{712A007E-842A-477F-A322-8EC924FF0BD9}">
+							<ChildrenList>
+								<Action Name="mus_alchemy_battle" ID="{AEFEBFB4-41E7-4C8E-A264-4892421E51B3}" ShortID="188302501">
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="mus_alchemy_blend" ID="{813C776E-6170-4C3E-BE60-06FC5B7B308E}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
+						<Event Name="mus_street_calm" ID="{BF4A4DCA-8E5F-47EE-810A-89D2D266852B}">
+							<ChildrenList>
+								<Action Name="mus_street_calm" ID="{55104338-A252-479A-A250-CA9B3EAD19B3}" ShortID="490510003">
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="mus_alchemy_blend" ID="{813C776E-6170-4C3E-BE60-06FC5B7B308E}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
+						<Event Name="mus_street_battle" ID="{F9D30EDB-7786-45CE-9174-2ED7D5551273}">
+							<ChildrenList>
+								<Action Name="mus_street_battle" ID="{C287D5B2-601E-4591-8CDF-BA4E8EDB8B21}" ShortID="611920406">
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="mus_alchemy_blend" ID="{813C776E-6170-4C3E-BE60-06FC5B7B308E}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
+						<Event Name="mus_church" ID="{76BDF4F1-FCF1-4725-A6FD-35CCEDF4017D}">
+							<ChildrenList>
+								<Action Name="mus_church" ID="{BB98C62A-4999-4211-8E08-95AD5945F0F1}" ShortID="1027512931">
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="mus_church_blend" ID="{27942C2B-D314-4799-ADFF-4FA5F1A930BC}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
+						<Event Name="mus_church_calm" ID="{7E0E77F1-2A34-41B7-BE6D-AC123D0ED0EA}">
+							<ChildrenList>
+								<Action Name="mus_church_calm" ID="{06CDB67D-F3C9-4BBE-B255-3A410164E08D}" ShortID="464718745">
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="mus_church_blend" ID="{27942C2B-D314-4799-ADFF-4FA5F1A930BC}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
+						<Event Name="mus_church_battle" ID="{E6AAC87D-56C2-490B-89FF-F81778E40C06}">
+							<ChildrenList>
+								<Action Name="mus_church_battle" ID="{A4DCBA4C-19E0-4AE0-8D3D-E5C12EE0FF9F}" ShortID="368960687">
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="mus_church_blend" ID="{27942C2B-D314-4799-ADFF-4FA5F1A930BC}" WorkUnitID="{8D815CB4-69EF-4EE1-A5C5-803920353E33}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
 					</ChildrenList>
 				</Folder>
 			</ChildrenList>

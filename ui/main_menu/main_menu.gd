@@ -29,6 +29,10 @@ var _pending_new_run := false
 
 func _ready() -> void:
 	AUDIO_SETTINGS.install()
+	# 主菜单音乐（第 1/2 层 calm）；音频未就绪时 AudioIntegration 会自行忽略
+	var audio_integration := get_node_or_null("/root/AudioIntegration")
+	if audio_integration != null and audio_integration.has_method("play_menu_music"):
+		audio_integration.play_menu_music()
 	$按钮底板.add_theme_stylebox_override("panel", CommonUiSkin.panel("panel"))
 	for button: Button in [$按钮列/继续游戏, $按钮列/新游戏, $按钮列/设置, $按钮列/图鉴, $按钮列/感谢名单, $按钮列/退出游戏]:
 		CommonUiSkin.style_button(button, Vector4(24, 12, 24, 12))
