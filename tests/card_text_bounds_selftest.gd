@@ -25,12 +25,11 @@ func _run() -> void:
 			var title: Label = view.get_node("%卡名")
 			geometry_ok = geometry_ok and _inside(view, title) and _inside(view, effect)
 			fit_ok = fit_ok and _fits(view, effect)
-			if not effect.text.ends_with("…"):
-				preserved = preserved and effect.text.replace("\n", "") == CardView.strip_period(view._raw_effect).replace("\n", "").replace("\r", "")
+			preserved = preserved and effect.text.replace("\n", "") == CardView.strip_period(view._raw_effect).replace("\n", "").replace("\r", "")
 			if not _fits(view, effect): print("BOUNDS_DIAG card=", data.card_id, " font=", effect.get_theme_font_size("font_size"), " box=", effect.size, " text=", effect.text)
 			view.free()
 	_check("所有正式卡在手牌/选牌/悬停比例下文字框位于卡内", geometry_ok)
-	_check("所有正式卡效果按实际宽高适配", fit_ok)
+	_check("所有正式卡在固定字号下显示窗口不越界", fit_ok)
 	_check("换行不交换标点或丢失正文", preserved)
 	var font := CardView._compact_body_typeface()
 	var raw := "造成伤害，获得格挡；恢复生命！"
@@ -41,7 +40,7 @@ func _run() -> void:
 	long_card.set_texts("这是一张名字特别长的卡牌用于测试", "长篇效果描述，".repeat(100))
 	long_card.apply_compact_layout(0.5)
 	add_child(long_card)
-	_check("入树前的自定义文案不丢失且极端长描述安全省略", long_card._raw_title.begins_with("这是一张") and long_card.get_node("%效果文本").text.ends_with("…") and _fits(long_card, long_card.get_node("%效果文本")))
+	_check("入树前的自定义文案及极端长描述全文保留", long_card._raw_title.begins_with("这是一张") and long_card.get_node("%效果文本").text.replace("\n", "") == "长篇效果描述，".repeat(100) and _fits(long_card, long_card.get_node("%效果文本")))
 	long_card.free()
 	var short_card: CardView = load("res://ui/components/card/card_view.tscn").instantiate()
 	short_card.set_texts("紧凑测试卡", "造成5点伤害。")
@@ -74,9 +73,10 @@ func _inside(view: CardView, label: Label) -> bool:
 func _fits(view: CardView, label: Label) -> bool:
 	var font := label.get_theme_font("font")
 	var px := label.get_theme_font_size("font_size")
+	if px != CardView.LOCAL_BODY_PX: return false
 	for line: String in label.text.split("\n"):
 		if font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px).x > label.size.x - view.TEXT_SAFETY_PADDING.x + 0.5: return false
-	return view._text_height(label, px, label.text.split("\n").size()) <= label.size.y - view.TEXT_SAFETY_PADDING.y + 0.5
+	return view._text_height(label, px, mini(label.max_lines_visible, label.text.split("\n").size())) <= label.size.y - view.TEXT_SAFETY_PADDING.y + 0.5
 
 func _check(label: String, result: bool) -> void:
 	print(("PASS " if result else "FAIL ") + label)

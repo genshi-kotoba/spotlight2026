@@ -12,7 +12,7 @@
 ##
 ## 几何与字号默认全部在 card_view.tscn 里用锚点加偏移摆好。小卡（手牌、出牌区、
 ## 卡组、牌堆）由调用方调用 apply_compact_layout()：按场景中实际的文字框折行，
-## 长文案在固定卡内坐标中适度缩小；悬停缩放不会重新排版。
+## 描述使用统一字号，全文在固定区域内滚动；悬停缩放不会重新排版。
 
 @tool
 class_name CardView
@@ -40,11 +40,12 @@ static var _compact_text_cache: Dictionary = {}
 
 ## 数据变化后放一次。容器可以据此编排，例如数据写入后再开始发牌动画。
 signal card_data_applied(card_id: StringName)
+## 描述区域开始阅读手势，调用方应取消尚未开始的拖牌候选。
+signal description_interaction_started
 
 @export_group("紧凑卡面文字")
-## 最大字号仍由 LOCAL_TITLE_PX / LOCAL_BODY_PX 和调用方参数决定。
+## 标题仍适配宽度；描述不再因文字长度缩小。
 @export_range(12, 56, 1) var compact_title_min_size := 28
-@export_range(12, 49, 1) var compact_body_min_size := 26
 @export_group("")
 
 ## 要显示的卡牌数据。在编辑器里挂上就渲染，这是给人用的入口。
@@ -75,15 +76,17 @@ signal card_data_applied(card_id: StringName)
 @onready var _frame: TextureRect = %卡框
 @onready var _art_slot: TextureRect = %插画位
 @onready var _title_label: Label = %卡名
-@onready var _effect_label: Label = %效果文本
+@onready var _effect_label: CardDescriptionLabel = %效果文本
 @onready var _intro_label: Label = %介绍文本
 
 var _card_id: StringName = &""
 var _csv_art_applied := false
 var _compact := false
 var _display_scale := 1.0
-var _compact_title_px := 16
-var _compact_body_px := 15
+var _compact_title_px := LOCAL_TITLE_PX
+var _compact_body_px := LOCAL_BODY_PX
+var _description_interactive := true
+var _interaction_button: WeakRef
 # 调用方普遍是「instantiate → set_card → apply_compact_layout → add_child」，
 # 设置时节点还没进树。参数先存下来，_ready 里补一次，否则小卡会退回场景默认字号。
 var _compact_pending := false
@@ -107,6 +110,10 @@ func set_enchantments(card: Dictionary) -> void:
 
 
 func _ready() -> void:
+	_effect_label.interaction_started.connect(description_interaction_started.emit)
+	_effect_label.set_input_enabled(_description_interactive)
+	if _interaction_button != null:
+		_effect_label.bind_button(_interaction_button.get_ref() as Button)
 	_refresh_face()
 	%附魔符号.text = _enchantment_symbols
 	%附魔符号.visible = not _enchantment_symbols.is_empty()
@@ -127,6 +134,8 @@ func _ready() -> void:
 
 ## 主入口：直接给三段文本。intro 为空时介绍标签自动隐藏。
 func set_texts(title: String, effect: String, intro: String = "") -> void:
+	if is_node_ready() and (title != _raw_title or effect != _raw_effect):
+		_effect_label.reset_scroll()
 	_raw_title = title
 	_raw_effect = effect
 	_raw_intro = intro
@@ -138,12 +147,12 @@ func set_texts(title: String, effect: String, intro: String = "") -> void:
 		_refresh_compact_text()
 	else:
 		_title_label.text = title
-		_effect_label.text = effect
+		_refresh_description_text()
 	_intro_label.text = intro
 	_intro_label.visible = intro != "" and not _compact
 
 
-## 小卡布局：指定卡内最大字号，长文案按场景中的实际文字框适配。
+## 小卡布局：指定卡内字号，描述按实际文字框折行、超出部分滚动。
 ## 手牌、出牌区、卡组、牌堆都走这里；全尺寸卡面（图鉴大图）不调用。
 ## 返回卡内坐标字号，与展示缩放无关：同一张卡只换 scale，就是常规放大缩小。
 static func text_px_for(_display_scale: float) -> Vector2i:
@@ -195,7 +204,7 @@ func _apply_compact(display_scale: float, title_px: int, body_px: int) -> void:
 		_render_card_data()
 	else:
 		set_texts(_raw_title, _raw_effect, _raw_intro)
-	# 所有卡以同一最大字号起步，只有超出实际框的文案缩小。
+	# 所有卡使用相同描述字号，长文本只增加可滚动行数。
 
 
 
@@ -220,7 +229,7 @@ func _refresh_compact_text() -> void:
 	var title_font := _title_label.get_theme_font("font")
 	var font := _effect_label.get_theme_font("font")
 	var key := JSON.stringify([_raw_title, _raw_effect, title_area.x, title_area.y, body_area.x, body_area.y,
-		_compact_title_px, _compact_body_px, compact_title_min_size, compact_body_min_size,
+		_compact_title_px, _compact_body_px, compact_title_min_size,
 		title_font.get_instance_id(), font.get_instance_id(), _effect_label.get_theme_constant("line_spacing")])
 	if not _compact_text_cache.has(key):
 		if _compact_text_cache.size() >= 512: _compact_text_cache.clear()
@@ -229,8 +238,7 @@ func _refresh_compact_text() -> void:
 	_title_label.add_theme_font_size_override("font_size", layout.title_size)
 	_title_label.text = _raw_title
 	_effect_label.add_theme_font_size_override("font_size", layout.body_size)
-	_effect_label.max_lines_visible = layout.max_lines
-	_effect_label.text = layout.text
+	_effect_label.set_content(layout.text, layout.max_lines)
 	# 字号与最大行数先受限；几何仍由 .tscn 的锚点决定，不在脚本中重写。
 
 
@@ -240,35 +248,41 @@ func _calculate_compact_text(title_area: Vector2, body_area: Vector2, title_font
 	while title_size > title_floor and (title_font.get_string_size(_raw_title, HORIZONTAL_ALIGNMENT_LEFT, -1.0, title_size).x > title_area.x \
 			or _text_height(_title_label, title_size, 1) > title_area.y):
 		title_size -= 1
-	var effect := strip_period(_raw_effect)
-	var body_size := maxi(1, _compact_body_px)
-	var body_floor := mini(body_size, compact_body_min_size)
-	var wrapped := CardText.wrap_to_width(effect, font, body_size, body_area.x)
-	if _text_height(_effect_label, body_size, wrapped.split("\n").size()) > body_area.y:
-		# 二分查找最大可用字号，避免每次刷新长描述时逐字号反复测量。
-		var low := body_floor
-		var high := body_size - 1
-		body_size = body_floor
-		while low <= high:
-			var candidate := (low + high) / 2
-			var text := CardText.wrap_to_width(effect, font, candidate, body_area.x)
-			if _text_height(_effect_label, candidate, text.split("\n").size()) <= body_area.y:
-				body_size = candidate
-				low = candidate + 1
-			else:
-				high = candidate - 1
-		wrapped = CardText.wrap_to_width(effect, font, body_size, body_area.x)
-	var line_height := font.get_height(body_size)
+	var layout := _calculate_description_text(body_area, font, _compact_body_px)
+	layout.title_size = title_size
+	return layout
+
+
+func _calculate_description_text(body_area: Vector2, font: Font, body_size: int) -> Dictionary:
+	body_size = maxi(1, body_size)
+	var wrapped := CardText.wrap_to_width(strip_period(_raw_effect), font, body_size, body_area.x)
 	var spacing := _effect_label.get_theme_constant("line_spacing")
+	var line_height := font.get_height(body_size)
 	var max_lines := maxi(1, int((body_area.y + spacing) / maxf(1.0, line_height + spacing)))
-	var lines := wrapped.split("\n")
-	if lines.size() > max_lines:
-		lines.resize(max_lines)
-		var last := lines[max_lines - 1]
-		while not last.is_empty() and font.get_string_size(last + "…", HORIZONTAL_ALIGNMENT_LEFT, -1.0, body_size).x > body_area.x:
-			last = last.left(last.length() - 1)
-		lines[max_lines - 1] = last + "…"
-	return {"title_size": title_size, "body_size": body_size, "max_lines": max_lines, "text": "\n".join(lines)}
+	return {"body_size": body_size, "max_lines": max_lines, "text": wrapped}
+
+
+func _refresh_description_text() -> void:
+	var area := (_text_box(_effect_label) - TEXT_SAFETY_PADDING).max(Vector2.ONE)
+	var font := _effect_label.get_theme_font("font")
+	var layout := _calculate_description_text(area, font, LOCAL_BODY_PX)
+	_effect_label.add_theme_font_size_override("font_size", LOCAL_BODY_PX)
+	_effect_label.set_content(layout.text, layout.max_lines)
+
+
+## 透明点击层仍负责卡牌选择，描述组件只截取正文内的阅读手势。
+func bind_interaction_button(button: Button) -> void:
+	_interaction_button = weakref(button) if button != null else null
+	if is_node_ready(): _effect_label.bind_button(button)
+
+
+func is_description_interacting() -> bool:
+	return is_node_ready() and _effect_label.is_processing_input()
+
+## 飞牌和拖牌虚影是纯展示，不能截获真实卡面输入。
+func set_description_interactive(enabled: bool) -> void:
+	_description_interactive = enabled
+	if is_node_ready(): _effect_label.set_input_enabled(enabled)
 
 
 static func _compact_typeface() -> SystemFont:
@@ -352,6 +366,10 @@ func set_art_texture(texture: Texture2D) -> void:
 ## 当前卡牌的 id，没塞过卡时是空 StringName。
 func get_card_id() -> StringName:
 	return _card_id
+
+## 读取当前实际展示文案，包含变体替换，供卡面外的完整说明使用。
+func reading_text() -> Dictionary:
+	return {"title": _raw_title, "effect": _raw_effect}
 
 
 ## 清空文本并放一次 card_data_applied(&"")。底图不动。

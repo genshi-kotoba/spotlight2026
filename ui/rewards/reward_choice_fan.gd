@@ -40,10 +40,11 @@ func configure(options: Array, fragments: bool) -> void:
 		item.pivot_offset = _item_size * 0.5
 		item.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(item)
+		var card: CardView
 		if fragments:
 			_build_fragment(item, value)
 		else:
-			var card: CardView = CARD_SCENE.instantiate()
+			card = CARD_SCENE.instantiate()
 			card.set_card(cards[value])
 			card.apply_compact_layout(0.5)
 			card.scale = Vector2.ONE * 0.5
@@ -60,6 +61,7 @@ func configure(options: Array, fragments: bool) -> void:
 		hit.pressed.connect(func():
 			if _ready_to_choose and not _folding: chosen.emit(value))
 		item.add_child(hit)
+		if card != null: card.bind_interaction_button(hit)
 		_items.append(item)
 		_hits.append(hit)
 		_states.append({"center": Vector2.ZERO, "velocity": Vector2.ZERO,

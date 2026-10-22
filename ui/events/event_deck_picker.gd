@@ -124,6 +124,7 @@ func show_deck(copies: Array[Dictionary], selected: Array[String]) -> void:
 		_style_card_hit(hit)
 		hit.pressed.connect(_toggle_card.bind(copy_id))
 		slot.add_child(hit)
+		view.bind_interaction_button(hit)
 		_hits[copy_id] = hit
 		var marker := _label("", 20)
 		marker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

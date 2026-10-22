@@ -68,6 +68,11 @@ var _deck_grid: GridContainer
 var _deck_scroll: ScrollContainer
 var _peek_layer: Control
 var _peek_view: CardView
+var _peek_reader: CardReadingPanel
+var _deck_reader: CardReadingPanel
+var _reader_anchor: WeakRef
+var _reader_view: WeakRef
+var _reader_away_time := 0.0
 var _deck_title: Label
 var _item_tip: Control
 var _item_menu: Control
@@ -171,6 +176,7 @@ func close() -> void:
 	if is_instance_valid(_upgrade_layer): return
 	if settlement_mode: return
 	if _pack_selection_locked(): return
+	_hide_deck_reader()
 	_end_relic_drag(true)
 	_selected_fragment_id = ""
 	_hide_item_tip()
@@ -189,6 +195,7 @@ func set_page(index: int) -> void:
 	if is_instance_valid(_upgrade_layer): return
 	if settlement_mode: index = 1
 	if _pack_selection_locked(): return
+	_hide_deck_reader()
 	_end_relic_drag(true)
 	_selected_fragment_id = ""
 	_hide_item_tip()
@@ -252,6 +259,7 @@ func _refresh_data() -> void:
 
 
 func _reload_deck(deck_ids: Array[String], copies: Array[Dictionary] = []) -> void:
+	_hide_deck_reader()
 	for child in _deck_grid.get_children():
 		_deck_grid.remove_child(child)
 		child.queue_free()
@@ -275,7 +283,9 @@ func _reload_deck(deck_ids: Array[String], copies: Array[Dictionary] = []) -> vo
 		peek.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		peek.tooltip_text = view.tooltip_text
 		peek.pressed.connect(_peek_card.bind(card_id, copies[index] if index < copies.size() else {}))
+		peek.mouse_entered.connect(_show_deck_reader.bind(view, slot, copies[index] if index < copies.size() else {}))
 		slot.add_child(peek)
+		view.bind_interaction_button(peek)
 		# 卡面整体放大提亮，命中区仍是那张全幅 peek 按钮。
 		HOVER_LIFT.attach(view, peek)
 		_deck_grid.add_child(slot)
@@ -308,7 +318,7 @@ func _build_peek() -> void:
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	shade.mouse_filter = Control.MOUSE_FILTER_STOP
 	shade.gui_input.connect(func(event: InputEvent) -> void:
-		if event is InputEventMouseButton and event.pressed:
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			_peek_layer.visible = false)
 	_peek_layer.add_child(shade)
 	_peek_view = CARD_SCENE.instantiate()
@@ -316,9 +326,12 @@ func _build_peek() -> void:
 	_peek_view.position = (Vector2(1920.0, 1080.0) - Vector2(480.0, 818.0) * PEEK_CARD_SCALE) * 0.5
 	_peek_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_peek_layer.add_child(_peek_view)
+	_peek_reader = CardReadingPanel.new()
+	_peek_layer.add_child(_peek_reader)
 
 
 func _peek_card(card_id: String, card: Dictionary = {}) -> void:
+	_hide_deck_reader()
 	var data := _card_data(card_id)
 	if data == null:
 		return
@@ -327,9 +340,50 @@ func _peek_card(card_id: String, card: Dictionary = {}) -> void:
 	# 大图与外面的卡是同一份预制件：只是 scale 不同，不重新排字。
 	_peek_view.apply_compact_layout(PEEK_CARD_SCALE)
 	_peek_layer.visible = true
+	var reading := _peek_view.reading_text()
+	_peek_reader.set_card_text(reading.title, reading.effect, CardReadingPanel.enchantment_text(card))
+	_peek_reader.place_next_to(CardReadingPanel.card_bounds(_peek_view), get_viewport_rect())
 	_peek_layer.modulate.a = 0.0
 	_peek_layer.create_tween().tween_property(_peek_layer, "modulate:a", 1.0, 0.12)
 
+
+func _show_deck_reader(view: CardView, anchor: Control, card: Dictionary) -> void:
+	if _peek_layer.visible or is_instance_valid(_upgrade_layer) or _pack_selection_locked() or _drag_ghost != null: return
+	if not is_instance_valid(_deck_reader):
+		_deck_reader = CardReadingPanel.new()
+		_deck_reader.name = "DeckCardReader"
+		_deck_reader.z_index = 120
+		add_child(_deck_reader)
+	_reader_anchor = weakref(anchor)
+	_reader_view = weakref(view)
+	_reader_away_time = 0.0
+	var reading := view.reading_text()
+	_deck_reader.set_card_text(reading.title, reading.effect, CardReadingPanel.enchantment_text(card))
+	_deck_reader.show()
+	_deck_reader.place_next_to(CardReadingPanel.card_bounds(view), get_viewport_rect())
+
+func _hide_deck_reader() -> void:
+	if is_instance_valid(_deck_reader):
+		_deck_reader.hide()
+		_deck_reader.body.cancel_interaction()
+	_reader_anchor = null
+	_reader_view = null
+
+func _process(delta: float) -> void:
+	if not is_instance_valid(_deck_reader) or not _deck_reader.visible: return
+	var anchor := _reader_anchor.get_ref() as Control if _reader_anchor != null else null
+	var view := _reader_view.get_ref() as CardView if _reader_view != null else null
+	if not is_visible_in_tree() or not is_instance_valid(anchor) or not is_instance_valid(view) or anchor.is_queued_for_deletion() or not anchor.is_visible_in_tree() or _peek_layer.visible or is_instance_valid(_upgrade_layer) or _pack_selection_locked() or _drag_ghost != null:
+		_hide_deck_reader()
+		return
+	if _deck_reader.contains_pointer():
+		_reader_away_time = 0.0
+	elif CardReadingPanel.owns_hover(anchor):
+		_reader_away_time = 0.0
+		_deck_reader.place_next_to(CardReadingPanel.card_bounds(view), get_viewport_rect())
+	else:
+		_reader_away_time += delta
+		if _reader_away_time > 0.25: _hide_deck_reader()
 
 func _reload_items(run: RunStateMachine) -> void:
 	for child: Node in _item_grid.get_children():

@@ -228,6 +228,9 @@ var _pointer_tween: Tween
 var _resolve_preview: Control
 var _resolve_view: CardView
 var _resolve_preview_card := ""
+var _hover_preview_anchor: WeakRef
+var _hover_preview_away_time := 0.0
+var _hover_preview_active := false
 var _peek_layer: Control
 var _peek_view: CardView
 var _busy := false
@@ -1444,6 +1447,7 @@ func _open_pile(title: String, cards: Array[Dictionary]) -> void:
 			peek.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 			peek.pressed.connect(_peek_card.bind(card_id, card))
 			slot.add_child(peek)
+			(slot.get_child(0) as CardView).bind_interaction_button(peek)
 		pile_grid.add_child(slot)
 	pile_modal.visible = true
 
@@ -1468,6 +1472,12 @@ func _queue_refresh() -> void:
 
 ## —— 手牌拖拽：自己记按下 / 移动 / 松开，不依赖 Control 的 GUI 拖放 ——
 ## GUI 拖放在 ScrollContainer 里会先被滚动吞掉，表现是「怎么拖都没反应」。
+
+func _cancel_pending_card_drag() -> void:
+	if _drag_active: return
+	_drag_card_id = ""
+	_drag_source = ""
+
 
 func _input(event: InputEvent) -> void:
 	if is_instance_valid(_battle_choice_layer):
@@ -1539,12 +1549,37 @@ func _on_play_card_hover(slot: Control, entered: bool, instance_id := "") -> voi
 	if entered:
 		var card := _find_selected_card(instance_id)
 		if not card.is_empty():
+			# TakeBack 与卡槽同属一行；悬停入口在它的兄弟按钮上。
+			var hover_anchor := slot.get_parent() as Control
+			_hover_preview_anchor = weakref(hover_anchor)
+			_hover_preview_away_time = 0.0
+			_hover_preview_active = true
 			_show_resolve_preview(String(card.get("card_id", "")), card)
 	elif not _busy:
-		_resolve_preview.visible = false
+		# 宽限由 _process 处理，允许跨过小卡与大图之间的空隙。
+		_hover_preview_away_time = 0.0
 	else:
 		# 结算中把大图交还给指针，避免悬停移开后结算大图消失。
 		_refresh_resolve_preview(_display_pointer_id)
+
+
+func _process(delta: float) -> void:
+	if not _hover_preview_active: return
+	if _busy or _drag_active:
+		_hover_preview_active = false
+		return
+	var anchor := _hover_preview_anchor.get_ref() as Control if _hover_preview_anchor != null else null
+	if not is_instance_valid(anchor) or not anchor.is_visible_in_tree() or _run_menu.is_open() or _peek_layer.visible or pile_modal.visible:
+		_hover_preview_active = false
+		_resolve_preview.hide()
+		return
+	if CardReadingPanel.owns_hover(anchor) or CardReadingPanel.owns_hover(_resolve_preview) or _resolve_view.is_description_interacting():
+		_hover_preview_away_time = 0.0
+	else:
+		_hover_preview_away_time += delta
+		if _hover_preview_away_time >= 0.18:
+			_hover_preview_active = false
+			_resolve_preview.hide()
 
 
 func _play_card_at(at: Vector2) -> String:
@@ -1665,6 +1700,7 @@ func _begin_drag(at := _drag_start) -> void:
 	for child in _drag_ghost.get_children():
 		child.queue_free()
 	var view: CardView = CARD_SCENE.instantiate()
+	view.set_description_interactive(false)
 	view.scale = Vector2.ONE * PLAY_CARD_SCALE
 	view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_drag_ghost.add_child(view)
@@ -1871,6 +1907,7 @@ func _begin_card_transfer(card: Dictionary, destination: String, from_play := fa
 	var ghost := CARD_TRANSFER.new()
 	ghost.name = "CardTransfer"
 	var view: CardView = CARD_SCENE.instantiate()
+	view.set_description_interactive(false)
 	var data := _card_data(str(card.card_id))
 	if data != null:
 		view.set_card(data)
@@ -2435,6 +2472,7 @@ func _make_card_slot(card: Dictionary, card_scale: float, clickable: bool,
 	view.set_enchantments(card)
 	view.apply_compact_layout(card_scale, title_px, body_px)
 	slot.add_child(view)
+	view.description_interaction_started.connect(_cancel_pending_card_drag)
 	slot.tooltip_text = CardEnchantments.describe(card)
 	view.tooltip_text = slot.tooltip_text
 
@@ -2449,6 +2487,7 @@ func _make_card_slot(card: Dictionary, card_scale: float, clickable: bool,
 		button.mouse_entered.connect(_on_hand_card_hover_changed.bind(slot, view, true))
 		button.mouse_exited.connect(_on_hand_card_hover_changed.bind(slot, view, false))
 		slot.add_child(button)
+		view.bind_interaction_button(button)
 	return slot
 
 
@@ -2692,6 +2731,7 @@ func _make_play_row(card: Dictionary) -> Control:
 	button.mouse_entered.connect(_on_play_card_hover.bind(slot, true, str(card.instance_id)))
 	button.mouse_exited.connect(_on_play_card_hover.bind(slot, false, str(card.instance_id)))
 	row.add_child(button)
+	(slot.get_child(0) as CardView).bind_interaction_button(button)
 
 	var highlight := Panel.new()
 	highlight.name = "Highlight"
@@ -2829,7 +2869,7 @@ func _build_resolve_preview() -> void:
 	_resolve_preview.name = "ResolvePreview"
 	_resolve_preview.position = RESOLVE_PREVIEW_POS
 	_resolve_preview.size = Vector2(480.0, 818.0) * RESOLVE_PREVIEW_SCALE
-	_resolve_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_resolve_preview.mouse_filter = Control.MOUSE_FILTER_PASS
 	_resolve_preview.z_index = 40
 	_resolve_preview.visible = false
 	add_child(_resolve_preview)
@@ -2877,7 +2917,7 @@ func _peek_card(card_id: String, card: Dictionary = {}) -> void:
 
 
 func _on_peek_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		_peek_layer.visible = false
 		get_viewport().set_input_as_handled()
 
@@ -3178,6 +3218,7 @@ func _show_pile_choice(count: int, candidates: Array[Dictionary]) -> void:
 		button.pressed.connect(_choose_pile_card.bind(str(card.instance_id), button))
 		button.tooltip_text = CardEnchantments.describe(card)
 		slot.add_child(button)
+		(slot.get_child(0) as CardView).bind_interaction_button(button)
 		pile_grid.add_child(slot)
 
 

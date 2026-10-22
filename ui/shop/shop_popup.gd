@@ -6,6 +6,9 @@ const SANDBOX_RESOURCES := preload("res://systems/testing/sandbox_resources.gd")
 var request: Dictionary = {}
 var _service_mode := ""
 var _preview: Control
+var _preview_anchor: WeakRef
+var _preview_view: CardView
+var _preview_away_time := 0.0
 var _enchant_index := -1
 var close_handler: Callable
 var _card_definitions: Dictionary = {}
@@ -171,9 +174,9 @@ func _card(parent: Control, card: Dictionary, factor: float, selected: Callable 
 	hit.tooltip_text = CardEnchantments.describe(card)
 	hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	hit.mouse_entered.connect(_show_preview.bind(slot, card))
-	hit.mouse_exited.connect(_hide_preview)
 	if selected.is_valid(): hit.pressed.connect(selected)
 	slot.add_child(hit)
+	view.bind_interaction_button(hit)
 
 func _buy_card(index: int) -> void:
 	if _working:
@@ -287,9 +290,12 @@ func _apply_service(token: String) -> void:
 
 func _show_preview(anchor: Control, card: Dictionary) -> void:
 	_hide_preview()
+	_preview_anchor = weakref(anchor)
+	_preview_away_time = 0.0
+	set_process(true)
 	_preview = Control.new()
 	_preview.name = "ShopCardPreview"
-	_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_preview.mouse_filter = Control.MOUSE_FILTER_PASS
 	_preview.z_index = 200
 	_preview.size = Vector2(480, 818) * 0.70
 	_root.add_child(_preview)
@@ -299,19 +305,31 @@ func _show_preview(anchor: Control, card: Dictionary) -> void:
 	view.set_card(_card_definitions[str(card.card_id)])
 	view.set_enchantments(card)
 	view.apply_compact_layout(0.70)
-	_ignore_preview_input(view)
+	_preview_view = view
 	var rect := anchor.get_global_rect()
 	var bounds := _root.get_viewport_rect().size
 	var x := rect.end.x + 18
 	if x + _preview.size.x > bounds.x - 16: x = rect.position.x - _preview.size.x - 18
 	_preview.position = Vector2(clampf(x, 16, bounds.x - _preview.size.x - 16), clampf(rect.position.y, 16, bounds.y - _preview.size.y - 16))
 
-func _ignore_preview_input(node: Node) -> void:
-	if node is Control: node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for child: Node in node.get_children(): _ignore_preview_input(child)
+func _process(delta: float) -> void:
+	if not is_instance_valid(_preview): return
+	var anchor := _preview_anchor.get_ref() as Control if _preview_anchor != null else null
+	if not is_instance_valid(anchor) or not anchor.is_visible_in_tree():
+		_hide_preview()
+		return
+	var point := _preview.get_global_mouse_position()
+	if anchor.get_global_rect().has_point(point) or _preview.get_global_rect().has_point(point) or _preview_view.is_description_interacting():
+		_preview_away_time = 0.0
+	else:
+		_preview_away_time += delta
+		if _preview_away_time >= 0.18: _hide_preview()
 
 func _hide_preview() -> void:
 	if is_instance_valid(_preview):
 		_preview.hide()
 		_preview.queue_free()
 	_preview = null
+	_preview_view = null
+	_preview_anchor = null
+	set_process(false)

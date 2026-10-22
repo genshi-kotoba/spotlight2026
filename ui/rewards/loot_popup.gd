@@ -301,6 +301,7 @@ func _render_enchantment_targets() -> void:
 		hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		hit.pressed.connect(_apply_enchantment.bind(str(card.copy_id)))
 		slot.add_child(hit)
+		view.bind_interaction_button(hit)
 
 func _apply_enchantment(copy_id: String) -> void:
 	if _working: return

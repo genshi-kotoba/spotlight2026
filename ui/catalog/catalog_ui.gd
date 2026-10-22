@@ -121,6 +121,7 @@ static func preview(parent: Control, entry: Dictionary, category: String, factor
 				CardData.face_tint_for_type(str(entry.get("type", ""))))
 		card.set_texts(str(entry.get("name", "")), str(entry.get("effect", "")), "")
 		card.set_art_texture(TextCatalogService.art_texture(str(entry.get("art_path", ""))))
+		if parent is Button: card.bind_interaction_button(parent)
 	else:
 		var panel := PanelContainer.new()
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE

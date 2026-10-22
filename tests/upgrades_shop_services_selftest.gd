@@ -86,7 +86,7 @@ func _run() -> void:
 	get_viewport().push_input(hover, true)
 	await _frames(3)
 	await _capture("shop-preview.png")
-	_check("商店悬停大图不拦输入", is_instance_valid(popup._preview) and popup._preview.size.x > 300 and popup._preview.mouse_filter == Control.MOUSE_FILTER_IGNORE)
+	_check("商店悬停大图允许移入阅读", is_instance_valid(popup._preview) and popup._preview.size.x > 300 and popup._preview.mouse_filter == Control.MOUSE_FILTER_PASS)
 	popup._hide_preview()
 	await _click(popup._options.find_child("RemoveCardService", true, false))
 	_check("删牌展示整个牌组", popup._service_mode == "remove")

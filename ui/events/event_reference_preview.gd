@@ -1,5 +1,5 @@
 extends CanvasLayer
-## 事件对象共用悬停层，使用真实 CardView 和既有 HoverTip；不接管任何输入。
+## 事件对象共用悬停层；卡牌描述可滚动，移入预览继续阅读不会关闭。
 const References = preload("res://ui/events/event_text_references.gd")
 const CARD_SCENE = preload("res://ui/components/card/card_view.tscn")
 const CARD_SCALE := 0.62
@@ -9,11 +9,14 @@ var _card: CardView
 var _badge: Label
 var _tip: HoverTip
 var _definitions: Dictionary = {}
+var _hide_requested := false
+var _away_time := 0.0
 
 func _ready() -> void:
 	layer = 120
 	_card_root = Control.new()
-	_card_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_card_root.mouse_filter = Control.MOUSE_FILTER_PASS
+	_card_root.size = Vector2(480, 818) * CARD_SCALE + Vector2(0, 30)
 	add_child(_card_root)
 	_badge = Label.new()
 	_badge.add_theme_font_size_override("font_size", 21)
@@ -55,9 +58,16 @@ func show_for(reference: Dictionary, anchor: Control) -> void:
 	set_process(true)
 
 func hide_for(anchor: Control) -> void:
-	if _owner_control == anchor: hide_preview()
+	if _owner_control != anchor: return
+	if _card_root.visible:
+		_hide_requested = true
+		_away_time = 0.0
+	else:
+		hide_preview()
 
 func hide_preview() -> void:
+	_hide_requested = false
+	_away_time = 0.0
 	_owner_control = null
 	if is_instance_valid(_card_root): _card_root.hide()
 	if is_instance_valid(_tip): _tip.hide_tip()
@@ -66,11 +76,18 @@ func hide_preview() -> void:
 func is_showing() -> bool:
 	return is_instance_valid(_owner_control) and (_card_root.visible or _tip.visible)
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not is_instance_valid(_owner_control) or not _owner_control.is_visible_in_tree() or SceneTransition.is_loading():
 		hide_preview()
 		return
-	if _card_root.visible: _position_card()
+	if _card_root.visible:
+		_position_card()
+		if _hide_requested:
+			if _card_root.get_global_rect().has_point(_card_root.get_global_mouse_position()) or _card.is_description_interacting():
+				_away_time = 0.0
+			else:
+				_away_time += delta
+				if _away_time >= 0.18: hide_preview()
 
 func _position_card() -> void:
 	var anchor := _owner_control.get_global_rect()
