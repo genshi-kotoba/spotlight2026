@@ -17,7 +17,7 @@ func _run() -> void:
 	_check("地图有可交互事件节点", not id.is_empty())
 	if id.is_empty(): get_tree().quit(1); return
 	var run := SaveGateway.current_run()
-	var expected := RandomEventCatalog.index_for_node(run.main_seed, view.session.map_id, id)
+	var expected := RandomEventCatalog.index_for_map_node(run.main_seed, view.session.map_id, view.session.nodes[id])
 	var resources := ScenePreloader.node_status(view.session.map_id, id)
 	_check("事件背景和专用场景已登记预加载", int(resources.total) >= 4)
 	var seed_before := JSON.stringify(SeedService.capture_snapshot())
@@ -40,6 +40,7 @@ func _run() -> void:
 	run = SaveGateway.current_run()
 	_check("冷恢复自动进入同一随机事件而非Demo", scene.scene_file_path == RandomEventCatalog.SCENE and int(RunRandomEvents.state(run, scene.request).index) == expected)
 	var gold := run.gold
+	var elixir := int(run.inventory_state.elixir)
 	var options := RandomEventCatalog.choices(expected)
 	var button := scene._content.get_child(options.size() - 1) as Button
 	button.pressed.emit()
@@ -48,9 +49,14 @@ func _run() -> void:
 	await _capture_event("event-result.png")
 	await get_tree().create_timer(2.3).timeout
 	await _frames(8)
+	_check("结果超过两秒仍停留，等待明确返回", get_tree().current_scene == scene and RunRandomEvents.state(run, scene.request).stage == "result" and run.gold == gold)
+	button = scene._content.get_node("EventReturnNow") as Button
+	button.pressed.emit()
+	await _frames(8)
 	view = get_tree().current_scene
-	_check("结果展示后自动回地图并完成原节点", view.scene_file_path == EncounterFlow.MAP_SCENE and view.session.completed.has(id) and view.session.pending.is_empty() and run.gold == gold)
+	_check("明确返回后回地图并完成原节点", view.scene_file_path == EncounterFlow.MAP_SCENE and view.session.completed.has(id) and view.session.pending.is_empty() and run.gold == gold)
 	_check("完成事件状态保留而不会重新生成奖励", run.inventory_state.events[RunRandomEvents.key(_request)].finished)
+	_check("随机事件完成只额外赠送两份万灵药", int(run.inventory_state.elixir) == elixir + 2)
 	var next_id := _approach_event(view)
 	_check("还有另一个未完成事件用于测试立即返回", not next_id.is_empty() and next_id != id)
 	await _press_e()
@@ -71,7 +77,7 @@ func _run() -> void:
 	var saved_after := FileAccess.get_file_as_string(SaveGateway.save_path)
 	await get_tree().create_timer(2.3).timeout
 	await _frames(3)
-	_check("旧自动返回计时器不会重复提交或改写存档", get_tree().current_scene == view and FileAccess.get_file_as_string(SaveGateway.save_path) == saved_after and run.gold == gold and not result_before.is_empty())
+	_check("明确返回后不会重复提交或改写存档", get_tree().current_scene == view and FileAccess.get_file_as_string(SaveGateway.save_path) == saved_after and run.gold == gold and not result_before.is_empty())
 	# 本层只配置两个事件；在隔离夹具中重置第二个节点，再走真实交互与死亡入口。
 	view.session.completed.erase(next_id)
 	view.session.visits.erase(next_id)

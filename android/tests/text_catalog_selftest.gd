@@ -1,0 +1,262 @@
+extends Node
+
+const ENCYCLOPEDIA := "res://ui/catalog/encyclopedia.tscn"
+const MENU := "res://ui/main_menu/main_menu.tscn"
+var failures := 0
+var fixture_root := ""
+var original_paths: Dictionary
+var gateway: Node
+
+
+func _ready() -> void:
+	call_deferred("_run")
+
+
+func _run() -> void:
+	# 测试协程保留为 root 子节点；切换被测场景不会销毁测试本身。
+	get_tree().current_scene = null
+	gateway = get_node("/root/SaveGateway")
+	fixture_root = "res://.godot/text-catalog-%d" % Time.get_ticks_usec()
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(fixture_root))
+	gateway.save_path = fixture_root.path_join("game.json")
+	_check("使用隔离档案，不写玩家存档", gateway.load_current() == OK)
+	original_paths = TextCatalog.paths.duplicate()
+	_check("四份正式 CSV 都可导入", TextCatalog.reload() == OK)
+	for category: String in TextCatalogService.CATEGORIES:
+		var expected := int({"cards": 70, "monsters": 23, "items": 7, "fragments": 32}.get(category, 0))
+		_check(category + " 正式数据数量", TextCatalog.entries(category).size() == expected)
+	_parser_checks()
+	_fixture_tables()
+	_check("测试表导入", TextCatalog.reload() == OK)
+	var runtime_card: CardView = CatalogUi.CARD_SCENE.instantiate()
+	add_child(runtime_card)
+	var runtime_data := CardData.new()
+	runtime_data.card_id = &"10"
+	runtime_data.card_name = "原测试资源名"
+	runtime_data.description = "原测试资源文本"
+	runtime_card.set_card(runtime_data)
+	_check("战斗卡面复用 CSV 文本但不改动规则资源", runtime_card.get_node("卡名").text == "十号测试卡" and runtime_data.card_name == "原测试资源名")
+	var manual_card: CardView = CatalogUi.CARD_SCENE.instantiate()
+	add_child(manual_card)
+	manual_card.set_texts("手写图鉴卡", "手写效果", "")
+	TextCatalog.reload()
+	_check("目录重载更新运行卡而不清空手写预览", runtime_card.get_node("卡名").text == "十号测试卡" and manual_card.get_node("卡名").text == "手写图鉴卡")
+	manual_card.queue_free()
+	runtime_card.queue_free()
+	_check("按编号自然排序", TextCatalog.entries("cards").map(func(r: Dictionary): return r.id) == ["2", "10", "CARD-003"])
+	_check("卡牌、残片和怪物直接提供全部目录", TextCatalog.entries("cards").size() == 3 and TextCatalog.entries("fragments").size() == 5 and TextCatalog.entries("monsters").size() == 2)
+	_check("成就与解锁服务已移除", not TextCatalogService.CATEGORIES.has("achievements") and not TextCatalog.has_method("unlock_entry") and not TextCatalog.has_method("is_unlocked") and not GlobalState.has_method("complete_achievement"))
+	_check("目录重载与存档读取不需要解锁状态", TextCatalog.reload() == OK and gateway.save_current() == OK and gateway.load_current() == OK)
+	_legacy_save_checks()
+	var page: Control = await _scene(ENCYCLOPEDIA)
+	_check("默认展示全部卡牌且没有解锁筛选", page.category == "cards" and page.visible_entries.size() == 3 and not page.has_method("set_display_mode") and page.find_child("DisplayMode", true, false) == null)
+	_check("卡牌列表不显示编号", _grid_hides_ids(page))
+	var preview: CardView = page._grid.get_child(1).get_node("OpenDetail/Preview/CardView")
+	_check("卡面仅名称/效果，隐藏自由文本", preview.get_node("卡名").text == "十号测试卡" and preview.get_node("效果文本").text == "造成测试伤害" and not preview.get_node("介绍文本").visible)
+	await _click(page._grid.get_child(0).get_node("OpenDetail").get_global_rect().get_center())
+	_check("真实鼠标点击不会被卡面阻挡", page._detail.visible and page.detail_entry.id == "2")
+	await _click(page._detail.get_node("Panel/Content/Heading/Close").get_global_rect().get_center())
+	_check("真实鼠标关闭详情", not page._detail.visible)
+	# 真实输入路径：pressed 信号中打开/关闭详情，避免 locked free 回归。
+	page._grid.get_child(1).get_node("OpenDetail").pressed.emit()
+	_check("卡牌详情右侧仅显示类型/稀有度", page._detail.visible and page.detail_entry.id == "10" and _field_names(page) == ["type", "rarity"] and page._detail_card.get_child_count() == 1)
+	var detail_preview: CardView = page._detail_card.get_node("Preview/CardView")
+	_check("卡牌详情左侧卡面仍显示名称和效果", detail_preview.get_node("卡名").text == "十号测试卡" and detail_preview.get_node("效果文本").text == "造成测试伤害")
+	_check("隐藏字段仍保留在卡牌数据中，不包含解锁状态", page.detail_entry.text.contains("只在详情显示") and not page.detail_entry.has("unlock_state") and page.detail_entry.has("art_path"))
+	TextCatalog.reload()
+	_check("目录刷新后仍不重新显示隐藏属性", _field_names(page) == ["type", "rarity"])
+	await _frames()
+	await _capture("catalog-detail.png")
+	page._detail.get_node("Panel/Content/Heading/Close").pressed.emit()
+	_check("关闭详情", not page._detail.visible)
+	page._category_buttons["fragments"].pressed.emit()
+	_check("残片所有模式仅显示触发、效果和存在，不显示负面", page.category == "fragments" and page.visible_entries.map(func(r: Dictionary): return r.id) == ["R-002", "R-004", "R-010"] and page._grid.get_child_count() == 3 and page._status.text.contains("3 项"))
+	_check("隐藏负面残片不删除底层数据", TextCatalog.entries("fragments").size() == 5 and TextCatalog.entry("fragments", "R-001").type == "负面")
+	_check("残片列表不显示编号", _grid_hides_ids(page))
+	for hidden_id: String in ["R-001", "R-003"]:
+		page.open_detail(hidden_id)
+		_check("禁止直接打开负面残片详情：" + hidden_id, not page._detail.visible and page.detail_entry.is_empty())
+	page.open_detail("R-002")
+	_check("残片详情右侧仅保留类型", _field_names(page) == ["type"])
+	detail_preview = page._detail_card.get_node("Preview/CardView")
+	_check("残片详情左侧卡面仍显示名称和效果", detail_preview.get_node("卡名").text == "测试效果残片" and detail_preview.get_node("效果文本").text == "获得格挡")
+	_check("残片保留底层文本但没有解锁字段", page.detail_entry.text == "残片说明" and not page.detail_entry.has("unlock_state"))
+	TextCatalog.reload()
+	_check("刷新图鉴不会重新显示已隐藏负面残片", page.visible_entries.size() == 3 and page.detail_entry.id == "R-002")
+	page._category_buttons["monsters"].pressed.emit()
+	_check("怪物切换显示全部条目", page.category == "monsters" and page.visible_entries.size() == 2)
+	_check("怪物列表不显示编号或能力文本", _grid_hides_ids(page) and not _label_text(page._grid).contains("测试能力"))
+	page.open_detail("M-002")
+	_check("怪物右侧为独立类型/出现地/分隔线/叙述", _field_names(page) == ["type", "location", "TextSeparator", "text"] and page._detail_fields.get_node("TextSeparator") is HSeparator)
+	_check("怪物右侧不重复显示名称且叙述没有文本标题", not _label_text(page._detail_fields).contains("测试怪物二") and page._detail_fields.get_node("text").text == "怪物背景文本")
+	_check("详情将类型与地名分开显示", page._detail_fields.get_node("type").text == "类型\n精英" and page._detail_fields.get_node("location").text == "出现地\n贫民窟")
+	_check("兼容旧表中的斜线及自定义地区", page._monster_detail_parts("精英 / 第二地区") == {"type": "精英", "location": "第二地区"})
+	for floor_number: String in ["1", "2", "3", "4"]:
+		var parts: Dictionary = page._monster_detail_parts("BOSS · 第%s层" % floor_number)
+		_check("第%s层替换为对应地名" % floor_number, parts.type == "BOSS" and parts.location == {"1": "炼金工坊", "2": "贫民窟", "3": "修道院", "4": "教堂顶"}[floor_number])
+	_check("多个出现地逐个替换且保留自定义地区", page._monster_detail_parts("普通 / 1层、4层、测试地区").location == "炼金工坊、教堂顶、测试地区")
+	_check("未填类型出现地也能正常显示", page._monster_detail_parts("") == {"type": "", "location": ""})
+	_check("怪物详情预览也不显示能力文本", not _label_text(page._detail).contains("测试能力"))
+	for preview_root: Control in [page._grid, page._detail_card]:
+		var monster_name := preview_root.find_child("MonsterName", true, false) as Label
+		_check("怪物列表和详情名称居中并上移16像素", monster_name != null and monster_name.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER and monster_name.get_parent().get_theme_constant("margin_bottom") == 16)
+	await _frames()
+	await _capture("catalog-monster.png")
+	page.select_category("cards")
+	await _frames()
+	await _capture("catalog-grid.png")
+	page.get_node("Page").get_child(0).get_node("Heading/Back").pressed.emit()
+	await _frames()
+	page = get_tree().current_scene
+	_check("返回菜单", page.scene_file_path == MENU)
+	page.get_node("按钮列/图鉴").pressed.emit()
+	await _frames()
+	_check("菜单图鉴按钮真实导航", get_tree().current_scene.scene_file_path == ENCYCLOPEDIA)
+	page = await _scene(MENU)
+	_check("菜单不再有成就入口，退役页面已删除", not page.has_node("按钮列/成就") and not ResourceLoader.exists("res://ui/catalog/achievements.tscn"))
+	TextCatalog.paths = original_paths
+	TextCatalog.reload()
+	_write_table("cards", TextCatalogService.CARD_HEADERS, [])
+	TextCatalog.reload()
+	page = await _scene(ENCYCLOPEDIA)
+	_check("空模板明确空态", page.visible_entries.is_empty() and page._status.text.contains("暂无条目"))
+	await _capture("catalog-empty.png")
+	TextCatalog.paths = original_paths
+	TextCatalog.reload()
+	page = await _scene(MENU)
+	await _capture("catalog-menu.png")
+	print("文本与图鉴自测：全部通过" if failures == 0 else "文本与图鉴自测：%d 项失败" % failures)
+	get_tree().quit(0 if failures == 0 else 1)
+
+
+func _parser_checks() -> void:
+	var headers := TextCatalogService.FRAGMENT_HEADERS
+	var keys := TextCatalogService.ENTRY_KEYS
+	var header := ",".join(headers) + "\r\n"
+	var parsed := CsvTextTable.parse("\uFEFF" + header + "2,,测试,\"含逗号,和\"\"引号\"\"\n多行\",类型,文本\r\n", headers, keys)
+	_check("BOM/CRLF/逗号/引号/跨行", parsed.error == OK and parsed.records.size() == 1 and parsed.records[0].effect == "含逗号,和\"引号\"\n多行")
+	_check("空行忽略，只有表头合法", CsvTextTable.parse(header + "\r\n", headers, keys).error == OK)
+	for malformed: String in ["错误表头\n", header + "2,,甲,效果,类型,文本\n2,,乙,效果,类型,文本", header + ",,无编号,效果,类型,文本", header + "2,列数不足", header + "2,,甲,\"未闭合", header + "2,,甲,\"效果\"尾部,类型,文本"]:
+		var result := CsvTextTable.parse(malformed, headers, keys)
+		_check("错误 CSV 整表拒绝", result.error != OK and result.records.is_empty())
+	_check("参数替换不会递归/丢未知参数", TextCatalogService.format_text("{a} / {b}", {"a": "{b}"}) == "{b} / {b}")
+	_check("不从任意资源路径加载脚本", TextCatalogService.art_texture("res://ui/main_menu/main_menu.gd") == null and TextCatalogService.art_texture("user://bad.png") == null)
+	_check("项目内图片可加载", TextCatalogService.art_texture("res://assets/battle_test/CHR-025.png") != null)
+	_check("TXT 禁止路径逃逸", TextCatalog.read_text("res://data/text/../secrets.txt").error == ERR_INVALID_PARAMETER)
+	var text_path := fixture_root.path_join("event.txt")
+	var text_file := FileAccess.open(text_path, FileAccess.WRITE)
+	text_file.store_string("测试 {value}")
+	text_file.close()
+	var text_result := TextCatalog.read_text(text_path, {"value": 7})
+	_check("TXT 读取与动态参数", text_result.error == OK and text_result.text == "测试 7")
+	_check("TXT 缺失报告错误", TextCatalog.read_text(fixture_root.path_join("missing.txt")).error != OK)
+
+
+func _legacy_save_checks() -> void:
+	var data: Dictionary = GlobalState.capture_save_data()
+	var legacy := data.duplicate(true)
+	legacy["achievements"] = {"old": {"completed": true}}
+	legacy["unlocked_cards"] = ["10"]
+	legacy["unlocked_fragments"] = ["R-002"]
+	legacy["unlocked_monsters"] = ["M-002"]
+	var candidate := GlobalStateMachine.new()
+	_check("旧 v1 存档可读取，忽略已退役成就和解锁", candidate._install_save(legacy) == OK and candidate.settings == data.settings and candidate.run_history == data.run_history)
+	var migrated := candidate.capture_save_data()
+	for key: String in ["achievements", "unlocked_cards", "unlocked_fragments", "unlocked_monsters"]:
+		_check("新存档不再写入退役字段：" + key, not migrated.has(key))
+	_check("不含解锁字段的新档可再次载入", candidate._install_save(migrated) == OK)
+	candidate.free()
+
+
+func _fixture_tables() -> void:
+	_write_table("cards", TextCatalogService.CARD_HEADERS, [
+		["10", "", "十号测试卡", "造成测试伤害", "攻击", "只在详情显示的背景文本", "普通"],
+		["2", "res://assets/battle_test/CHR-025.png", "二号测试卡", "测试多行效果\n含逗号,与引号\"", "技能", "详情长文本\n".repeat(18), "稀有"],
+		["CARD-003", "", "空插画测试", "无效果", "测试", "介绍", "暂无"],
+	])
+	_write_table("fragments", TextCatalogService.FRAGMENT_HEADERS, [
+		["R-010", "", "测试触发残片", "周围四格", "触发", "残片详情"],
+		["R-002", "", "测试效果残片", "获得格挡", "效果", "残片说明"],
+		["R-001", "", "已解锁负面残片", "测试负面效果", "负面", "仅隐藏展示"],
+		["R-003", "", "未解锁负面残片", "测试负面效果", " 负面 ", "仅隐藏展示"],
+		["R-004", "", "测试存在残片", "每回合获得力量", "存在", "存在残片说明"],
+	])
+	_write_table("monsters", TextCatalogService.LEGACY_MONSTER_HEADERS, [
+		["M-010", "", "测试怪物十", "无能力", "普通 / 第一地区", "详情"],
+		["M-002", "res://assets/battle_test/CHR-025.png", "测试怪物二", "测试能力", "精英 · 第2层", "怪物背景文本"],
+	])
+
+
+func _write_table(category: String, headers: Array, rows: Array) -> void:
+	var path := fixture_root.path_join(category + ".csv")
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	file.store_csv_line(PackedStringArray(headers))
+	for row: Array in rows:
+		file.store_csv_line(PackedStringArray(row))
+	file.close()
+	TextCatalog.paths[category] = path
+
+
+func _scene(path: String) -> Control:
+	var error := get_tree().change_scene_to_file(path)
+	_check("场景切换成功：" + path, error == OK)
+	await _frames()
+	return get_tree().current_scene as Control
+
+
+func _frames() -> void:
+	for i: int in 4:
+		await get_tree().process_frame
+	await preload("res://tests/support/presentation_test_helper.gd").map_ready(get_tree())
+
+
+func _click(point: Vector2) -> void:
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.position = point
+	press.pressed = true
+	get_viewport().push_input(press, true)
+	await get_tree().process_frame
+	press = press.duplicate()
+	press.pressed = false
+	get_viewport().push_input(press, true)
+	await _frames()
+
+
+func _capture(filename: String) -> void:
+	# 图形模式额外检查实际渲染；headless 下不读取虚拟纹理。
+	if DisplayServer.get_name() == "headless":
+		return
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png(fixture_root.path_join(filename))
+
+
+func _buttons(node: Node) -> int:
+	var count := int(node is BaseButton)
+	for child: Node in node.get_children():
+		count += _buttons(child)
+	return count
+
+
+func _field_names(page: Control) -> Array:
+	return page._detail_fields.get_children().map(func(field: Node): return str(field.name))
+
+
+func _grid_hides_ids(page: Control) -> bool:
+	for tile: Node in page._grid.get_children():
+		if tile.get_child_count() != 1 or tile.get_child(0).name != "OpenDetail":
+			return false
+	return true
+
+
+func _label_text(node: Node) -> String:
+	var result := node.text as String if node is Label else ""
+	for child: Node in node.get_children():
+		result += "\n" + _label_text(child)
+	return result
+
+
+func _check(label: String, passed: bool) -> void:
+	print("PASS " + label if passed else "FAIL " + label)
+	if not passed:
+		failures += 1

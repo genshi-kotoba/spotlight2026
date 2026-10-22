@@ -86,8 +86,10 @@ func _run() -> void:
 	_check("保留一次刷新且重新播放展开", _unique(refreshed, 3) and _disjoint(original_options, refreshed) and popup._refresh_button.disabled)
 	var old_deck_size := run.deck.size()
 	await _click(popup._choice_fan._hits[0])
+	_check("卡面仅打开持久阅读，卡包和牌组未变", not RunRewards.item(run, common).is_empty() and run.deck.size() == old_deck_size and ReadingDetailOverlay.is_open_for(popup))
+	await _confirm_card_reader(popup)
 	await _frames(3)
-	_check("点击卡面直接选择，恢复背包操作", RunRewards.item(run, common).is_empty() and run.deck.size() == old_deck_size + 1 and not is_instance_valid(bag._pack_popup) and bag._can_edit_relics() and bag._relic_drop_cells[0].editable)
+	_check("详情明确选择恰好领取一次并恢复背包操作", RunRewards.item(run, common).is_empty() and run.deck.size() == old_deck_size + 1 and not is_instance_valid(bag._pack_popup) and bag._can_edit_relics() and bag._relic_drop_cells[0].editable)
 	var fragment_pack := _pack_id(run, "fragment_pack")
 	bag._on_item_pressed(fragment_pack)
 	popup = bag._pack_popup
@@ -106,6 +108,7 @@ func _run() -> void:
 	await _settle_pack(popup)
 	_check("稀有包同样展开但无刷新", popup._choice_fan._items.size() == 3 and not popup._refresh_button.visible)
 	await _click(popup._choice_fan._hits[0])
+	await _confirm_card_reader(popup)
 	bag._on_item_pressed(_pack_id(run, "enchantment_book"))
 	popup = bag._pack_popup
 	_check("附魔书保持既有二级选牌流程", not popup.is_selection_locked() and popup._choice_fan == null and popup._options.get_child_count() == 1)

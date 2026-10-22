@@ -1,0 +1,32 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1226321073",
+    "Type": "Event",
+    "GUID": "{9B921C1B-A683-4A14-9F0B-2F477EFAF698}",
+    "Language": "SFX",
+    "Hash": "{F79D89A9-A08A-522D-DE39-473486370F3E}",
+    "ObjectPath": "mus_street_battle",
+    "ShortName": "mus_street_battle",
+    "Path": "Event/mus_street_battle.bnk",
+    "Events": [
+     {
+      "Id": "1226321073",
+      "Name": "mus_street_battle",
+      "ObjectPath": "\\Events\\Default Work Unit\\Music\\mus_street_battle",
+      "GUID": "{9B921C1B-A683-4A14-9F0B-2F477EFAF698}",
+      "DurationType": "OneShot",
+      "DurationMin": "0",
+      "DurationMax": "0"
+     }
+    ]
+   }
+  ],
+  "FileHash": "{2BF40A6E-01F3-4B5F-3652-2D7D4FE1897C}"
+ }
+}

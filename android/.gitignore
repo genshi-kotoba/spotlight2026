@@ -1,0 +1,56 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# ─────────────────────────────────────────────────────────────
+# 本地 AI 工作文件 —— 不进团队仓库
+#
+# 原则：仓库是给团队看的「功能实现」，不是 AI 的工作台。
+# 对话记录、提示词、操作留档一律留在本地。
+# ─────────────────────────────────────────────────────────────
+AGENTS.md
+docs/00-*
+docs/prompts/
+docs/ops/
+docs/refs/
+
+# ─────────────────────────────────────────────────────────────
+# 本地开发工具 —— 不进团队仓库
+#
+# godot_mcp 是 AI 辅助开发用的编辑器插件。队友 clone 后 Godot 只会打一行
+# WARNING（"Addon ... failed to load. Removing from enabled plugins."）
+# 然后自动移除该项，不影响工程。已实测验证。
+# ─────────────────────────────────────────────────────────────
+addons/godot_mcp/
+
+# ─────────────────────────────────────────────────────────────
+# 第三方参考工程 —— 不进团队仓库
+#
+# Card and Dice 那份 Unity demo 曾经入库过（46 MB 的第三方工程，含 Unity 与
+# DOTween 的二进制），2026-10-07 从各分支删掉，只留在 reference/card-and-dice
+# 这一个分支上。要看就切到那个分支，或者本地自己 clone 一份放到 reference/，
+# 这个目录不再入库。
+# ─────────────────────────────────────────────────────────────
+reference/
+
+# ─────────────────────────────────────────────────────────────
+# 临时 / 测试文件
+# ─────────────────────────────────────────────────────────────
+test_scene.tscn
+lark_login_qr*.png
+/_local/
+
+# Audio workspace and local harness temporary files
+.dsh-acl-recovery/
+.dsh/
+_work/
+*.rpp-bak
+*.bak
+
+# GDExtension hot-reload duplicates, not distributable audio libraries.
+addons/Wwise/native/lib/**/~*
+
+# Local signing credentials must never enter source snapshots.
+*.keystore
+*.jks
+export_credentials.cfg

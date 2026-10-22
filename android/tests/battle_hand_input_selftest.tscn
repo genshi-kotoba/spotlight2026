@@ -1,0 +1,4 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://tests/battle_hand_input_selftest.gd" id="1"]
+[node name="BattleHandInputSelftest" type="Node"]
+script = ExtResource("1")

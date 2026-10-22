@@ -54,6 +54,7 @@ var _target_marker: Node2D
 var _render_actor_plane := Vector2.ZERO
 var _render_path: Array[Vector2] = []
 var _render_path_length := 0.0
+var _feedback_bar: PanelContainer
 var _hud_root: Control
 ## 右下信息面板的内容列：子类（跑图落点）往这里加行。
 var _info_column: VBoxContainer
@@ -229,6 +230,8 @@ func _open_run_menu(page: int = 1) -> void:
 		_menu_paused_before = paused
 	_set_paused(true)
 	_run_menu.open(page)
+	if is_instance_valid(_feedback_bar) and _feedback_bar.visible:
+		_feedback_bar.move_to_front()
 
 
 func _on_run_menu_closed() -> void:
@@ -453,6 +456,13 @@ func _build_hud() -> void:
 	_mini.gui_input.connect(_on_minimap_input)
 	_mini.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	mini_column.add_child(_mini)
+	var settings := preload("res://ui/components/settings_button.gd").new()
+	settings.name = "MapSettingsButton"
+	settings.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	settings.position = Vector2(-414, 24)
+	settings.size = Vector2(80, 80)
+	settings.pressed.connect(_open_run_menu.bind(2))
+	root.add_child(settings)
 	_dialog = ConfirmationDialog.new()
 	CommonUiSkin.style_dialog(_dialog)
 	_dialog.title = "节点接入演示"
@@ -462,6 +472,8 @@ func _build_hud() -> void:
 	_dialog.confirmed.connect(func(): _demo_result("completed"))
 	_dialog.canceled.connect(func(): _demo_result("cancelled"))
 	add_child(_dialog)
+	_feedback_bar = preload("res://ui/components/map_feedback_bar.gd").new()
+	root.add_child(_feedback_bar)
 
 func _bar_style() -> StyleBox:
 	return CommonUiSkin.panel("strip", Vector4(16, 10, 16, 10))
@@ -835,6 +847,9 @@ func _emit_state() -> void:
 	if _bus and not session.map_id.is_empty():
 		_bus.map_state_changed.emit(session.map_id, session.capture_state())
 
-func _show_toast(message: String) -> void:
+func _show_toast(message: String, sticky := false) -> void:
 	_toast = message
 	_toast_left = 5.0
+	if is_instance_valid(_feedback_bar):
+		_feedback_bar.move_to_front()
+		_feedback_bar.show_message(message, sticky)

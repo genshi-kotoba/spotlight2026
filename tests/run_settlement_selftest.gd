@@ -5,6 +5,8 @@ var _config: Dictionary
 
 class FinalFloor extends RefCounted:
 	var current_floor := 3
+	# 保留旧三层夹具的终层意图，适配正式楼层计数接口。
+	func floor_count() -> int: return 3
 
 func _run() -> void:
 	get_tree().current_scene = null # 保留测试宿主，允许实际场景切换。
@@ -109,6 +111,7 @@ func _real_battle_death() -> void:
 	_check("死亡记录使用敌人名称与战斗所属楼层背景", record.result == "defeat" and record.location_name == str(battle.enemies[0].name) and result_view.background.texture.resource_path == BACKGROUNDS.path_for_floor(2))
 	_check("死亡标题红色并复用典籍抖动，不再显示原UI", result_view.summary.get_child(0).text.contains("relic_motion") and result_view.summary.get_child(0).text.contains(RelicFragmentData.NEGATIVE_COLOR) and source.process_mode == Node.PROCESS_MODE_DISABLED)
 	_check("文本全部显示后移到左边，背包可查看且确认按钮才出现", result_view.summary.position.x == 124 and result_view.summary.get_child_count() == 4 and result_view.bag.visible and result_view.confirm_button.visible and result_view.hold_seconds == 1.0)
+	_check("本局结算明确标注返回主菜单", result_view.confirm_button.text == "返回主菜单")
 	await _capture("death-detail.png")
 	var history_count := GlobalState.run_history.size()
 	var seed := JSON.stringify(SeedService.capture_snapshot())
@@ -140,6 +143,7 @@ func _records_and_legacy() -> void:
 	page._open_detail(0)
 	while not page._detail.detail_ready: await get_tree().process_frame
 	_check("点击记录直接打开最终背包，不重播动画", page._detail.detail_ready and page._detail.summary.position.x == 124 and page._detail.record == page.entries[0])
+	_check("历史详情明确标注返回记录列表", page._detail.confirm_button.text == "返回记录列表")
 	await _capture("record-detail.png")
 	await _mouse_click(page._detail.confirm_button)
 	await _frames(2)

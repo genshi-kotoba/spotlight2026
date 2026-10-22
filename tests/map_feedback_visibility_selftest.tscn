@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/map_feedback_visibility_selftest.gd" id="1"]
+
+[node name="MapFeedbackVisibilitySelftest" type="Node"]
+script = ExtResource("1")

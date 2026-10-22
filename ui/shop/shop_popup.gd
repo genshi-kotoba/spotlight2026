@@ -49,12 +49,14 @@ func show_shop(value: Dictionary) -> void:
 	_render()
 
 func _input(event: InputEvent) -> void:
+	if ReadingDetailOverlay.is_open_for(self): return
 	if event is InputEventKey and event.pressed:
 		if event.is_action_pressed("ui_cancel"):
 			_continue()
 		get_viewport().set_input_as_handled()
 
 func _render() -> void:
+	_close_card_reading()
 	_hide_preview()
 	for child: Node in _options.get_children():
 		_options.remove_child(child)
@@ -82,7 +84,7 @@ func _render() -> void:
 		var offer: Dictionary = shop.cards[index]
 		var column := VBoxContainer.new()
 		row.add_child(column)
-		_card(column, {"card_id": str(offer.id)}, 0.29)
+		_card(column, {"card_id": str(offer.id)}, 0.29, {"kind": "buy", "index": index, "offer_id": str(offer.id)})
 		var price := _label("原价 %d" % int(offer.base_price), 19)
 		price.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		column.add_child(price)
@@ -144,7 +146,7 @@ func _render_targets(shop: Dictionary) -> void:
 			continue
 		var column := VBoxContainer.new()
 		grid.add_child(column)
-		_card(column, card, 0.29, _enchant_card.bind(str(card.copy_id)))
+		_card(column, card, 0.29, {"kind": "enchant", "index": _enchant_index, "offer_id": str(offer.id), "copy_id": str(card.copy_id)})
 		var choose := _button("选择第 %d 张（%d/2）" % [index + 1, card.enchantments.size()])
 		choose.custom_minimum_size = Vector2(155, 52)
 		choose.add_theme_font_size_override("font_size", 18)
@@ -153,7 +155,7 @@ func _render_targets(shop: Dictionary) -> void:
 		choose.pressed.connect(_enchant_card.bind(str(card.copy_id)))
 		column.add_child(choose)
 
-func _card(parent: Control, card: Dictionary, factor: float, selected: Callable = Callable()) -> void:
+func _card(parent: Control, card: Dictionary, factor: float, action: Dictionary = {}) -> void:
 	var slot := Control.new()
 	slot.custom_minimum_size = Vector2(480, 818) * factor
 	parent.add_child(slot)
@@ -174,9 +176,52 @@ func _card(parent: Control, card: Dictionary, factor: float, selected: Callable 
 	hit.tooltip_text = CardEnchantments.describe(card)
 	hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	hit.mouse_entered.connect(_show_preview.bind(slot, card))
-	if selected.is_valid(): hit.pressed.connect(selected)
+	hit.name = "InspectCard_" + str(card.get("copy_id", card.card_id)).validate_node_name()
+	hit.pressed.connect(_inspect_shop_card.bind(card.duplicate(true), action.duplicate(true)))
 	slot.add_child(hit)
 	view.bind_interaction_button(hit)
+
+func _inspect_shop_card(card: Dictionary, action: Dictionary) -> void:
+	_hide_preview()
+	var snapshot := action.duplicate(true)
+	snapshot["request"] = request.duplicate(true)
+	var kind := str(snapshot.get("kind", ""))
+	var token := str(snapshot.get("copy_id", snapshot.get("index", "")))
+	var text := "购买" if kind == "buy" else ("附魔" if kind == "enchant" else "删除此牌")
+	_open_card_reading(card, "shop", {"text": text, "token": token, "enabled": _can_confirm_shop_card(snapshot)},
+		func(value: String):
+			if value != token or not _can_confirm_shop_card(snapshot):
+				_error.text = "当前选牌或交易条件已变化，请重新选择。"
+				return
+			if kind == "buy": _buy_card(int(snapshot.index))
+			elif kind == "enchant": _enchant_card(str(snapshot.copy_id))
+			elif kind == "remove": _apply_service(str(snapshot.copy_id)))
+
+func _can_confirm_shop_card(action: Dictionary) -> bool:
+	if not _reading_can_act() or _mode != "shop" or action.get("request") != request \
+			or not RunShop._authorized(_run, request): return false
+	var shop := RunShop.shelf(_run, request)
+	if shop.is_empty(): return false
+	var kind := str(action.get("kind", ""))
+	if kind == "buy" or kind == "enchant":
+		if not _service_mode.is_empty(): return false
+		if kind == "buy" and _enchant_index >= 0: return false
+		var offers: Array = shop.cards if kind == "buy" else shop.enchantments
+		var index := int(action.get("index", -1))
+		if index < 0 or index >= offers.size(): return false
+		var offer: Dictionary = offers[index]
+		if str(offer.id) != str(action.get("offer_id", "")) or bool(offer.sold) or _run.gold < int(offer.price): return false
+		if kind == "buy": return true
+		if _enchant_index != index: return false
+		for card: Dictionary in _run.deck_cards:
+			if str(card.copy_id) == str(action.get("copy_id", "")):
+				return CardEnchantments.can_apply(card, str(offer.id))
+	elif kind == "remove" and _service_mode == "remove":
+		var price := RunShop.removal_price(shop)
+		if price < 0 or _run.gold < price or _run.deck_cards.size() <= 1: return false
+		for card: Dictionary in _run.deck_cards:
+			if str(card.copy_id) == str(action.get("copy_id", "")): return true
+	return false
 
 func _buy_card(index: int) -> void:
 	if _working:
@@ -244,7 +289,7 @@ func _select_service(mode: String) -> void:
 	_render()
 
 func _render_service_targets(shop: Dictionary) -> void:
-	_description.text = "点击一张牌删除，至少保留一张。此次费用：%d 银币。" % RunShop.removal_price(shop) if _service_mode == "remove" else "选择背包中或已装备的一个典籍残片，花费 300 银币驱散其负面效果。"
+	_description.text = "点击卡面查看，确认“删除此牌”后删除，至少保留一张。此次费用：%d 银币。" % RunShop.removal_price(shop) if _service_mode == "remove" else "选择背包中或已装备的一个典籍残片，花费 300 银币驱散其负面效果。"
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size.y = 520
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -259,7 +304,7 @@ func _render_service_targets(shop: Dictionary) -> void:
 		for card: Dictionary in _run.deck_cards:
 			var column := VBoxContainer.new()
 			grid.add_child(column)
-			_card(column, card, 0.36, _apply_service.bind(str(card.copy_id)))
+			_card(column, card, 0.36, {"kind": "remove", "copy_id": str(card.copy_id)})
 			var choose := _button("删除此牌")
 			choose.pressed.connect(_apply_service.bind(str(card.copy_id)))
 			column.add_child(choose)
@@ -290,6 +335,7 @@ func _apply_service(token: String) -> void:
 
 func _show_preview(anchor: Control, card: Dictionary) -> void:
 	_hide_preview()
+	if ReadingDetailOverlay.is_open_for(self): return
 	_preview_anchor = weakref(anchor)
 	_preview_away_time = 0.0
 	set_process(true)

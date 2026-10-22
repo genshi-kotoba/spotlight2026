@@ -320,7 +320,7 @@ func _build_run_controls() -> void:
 func _on_menu_abandon() -> void:
 	var error: Error = _gateway.abandon_run()
 	if error != OK:
-		_show_toast("放弃本局失败：%d" % error)
+		_show_toast("放弃本局失败：%d" % error, true)
 		return
 	_return_to_menu()
 
@@ -335,11 +335,11 @@ func _return_to_menu() -> void:
 		_show_toast("请先完成或取消当前节点")
 		return
 	if _gateway.save_current() != OK:
-		_show_toast("保存失败，仍留在当前地图")
+		_show_toast("保存失败，仍留在当前地图", true)
 		return
 	var error := SceneTransition.change_scene_to_file(MENU_SCENE)
 	if error != OK:
-		_show_toast("返回开始界面失败：%d" % error)
+		_show_toast("返回开始界面失败：%d" % error, true)
 
 
 func _change_floor(index: int) -> void:

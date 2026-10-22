@@ -2,6 +2,7 @@ class_name RewardChoiceFan
 extends Control
 ## 开包的纯表现层：飞散、缩放和悬停共用连续弹簧状态，不执行奖励事务。
 signal chosen(id: String)
+signal inspection_requested(id: String)
 
 const CARD_SCENE := preload("res://ui/components/card/card_view.tscn")
 const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
@@ -59,7 +60,9 @@ func configure(options: Array, fragments: bool) -> void:
 		for state: String in ["normal", "hover", "pressed", "focus"]:
 			hit.add_theme_stylebox_override(state, StyleBoxEmpty.new())
 		hit.pressed.connect(func():
-			if _ready_to_choose and not _folding: chosen.emit(value))
+			if not _ready_to_choose or _folding or not is_visible_in_tree(): return
+			if fragments: chosen.emit(value)
+			else: inspection_requested.emit(value))
 		item.add_child(hit)
 		if card != null: card.bind_interaction_button(hit)
 		_items.append(item)

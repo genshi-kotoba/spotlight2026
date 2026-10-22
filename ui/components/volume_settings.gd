@@ -9,15 +9,15 @@
 const AUDIO_SETTINGS := preload("res://systems/audio/audio_settings.gd")
 
 ## 块占位：标题 28 + 两行 64 间距 + 读数高度。
-const BLOCK_SIZE := Vector2(536, 150)
+const BLOCK_SIZE := Vector2(536, 240)
 const ROW_NAMES: Array[String] = ["音乐", "音效"]
-const TITLE_FONT_SIZE := 20
-const ROW_FONT_SIZE := 18
-const READOUT_FONT_SIZE := 16
+const TITLE_FONT_SIZE := 28
+const ROW_FONT_SIZE := 28
+const READOUT_FONT_SIZE := 28
 const COL_TITLE := Color(0.910, 0.706, 0.333, 0.85)
 const COL_TEXT := Color(0.749, 0.682, 0.553)
-const SLIDER_SIZE := Vector2(320, 24)
-const ROW_SPACING := 64.0
+const SLIDER_SIZE := Vector2(320, 64)
+const ROW_SPACING := 88.0
 
 static var _grabber_texture_cache: Texture2D
 
@@ -34,15 +34,15 @@ static func build(parent: Control, origin: Vector2 = Vector2.ZERO) -> Control:
 
 	var title := _label("声音", TITLE_FONT_SIZE, COL_TITLE)
 	title.position = Vector2(0, 0)
-	title.size = Vector2(200, 28)
+	title.size = Vector2(200, 40)
 	block.add_child(title)
 
 	for index in AUDIO_SETTINGS.ROW_KEYS.size():
 		var key: String = AUDIO_SETTINGS.ROW_KEYS[index]
-		var top := 52.0 + index * ROW_SPACING
+		var top := 56.0 + index * ROW_SPACING
 		var name_label := _label(ROW_NAMES[index], ROW_FONT_SIZE, COL_TEXT)
 		name_label.position = Vector2(0, top)
-		name_label.size = Vector2(120, 28)
+		name_label.size = Vector2(120, 64)
 		block.add_child(name_label)
 
 		var slider := HSlider.new()
@@ -59,7 +59,7 @@ static func build(parent: Control, origin: Vector2 = Vector2.ZERO) -> Control:
 
 		var readout := _label("%d%%" % roundi(slider.value * 100.0), READOUT_FONT_SIZE, COL_TEXT)
 		readout.position = Vector2(456, top + 2.0)
-		readout.size = Vector2(80, 28)
+		readout.size = Vector2(80, 64)
 		block.add_child(readout)
 		slider.value_changed.connect(_on_slider_changed.bind(key, readout))
 
@@ -84,16 +84,16 @@ static func _grabber_texture() -> Texture2D:
 	# 默认滑块圆点是引擎灰白样式，和这套暗金面板不搭，这里画一颗金色圆点。
 	if _grabber_texture_cache != null:
 		return _grabber_texture_cache
-	var side := 22
+	var side := 36
 	var image := Image.create(side, side, false, Image.FORMAT_RGBA8)
 	image.fill(Color(0, 0, 0, 0))
 	var center := Vector2(side, side) * 0.5
 	for y in side:
 		for x in side:
 			var distance := Vector2(x + 0.5, y + 0.5).distance_to(center)
-			if distance > 10.0:
+			if distance > 17.0:
 				continue
-			image.set_pixel(x, y, Color(0.396, 0.290, 0.145) if distance > 8.0
+			image.set_pixel(x, y, Color(0.396, 0.290, 0.145) if distance > 14.0
 				else Color(0.965, 0.784, 0.416))
 	_grabber_texture_cache = ImageTexture.create_from_image(image)
 	return _grabber_texture_cache

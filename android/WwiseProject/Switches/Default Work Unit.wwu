@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{A4FD52AD-35A3-4D4B-AED0-9127D8035F2D}" SchemaVersion="133">
+	<Switches>
+		<WorkUnit Name="Default Work Unit" ID="{A4FD52AD-35A3-4D4B-AED0-9127D8035F2D}" PersistMode="Standalone">
+			<ChildrenList>
+				<SwitchGroup Name="Foot_Material" ID="{DA68F562-F042-40D0-A276-F54CA549A58C}">
+					<ChildrenList>
+						<Switch Name="Wood" ID="{8E89E059-0E95-4CE8-A58F-0AFC4574955A}"/>
+						<Switch Name="Mud" ID="{A0A37FC3-74EF-422D-9F0F-D48E93498779}"/>
+						<Switch Name="Stone" ID="{B3579E90-4E04-4118-8561-CAD090E21067}"/>
+					</ChildrenList>
+				</SwitchGroup>
+				<SwitchGroup Name="Enemy_Tier" ID="{1E657D9F-E00A-455F-B2B8-BC5778C9304E}">
+					<ChildrenList>
+						<Switch Name="Normal" ID="{A72FC155-599D-4E38-8C74-60DB4287F357}"/>
+						<Switch Name="Elite" ID="{C62EBC2C-AB72-4AAA-A411-28DCAF255BD5}"/>
+						<Switch Name="Boss" ID="{082108FB-44C7-4235-9781-6F3E86273D52}"/>
+					</ChildrenList>
+				</SwitchGroup>
+				<SwitchGroup Name="Pointer_Position" ID="{9582CF37-1912-413C-9985-3C76DC997143}">
+					<ChildrenList>
+						<Switch Name="Pos_1" ID="{AFA18F15-2FE0-4562-95C5-B583E95BB720}"/>
+						<Switch Name="Pos_2" ID="{D58AE568-3C76-4157-8262-CF3CE567E1CD}"/>
+						<Switch Name="Pos_3" ID="{ED6AB7FB-4ABD-49A5-8948-F87BA3618B62}"/>
+						<Switch Name="Pos_4" ID="{21B987C2-0BA5-4D64-BA06-6BE0A23EA142}"/>
+						<Switch Name="Pos_5" ID="{2C81C467-446C-4C85-9206-A922B0308459}"/>
+						<Switch Name="Pos_6" ID="{649C3C8F-C3C7-484C-B6CB-54FCF5EAAD48}"/>
+						<Switch Name="Pos_7" ID="{03427C76-D89B-4C9F-B01C-CEEF82E18661}"/>
+						<Switch Name="Pos_8" ID="{FDF542BB-9228-408B-ACAB-5A837C410C73}"/>
+					</ChildrenList>
+				</SwitchGroup>
+				<SwitchGroup Name="Card_Material" ID="{00D6956A-4FEC-4B10-A849-0F3251B73FCD}">
+					<ChildrenList>
+						<Switch Name="Liquid" ID="{BE6DADD6-5FDF-46E4-B78E-1655E41FFB31}"/>
+						<Switch Name="Plant" ID="{728C889E-9481-42E7-8B47-BFABE8D723DC}"/>
+						<Switch Name="Mineral" ID="{F5C1873B-091D-4F49-B979-4D5B8E60EA5D}"/>
+						<Switch Name="Metal" ID="{22902AEE-4D2C-41B2-B3B5-CE23A5F9B444}"/>
+						<Switch Name="Feather" ID="{A397940E-1FA9-41F1-9183-DC069C0C245E}"/>
+						<Switch Name="Bone" ID="{43CA3820-19B6-4418-A968-D543C1217DAB}"/>
+						<Switch Name="Powder" ID="{F404C3EE-7381-47FC-AA0E-371F659FA9E7}"/>
+						<Switch Name="Glass" ID="{683115D1-76C5-4082-9A4C-40FD05B43338}"/>
+						<Switch Name="Shell" ID="{CC7CD388-3818-4B30-A89F-AB8E471EB6FC}"/>
+						<Switch Name="Abstract" ID="{87F7CB4D-5E50-4668-8A11-31EC83D93593}"/>
+					</ChildrenList>
+				</SwitchGroup>
+			</ChildrenList>
+		</WorkUnit>
+	</Switches>
+</WwiseDocument>

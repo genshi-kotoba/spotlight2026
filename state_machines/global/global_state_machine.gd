@@ -105,7 +105,7 @@ func continue_saved_run() -> Error:
 func save_game() -> Error:
 	var prepared := build_save_payload()
 	if prepared.error != OK:
-		return _fail(prepared.error, "Could not capture random state")
+		return _fail(prepared.error, "Could not capture save state")
 	var error := _write_atomic(JSON.stringify(prepared.payload, "\t"))
 	if error != OK:
 		return _fail(error, "Could not write save file")
@@ -117,7 +117,7 @@ func save_game() -> Error:
 func capture_save_data() -> Dictionary:
 	var prepared := build_save_payload()
 	if prepared.error != OK:
-		_fail(prepared.error, "Could not capture random state")
+		_fail(prepared.error, "Could not capture save state")
 		return {}
 	return prepared.payload
 
@@ -145,7 +145,11 @@ func build_save_payload() -> Dictionary:
 	# 没有历史记录时保留旧版存档载荷形状。
 	if not seen_region_titles.is_empty():
 		payload["seen_region_titles"] = seen_region_titles.duplicate()
-	return {"error": OK, "payload": payload}
+	# 点语法可在运行时字典中产生 StringName；存盘前只归一化这种字符串表示。
+	# 先检查再复制，禁止 JSON.stringify 将对象或非有限数字悄悄转换成合法数据。
+	if not _is_json_safe(payload, true):
+		return {"error": ERR_INVALID_DATA, "payload": {}}
+	return {"error": OK, "payload": _copy_json_value(payload)}
 
 
 ## 网关已验证并保存预备新局后才调用；旧局只在提交成功后销毁。
@@ -331,20 +335,23 @@ func _write_atomic(text: String) -> Error:
 	return OK
 
 
-static func _is_json_safe(value: Variant) -> bool:
+static func _is_json_safe(value: Variant, allow_string_names := false) -> bool:
 	match typeof(value):
 		TYPE_NIL, TYPE_BOOL, TYPE_INT, TYPE_STRING:
 			return true
+		TYPE_STRING_NAME:
+			return allow_string_names
 		TYPE_FLOAT:
 			return is_finite(float(value))
 		TYPE_ARRAY:
 			for item: Variant in value:
-				if not _is_json_safe(item):
+				if not _is_json_safe(item, allow_string_names):
 					return false
 			return true
 		TYPE_DICTIONARY:
 			for key: Variant in value:
-				if not key is String or not _is_json_safe(value[key]):
+				if not (key is String or (allow_string_names and key is StringName)) \
+						or not _is_json_safe(value[key], allow_string_names):
 					return false
 			return true
 		_:
@@ -352,7 +359,19 @@ static func _is_json_safe(value: Variant) -> bool:
 
 
 static func _copy_json_value(value: Variant) -> Variant:
-	return value.duplicate(true) if value is Array or value is Dictionary else value
+	if value is StringName:
+		return String(value)
+	if value is Array:
+		var copied: Array = []
+		for item: Variant in value:
+			copied.append(_copy_json_value(item))
+		return copied
+	if value is Dictionary:
+		var copied: Dictionary = {}
+		for key: Variant in value:
+			copied[String(key)] = _copy_json_value(value[key])
+		return copied
+	return value
 
 
 static func _integer_equals(value: Variant, expected: int) -> bool:

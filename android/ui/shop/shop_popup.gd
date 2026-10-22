@@ -1,0 +1,365 @@
+class_name ShopPopup
+extends LootPopup
+## 商店与选牌附魔共用一个模态层；确认目标后原子扣款，取消不占库存。
+const SHOP_BACKGROUND := "res://assets/events/EVBG-013.png"
+const SANDBOX_RESOURCES := preload("res://systems/testing/sandbox_resources.gd")
+var request: Dictionary = {}
+var _service_mode := ""
+var _preview: Control
+var _enchant_index := -1
+var close_handler: Callable
+var _card_definitions: Dictionary = {}
+
+func _ready() -> void:
+	super._ready()
+	_panel.offset_left = -840
+	_panel.offset_right = 840
+	_panel.offset_top = -475
+	_panel.offset_bottom = 475
+	var background_texture := load(SHOP_BACKGROUND) as Texture2D
+	if background_texture == null:
+		return
+	var background := TextureRect.new()
+	background.name = "ShopBackground"
+	background.texture = background_texture
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_root.add_child(background)
+	_root.move_child(background, 0)
+	# 沿用 main 的模态遮罩/附魔选牌事务，仅替换商店美术。
+	_shade.color = Color(0, 0, 0, 0.20)
+	_panel.add_theme_stylebox_override("panel", CommonUiSkin.panel("event", Vector4(36, 28, 36, 28)))
+
+func show_shop(value: Dictionary) -> void:
+	request = value.duplicate(true)
+	_run = SaveGateway.current_run()
+	_mode = "shop"
+	var error := RunShop.open(_run, request)
+	if error != OK:
+		_heading.text = "商店暂时无法打开"
+		_description.text = "保存或节点校验失败，请关闭后重试。错误码：%d" % error
+		_refresh_button.hide()
+		_continue_button.text = "返回地图"
+		return
+	_render()
+
+func _input(event: InputEvent) -> void:
+	if ReadingDetailOverlay.is_open_for(self): return
+	if event is InputEventKey and event.pressed:
+		if event.is_action_pressed("ui_cancel"):
+			_continue()
+		get_viewport().set_input_as_handled()
+
+func _render() -> void:
+	_close_card_reading()
+	_hide_preview()
+	for child: Node in _options.get_children():
+		_options.remove_child(child)
+		child.queue_free()
+	_error.text = ""
+	_refresh_button.hide()
+	var shop := RunShop.shelf(_run, request)
+	if shop.is_empty():
+		return
+	_heading.text = "第 %d 层商店　　银币：%s" % [int(shop.floor), SANDBOX_RESOURCES.text(_run.gold, _run)]
+	_description.text = "每家店独立备货，售出不补货。附魔每张牌最多两种；点击卡面查看完整说明，确认选牌后扣费。"
+	_continue_button.text = "取消选牌" if _enchant_index >= 0 or not _service_mode.is_empty() else "返回地图"
+	_continue_button.disabled = false
+	if not _service_mode.is_empty():
+		_render_service_targets(shop)
+		return
+	if _enchant_index >= 0:
+		_render_targets(shop)
+		return
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 28)
+	_options.add_child(row)
+	for index in shop.cards.size():
+		var offer: Dictionary = shop.cards[index]
+		var column := VBoxContainer.new()
+		row.add_child(column)
+		_card(column, {"card_id": str(offer.id)}, 0.29, {"kind": "buy", "index": index, "offer_id": str(offer.id)})
+		var price := _label("原价 %d" % int(offer.base_price), 19)
+		price.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		column.add_child(price)
+		var buy := _button("已售罄" if offer.sold else ("%d 折 · " % int(offer.discount) if int(offer.discount) < 10 else "") + "%d 银币" % int(offer.price))
+		buy.name = "BuyCard_%d" % index
+		buy.custom_minimum_size = Vector2(155, 52)
+		buy.add_theme_font_size_override("font_size", 19)
+		buy.disabled = bool(offer.sold) or _run.gold < int(offer.price)
+		buy.pressed.connect(_buy_card.bind(index))
+		column.add_child(buy)
+	var enchant_row := HBoxContainer.new()
+	enchant_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	enchant_row.add_theme_constant_override("separation", 20)
+	_options.add_child(_label("卡牌附魔", 26))
+	_options.add_child(enchant_row)
+	for index in shop.enchantments.size():
+		var offer: Dictionary = shop.enchantments[index]
+		var data: Dictionary = CardEnchantments.DEFINITIONS[offer.id]
+		var column := VBoxContainer.new()
+		column.custom_minimum_size.x = 330
+		enchant_row.add_child(column)
+		var buy := _button(("已售罄 · " if offer.sold else "") + "%s　%d 银币" % [data.name, int(offer.price)])
+		buy.text = str(data.get("symbol", "")) + " " + buy.text
+		buy.name = "BuyEnchant_%d" % index
+		buy.custom_minimum_size = Vector2(330, 80)
+		buy.tooltip_text = str(data.text)
+		buy.disabled = bool(offer.sold) or _run.gold < int(offer.price) or not _has_target(str(offer.id))
+		buy.pressed.connect(_select_enchantment.bind(index))
+		column.add_child(buy)
+		var description := _label(str(data.text), 19)
+		description.custom_minimum_size.x = 330
+		description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		column.add_child(description)
+	_render_services(shop)
+
+func _has_target(id: String) -> bool:
+	_run.ensure_deck_cards()
+	for card: Dictionary in _run.deck_cards:
+		if CardEnchantments.can_apply(card, id):
+			return true
+	return false
+
+func _render_targets(shop: Dictionary) -> void:
+	var offer: Dictionary = shop.enchantments[_enchant_index]
+	var data: Dictionary = CardEnchantments.DEFINITIONS[offer.id]
+	_description.text = "选择一张牌附上「%s」：%s\n确认后花费 %d 银币；同名卡按副本分别选择。" % [data.name, data.text, int(offer.price)]
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_options.add_child(scroll)
+	var grid := GridContainer.new()
+	grid.columns = 6
+	grid.add_theme_constant_override("h_separation", 32)
+	grid.add_theme_constant_override("v_separation", 20)
+	scroll.add_child(grid)
+	_run.ensure_deck_cards()
+	for index in _run.deck_cards.size():
+		var card: Dictionary = _run.deck_cards[index]
+		if not CardEnchantments.can_apply(card, str(offer.id)):
+			continue
+		var column := VBoxContainer.new()
+		grid.add_child(column)
+		_card(column, card, 0.29, {"kind": "enchant", "index": _enchant_index, "offer_id": str(offer.id), "copy_id": str(card.copy_id)})
+		var choose := _button("选择第 %d 张（%d/2）" % [index + 1, card.enchantments.size()])
+		choose.custom_minimum_size = Vector2(155, 52)
+		choose.add_theme_font_size_override("font_size", 18)
+		choose.name = "EnchantTarget_%d" % index
+		choose.tooltip_text = CardEnchantments.describe(card)
+		choose.pressed.connect(_enchant_card.bind(str(card.copy_id)))
+		column.add_child(choose)
+
+func _card(parent: Control, card: Dictionary, factor: float, action: Dictionary = {}) -> void:
+	var slot := Control.new()
+	slot.custom_minimum_size = Vector2(480, 818) * factor
+	parent.add_child(slot)
+	var view: CardView = CARD_SCENE.instantiate()
+	view.scale = Vector2.ONE * factor
+	view.size = Vector2(480, 818)
+	if _card_definitions.is_empty():
+		_card_definitions = FormalCardCatalog.load_definitions().cards
+	view.set_card(_card_definitions[str(card.card_id)])
+	view.set_enchantments(card)
+	view.tooltip_text = CardEnchantments.describe(card)
+	slot.add_child(view)
+	var hit := Button.new()
+	hit.flat = true
+	hit.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for state: String in ["normal", "hover", "pressed", "focus"]:
+		hit.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+	hit.tooltip_text = CardEnchantments.describe(card)
+	hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	hit.mouse_entered.connect(func():
+		if _is_reading_hold(): _inspect_shop_card(card.duplicate(true), action.duplicate(true))
+		else: _show_preview(slot, card))
+	hit.mouse_exited.connect(_hide_preview)
+	hit.name = "InspectCard_" + str(card.get("copy_id", card.card_id)).validate_node_name()
+	hit.pressed.connect(_inspect_shop_card.bind(card.duplicate(true), action.duplicate(true)))
+	slot.add_child(hit)
+
+func _inspect_shop_card(card: Dictionary, action: Dictionary) -> void:
+	_hide_preview()
+	var snapshot := action.duplicate(true)
+	snapshot["request"] = request.duplicate(true)
+	var kind := str(snapshot.get("kind", ""))
+	var token := str(snapshot.get("copy_id", snapshot.get("index", "")))
+	var text := "购买" if kind == "buy" else ("附魔" if kind == "enchant" else "删除此牌")
+	_open_card_reading(card, "shop", {"text": text, "token": token, "enabled": _can_confirm_shop_card(snapshot)},
+		func(value: String):
+			if value != token or not _can_confirm_shop_card(snapshot):
+				_error.text = "当前选牌或交易条件已变化，请重新选择。"
+				return
+			if kind == "buy": _buy_card(int(snapshot.index))
+			elif kind == "enchant": _enchant_card(str(snapshot.copy_id))
+			elif kind == "remove": _apply_service(str(snapshot.copy_id)))
+
+func _can_confirm_shop_card(action: Dictionary) -> bool:
+	if not _reading_can_act() or _mode != "shop" or action.get("request") != request \
+			or not RunShop._authorized(_run, request): return false
+	var shop := RunShop.shelf(_run, request)
+	if shop.is_empty(): return false
+	var kind := str(action.get("kind", ""))
+	if kind == "buy" or kind == "enchant":
+		if not _service_mode.is_empty(): return false
+		if kind == "buy" and _enchant_index >= 0: return false
+		var offers: Array = shop.cards if kind == "buy" else shop.enchantments
+		var index := int(action.get("index", -1))
+		if index < 0 or index >= offers.size(): return false
+		var offer: Dictionary = offers[index]
+		if str(offer.id) != str(action.get("offer_id", "")) or bool(offer.sold) or _run.gold < int(offer.price): return false
+		if kind == "buy": return true
+		if _enchant_index != index: return false
+		for card: Dictionary in _run.deck_cards:
+			if str(card.copy_id) == str(action.get("copy_id", "")):
+				return CardEnchantments.can_apply(card, str(offer.id))
+	elif kind == "remove" and _service_mode == "remove":
+		var price := RunShop.removal_price(shop)
+		if price < 0 or _run.gold < price or _run.deck_cards.size() <= 1: return false
+		for card: Dictionary in _run.deck_cards:
+			if str(card.copy_id) == str(action.get("copy_id", "")): return true
+	return false
+
+func _buy_card(index: int) -> void:
+	if _working:
+		return
+	_working = true
+	var error := RunShop.buy_card(_run, request, index)
+	_working = false
+	_render()
+	if error != OK:
+		_error.text = "购买未完成，银币与库存未变。错误码：%d" % error
+
+func _select_enchantment(index: int) -> void:
+	_enchant_index = index
+	_render()
+
+func _enchant_card(copy_id: String) -> void:
+	if _working:
+		return
+	_working = true
+	var error := RunShop.buy_enchantment(_run, request, _enchant_index, copy_id)
+	_working = false
+	if error == OK:
+		_enchant_index = -1
+	_render()
+	if error != OK:
+		_error.text = "附魔未完成，未扣费。可能已满、已有该附魔或存档失败。"
+
+func _continue() -> void:
+	if not _service_mode.is_empty():
+		_service_mode = ""
+		_render()
+	elif _enchant_index >= 0:
+		_enchant_index = -1
+		_render()
+	else:
+		var error: Error = close_handler.call() if close_handler.is_valid() else OK
+		if error == OK:
+			_finish()
+		else:
+			_error.text = "离店进度保存失败，请重试。错误码：%d" % error
+
+func _render_services(shop: Dictionary) -> void:
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 36)
+	_options.add_child(row)
+	var price := RunShop.removal_price(shop)
+	var remove := _button("删牌 · " + ("本店已用完 3 次" if price < 0 else ("首次免费" if price == 0 else "%d 银币" % price)))
+	remove.name = "RemoveCardService"
+	remove.custom_minimum_size = Vector2(460, 64)
+	remove.tooltip_text = "每店三次：免费、50、100 银币。牌组至少保留一张。"
+	remove.disabled = price < 0 or _run.gold < price or _run.deck.size() <= 1
+	remove.pressed.connect(_select_service.bind("remove"))
+	row.add_child(remove)
+	var exorcise := _button("驱魔 · " + ("本店已使用" if bool(shop.get("exorcised", false)) else "300 银币 · 每店一次"))
+	exorcise.name = "ExorciseService"
+	exorcise.custom_minimum_size = Vector2(460, 64)
+	exorcise.tooltip_text = "驱散典籍残片的负面效果"
+	exorcise.disabled = bool(shop.get("exorcised", false)) or _run.gold < 300 or RunShop.cursed_fragments(_run).is_empty()
+	exorcise.pressed.connect(_select_service.bind("exorcise"))
+	row.add_child(exorcise)
+
+func _select_service(mode: String) -> void:
+	_service_mode = mode
+	_render()
+
+func _render_service_targets(shop: Dictionary) -> void:
+	_description.text = "点击卡面查看，确认“删除此牌”后删除，至少保留一张。此次费用：%d 银币。" % RunShop.removal_price(shop) if _service_mode == "remove" else "选择背包中或已装备的一个典籍残片，花费 300 银币驱散其负面效果。"
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = 520
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_options.add_child(scroll)
+	var grid := GridContainer.new()
+	grid.columns = 6 if _service_mode == "remove" else 3
+	grid.add_theme_constant_override("h_separation", 30)
+	grid.add_theme_constant_override("v_separation", 22)
+	scroll.add_child(grid)
+	if _service_mode == "remove":
+		_run.ensure_deck_cards()
+		for card: Dictionary in _run.deck_cards:
+			var column := VBoxContainer.new()
+			grid.add_child(column)
+			_card(column, card, 0.36, {"kind": "remove", "copy_id": str(card.copy_id)})
+			var choose := _button("删除此牌")
+			choose.pressed.connect(_apply_service.bind(str(card.copy_id)))
+			column.add_child(choose)
+	else:
+		for entry: Dictionary in RunShop.cursed_fragments(_run):
+			var data := RelicCatalog.resolve(str(entry.fragment_id))
+			var column := VBoxContainer.new()
+			column.custom_minimum_size = Vector2(470, 240)
+			grid.add_child(column)
+			var text := RichTextLabel.new()
+			CommonUiSkin.setup_relic_text(text, 23)
+			text.custom_minimum_size = Vector2(460, 170)
+			text.text = data.rich_text(23)
+			column.add_child(text)
+			var choose := _button(("已装备 · " if str(entry.token).begins_with("cell:") else "背包 · ") + data.display_name)
+			choose.name = ("ExorcismTarget_" + str(entry.token)).validate_node_name()
+			choose.pressed.connect(_apply_service.bind(str(entry.token)))
+			column.add_child(choose)
+
+func _apply_service(token: String) -> void:
+	if _working: return
+	_working = true
+	var error := RunShop.remove_card(_run, request, token) if _service_mode == "remove" else RunShop.exorcise(_run, request, token)
+	_working = false
+	if error == OK: _service_mode = ""
+	_render()
+	if error != OK: _error.text = "操作失败，银币、牌组和残片未改变（%d）。" % error
+
+func _show_preview(anchor: Control, card: Dictionary) -> void:
+	_hide_preview()
+	if ReadingDetailOverlay.is_open_for(self): return
+	_preview = Control.new()
+	_preview.name = "ShopCardPreview"
+	_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_preview.z_index = 200
+	_preview.size = Vector2(480, 818) * 0.70
+	_root.add_child(_preview)
+	var view: CardView = CARD_SCENE.instantiate()
+	view.scale = Vector2.ONE * 0.70
+	_preview.add_child(view)
+	view.set_card(_card_definitions[str(card.card_id)])
+	view.set_enchantments(card)
+	view.apply_compact_layout(0.70)
+	_ignore_preview_input(view)
+	var rect := anchor.get_global_rect()
+	var bounds := _root.get_viewport_rect().size
+	var x := rect.end.x + 18
+	if x + _preview.size.x > bounds.x - 16: x = rect.position.x - _preview.size.x - 18
+	_preview.position = Vector2(clampf(x, 16, bounds.x - _preview.size.x - 16), clampf(rect.position.y, 16, bounds.y - _preview.size.y - 16))
+
+func _ignore_preview_input(node: Node) -> void:
+	if node is Control: node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child: Node in node.get_children(): _ignore_preview_input(child)
+
+func _hide_preview() -> void:
+	if is_instance_valid(_preview):
+		_preview.hide()
+		_preview.queue_free()
+	_preview = null

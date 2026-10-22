@@ -2137,8 +2137,8 @@ func _refresh_header() -> void:
 		if not bool(card.get("slot_empty", false)):
 			locked_count += 1
 	var to_commit := _selected_ids.size() + locked_count
-	# 结算数为 0 时按钮照样可点，点它就是结束回合，不再单独换文案。
-	play_button.text = "结算 %d" % to_commit
+	# 空编排直接结束回合，按钮说明实际动作。
+	play_button.text = "结束回合" if to_commit == 0 else "结算 %d" % to_commit
 	play_count_label.text = "%d/%d" % [_used_slots(), _battle.effective_play_limit()]
 	_restart_button.disabled = _busy
 	for slot: Node in hand_cards.get_children():

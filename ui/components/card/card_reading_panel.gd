@@ -45,6 +45,18 @@ func _ready() -> void:
 	body.add_theme_constant_override("line_spacing", 5)
 	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_column.add_child(body)
+	ReadingSettings.connect_changed(_on_reading_size_changed)
+	_on_reading_size_changed()
+
+func _exit_tree() -> void:
+	ReadingSettings.disconnect_changed(_on_reading_size_changed)
+
+func _on_reading_size_changed() -> void:
+	if body == null: return
+	var pixels := ReadingSettings.body_size()
+	body.add_theme_font_size_override("font_size", pixels)
+	_title.add_theme_font_size_override("font_size", pixels + 6)
+	_layout_width = -1.0
 
 func set_card_text(title: String, effect: String, enchantment_text: String = "") -> void:
 	if _title.text == title and _effect == effect and _enchantments == enchantment_text: return
@@ -56,7 +68,7 @@ func set_card_text(title: String, effect: String, enchantment_text: String = "")
 
 func place_next_to(card_rect: Rect2, viewport_rect: Rect2) -> void:
 	var available := viewport_rect.size - Vector2.ONE * GAP * 2.0
-	var width := minf(PANEL_WIDTH, available.x)
+	var width := minf(preferred_width(), available.x)
 	var max_height := minf(760.0, available.y)
 	if width != _layout_width or max_height != _layout_height:
 		_reflow(width, max_height)
@@ -66,13 +78,21 @@ func place_next_to(card_rect: Rect2, viewport_rect: Rect2) -> void:
 	global_position = Vector2(clampf(x, viewport_rect.position.x + GAP, maxf(viewport_rect.position.x + GAP, viewport_rect.end.x - size.x - GAP)),
 		clampf(card_rect.position.y, viewport_rect.position.y + GAP, maxf(viewport_rect.position.y + GAP, viewport_rect.end.y - size.y - GAP)))
 
+func preferred_width() -> float:
+	return PANEL_WIDTH * ReadingSettings.body_size() / float(BODY_SIZE)
+
+## 持续阅读壳预留按钮后，把剩余的安全区域交给正文排版。
+func fit_within(bounds: Rect2) -> void:
+	_reflow(minf(preferred_width(), maxf(1.0, bounds.size.x)), maxf(1.0, bounds.size.y))
+
 func _reflow(width: float, max_height: float) -> void:
 	_layout_width = width
 	_layout_height = max_height
 	var content_width := maxf(1, width - MARGIN * 2.0)
 	var raw := _effect
 	if not _enchantments.is_empty(): raw += "\n\n" + _enchantments
-	var wrapped := CardText.wrap_to_width(raw, body.get_theme_font("font"), BODY_SIZE, content_width - 10.0)
+	var pixels := body.get_theme_font_size("font_size")
+	var wrapped := CardText.wrap_to_width(raw, body.get_theme_font("font"), pixels, content_width - 10.0)
 	body.set_content(wrapped, 1)
 	body.get_line_count()
 	var row_height := 1.0

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://5hrretcoswhi"
+path="res://.godot/imported/Small Wood Room.wav-59e41b9337769eb8c212865fc498012f.sample"
+
+[deps]
+
+source_file="res://WwiseProject/Originals/Plugins/iZotope Hybrid Reverb/Small Wood Room.wav"
+dest_files=["res://.godot/imported/Small Wood Room.wav-59e41b9337769eb8c212865fc498012f.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

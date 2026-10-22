@@ -136,6 +136,11 @@ func _draw() -> void:
 	draw_string(font, baseline, _name, HORIZONTAL_ALIGNMENT_LEFT, -1, NAME_FONT_SIZE, UiSkin.TEXT)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
+func contains_screen_point(at: Vector2) -> bool:
+	if not visible or _leaving or node_id.is_empty(): return false
+	var local := get_global_transform_with_canvas().affine_inverse() * at
+	return _name_rect.has_point(local / (_scale * NAME_SCALE))
+
 func _draw_gate() -> void:
 	var center := position
 	var anchor := _anchor - center

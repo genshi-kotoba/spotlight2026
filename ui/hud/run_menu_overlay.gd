@@ -144,6 +144,7 @@ func _ready() -> void:
 
 func open(page: int = -1) -> void:
 	if _pack_selection_locked(): return
+	get_tree().call_group("pinned_reading_tip", "hide_tip", true)
 	visible = true
 	if page >= 0:
 		set_page(page)
@@ -179,6 +180,7 @@ func close() -> void:
 	_hide_deck_reader()
 	_end_relic_drag(true)
 	_selected_fragment_id = ""
+	get_tree().call_group("pinned_reading_tip", "hide_tip", true)
 	_hide_item_tip()
 	_close_item_menu()
 	if _peek_layer != null:
@@ -198,8 +200,10 @@ func set_page(index: int) -> void:
 	_hide_deck_reader()
 	_end_relic_drag(true)
 	_selected_fragment_id = ""
+	get_tree().call_group("pinned_reading_tip", "hide_tip", true)
 	_hide_item_tip()
 	_close_item_menu()
+	if is_instance_valid(_peek_layer): _peek_layer.hide()
 	_current_page = clampi(index, 0, PAGES.size() - 1)
 	for page_index in _pages.size():
 		var page: Control = _pages[page_index]
@@ -328,6 +332,11 @@ func _build_peek() -> void:
 	_peek_layer.add_child(_peek_view)
 	_peek_reader = CardReadingPanel.new()
 	_peek_layer.add_child(_peek_reader)
+	var close_reader := CatalogUi.button("关闭说明", "CloseCardReading")
+	close_reader.position = Vector2(1510, 72)
+	close_reader.size = Vector2(220, 72)
+	close_reader.pressed.connect(func(): _peek_layer.hide())
+	_peek_layer.add_child(close_reader)
 
 
 func _peek_card(card_id: String, card: Dictionary = {}) -> void:
@@ -716,9 +725,10 @@ func _build_deck_zone(page: Control) -> void:
 
 func _build_settings_page(page: Control) -> void:
 	# 音量块与开始界面设置页共用一份，两处外观不会漂。
-	VOLUME_SETTINGS.build(page, Vector2(580, 292))
+	VOLUME_SETTINGS.build(page, Vector2(580, 210))
 	# 诊断块同样共用；跑图内也要能一键导出，测试者不必先退回主菜单。
-	DIAGNOSTICS_SETTINGS.build(page, Vector2(40, 292))
+	DIAGNOSTICS_SETTINGS.build(page, Vector2(40, 520))
+	preload("res://ui/components/reading_preferences.gd").build(page, Vector2(40, 210))
 
 	var divider := ColorRect.new()
 	divider.color = Color(0.910, 0.706, 0.333, 0.28)
@@ -983,6 +993,12 @@ func _item_slot_empty(index: int) -> Control:
 
 
 func _input(event: InputEvent) -> void:
+	if is_visible_in_tree() and is_instance_valid(_peek_layer) and _peek_layer.visible and (event is InputEventKey or event is InputEventJoypadButton or event is InputEventJoypadMotion or event is InputEventAction):
+		if event.is_action_pressed("ui_cancel"):
+			_peek_layer.hide()
+			if is_instance_valid(_peek_reader): _peek_reader.body.cancel_interaction()
+		get_viewport().set_input_as_handled()
+		return
 	if is_instance_valid(_upgrade_layer):
 		if event is InputEventKey:
 			if event.is_action_pressed("ui_cancel"): _close_relic_upgrade()
@@ -1470,6 +1486,7 @@ func _pack_selection_locked() -> bool:
 func _on_pack_suspension_changed(suspended: bool) -> void:
 	_end_relic_drag(true)
 	_selected_fragment_id = ""
+	get_tree().call_group("pinned_reading_tip", "hide_tip", true)
 	_hide_item_tip()
 	if not suspended and is_instance_valid(_peek_layer): _peek_layer.hide()
 	for cell: RelicDropCell in _relic_drop_cells: cell.editable = _can_edit_relics()

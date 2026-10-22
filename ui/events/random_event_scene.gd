@@ -22,7 +22,6 @@ var run: RunStateMachine
 @onready var _status: RichTextLabel = $OptionsColumn/EventStatus
 @onready var _background: TextureRect = $EventBackground
 var _selected: Array[String] = []
-var _generation := 0
 var _leaving := false
 var _deck_picker: CanvasLayer
 var _upgrade_picker: CanvasLayer
@@ -77,7 +76,6 @@ func _refresh() -> void:
 	_reference_preview.hide_preview()
 	_close_deck_picker()
 	_close_upgrade_picker()
-	_generation += 1
 	_selected.clear()
 	_suspend_button.hide()
 	for child: Node in _content.get_children(): _content.remove_child(child); child.queue_free()
@@ -155,13 +153,13 @@ func _refresh() -> void:
 				if fragment != null:
 					_content.add_child(_fragment_detail(fragment.rich_text()))
 			if index == 2 and int(current.plays) < 3 and not str(current.result).begins_with("已离开"):
+				_status_text += "\n\n事件结果已保存，请选择继续抽取或结束事件。"
 				_button("继续抽取", _gamble_again)
 				_button("结束事件并返回地图", _finish)
 			else:
-				_status_text += "\n\n事件结果已保存，稍后自动返回地图；悬停名称预览时暂停计时。"
-				var return_button := _button("返回地图", _finish)
+				_status_text += "\n\n事件结果已保存。可继续阅读，点击下方按钮结束事件并返回地图。"
+				var return_button := _button("结束事件并返回地图", _finish)
 				return_button.name = "EventReturnNow"
-				_auto_finish(_generation)
 		"done": call_deferred("_leave")
 	if current.stage != "done": _add_suspend_button()
 
@@ -356,7 +354,6 @@ func _result(error: Error) -> void:
 
 func _suspend() -> void:
 	if _leaving or is_instance_valid(_deck_picker) or is_instance_valid(_upgrade_picker): return
-	_generation += 1
 	_leaving = true
 	var suspended_request := request.duplicate(true)
 	var error := RunRandomEvents.suspend(run, request, _selected)
@@ -387,18 +384,10 @@ func _gamble_again() -> void:
 func _reselect_inputs() -> void:
 	_result(RunRandomEvents.reselect_inputs(run, request))
 
-func _auto_finish(generation: int) -> void:
-	await get_tree().create_timer(2.0).timeout
-	while is_inside_tree() and generation == _generation:
-		if not _reference_preview.is_showing(): _finish(); return
-		await get_tree().create_timer(0.15).timeout
-
 func _finish() -> void:
 	if not is_instance_valid(run) or not run.active: return
-	# A click and the reading timer may arrive in the same frame. Acknowledge
-	# only a result, and invalidate the timer before committing it once.
+	# 重复点击只确认一次结果；奖励仍由原有事务在确认后结算。
 	if _leaving or RunRandomEvents.state(run, request).get("stage") != "result": return
-	_generation += 1
 	_result(RunRandomEvents.acknowledge(run, request))
 
 func _leave() -> void:

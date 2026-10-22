@@ -29,13 +29,18 @@ var _shade_tween: Tween
 var _suspended := false
 var _selection_active := false
 var _finishing := false
+var _reading_revision := 0
 
 func _ready() -> void:
 	layer = 100
+	for tip: Node in get_tree().get_nodes_in_group("pinned_reading_tip"):
+		if tip.has_method("hide_tip"): tip.hide_tip(true)
+	visibility_changed.connect(_on_reading_visibility_changed)
 	_root = Control.new()
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
+	_root.visibility_changed.connect(_on_reading_visibility_changed)
 	_shade = ColorRect.new()
 	_shade.color = Color(0, 0, 0, 0.78)
 	_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -98,6 +103,7 @@ func show_pack(item_id: String) -> void:
 	_render()
 
 func _input(event: InputEvent) -> void:
+	if ReadingDetailOverlay.is_open_for(self): return
 	if _selection_active and event is InputEventKey:
 		# 悬置并非退出：所有场景快捷键仍锁住，只允许 Esc 关闭正在查看的大图。
 		if event.pressed and not event.is_echo() and event.is_action_pressed("ui_cancel"):
@@ -115,6 +121,7 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _render() -> void:
+	_close_card_reading()
 	_reset_choice_presentation()
 	for child: Node in _options.get_children():
 		_options.remove_child(child)
@@ -297,14 +304,15 @@ func _render_enchantment_targets() -> void:
 		hit.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		for state: String in ["normal", "hover", "pressed", "focus"]:
 			hit.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+		hit.name = "InspectEnchantCopy_" + str(card.copy_id).validate_node_name()
 		hit.tooltip_text = choose.tooltip_text
 		hit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		hit.pressed.connect(_apply_enchantment.bind(str(card.copy_id)))
+		hit.pressed.connect(_inspect_enchantment_target.bind(card.duplicate(true)))
 		slot.add_child(hit)
 		view.bind_interaction_button(hit)
 
 func _apply_enchantment(copy_id: String) -> void:
-	if _working: return
+	if not _reading_can_act() or _mode != "enchantment_targets": return
 	_working = true
 	var error := RunRewards.apply_book(_run, _item_id, _enchantment_id, copy_id)
 	_working = false
@@ -315,6 +323,7 @@ func _apply_enchantment(copy_id: String) -> void:
 
 func _finish() -> void:
 	if _finishing: return
+	_close_card_reading()
 	_finishing = true
 	_selection_active = false
 	_root.hide()
@@ -345,7 +354,8 @@ func _render_choice_fan(pack: Dictionary) -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_choice_surface.add_child(title)
-	var hint := _label("点击选择 · 悬停放大 · 悬置后可查看背包，放弃则丢掉整包", 20)
+	var hint_text := "点击残片选择 · 悬停放大 · 悬置后可查看背包，放弃则丢掉整包" if pack.kind == "fragment_pack" else "点击卡牌查看 · 详情中选择此牌 · 悬停放大 · 悬置后可查看背包，放弃则丢掉整包"
+	var hint := _label(hint_text, 20)
 	hint.name = "SelectionHint"
 	hint.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	hint.offset_top = 124
@@ -361,6 +371,7 @@ func _render_choice_fan(pack: Dictionary) -> void:
 	_choice_fan = RewardChoiceFan.new()
 	_choice_fan.name = "RewardChoiceFan"
 	_choice_fan.chosen.connect(_choose)
+	_choice_fan.inspection_requested.connect(_inspect_choice)
 	_options.add_child(_choice_fan)
 	_choice_fan.configure(pack.options, pack.kind == "fragment_pack")
 	_actions.reparent(_choice_surface)
@@ -395,6 +406,7 @@ func _render_choice_fan(pack: Dictionary) -> void:
 
 func _toggle_suspension() -> void:
 	if not _selection_active or _working: return
+	_close_card_reading()
 	_suspended = not _suspended
 	_continue_button.text = "恢复选择" if _suspended else "悬置"
 	_refresh_button.visible = not _suspended and RunRewards.item(_run, _item_id).get("kind") in ["fragment_pack", "common_pack"]
@@ -419,6 +431,7 @@ func _sync_choice_error() -> void:
 	if is_instance_valid(_choice_error): _choice_error.text = _error.text
 
 func _reset_choice_presentation() -> void:
+	_close_card_reading()
 	_selection_active = false
 	_suspended = false
 	_choice_fan = null
@@ -442,6 +455,78 @@ func _reset_choice_presentation() -> void:
 	_shade.modulate.a = 1.0
 	_shade.mouse_filter = Control.MOUSE_FILTER_STOP
 	_panel.show()
+
+## 卡面只打开阅读；业务操作必须经明确按钮并在此处重验当前宿主状态。
+func _is_reading_hold() -> bool:
+	var bridge := get_node_or_null("/root/MobileInput")
+	return bridge != null and bridge.has_method("is_holding_for_reading") and bridge.is_holding_for_reading()
+
+func _reading_can_act() -> bool:
+	if not is_inside_tree() or not is_instance_valid(_root) or not _root.is_visible_in_tree() \
+			or _working or _finishing or _suspended or not is_instance_valid(_run): return false
+	var ancestor: Node = self
+	while is_instance_valid(ancestor):
+		if ancestor.is_queued_for_deletion() or (ancestor is CanvasLayer and not ancestor.visible) \
+				or (ancestor is CanvasItem and not ancestor.is_visible_in_tree()): return false
+		ancestor = ancestor.get_parent()
+	return _run == SaveGateway.current_run() and RunRewards._can_edit(_run)
+
+func _open_card_reading(card: Dictionary, context: String, action: Dictionary, confirm: Callable) -> void:
+	_close_card_reading()
+	if not _reading_can_act(): return
+	var definitions: Dictionary = FormalCardCatalog.load_definitions().cards
+	var data := definitions.get(str(card.get("card_id", ""))) as CardData
+	if data == null: return
+	var revision := _reading_revision
+	var reader := ReadingDetailOverlay.open_card(self, data, card, context, action)
+	if reader == null: return
+	reader.action_requested.connect(func(token: String):
+		if revision != _reading_revision or not _reading_can_act(): return
+		_close_card_reading()
+		if confirm.is_valid(): confirm.call(token))
+	reader.closed.connect(func():
+		if revision == _reading_revision: _reading_revision += 1)
+
+func _close_card_reading() -> void:
+	_reading_revision += 1
+	ReadingDetailOverlay.close_for(self)
+
+func _on_reading_visibility_changed() -> void:
+	if not visible or (is_instance_valid(_root) and not _root.is_visible_in_tree()):
+		_close_card_reading()
+
+func _exit_tree() -> void:
+	_close_card_reading()
+
+func _inspect_choice(id: String) -> void:
+	if not _reading_can_act() or _mode != "pack" or not _selection_active \
+			or not is_instance_valid(_choice_fan) or not _choice_fan.is_settled(): return
+	var pack := RunRewards.item(_run, _item_id)
+	if pack.get("kind") not in ["common_pack", "rare_pack"] or id not in pack.get("options", []): return
+	var item_id := _item_id
+	_open_card_reading({"card_id": id}, "reward", {"text": "选择此牌", "token": id, "enabled": true},
+		func(token: String):
+			var current := RunRewards.item(_run, item_id)
+			if token == id and item_id == _item_id and _mode == "pack" and _selection_active \
+					and is_instance_valid(_choice_fan) and _choice_fan.is_settled() \
+					and current.get("kind") in ["common_pack", "rare_pack"] and id in current.get("options", []):
+				_choose(id))
+
+func _inspect_enchantment_target(card: Dictionary) -> void:
+	if _mode != "enchantment_targets" or not _reading_can_act(): return
+	var item_id := _item_id
+	var enchantment_id := _enchantment_id
+	var copy_id := str(card.copy_id)
+	_open_card_reading(card, "reward", {"text": "附魔", "token": copy_id, "enabled": true},
+		func(token: String):
+			if token != copy_id or item_id != _item_id or enchantment_id != _enchantment_id \
+					or _mode != "enchantment_targets": return
+			var book := RunRewards.item(_run, item_id)
+			if book.get("kind") != "enchantment_book" or enchantment_id not in book.get("options", []): return
+			for target: Dictionary in RunRewards.enchantment_targets(_run, enchantment_id):
+				if str(target.copy_id) == copy_id:
+					_apply_enchantment(copy_id)
+					return)
 
 func _label(value: String, font_size: int) -> Label:
 	var label := Label.new()

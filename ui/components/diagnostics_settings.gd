@@ -7,10 +7,10 @@
 
 const RUNTIME_LOG := preload("res://systems/diagnostics/runtime_log.gd")
 
-const BLOCK_SIZE := Vector2(536, 108)
-const TITLE_FONT_SIZE := 20
-const BUTTON_FONT_SIZE := 20
-const HINT_FONT_SIZE := 14
+const BLOCK_SIZE := Vector2(536, 156)
+const TITLE_FONT_SIZE := 28
+const BUTTON_FONT_SIZE := 26
+const HINT_FONT_SIZE := 22
 const CLIPBOARD_CHARS := 4000
 const COL_TITLE := Color(0.910, 0.706, 0.333, 0.85)
 const COL_TEXT := Color(0.749, 0.682, 0.553)
@@ -27,19 +27,19 @@ static func build(parent: Control, origin: Vector2 = Vector2.ZERO) -> Control:
 
 	var title := _label("诊断", TITLE_FONT_SIZE, COL_TITLE)
 	title.position = Vector2(0, 0)
-	title.size = Vector2(200, 28)
+	title.size = Vector2(200, 40)
 	block.add_child(title)
 
 	var hint := _label(HINT_TEXT, HINT_FONT_SIZE, COL_TEXT)
 	hint.position = Vector2(300, 46)
-	hint.size = Vector2(236, 56)
+	hint.size = Vector2(236, 96)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	block.add_child(hint)
 
 	var button := Button.new()
 	button.text = "导出诊断日志"
 	button.position = Vector2(0, 44)
-	button.size = Vector2(280, 56)
+	button.size = Vector2(280, 72)
 	button.focus_mode = Control.FOCUS_NONE
 	button.add_theme_font_size_override("font_size", BUTTON_FONT_SIZE)
 	button.add_theme_color_override("font_color", Color(0.949, 0.890, 0.776))

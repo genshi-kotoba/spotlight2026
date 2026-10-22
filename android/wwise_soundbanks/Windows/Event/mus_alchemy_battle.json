@@ -1,0 +1,32 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "2307077735",
+    "Type": "Event",
+    "GUID": "{6B05377B-13F5-4C15-99B8-581555148AD7}",
+    "Language": "SFX",
+    "Hash": "{24D5E96C-D1E7-41E2-2679-E227ADBF4C28}",
+    "ObjectPath": "mus_alchemy_battle",
+    "ShortName": "mus_alchemy_battle",
+    "Path": "Event/mus_alchemy_battle.bnk",
+    "Events": [
+     {
+      "Id": "2307077735",
+      "Name": "mus_alchemy_battle",
+      "ObjectPath": "\\Events\\Default Work Unit\\Music\\mus_alchemy_battle",
+      "GUID": "{6B05377B-13F5-4C15-99B8-581555148AD7}",
+      "DurationType": "OneShot",
+      "DurationMin": "0",
+      "DurationMax": "0"
+     }
+    ]
+   }
+  ],
+  "FileHash": "{84FB5FF9-D82E-DF5B-BC5A-533F367CCA14}"
+ }
+}

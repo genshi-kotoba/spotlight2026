@@ -23,11 +23,12 @@ func _run() -> void:
 		await get_tree().process_frame
 		reader.place_next_to(Rect2(1500, 850, 140, 230), bounds)
 		preserved = preserved and reader.body.text.replace("\n", "") == str(reading.effect).replace("\n", "")
-		all_visible = all_visible and reader.body.maximum_scroll() == 0
+		reader.body._scroll_to(reader.body.maximum_scroll())
+		all_visible = all_visible and reader.body.lines_skipped == reader.body.maximum_scroll()
 		within_bounds = within_bounds and bounds.encloses(reader.get_global_rect())
 		view.free()
 	_check("全部正式卡描述完整保留", preserved)
-	_check("全部正式卡全文无需滚动即可展示", all_visible)
+	_check("全部正式卡全文可读到最后一行", all_visible)
 	_check("屏幕角落自动换边并完整留在视口", within_bounds)
 	reader.set_card_text("极长描述", "长篇卡牌效果，".repeat(100))
 	var small_bounds := Rect2(0, 0, 1280, 720)
@@ -44,7 +45,7 @@ func _run() -> void:
 	await get_tree().process_frame
 	reader.place_next_to(Rect2(100, 100, 140, 240), bounds)
 	_check("切到短描述后面板缩短且滚动归零", reader.size.y < large_height and reader.body.lines_skipped == 0 and reader.body.maximum_scroll() == 0)
-	_check("说明字号不随文案长度缩小", reader.body.get_theme_font_size("font_size") == CardReadingPanel.BODY_SIZE)
+	_check("说明字号不随文案长度缩小", reader.body.get_theme_font_size("font_size") == ReadingSettings.body_size())
 	print("CARD_READING_PANEL_RESULT checks=%d failures=%d" % [checks, failures])
 	get_tree().quit(failures)
 

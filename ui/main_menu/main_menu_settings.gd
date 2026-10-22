@@ -16,6 +16,10 @@ func _ready() -> void:
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	body.add_child(holder)
 	VOLUME_SETTINGS.build(holder)
+	var reading := Control.new()
+	reading.custom_minimum_size = preload("res://ui/components/reading_preferences.gd").BLOCK_SIZE
+	body.add_child(reading)
+	preload("res://ui/components/reading_preferences.gd").build(reading)
 	var diagnostics := Control.new()
 	diagnostics.name = "Diagnostics"
 	diagnostics.custom_minimum_size = DIAGNOSTICS_SETTINGS.BLOCK_SIZE

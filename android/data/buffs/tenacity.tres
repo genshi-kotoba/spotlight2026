@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BuffData" format=3]
+
+[ext_resource type="Script" path="res://systems/buffs/buff_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/effects/game_effect.gd" id="2"]
+[ext_resource type="Script" path="res://systems/buffs/effects/buff_effect_stat.gd" id="3"]
+
+[sub_resource type="Resource" id="Stat"]
+script = ExtResource("3")
+buff_id = &"tenacity"
+stat = 1
+
+[resource]
+script = ExtResource("1")
+buff_id = &"tenacity"
+display_name = "坚韧"
+description = "本回合每层使获得的格挡增加1。"
+duration = 1
+effects = Array[ExtResource("2")]([SubResource("Stat")])

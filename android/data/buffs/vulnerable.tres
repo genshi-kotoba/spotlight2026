@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="BuffData" format=3]
+
+[ext_resource type="Script" path="res://systems/buffs/buff_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+buff_id = &"vulnerable"
+display_name = "易伤"
+description = "受到伤害增加50%，生效后减少一层。"
+duration = 0

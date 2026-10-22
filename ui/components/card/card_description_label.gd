@@ -60,12 +60,31 @@ func bind_button(button: Button) -> void:
 	var old := _interaction_button()
 	if is_instance_valid(old) and old.gui_input.is_connected(_on_button_gui_input):
 		old.gui_input.disconnect(_on_button_gui_input)
+		var reference: Variant = old.get_meta("reading_description") if old.has_meta("reading_description") else null
+		if reference is WeakRef and reference.get_ref() == self: old.remove_meta("reading_description")
 	_button = weakref(button) if button != null else null
 	if button != null and not Engine.is_editor_hint():
+		button.set_meta("reading_description", weakref(self))
 		button.gui_input.connect(_on_button_gui_input)
 
 func _interaction_button() -> Button:
 	return _button.get_ref() as Button if _button != null else null
+
+## 输入桥只能沿真实 GUI 命中的祖先找正文，不能穿过模态遮罩搜索背后的卡。
+static func reading_surface(control: Control) -> CardDescriptionLabel:
+	var node: Node = control
+	while is_instance_valid(node):
+		if node is CardDescriptionLabel:
+			return node if node.input_enabled and node.is_visible_in_tree() and not node.is_queued_for_deletion() and node.maximum_scroll() > 0 else null
+		if node is Button:
+			var reference: Variant = node.get_meta("reading_description") if node.has_meta("reading_description") else null
+			if reference is WeakRef:
+				var label := reference.get_ref() as CardDescriptionLabel
+				if is_instance_valid(label) and label.input_enabled and label.is_visible_in_tree() and not label.is_queued_for_deletion() and label.maximum_scroll() > 0:
+					var point := label.get_global_transform_with_canvas().affine_inverse() * control.get_global_mouse_position()
+					if Rect2(Vector2.ZERO, label.size).has_point(point): return label
+		node = node.get_parent()
+	return null
 
 func _refresh_input() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP if input_enabled and maximum_scroll() > 0 and not Engine.is_editor_hint() else Control.MOUSE_FILTER_IGNORE

@@ -1,6 +1,6 @@
 # Godot 4+ specific ignores
 .godot/
-/android/
+# android/ is a separate tracked project; its build output has local ignores.
 
 # ─────────────────────────────────────────────────────────────
 # 本地 AI 工作文件 —— 不进团队仓库

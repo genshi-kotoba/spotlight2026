@@ -149,7 +149,8 @@ func _run() -> void:
 	popup = bag._pack_popup
 	_check("伪造包外选项不能领奖", RunRewards.choose(run, common_id, "not-an-option") == ERR_INVALID_PARAMETER)
 	await _click(popup._options.find_child("Choose_" + str(common_new[0]), true, false))
-	_check("直接点击普通卡面仅加入一张到牌组", run.deck.size() == 9 and RunRewards.item(run, common_id).is_empty())
+	await _confirm_card_reader(popup)
+	_check("普通卡详情明确确认后仅加入一张到牌组", run.deck.size() == 9 and RunRewards.item(run, common_id).is_empty())
 	bag.close()
 	for grade: String in ["精英", "BOSS"]:
 		_check(grade + "奖励生成", RunRewards.stage_victory(run, "fixture-map", "fixture-" + grade, grade, 0) == OK and SaveGateway.save_current() == OK)
@@ -176,6 +177,7 @@ func _run() -> void:
 	_check("稀有包不显示刷新按钮", not popup._refresh_button.visible)
 	await _capture("rare-pack.png")
 	await _click(popup._options.find_child("Choose_" + str(rare[0]), true, false))
+	await _confirm_card_reader(popup)
 	_check("稀有卡加入牌组", run.deck.size() == 10)
 	var next_common := _pack_id(run, "common_pack")
 	_check("每个包有独立刷新次数", RunRewards.open_pack(run, next_common) == OK and RunRewards.refresh_pack(run, next_common) == OK)
@@ -295,3 +297,8 @@ func _capture(filename: String) -> void:
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png(fixture_root.path_join(filename))
+
+func _confirm_card_reader(owner: Node) -> void:
+	var choose := preload("res://tests/support/card_reader_test_helper.gd").action_button(owner, "选择此牌")
+	_check("卡牌详情提供显式选择此牌按钮", choose != null)
+	if choose != null: await _click(choose)

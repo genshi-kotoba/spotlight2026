@@ -22,7 +22,8 @@ func _ready() -> void:
 
 
 func _draw() -> void:
-	var center := size * 0.5
+	draw_set_transform(size * 0.5, 0.0, Vector2.ONE * minf(size.x, size.y) / 48.0)
+	var center := Vector2.ZERO
 	var hovered := is_hovered()
 	var plate := PLATE_HOVER_COLOR if hovered else PLATE_COLOR
 	var gear := GEAR_HOVER_COLOR if hovered else GEAR_COLOR
